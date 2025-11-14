@@ -1209,14 +1209,7 @@ export default {
                 this.eventCopy = JSON.parse(JSON.stringify(this.event));
                 
                 // Initialize passcodes for editing (convert single passcode field to eventPasscodes array)
-                if (this.event.passcode && Array.isArray(this.event.passcode)) {
-                    this.eventCopy.eventPasscodes = [...this.event.passcode];
-                } else if (this.event.passcode) {
-                    // Handle case where passcode might be a single string (backward compatibility)
-                    this.eventCopy.eventPasscodes = [this.event.passcode];
-                } else {
-                    this.eventCopy.eventPasscodes = [''];
-                }
+                this.initializeEventPasscodes();
 
                 this.dataLoaded = true;
 
@@ -1522,7 +1515,7 @@ export default {
                 // Process eventPasscodes before comparison
                 if (this.eventCopy.eventPasscodes) {
                     // Filter out empty passcodes and prepare for comparison
-                    const validPasscodes = this.eventCopy.eventPasscodes.filter(p => p && p.trim());
+                    const validPasscodes = this.eventCopy.eventPasscodes.filter(p => p && p.code && p.code.trim());
                     this.eventCopy.eventPasscodes = validPasscodes.length > 0 ? validPasscodes : null;
                 }
 
@@ -1541,12 +1534,22 @@ export default {
                         const originalPasscodes = this.event.passcode || [];
                         const newPasscodes = value || [];
                         
-                        // Deep array comparison
+                        // Deep array comparison for objects
                         const arraysEqual = originalPasscodes.length === newPasscodes.length && 
-                                          originalPasscodes.every((val, index) => val === newPasscodes[index]);
+                                          originalPasscodes.every((val, index) => {
+                                              const newVal = newPasscodes[index];
+                                              // Handle both string and object formats for backward compatibility
+                                              if (typeof val === 'string' && typeof newVal === 'object') {
+                                                  return val === newVal.code;
+                                              } else if (typeof val === 'object' && typeof newVal === 'object') {
+                                                  return val.code === newVal.code && val.limit === newVal.limit;
+                                              } else {
+                                                  return val === newVal;
+                                              }
+                                          });
                         
                         if (!arraysEqual) {
-                            changedFields['eventPasscodes'] = value;
+                            changedFields['eventPasscodes'] = value; // Use 'eventPasscodes' as the field name for backend
                         }
                         continue;
                     }
@@ -1572,6 +1575,9 @@ export default {
                 changedFields['eventOwnerID'] = this.userID;
                 changedFields['eventOwnerType'] = this.userType;
 
+                // Debug: Log what we're sending to the backend
+                console.log('Sending to backend:', changedFields);
+
                 // Update the event details
                 await this.$axios.put(`${process.env.VUE_APP_API_URL}/events/updateEvent`, changedFields)
                 .then((response) => {
@@ -1581,15 +1587,21 @@ export default {
                         this.getEvent();
                     }
                     else {
-                        console.log(response.data.message);
+                        console.log('Update failed:', response.data);
                         toast.dismiss(toastId);
-                        toast.error('Failed to update event details. Please try again!');
+                        toast.error(response.data.error || 'Failed to update event details. Please try again!');
                     }
                 })
+                .catch((error) => {
+                    console.log('API Error:', error.response?.data || error);
+                    toast.dismiss(toastId);
+                    const errorMessage = error.response?.data?.error || 'Failed to update event details. Please try again!';
+                    toast.error(errorMessage);
+                });
                 
             }
             catch (error) {
-                console.log(error);
+                console.log('Catch Error:', error);
                 toast.dismiss(toastId);
                 toast.error('Failed to update event details. Please try again!');
             }
@@ -1633,10 +1645,10 @@ export default {
             }
         },
 
-        // Function to change date "YYYY-MM-DD" to "DD Month YYYY"
+        // Function to change date "YYYY-MM-DD" to "Weekday DD Month YYYY"
         formatDate(date) {
-            const options = { day: 'numeric', month: 'long', year: 'numeric' };
-            // toLocaleDateString() function converts a date to a string based on the specified locale and formatting options. The first argument is the locale (region), and the second argument is an object specifying the desired format for the date components (e.g., day, month, year).
+            const options = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' };
+            // toLocaleDateString() function converts a date to a string based on the specified locale and formatting options. The first argument is the locale (region), and the second argument is an object specifying the desired format for the date components (e.g., weekday, day, month, year).
             return new Date(date).toLocaleDateString("en-GB", options);
         },
 
