@@ -995,7 +995,7 @@ CREATE TABLE "events" (
     "eventOwnerType" VARCHAR(255), -- [!] "producers" or "venues" or "users"
     "numAttendees" INTEGER,
     "createdDate" TIMESTAMP,
-    "passcode" TEXT[] DEFAULT NULL, -- Optional passcode for event access (supports multiple passcodes)
+    "passcode" JSONB DEFAULT NULL, -- Optional passcode for event access with usage limits [{"code": "Merlion65", "limit": 50}, {"code": "Changi66", "limit": 30}]
     "signupOpen" BOOLEAN DEFAULT TRUE -- Indicates if event signup is open - NOT USED AT THE MOMENT
 );
 
@@ -1014,7 +1014,8 @@ CREATE TABLE "eventAttendees" (
     "firstName" VARCHAR(50), -- contact info for RSVP event access
     "lastName" VARCHAR(50), -- contact info for RSVP event access
     "phoneNumber" VARCHAR(50), -- contact info for RSVP event access
-    "email" VARCHAR(50) -- contact info for RSVP event access
+    "email" VARCHAR(50), -- contact info for RSVP event access
+    "passcodeUsed" VARCHAR(100) -- tracks which specific passcode each attendee used
 );
 
 -- ========= "associations" =========
