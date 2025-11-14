@@ -1139,7 +1139,7 @@ export default {
                 paidEvent: '',
                 eventLocation: '',
                 paymentLink: '',
-                eventPasscodes: ['']
+                eventPasscodes: [{ code: '', limit: 50 }]
             },
             disableButton: false,
 

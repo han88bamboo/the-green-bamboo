@@ -872,23 +872,58 @@
                         <!-- Event passcodes -->
                         <div class="mb-3">
                             <label class="form-label fw-bold">Event Passcodes <span class="text-muted">Optional</span></label>
+                            <small class="text-muted d-block mb-2">Set passcodes with usage limits to control access to your event</small>
                             
                             <!-- Passcode input fields -->
-                            <div v-for="(passcode, index) in eventCopy.eventPasscodes" :key="index" class="mb-2 d-flex align-items-center">
-                                <input 
-                                    type="text" 
-                                    class="form-control me-2" 
-                                    v-model="eventCopy.eventPasscodes[index]" 
-                                    :placeholder="'Passcode ' + (index + 1)"
-                                >
-                                <button 
-                                    type="button" 
-                                    class="btn btn-outline-danger btn-sm" 
-                                    @click="removePasscodeEdit(index)"
-                                    :disabled="eventCopy.eventPasscodes.length <= 1"
-                                >
-                                    Remove
-                                </button>
+                            <div v-for="(passcode, index) in eventCopy.eventPasscodes" :key="index" class="mb-3 p-3 border rounded">
+                                <div class="row align-items-end">
+                                    <!-- Passcode input -->
+                                    <div class="col-md-5">
+                                        <label :for="'edit-passcode-' + index" class="form-label small">Passcode {{ index + 1 }}</label>
+                                        <input 
+                                            type="text" 
+                                            class="form-control" 
+                                            :id="'edit-passcode-' + index"
+                                            v-model="passcode.code" 
+                                            :placeholder="'Enter passcode ' + (index + 1)"
+                                        >
+                                    </div>
+                                    
+                                    <!-- Limit input -->
+                                    <div class="col-md-2">
+                                        <label :for="'edit-limit-' + index" class="form-label small">Limit</label>
+                                        <input 
+                                            type="number" 
+                                            class="form-control" 
+                                            :id="'edit-limit-' + index"
+                                            v-model.number="passcode.limit" 
+                                            min="1" 
+                                            max="10000"
+                                            placeholder="50"
+                                        >
+                                    </div>
+                                    
+                                    <!-- Usage display -->
+                                    <div class="col-md-3">
+                                        <label class="form-label small">Usage Limit</label>
+                                        <div class="form-control-plaintext small">
+                                            <span class="badge bg-secondary">Max: {{ passcode.limit }}</span>
+                                            <div class="text-muted">Usage tracked via attendees</div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Remove button -->
+                                    <div class="col-md-2">
+                                        <button 
+                                            type="button" 
+                                            class="btn btn-outline-danger btn-sm w-100"
+                                            @click="removePasscodeEdit(index)"
+                                            :disabled="eventCopy.eventPasscodes.length <= 1"
+                                        >
+                                            Remove
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
                             
                             <!-- Add passcode button -->
@@ -1406,7 +1441,7 @@ export default {
 
         // Function to add a new passcode field in edit mode
         addPasscodeEdit() {
-            this.eventCopy.eventPasscodes.push('');
+            this.eventCopy.eventPasscodes.push({ code: '', limit: 50 });
         },
 
         // Function to remove a passcode field in edit mode
@@ -1419,11 +1454,13 @@ export default {
         // Function to initialize eventPasscodes array for editing
         initializeEventPasscodes() {
             if (this.event.passcode && Array.isArray(this.event.passcode)) {
-                this.eventCopy.eventPasscodes = [...this.event.passcode];
-            } else if (this.event.passcode) {
-                this.eventCopy.eventPasscodes = [this.event.passcode];
+                // Handle JSONB format: array of objects with code and limit
+                this.eventCopy.eventPasscodes = this.event.passcode.map(p => ({
+                    code: p.code || '',
+                    limit: p.limit || 50
+                }));
             } else {
-                this.eventCopy.eventPasscodes = [''];
+                this.eventCopy.eventPasscodes = [{ code: '', limit: 50 }];
             }
         },
 

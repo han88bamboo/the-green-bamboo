@@ -14,6 +14,7 @@
 # -----------------------------------------------------------------------------------------
 
 import os
+import json
 from flask import Blueprint, g, jsonify, request
 from datetime import datetime
 import re
@@ -903,14 +904,23 @@ def createEvent():
             else:
                 data['eventLimit'] = int(data['eventLimit'])
 
-            # Handle passcodes - convert array to clean array or None
-            passcode_array = data.get('eventPasscodes', [])
-            if passcode_array and isinstance(passcode_array, list):
-                # Filter out empty/whitespace-only passcodes
-                valid_passcodes = [p.strip() for p in passcode_array if p and p.strip()]
-                passcode = valid_passcodes if valid_passcodes else None
-            else:
-                passcode = None
+            # Handle passcodes - convert array with limits to JSONB format
+            passcode_data = data.get('eventPasscodes', [])
+            passcode = None
+            
+            if passcode_data and isinstance(passcode_data, list):
+                valid_passcodes = []
+                for item in passcode_data:
+                    # Handle new format (objects with code and limit)
+                    if isinstance(item, dict) and 'code' in item and 'limit' in item:
+                        code = item['code'].strip() if item['code'] else ''
+                        limit = item['limit']
+                        if code and isinstance(limit, int) and limit > 0:
+                            valid_passcodes.append({"code": code, "limit": limit})
+                
+                # Convert to JSON string for JSONB storage
+                if valid_passcodes:
+                    passcode = json.dumps(valid_passcodes)
 
             # Get today's date as the createdDate
             created_date = datetime.now().date()
@@ -1124,15 +1134,25 @@ def updateEvent():
                     update_fields.append('"eventBanners" = %s')
                     update_values.append(event_banner_pg)
             
-            # Handle passcode updates
+            # Handle passcode updates - convert array with limits to JSONB format
             if 'eventPasscodes' in data:
-                passcode_array = data.get('eventPasscodes')
-                if passcode_array and isinstance(passcode_array, list):
-                    # Filter out empty/whitespace-only passcodes
-                    valid_passcodes = [p.strip() for p in passcode_array if p and p.strip()]
-                    passcode = valid_passcodes if valid_passcodes else None
-                else:
-                    passcode = None
+                passcode_data = data.get('eventPasscodes')
+                passcode = None
+                
+                if passcode_data and isinstance(passcode_data, list):
+                    valid_passcodes = []
+                    for item in passcode_data:
+                        # Handle new format (objects with code and limit)
+                        if isinstance(item, dict) and 'code' in item and 'limit' in item:
+                            code = item['code'].strip() if item['code'] else ''
+                            limit = item['limit']
+                            if code and isinstance(limit, int) and limit > 0:
+                                valid_passcodes.append({"code": code, "limit": limit})
+                    
+                    # Convert to JSON string for JSONB storage
+                    if valid_passcodes:
+                        passcode = json.dumps(valid_passcodes)
+                
                 update_fields.append('"passcode" = %s')
                 update_values.append(passcode)
 
@@ -1342,29 +1362,59 @@ def addAttendee():
                 return jsonify({'error': 'User not found'}), 400
 
             # Step 3.5: Validate event passcode if required
-            # passcode is now TEXT[] array (e.g., ['Merlion65', 'Changi66']) or None/[]
+            # passcode is now JSONB format: [{"code": "Merlion65", "limit": 50}, {"code": "Changi66", "limit": 30}] or None
             event_passcode = event.get('passcode')
+            matched_passcode_code = None  # Store the master code that was matched
             
-            # Check if event requires passcode: array exists, not empty, and has at least one valid (non-empty) passcode
-            if event_passcode and any(p and p.strip() for p in event_passcode):
-                # Event requires a passcode
-                user_passcode = data.get('passcode', '').strip()
+            # Check if event requires passcode: JSONB array exists and has valid passcode objects
+            if event_passcode and isinstance(event_passcode, list) and len(event_passcode) > 0:
+                # Check if any passcode object has a valid code
+                has_valid_passcode = any(
+                    isinstance(p, dict) and p.get('code') and str(p.get('code')).strip() 
+                    for p in event_passcode
+                )
                 
-                if not user_passcode:
-                    return jsonify({'error': 'This event requires a passcode.'}), 400
-                
-                # Normalize user input (remove spaces and convert to lowercase)
-                normalized_user_passcode = ''.join(user_passcode.split()).lower()
-                
-                # Get all valid passcodes (filter out None, empty strings, and whitespace-only strings)
-                valid_passcodes = [p.strip() for p in event_passcode if p and p.strip()]
-                
-                # Normalize all valid passcodes for comparison
-                normalized_valid_passcodes = [''.join(p.split()).lower() for p in valid_passcodes]
-                
-                # Check if user passcode matches any of the valid passcodes
-                if normalized_user_passcode not in normalized_valid_passcodes:
-                    return jsonify({'error': 'Event passcode wrong'}), 400
+                if has_valid_passcode:
+                    # Event requires a passcode
+                    user_passcode = data.get('passcode', '').strip()
+                    
+                    if not user_passcode:
+                        return jsonify({'error': 'This event requires a passcode.'}), 400
+                    
+                    # Normalize user input (remove spaces and convert to lowercase)
+                    normalized_user_passcode = ''.join(user_passcode.split()).lower()
+                    
+                    # Find matching passcode and check its usage limit
+                    passcode_found = False
+                    for passcode_obj in event_passcode:
+                        if isinstance(passcode_obj, dict) and passcode_obj.get('code'):
+                            master_code = str(passcode_obj['code']).strip()
+                            passcode_limit = passcode_obj.get('limit', 0)
+                            
+                            # Normalize master code for comparison
+                            normalized_master_code = ''.join(master_code.split()).lower()
+                            
+                            if normalized_user_passcode == normalized_master_code:
+                                passcode_found = True
+                                matched_passcode_code = master_code  # Store the original master code
+                                
+                                # Check usage limit for this specific passcode
+                                cursor.execute('''
+                                    SELECT COUNT(*) as usage_count
+                                    FROM "eventAttendees" 
+                                    WHERE "eventID" = %s AND "passcodeUsed" = %s
+                                ''', (data['eventID'], master_code))
+                                
+                                usage_result = cursor.fetchone()
+                                current_usage = usage_result['usage_count'] if usage_result else 0
+                                
+                                if current_usage >= passcode_limit:
+                                    return jsonify({'error': f'Passcode usage limit ({passcode_limit}) has been reached for this event.'}), 400
+                                
+                                break  # Found valid passcode with available usage
+                    
+                    if not passcode_found:
+                        return jsonify({'error': 'Event passcode wrong'}), 400
 
             # Step 3.6: Check attendance limit for this event organizer
             cursor.execute('''
@@ -1395,10 +1445,10 @@ def addAttendee():
             # Step 5: Add the attendee to the event
             cursor.execute('''
                 INSERT INTO "eventAttendees" 
-                ("eventID", "eventDate", "eventStartTime", "userID", "attendeeType", "attendeeStatus", "rsvpTimestamp", "firstName", "lastName", "phoneNumber", "email") 
-                VALUES (%s, %s, %s, %s, %s, TRUE, CURRENT_TIMESTAMP, %s, %s, %s, %s)
+                ("eventID", "eventDate", "eventStartTime", "userID", "attendeeType", "attendeeStatus", "rsvpTimestamp", "firstName", "lastName", "phoneNumber", "email", "passcodeUsed") 
+                VALUES (%s, %s, %s, %s, %s, TRUE, CURRENT_TIMESTAMP, %s, %s, %s, %s, %s)
             ''', (data['eventID'], event['eventStartDate'], event['eventStartTime'], data['userID'], data['userType'], 
-                  attendee_info['firstName'], attendee_info['lastName'], attendee_info['phoneNumber'], attendee_info['email']))
+                  attendee_info['firstName'], attendee_info['lastName'], attendee_info['phoneNumber'], attendee_info['email'], matched_passcode_code))
 
             # Step 6: Update the number of attendees in the event
             cursor.execute('UPDATE events SET "numAttendees" = "numAttendees" + 1 WHERE id = %s', (data['eventID'],))

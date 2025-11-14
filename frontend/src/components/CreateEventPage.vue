@@ -146,24 +146,51 @@
             <!-- Event passcodes -->
             <div class="mb-3">
                 <label class="form-label">Event Passcodes <span class="text-muted">Optional</span></label>
+                <small class="text-muted d-block mb-2">Set passcodes with usage limits to control access to your event</small>
                 
                 <!-- Passcode input fields -->
-                <div v-for="(passcode, index) in newEvent.eventPasscodes" :key="index" class="mb-2 d-flex align-items-center">
-                    <input 
-                        type="text" 
-                        class="form-control me-2" 
-                        v-model="newEvent.eventPasscodes[index]" 
-                        @input="emitNewEvent" 
-                        :placeholder="'Passcode ' + (index + 1)"
-                    >
-                    <button 
-                        type="button" 
-                        class="btn btn-outline-danger btn-sm" 
-                        @click="removePasscode(index)"
-                        :disabled="newEvent.eventPasscodes.length <= 1"
-                    >
-                        Remove
-                    </button>
+                <div v-for="(passcode, index) in newEvent.eventPasscodes" :key="index" class="mb-3 p-3 border rounded">
+                    <div class="row align-items-end">
+                        <!-- Passcode input -->
+                        <div class="col-md-7">
+                            <label :for="'passcode-' + index" class="form-label small">Passcode {{ index + 1 }}</label>
+                            <input 
+                                type="text" 
+                                class="form-control" 
+                                :id="'passcode-' + index"
+                                v-model="passcode.code" 
+                                :placeholder="'Enter passcode ' + (index + 1)"
+                                @input="emitNewEvent"
+                            >
+                        </div>
+                        
+                        <!-- Limit input -->
+                        <div class="col-md-3">
+                            <label :for="'limit-' + index" class="form-label small">Usage Limit</label>
+                            <input 
+                                type="number" 
+                                class="form-control" 
+                                :id="'limit-' + index"
+                                v-model.number="passcode.limit" 
+                                min="1" 
+                                max="10000"
+                                placeholder="50"
+                                @input="emitNewEvent"
+                            >
+                        </div>
+                        
+                        <!-- Remove button -->
+                        <div class="col-md-2">
+                            <button 
+                                type="button" 
+                                class="btn btn-outline-danger btn-sm w-100"
+                                @click="removePasscode(index)"
+                                :disabled="newEvent.eventPasscodes.length <= 1"
+                            >
+                                Remove
+                            </button>
+                        </div>
+                    </div>
                 </div>
                 
                 <!-- Add passcode button -->
@@ -207,7 +234,7 @@ export default {
                 paidEvent: null,
                 eventLocation: null,
                 paymentLink: null,
-                eventPasscodes: [''] // Array of passcodes, start with one empty field
+                eventPasscodes: [{ code: '', limit: 50 }] // Array of passcode objects, start with one empty field
             },
 
         }
@@ -257,7 +284,7 @@ export default {
 
         // Function to add a new passcode field
         addPasscode() {
-            this.newEvent.eventPasscodes.push('');
+            this.newEvent.eventPasscodes.push({ code: '', limit: 50 });
             this.emitNewEvent();
         },
 
