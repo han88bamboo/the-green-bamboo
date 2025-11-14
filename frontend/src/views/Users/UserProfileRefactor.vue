@@ -1722,14 +1722,14 @@
                 </div>   
               </div> 
             </div>
-            <!-- Events-->
+            <!-- Events
             <div class="mt-3 mobile-view-hide">
               <EventBox
                 :selfView="ownProfile"
                 :targetUserID="displayUserID"
                 targetUserType="user"
               />
-            </div>
+            </div>-->
           </div>
         </div>
 
@@ -4149,7 +4149,7 @@
 import NavBar from "@/components/NavBar.vue";
 import PWStrengthChecker from "@/components/PWStrengthChecker.vue";
 import { useToast } from "vue-toastification";
-import EventBox from "@/components/EventBox.vue";
+// import EventBox from "@/components/EventBox.vue";
 import BookmarkModal from "@/components/BookmarkModal.vue";
 import ListingRowDisplayUserProfile from "@/components/ListingRowDisplayUserProfile.vue";
 import LoadingWithFunFact from '@/components/LoadingWithFunFact.vue';
@@ -4161,7 +4161,7 @@ export default {
   components: {
     NavBar,
     PWStrengthChecker,
-    EventBox,
+    // EventBox,
     BookmarkModal,
     ListingRowDisplayUserProfile,
     LoadingWithFunFact,
