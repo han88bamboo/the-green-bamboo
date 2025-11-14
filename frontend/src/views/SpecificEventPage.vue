@@ -1944,6 +1944,33 @@ export default {
             return isValid;
         },
 
+        // Translate hardcoded passcodes to actual backend passcodes
+        translatePasscode(userPasscode) {
+            // Define the passcode translation mapping
+            const passcodeMap = {
+                'MERLION65': ['WLS2025SATVIP', 'WLS2025SUNVIP'], // Array for multiple codes
+                'RAFFLES18': 'WLS2025SATVIP',                    // String for single code
+                'CHANGI88': ['WLS2025SATCON', 'WLS2025SUNCON'],
+                'MACRITCHIE93': 'WLS2025SATCON',
+                'ESPLANADE12': 'WLS2025SUNVIP',
+                'PADANG90': 'WLS2025SUNCON'
+                // Add more hardcoded passcode mappings here as needed
+                // 'USER_FRIENDLY_CODE': 'ACTUAL_BACKEND_CODE'
+            };
+            
+            // Normalize the user passcode (uppercase, remove spaces)
+            const normalizedUserPasscode = userPasscode.toUpperCase().replace(/\s+/g, '');
+            
+            // Get the mapped value
+            const mapped = passcodeMap[normalizedUserPasscode];
+            
+            // Return array if mapped, otherwise return single-item array with original
+            if (mapped) {
+                return Array.isArray(mapped) ? mapped : [mapped];
+            }
+            return [userPasscode];
+        },
+
         // Submit attendee information and proceed with RSVP
         async submitAttendeeInfo() {
             if (!this.validateAttendeeInfo()) {
@@ -1957,6 +1984,9 @@ export default {
         // Updated RSVP function that includes attendee information
         rsvpEventWithInfo() {
             try {
+                // Translate hardcoded passcodes (returns array)
+                const translatedPasscodes = this.translatePasscode(this.attendeeInfo.passcode.trim());
+                
                 const payload = {
                     eventID: this.event.id,
                     userID: this.userID,
@@ -1965,7 +1995,7 @@ export default {
                     lastName: this.attendeeInfo.lastName.trim(),
                     phoneNumber: this.attendeeInfo.phoneNumber.trim(),
                     email: this.attendeeInfo.email.trim(),
-                    passcode: this.attendeeInfo.passcode.trim()
+                    passcodes: translatedPasscodes  // Send array instead of single passcode
                 };
 
                 this.$axios.post(`${process.env.VUE_APP_API_URL}/events/addAttendee`, payload)

@@ -1375,46 +1375,66 @@ def addAttendee():
                 )
                 
                 if has_valid_passcode:
-                    # Event requires a passcode
-                    user_passcode = data.get('passcode', '').strip()
+                    # Get passcodes to try (array from frontend, or fallback to single passcode for backward compatibility)
+                    user_passcodes = data.get('passcodes', [])
+                    if not user_passcodes:
+                        # Fallback to single passcode for backward compatibility
+                        single_passcode = data.get('passcode', '')
+                        user_passcodes = [single_passcode] if single_passcode else []
                     
-                    if not user_passcode:
+                    if not user_passcodes or not any(pc.strip() for pc in user_passcodes):
                         return jsonify({'error': 'This event requires a passcode.'}), 400
                     
-                    # Normalize user input (remove spaces and convert to lowercase)
-                    normalized_user_passcode = ''.join(user_passcode.split()).lower()
-                    
-                    # Find matching passcode and check its usage limit
+                    # Try each user passcode against each event passcode
                     passcode_found = False
-                    for passcode_obj in event_passcode:
-                        if isinstance(passcode_obj, dict) and passcode_obj.get('code'):
-                            master_code = str(passcode_obj['code']).strip()
-                            passcode_limit = passcode_obj.get('limit', 0)
+                    matched_passcode_code = None
+                    found_valid_but_limit_reached = False  # Track if we found valid passcode but hit limit
+                    
+                    for user_passcode in user_passcodes:
+                        if not user_passcode.strip():
+                            continue
                             
-                            # Normalize master code for comparison
-                            normalized_master_code = ''.join(master_code.split()).lower()
-                            
-                            if normalized_user_passcode == normalized_master_code:
-                                passcode_found = True
-                                matched_passcode_code = master_code  # Store the original master code
+                        # Normalize user input (remove spaces and convert to lowercase)
+                        normalized_user_passcode = ''.join(user_passcode.split()).lower()
+                        
+                        # Find matching passcode and check its usage limit
+                        for passcode_obj in event_passcode:
+                            if isinstance(passcode_obj, dict) and passcode_obj.get('code'):
+                                master_code = str(passcode_obj['code']).strip()
+                                passcode_limit = passcode_obj.get('limit', 0)
                                 
-                                # Check usage limit for this specific passcode
-                                cursor.execute('''
-                                    SELECT COUNT(*) as usage_count
-                                    FROM "eventAttendees" 
-                                    WHERE "eventID" = %s AND "passcodeUsed" = %s
-                                ''', (data['eventID'], master_code))
+                                # Normalize master code for comparison
+                                normalized_master_code = ''.join(master_code.split()).lower()
                                 
-                                usage_result = cursor.fetchone()
-                                current_usage = usage_result['usage_count'] if usage_result else 0
-                                
-                                if current_usage >= passcode_limit:
-                                    return jsonify({'error': f'Passcode usage limit ({passcode_limit}) has been reached for this event.'}), 400
-                                
-                                break  # Found valid passcode with available usage
+                                if normalized_user_passcode == normalized_master_code:
+                                    # Check usage limit for this specific passcode
+                                    cursor.execute('''
+                                        SELECT COUNT(*) as usage_count
+                                        FROM "eventAttendees" 
+                                        WHERE "eventID" = %s AND "passcodeUsed" = %s
+                                    ''', (data['eventID'], master_code))
+                                    
+                                    usage_result = cursor.fetchone()
+                                    current_usage = usage_result['usage_count'] if usage_result else 0
+                                    
+                                    if current_usage >= passcode_limit:
+                                        found_valid_but_limit_reached = True  # Mark that we found a valid passcode but it's at limit
+                                        continue  # Try next passcode instead of failing immediately
+                                    
+                                    # Found valid passcode with available usage
+                                    passcode_found = True
+                                    matched_passcode_code = master_code  # Store the original master code
+                                    break
+                                    
+                        if passcode_found:
+                            break  # Exit outer loop if we found a valid passcode
                     
                     if not passcode_found:
-                        return jsonify({'error': 'Event passcode wrong'}), 400
+                        # Prioritize limit reached message over generic wrong passcode message
+                        if found_valid_but_limit_reached:
+                            return jsonify({'error': 'This event has been fully signed up by your ticket class.'}), 400
+                        else:
+                            return jsonify({'error': 'Event passcode wrong'}), 400
 
             # Step 3.6: Check attendance limit for this event organizer
             cursor.execute('''
