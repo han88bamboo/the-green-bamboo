@@ -154,20 +154,20 @@ def createListings():
 
     try:
         with db_manager.get_cursor() as cursor:
-            # Check for duplicate listing
-            cursor.execute('SELECT * FROM listings WHERE "listingName" = %s', (rawBottleName,))
-            existingBottle = cursor.fetchone()
+            # Check for duplicate listing (commented out by charsiucharlie 15 Nov 2025)
+            # cursor.execute('SELECT * FROM listings WHERE "listingName" = %s', (rawBottleName,))
+            # existingBottle = cursor.fetchone()
 
-            if existingBottle is not None:
-                return jsonify(
-                    {   
-                        "code": 400,
-                        "data": {
-                            "listingName": rawBottleName
-                        },
-                        "message": "Bottle already exists."
-                    }
-                ), 400
+            # if existingBottle is not None:
+            #     return jsonify(
+            #         {   
+            #             "code": 400,
+            #             "data": {
+            #                 "listingName": rawBottleName
+            #             },
+            #             "message": "Bottle already exists."
+            #         }
+            #     ), 400
             
             # Convert abv from string to float if necessary
             if 'abv' in rawBottle:
