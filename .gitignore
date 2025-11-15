@@ -504,3 +504,4 @@ backend/postgresql/mongo_test.py
 package-lock.json
 /site_review
 start-app.bat
+.vscode

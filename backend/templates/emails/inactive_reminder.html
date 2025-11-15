@@ -1,0 +1,51 @@
+{% extends "emails/base.html" %}
+
+{% block title %}We Miss You at {{ app_name }}!{% endblock %}
+
+{% block content %}
+<p class="greeting">Hey {{ user_name }}! 👋</p>
+
+<p class="message">
+    It's been a while since we've seen you! The community has been busy, and we thought you might be interested in what you've missed.
+</p>
+
+<div class="notification-card">
+    <div class="title">What's New Since You've Been Gone</div>
+    <div class="content">
+        <ul style="margin: 10px 0; padding-left: 20px;">
+            <li style="margin: 8px 0;">📝 <strong>{{ new_reviews_count }}</strong> new reviews from people you follow</li>
+            <li style="margin: 8px 0;">💬 <strong>{{ new_comments_count }}</strong> new comments on your reviews</li>
+            <li style="margin: 8px 0;">👍 <strong>{{ new_upvotes_count }}</strong> new upvotes on your content</li>
+            {% if trending_reviews %}
+            <li style="margin: 8px 0;">🔥 Hot topic: <strong>{{ trending_reviews[0].title }}</strong></li>
+            {% endif %}
+        </ul>
+    </div>
+</div>
+
+<div class="button-container">
+    <a href="{{ app_url }}" class="button">See What's New</a>
+</div>
+
+<p class="message">
+    Your voice matters to our community. Come back and share your thoughts!
+</p>
+
+{% if personalized_content %}
+<div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #e2e8f0;">
+    <p style="font-size: 14px; color: #718096; margin-bottom: 15px;">
+        <strong>Recommended for you:</strong>
+    </p>
+    {% for item in personalized_content %}
+    <div style="margin-bottom: 15px;">
+        <a href="{{ item.url }}" style="color: #667eea; text-decoration: none; font-weight: 600;">
+            {{ item.title }}
+        </a>
+        <p style="font-size: 13px; color: #718096; margin: 4px 0 0 0;">
+            {{ item.description }}
+        </p>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+{% endblock %}

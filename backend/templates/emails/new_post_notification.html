@@ -1,0 +1,32 @@
+{% extends "emails/base.html" %}
+
+{% block title %}New Post from {{ author_name }}{% endblock %}
+
+{% block content %}
+<p class="greeting">Hi {{ recipient_name }}! 📝</p>
+
+<p class="message">
+    <strong>{{ author_name }}</strong>, someone you follow, just posted a new update!
+</p>
+
+<div class="notification-card">
+    <div class="title">{{ review_title }}</div>
+    <div class="meta">
+        By {{ author_name }} • {{ review_date }} • {{ category }}
+        {% if rating %}
+            • ⭐ {{ rating }}/5
+        {% endif %}
+    </div>
+    <div class="content">
+        {{ review_excerpt }}...
+    </div>
+</div>
+
+<div class="button-container">
+    <a href="{{ review_url }}" class="button">Read Full Review</a>
+</div>
+
+<p class="message">
+    Don't miss out on what {{ author_name }} has to share!
+</p>
+{% endblock %}

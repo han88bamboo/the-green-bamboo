@@ -1,0 +1,29 @@
+{% extends "emails/base.html" %}
+
+{% block title %}New Comment on Your Review{% endblock %}
+
+{% block content %}
+<p class="greeting">Hi {{ recipient_name }}! 👋</p>
+
+<p class="message">
+    <strong>{{ commenter_name }}</strong> just commented on your review.
+</p>
+
+<div class="notification-card">
+    <div class="title">{{ review_title }}</div>
+    <div class="meta">
+        Comment by {{ commenter_name }} • {{ comment_time }}
+    </div>
+    <div class="content">
+        "{{ comment_text }}"
+    </div>
+</div>
+
+<div class="button-container">
+    <a href="{{ review_url }}" class="button">View Comment & Reply</a>
+</div>
+
+<p class="message">
+    Keep the conversation going! Your insights help the community make better decisions.
+</p>
+{% endblock %}

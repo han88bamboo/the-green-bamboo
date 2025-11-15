@@ -1,0 +1,29 @@
+{% extends "emails/base.html" %}
+
+{% block title %}You Were Tagged in a Review{% endblock %}
+
+{% block content %}
+<p class="greeting">Hey {{ recipient_name }}! 🏷️</p>
+
+<p class="message">
+    <strong>{{ author_name }}</strong> mentioned you in their review!
+</p>
+
+<div class="notification-card">
+    <div class="title">{{ review_title }}</div>
+    <div class="meta">
+        By {{ author_name }} • {{ review_date }} • {{ category }}
+    </div>
+    <div class="content">
+        {{ review_excerpt }}
+    </div>
+</div>
+
+<div class="button-container">
+    <a href="{{ review_url }}" class="button">Read Full Review</a>
+</div>
+
+<p class="message">
+    See what {{ author_name }} had to say and join the discussion!
+</p>
+{% endblock %}

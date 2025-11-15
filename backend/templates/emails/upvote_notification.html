@@ -1,0 +1,33 @@
+{% extends "emails/base.html" %}
+
+{% block title %}Your Review Got an Upvote!{% endblock %}
+
+{% block content %}
+<p class="greeting">Great news, {{ recipient_name }}! 🎉</p>
+
+<p class="message">
+    <strong>{{ upvoter_name }}</strong> found your review helpful and gave it an upvote!
+</p>
+
+<div class="notification-card">
+    <div class="title">{{ review_title }}</div>
+    <div class="meta">
+        {% if total_upvotes > 1 %}
+            {{ total_upvotes }} people found this helpful
+        {% else %}
+            1 person found this helpful
+        {% endif %}
+    </div>
+    <div class="content">
+        {{ review_excerpt }}
+    </div>
+</div>
+
+<div class="button-container">
+    <a href="{{ review_url }}" class="button">View Your Review</a>
+</div>
+
+<p class="message">
+    Your reviews are making an impact! Keep sharing your experiences.
+</p>
+{% endblock %}
