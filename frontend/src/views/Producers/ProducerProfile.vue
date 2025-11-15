@@ -396,7 +396,7 @@
             <div class="container text-start pe-lg-0">
               <!-- country -->
               <div class="row">
-                <div class="col-7 pe-4 ps-0">
+                <div class="col-12 col-md-7 pe-4 ps-0">
                   <!-- [if] editing -->
                   <div v-if="editing">
                     <label for="originCountryInput"> Country of Origin </label>
@@ -410,11 +410,13 @@
                   </div>
                   <!-- [else] not editing -->
                   <div v-else>
-                    <h5 class="text-body-secondary mobile-view-hide">
-                      {{ specified_producer["originCountry"] }}
+                    <h5 class="text-muted fst-italic mobile-view-hide" style="overflow-wrap: break-word; white-space: normal;">
+                      {{ specified_producer["originCountry"] }} |
+                      Producer ID: {{ producer_id }}
                     </h5>
-                    <h6 class="text-body-secondary mobile-view-show mb-0">
-                      {{ specified_producer["originCountry"] }}
+                    <h6 class="text-muted fst-italic mobile-view-show mb-0" style="overflow-wrap: break-word; white-space: normal;">
+                      {{ specified_producer["originCountry"] }} |
+                      Producer ID: {{ producer_id }}
                     </h6>
                   </div>
                 </div>
