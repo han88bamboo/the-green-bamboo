@@ -426,7 +426,7 @@
                         </div>
 
                         <!-- Input: Independent Bottler Check -->
-                        <div v-if="tempDrinkType === 'Agave +' || tempDrinkType === 'Arrack' || tempDrinkType === 'Baijiu' || tempDrinkType === 'Brandy' || tempDrinkType === 'Gin' || tempDrinkType === 'Mezcal' || tempDrinkType === 'Rice + (Soju, etc.)' || tempDrinkType === 'Rum' || tempDrinkType === 'Shochu' || tempDrinkType === 'Soju' || tempDrinkType === 'Tequila' || tempDrinkType === 'Vodka' || tempDrinkType === 'Whisky'">
+                        <div >
                             <p class="text-start mb-1">Is this bottled by an independent bottler? <span class="text-danger">*</span></p>
                             <!-- Toggleable Switch -->
                             <div class="text-start mb-3">
@@ -710,7 +710,7 @@
                                     <label for="abv" class="col-6 col-form-label ps-1 text-start">% ABV</label>
                                 </div>
                             </div>
-                            <div class="form-group col-6" v-if=" tempDrinkType !== 'Beer' && tempDrinkType !== 'Cocktails' && tempDrinkType !== 'Liqueurs & Bitters' && tempDrinkType !== 'Ready-To-Drink Cocktails'">
+                            <div class="form-group col-6" >
                                 <p class="text-start mb-1">Age</p>
                                 <div class="form-group row">
                                     <div class="col-6 pe-1">
@@ -1196,9 +1196,8 @@
                         const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getDrinkTypes`);
                         this.drinkCategories = response.data;
                         for (let drink of this.drinkCategories) {
-                            if (this.types.length === 0 || this.types.includes(drink.drinkType)) {
-                                this.drinkCategoriesList.push(drink.drinkType);
-                            }
+                            // Allow all drink types for form submission (removed moderation filtering)
+                            this.drinkCategoriesList.push(drink.drinkType);
                         }
                         // Add a '-' option for no drink type
                         this.drinkCategoriesList.unshift("-");
@@ -1213,9 +1212,8 @@
                         const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getTypeCategories`);
                         this.drinkStyles = response.data;
                         for (let drink of this.drinkStyles) {
-                            if (this.types.length === 0 || this.types.includes(drink.typeCategory)) {
-                                this.drinkStylesList.push(drink.typeCategory);
-                            }
+                            // Allow all drink categories for form submission (removed moderation filtering)
+                            this.drinkStylesList.push(drink.typeCategory);
                         }
                         // Add a '-' option for no drink category
                         this.drinkStylesList.unshift("-");
