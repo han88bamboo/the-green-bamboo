@@ -284,7 +284,10 @@
 
                         <!-- Event Attendees -->
                         <div class="d-flex flex-row justify-content-between align-items-center mt-2">
-                            <h5 class="fw-bold mt-3 mobile-fs-6 mx-1" style="color:#027562">Who's Going?</h5>
+                            <h5 class="fw-bold mt-3 mobile-fs-6 mx-1" style="color:#027562">
+                                Who's Going?
+                                <span v-if="attendees.length >= 5" class="fw-normal" style="color:#027562">({{ attendees.length }} attendees)</span>
+                            </h5>
                             <!-- Invite button -->
                             <button class="ps-0 btn d-flex flex-row align-items-center hover-underline mobile-rating-smaller-text-2 " data-bs-toggle="modal" data-bs-target="#inviteFriendModal">
                                 <!-- Invite icon -->
@@ -344,7 +347,9 @@
                                 <div class="modal-dialog modal-dialog-centered">
                                     <div class="modal-content">
                                         <div class="modal-header">
-                                            <h5 class="modal-title" id="attendeesModalLabel">Attendees</h5>
+                                            <h5 class="modal-title" id="attendeesModalLabel">
+                                                Attendees<span v-if="attendees.length >= 5"> ({{ attendees.length }})</span>
+                                            </h5>
                                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                         </div>
                                         <div class="modal-body">
