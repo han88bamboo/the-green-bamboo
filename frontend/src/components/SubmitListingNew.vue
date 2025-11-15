@@ -539,7 +539,7 @@
                         <!-- Input: Variety Tags -->
                         <div class="form-group mb-3">
                             <p class="text-start mb-1 fw-bold">Variety Tags</p>
-                            <p class="text-start mb-1 text-muted" style="font-size: 14px;">Add as many tags as applicable (e.g., Pinot Noir, Chardonnay, Golden Promise Barley)</p>
+                            <p class="text-start mb-1 text-muted" style="font-size: 14px;">Add any applicable tags (eg. Pinot Noir, Bourbon Barrel, Nectaron, Yamadanishiki, Espadin, Angelica)</p>
                             
                             <!-- Input field with Add button -->
                             <div class="input-group mb-2">
@@ -548,7 +548,7 @@
                                     class="form-control" 
                                     v-model="varietyTagInput"
                                     @keyup.enter="addVarietyTag"
-                                    placeholder="Type a variety tag and press Enter or click +"
+                                    placeholder="Type a variety tag and click +"
                                     maxlength="20"
                                 >
                                 <button 
