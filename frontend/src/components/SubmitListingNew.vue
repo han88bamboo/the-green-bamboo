@@ -363,36 +363,36 @@
                         </div>-->
                         <!-- [ELSE] Dropdown menu tied to producerID, show producerNew textbox only if "Other" selected (no producerID). -->
                         <!-- set name only, then before submitting request, put the id, save computation -->
-                        <div class="form-group mb-3 position-relative" > <!--removed v-else-->
-                            <!-- Toggle button in top-right corner -->
-                            <button type="button" 
-                                    class="btn btn-sm btn-outline-secondary position-absolute" 
-                                    style="top: 0; right: 0; font-size: 11px; z-index: 10;"
-                                    @click="toggleProducerSearchMode()">
-                                {{ searchByProducerId ? 'Search by Producer Name' : 'Search by Producer ID' }}
-                            </button>
+                        <div class="form-group mb-3" > <!--removed v-else-->
+                            <p class="text-start mb-1"><span class="fw-bold" >Producer (Brand, Brewery, Winery, Distillery, Bar, etc.) </span><span class="text-danger fw-bold">*</span> <span class="text-muted" style="font-size: 14px;" v-if="!searchByProducerId">(Just begin typing, then select from the drop-down suggestions.)</span><span class="text-muted" style="font-size: 14px;" v-if="searchByProducerId">(Enter numeric Producer ID - found on producer profile page or URL.)</span></p>
                             
-                            <p class="text-start mb-1"><span class="fw-bold" >Producer (Brand, Brewery, Winery, Distillery, Bar, etc.) </span><span class="text-danger fw-bold">*</span> <span class="text-muted" style="font-size: 14px;" v-if="!searchByProducerId">(Just begin typing, then select from the drop-down suggestions.)</span><span class="text-muted" style="font-size: 14px;" v-if="searchByProducerId">(Enter numeric ID only.)</span></p> 
-                            
-                            <!-- Producer Name Search Input -->
-                            <input v-if="!searchByProducerId"
-                                   type="text" class="form-control" 
-                                   v-model="form['producerNew']" 
-                                   autocomplete="off" 
-                                   placeholder="Enter Producer Name" 
-                                   @input="handleProducerInput"
-                                   @blur="hideProducerDropdown">
+                            <!-- Input group with toggle button -->
+                            <div class="input-group">
+                                <!-- Producer Name Search Input -->
+                                <input v-if="!searchByProducerId"
+                                       type="text" class="form-control" 
+                                       v-model="form['producerNew']" 
+                                       autocomplete="off" 
+                                       placeholder="Enter Producer Name" 
+                                       @input="handleProducerInput"
+                                       @blur="hideProducerDropdown">
 
-                            <!-- Producer ID Search Input -->
-                            <input v-if="searchByProducerId"
-                                   type="text" class="form-control" 
-                                   v-model="form['producerIdSearch']" 
-                                   autocomplete="off" 
-                                   placeholder="Enter Producer ID number (found on producer profile page or URL)" 
-                                   @input="handleProducerIdInput"
-                                   @blur="hideProducerIdDropdown">
+                                <!-- Producer ID Search Input -->
+                                <input v-if="searchByProducerId"
+                                       type="text" class="form-control" 
+                                       v-model="form['producerIdSearch']" 
+                                       autocomplete="off" 
+                                       placeholder="Enter Producer ID number" 
+                                       @input="handleProducerIdInput"
+                                       @blur="hideProducerIdDropdown">
 
-                            <!-- Validation error for Producer ID -->
+                                <!-- Toggle Button -->
+                                <button type="button" 
+                                        class="btn btn-outline-secondary" 
+                                        @click="toggleProducerSearchMode()">
+                                    {{ searchByProducerId ? 'by Producer ID' : 'by Producer Name' }}
+                                </button>
+                            </div>                            <!-- Validation error for Producer ID -->
                             <div v-if="searchByProducerId && producerIdValidationError" 
                                  class="text-danger mt-1" style="font-size: 14px;">
                                 {{ producerIdValidationError }}
