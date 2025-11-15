@@ -363,25 +363,63 @@
                         </div>-->
                         <!-- [ELSE] Dropdown menu tied to producerID, show producerNew textbox only if "Other" selected (no producerID). -->
                         <!-- set name only, then before submitting request, put the id, save computation -->
-                        <div class="form-group mb-3" > <!--removed v-else-->
-                            <p class="text-start mb-1"><span class="fw-bold" >Producer (Brand, Brewery, Winery, Distillery, Bar, etc.) </span><span class="text-danger fw-bold">*</span> <span class="text-muted" style="font-size: 14px;">(Just begin typing, then select from the drop-down suggestions.)</span></p> 
+                        <div class="form-group mb-3 position-relative" > <!--removed v-else-->
+                            <!-- Toggle button in top-right corner -->
+                            <button type="button" 
+                                    class="btn btn-sm btn-outline-secondary position-absolute" 
+                                    style="top: 0; right: 0; font-size: 11px; z-index: 10;"
+                                    @click="toggleProducerSearchMode()">
+                                {{ searchByProducerId ? 'Search by Producer Name' : 'Search by Producer ID' }}
+                            </button>
                             
-                            <input type="text" class="form-control" 
+                            <p class="text-start mb-1"><span class="fw-bold" >Producer (Brand, Brewery, Winery, Distillery, Bar, etc.) </span><span class="text-danger fw-bold">*</span> <span class="text-muted" style="font-size: 14px;" v-if="!searchByProducerId">(Just begin typing, then select from the drop-down suggestions.)</span><span class="text-muted" style="font-size: 14px;" v-if="searchByProducerId">(Enter numeric ID only.)</span></p> 
+                            
+                            <!-- Producer Name Search Input -->
+                            <input v-if="!searchByProducerId"
+                                   type="text" class="form-control" 
                                    v-model="form['producerNew']" 
                                    autocomplete="off" 
                                    placeholder="Enter Producer Name" 
                                    @input="handleProducerInput"
                                    @blur="hideProducerDropdown">
 
-                            <!-- Dropdown list with drawer styling -->
+                            <!-- Producer ID Search Input -->
+                            <input v-if="searchByProducerId"
+                                   type="text" class="form-control" 
+                                   v-model="form['producerIdSearch']" 
+                                   autocomplete="off" 
+                                   placeholder="Enter Producer ID number (found on producer profile page or URL)" 
+                                   @input="handleProducerIdInput"
+                                   @blur="hideProducerIdDropdown">
+
+                            <!-- Validation error for Producer ID -->
+                            <div v-if="searchByProducerId && producerIdValidationError" 
+                                 class="text-danger mt-1" style="font-size: 14px;">
+                                {{ producerIdValidationError }}
+                            </div>
+
+                            <!-- Dropdown list for Producer Name Search -->
                             <ul class="list-group"
-                                v-if="producerList && producerList.length > 0 && form['producerNew'] && showProducerDropdown">
+                                v-if="!searchByProducerId && producerList && producerList.length > 0 && form['producerNew'] && showProducerDropdown">
                                 <li v-for="producer in producerList" :key="producer.id"
                                     class="list-group-item list-group-item-action text-start"
-                                    @click="selectProducer(producer)">
+                                    @click="selectProducerFromAnySearch(producer)">
                                     {{ producer.producerName }}
-                                    <small class="text-muted" v-if="producer.originCountry">
-                                        ({{ producer.originCountry }})
+                                    <small class="text-muted" v-if="producer.originCountry || producer.id">
+                                        ({{ producer.originCountry }}{{ producer.originCountry && producer.id ? ' | ' : '' }}{{ producer.id ? 'Producer ID: ' + producer.id : '' }})
+                                    </small>
+                                </li>
+                            </ul>
+
+                            <!-- Dropdown list for Producer ID Search -->
+                            <ul class="list-group"
+                                v-if="searchByProducerId && producerIdList && producerIdList.length > 0 && form['producerIdSearch'] && showProducerIdDropdown">
+                                <li v-for="producer in producerIdList" :key="producer.id"
+                                    class="list-group-item list-group-item-action text-start"
+                                    @click="selectProducerFromAnySearch(producer)">
+                                    {{ producer.producerName }}
+                                    <small class="text-muted" v-if="producer.originCountry || producer.id">
+                                        ({{ producer.originCountry }}{{ producer.originCountry && producer.id ? ' | ' : '' }}{{ producer.id ? 'Producer ID: ' + producer.id : '' }})
                                     </small>
                                 </li>
                             </ul>
@@ -456,8 +494,8 @@
                                     class="list-group-item list-group-item-action text-start"
                                     @click="selectBottler(bottler)">
                                     {{ bottler.producerName }}
-                                    <small class="text-muted" v-if="bottler.originCountry">
-                                        ({{ bottler.originCountry }})
+                                    <small class="text-muted" v-if="bottler.originCountry || bottler.id">
+                                        ({{ bottler.originCountry }}{{ bottler.originCountry && bottler.id ? ' | ' : '' }}{{ bottler.id ? 'Producer ID: ' + bottler.id : '' }})
                                     </small>
                                 </li>
                             </ul>
@@ -877,6 +915,12 @@
                 // New producer selection state
                 selectedProducer: {},
                 showProducerDropdown: false,
+                
+                // Producer search toggle and ID search
+                searchByProducerId: false,
+                producerIdList: [],
+                showProducerIdDropdown: false,
+                producerIdValidationError: "",
 
                 // New bottler selection state
                 selectedBottler: {},
@@ -894,6 +938,7 @@
                     "officialDesc": "",
                     "reviewLink": "",
                     "producerNew": "", 
+                    "producerIdSearch": "",
                     "bottler": "",
                     "originCountry": "",
                     "abv": "",
@@ -909,6 +954,7 @@
                     "varietyTags": null,
                 },
                 producerDebounceTimer: null,
+                producerIdDebounceTimer: null,
                 bottlerDebounceTimer: null,
 
                 earnedBadges: [],
@@ -932,6 +978,8 @@
                         id: this.form['producerID'],
                         producerName: this.form['producerNew']
                     };
+                    // Also populate the ID search field to keep consistency
+                    this.form['producerIdSearch'] = this.form['producerID'];
                 }
                 
                 // Restore selectedBottler if we have bottler data in cache
@@ -1550,6 +1598,7 @@
                     
                 // }
                 this.form["producerNew"] = previousData.producerNew;
+                this.form["producerIdSearch"] = previousData.producerID; // Also populate ID search field
                 console.log('form.producerNew:', this.form["producerNew"]);
 
                 // Set selectedProducer if we have producer data
@@ -1728,9 +1777,22 @@
                 }
             },
 
+            // Toggle between producer search modes
+            toggleProducerSearchMode() {
+                this.searchByProducerId = !this.searchByProducerId;
+                this.producerIdValidationError = "";
+                
+                // Clear dropdowns when switching modes
+                this.showProducerDropdown = false;
+                this.showProducerIdDropdown = false;
+                this.producerList = [];
+                this.producerIdList = [];
+            },
+
             // New methods for drawer-style producer selection
             handleProducerInput() {
                 this.showProducerDropdown = true;
+                this.showProducerIdDropdown = false; // Hide other dropdown
                 this.getProducerID(); // Keep existing logic for ID resolution
                 
                 // Trigger debounced search if input has at least 2 characters
@@ -1742,20 +1804,64 @@
                 }
             },
 
-            selectProducer(producer) {
+            // New method for producer ID input
+            handleProducerIdInput() {
+                this.showProducerIdDropdown = true;
+                this.showProducerDropdown = false; // Hide other dropdown
+                this.producerIdValidationError = "";
+                
+                // Validate numeric input
+                const input = this.form['producerIdSearch'];
+                if (input && !/^\d+$/.test(input)) {
+                    this.producerIdValidationError = "Producer ID must contain only numeric values.";
+                    this.producerIdList = [];
+                    this.showProducerIdDropdown = false;
+                    return;
+                }
+                
+                // Trigger debounced search if input has at least 1 character and is numeric
+                if (input && input.length >= 1) {
+                    this.debouncedFetchProducerById(input);
+                } else {
+                    this.producerIdList = [];
+                    this.showProducerIdDropdown = false;
+                }
+            },
+
+            // Shared method for selecting producer from either search
+            selectProducerFromAnySearch(producer) {
                 this.selectedProducer = producer;
                 this.form['producerNew'] = producer.producerName;
+                this.form['producerIdSearch'] = producer.id;
                 this.form['producerID'] = producer.id;
+                
+                // Hide both dropdowns
                 this.showProducerDropdown = false;
+                this.showProducerIdDropdown = false;
+                
+                // Clear both search lists
                 this.producerList = [];
+                this.producerIdList = [];
+                
+                // Clear validation error
+                this.producerIdValidationError = "";
+            },
+
+            // Keep original selectProducer for backward compatibility
+            selectProducer(producer) {
+                this.selectProducerFromAnySearch(producer);
             },
 
             clearSelectedProducer() {
                 this.selectedProducer = {};
                 this.form['producerNew'] = '';
+                this.form['producerIdSearch'] = '';
                 this.form['producerID'] = '';
                 this.showProducerDropdown = false;
+                this.showProducerIdDropdown = false;
                 this.producerList = [];
+                this.producerIdList = [];
+                this.producerIdValidationError = "";
             },
 
             hideProducerDropdown() {
@@ -1763,6 +1869,39 @@
                 setTimeout(() => {
                     this.showProducerDropdown = false;
                 }, 150);
+            },
+
+            hideProducerIdDropdown() {
+                // Use a timeout to allow click events on dropdown items to fire first
+                setTimeout(() => {
+                    this.showProducerIdDropdown = false;
+                }, 150);
+            },
+
+            // Debounced function to fetch producer by ID
+            debouncedFetchProducerById(producerId) {
+                clearTimeout(this.producerIdDebounceTimer);
+                this.producerIdDebounceTimer = setTimeout(() => {
+                    this.fetchProducerById(producerId);
+                }, 300); // 300ms debounce delay
+            },
+
+            // Function to get producer by ID using existing endpoint
+            async fetchProducerById(producerId) {
+                try {
+                    const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getUniqueProducersNamesID/dummy/${producerId}`);
+                    // The existing endpoint returns single producer data, so wrap it in array for consistency
+                    this.producerIdList = [response.data];
+                } catch (error) {
+                    console.error("Error fetching producer by ID:", error);
+                    if (error.response && error.response.status === 404) {
+                        this.producerIdValidationError = "No producer found with this ID.";
+                        this.producerIdList = [];
+                    } else {
+                        this.producerIdValidationError = "Error fetching producer. Please try again.";
+                        this.producerIdList = [];
+                    }
+                }
             },
 
             // New methods for drawer-style bottler selection
