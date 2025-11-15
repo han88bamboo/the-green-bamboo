@@ -273,6 +273,11 @@ x<!-- Search page from navigation bar. Globally available, and should still use 
                                         <b> Type: </b>
                                         {{ resultListing['drinkType'] }}, {{ resultListing['typeCategory'] }}
                                     </p>
+                                    <!-- ABV -->
+                                    <p class="m-0">
+                                        <b> ABV: </b>
+                                        {{ resultListing['abv'] }}%
+                                    </p>
                                 </div>
 
                                 <div class="d-flex justify-content-end col-lg-5 col-12" style="white-space: nowrap; overflow:hidden;text-overflow: ellipsis;">
