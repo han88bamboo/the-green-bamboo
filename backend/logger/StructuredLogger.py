@@ -1,6 +1,6 @@
-import datetime
 import json
 import logging
+from datetime import datetime
 
 from flask import g
 

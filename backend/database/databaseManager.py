@@ -23,11 +23,16 @@ class DatabaseManager:
         This supports Flask's application factory pattern.
         """
         self.pool = None  # Connection pool will be created in init_app()
+        self.logger = logger
+
+        # Safe logging that handles None logger
+        if self.logger:
+            self.logger.info(
+                "charsiucharlie_connection_pooling_debug: Database connection pool initialized successfully"
+            )
 
         if app:
             self.init_app(app)
-
-        self.logger = logger
 
     def init_app(self, app):
         """
