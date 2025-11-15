@@ -425,6 +425,56 @@
                                 
                         </div>
 
+                        <!-- Input: Independent Bottler Check -->
+                        <div v-if="tempDrinkType === 'Agave +' || tempDrinkType === 'Arrack' || tempDrinkType === 'Baijiu' || tempDrinkType === 'Brandy' || tempDrinkType === 'Gin' || tempDrinkType === 'Mezcal' || tempDrinkType === 'Rice + (Soju, etc.)' || tempDrinkType === 'Rum' || tempDrinkType === 'Shochu' || tempDrinkType === 'Soju' || tempDrinkType === 'Tequila' || tempDrinkType === 'Vodka' || tempDrinkType === 'Whisky'">
+                            <p class="text-start mb-1">Is this bottled by an independent bottler? <span class="text-danger">*</span></p>
+                            <!-- Toggleable Switch -->
+                            <div class="text-start mb-3">
+                                <div class="form-check form-switch form-check-inline">
+                                    <input class="form-check-input" type="checkbox" role="switch" id="IBCheck" name="IBCheck" v-model="indOperator">
+                                    <label class="form-check-label" for="IBCheck" v-if="indOperator">Yes</label>
+                                    <label class="form-check-label" for="IBCheck" v-if="!indOperator">No</label>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- (ONLY IF above toggled to "Yes") Input Text for Independent Bottler -->
+                        <div class="form-group mb-3" v-if="indOperator">
+                            <p class="text-start mb-1">If yes, who is the independent bottler? <span class="text-danger">*</span> <span class="text-muted" style="font-size: 14px;">(Just begin typing, then select from the drop-down suggestions.)</span></p>
+                            
+                            <input type="text" class="form-control" 
+                                   v-model="form['bottler']" 
+                                   :disabled="!indOperator" 
+                                   autocomplete="off" 
+                                   placeholder="Enter Bottler Name" 
+                                   @input="handleBottlerInput"
+                                   @blur="hideBottlerDropdown">
+
+                            <!-- Dropdown list with drawer styling -->
+                            <ul class="list-group"
+                                v-if="bottlersList && bottlersList.length > 0 && form['bottler'] && showBottlerDropdown && indOperator">
+                                <li v-for="bottler in bottlersList" :key="bottler.id"
+                                    class="list-group-item list-group-item-action text-start"
+                                    @click="selectBottler(bottler)">
+                                    {{ bottler.producerName }}
+                                    <small class="text-muted" v-if="bottler.originCountry">
+                                        ({{ bottler.originCountry }})
+                                    </small>
+                                </li>
+                            </ul>
+
+                            <!-- Show selected bottler -->
+                            <div v-if="selectedBottler && selectedBottler.id" 
+                                 class="mt-2 p-2 bg-light border rounded">
+                                <small class="text-success fw-bold">
+                                    ✓ Bottler Selected: {{ selectedBottler.producerName }}
+                                    <button type="button" class="btn btn-sm btn-outline-danger ms-2"
+                                            @click="clearSelectedBottler()">
+                                        Clear
+                                    </button>
+                                </small>
+                            </div>
+                        </div>
+
                         <!-- Input: Bottle Name -->
                         <div class="form-group mb-3">
                             <p class="text-start mb-1 "><span class="fw-bold">Drink Name / Name of Bottle, Cocktail or Item </span><span class="text-danger fw-bold">*</span> <span class="text-muted" style="font-size: 14px;">(Include any identification numbers eg. cask, batch, serial, barrel, edition numbers; do NOT include vintage year for wines.)</span></p>
@@ -612,55 +662,6 @@
                             <input type="text" class="form-control" v-model="form['reviewLink']" id="reviewLink" placeholder="Enter review link">
                         </div>
 
-                        <!-- Input: Independent Bottler Check -->
-                        <div v-if="tempDrinkType === 'Agave +' || tempDrinkType === 'Arrack' || tempDrinkType === 'Baijiu' || tempDrinkType === 'Brandy' || tempDrinkType === 'Gin' || tempDrinkType === 'Mezcal' || tempDrinkType === 'Rice + (Soju, etc.)' || tempDrinkType === 'Rum' || tempDrinkType === 'Shochu' || tempDrinkType === 'Soju' || tempDrinkType === 'Tequila' || tempDrinkType === 'Vodka' || tempDrinkType === 'Whisky'">
-                            <p class="text-start mb-1">Is this bottled by an independent bottler? <span class="text-danger">*</span></p>
-                            <!-- Toggleable Switch -->
-                            <div class="text-start mb-3">
-                                <div class="form-check form-switch form-check-inline">
-                                    <input class="form-check-input" type="checkbox" role="switch" id="IBCheck" name="IBCheck" v-model="indOperator">
-                                    <label class="form-check-label" for="IBCheck" v-if="indOperator">Yes</label>
-                                    <label class="form-check-label" for="IBCheck" v-if="!indOperator">No</label>
-                                </div>
-                            </div>
-                        </div>
-                        <!-- (ONLY IF above toggled to "Yes") Input Text for Independent Bottler -->
-                        <div class="form-group mb-3" v-if="indOperator">
-                            <p class="text-start mb-1">If yes, who is the independent bottler? <span class="text-danger">*</span> <span class="text-muted" style="font-size: 14px;">(Just begin typing, then select from the drop-down suggestions.)</span></p>
-                            
-                            <input type="text" class="form-control" 
-                                   v-model="form['bottler']" 
-                                   :disabled="!indOperator" 
-                                   autocomplete="off" 
-                                   placeholder="Enter Bottler Name" 
-                                   @input="handleBottlerInput"
-                                   @blur="hideBottlerDropdown">
-
-                            <!-- Dropdown list with drawer styling -->
-                            <ul class="list-group"
-                                v-if="bottlersList && bottlersList.length > 0 && form['bottler'] && showBottlerDropdown && indOperator">
-                                <li v-for="bottler in bottlersList" :key="bottler.id"
-                                    class="list-group-item list-group-item-action text-start"
-                                    @click="selectBottler(bottler)">
-                                    {{ bottler.producerName }}
-                                    <small class="text-muted" v-if="bottler.originCountry">
-                                        ({{ bottler.originCountry }})
-                                    </small>
-                                </li>
-                            </ul>
-
-                            <!-- Show selected bottler -->
-                            <div v-if="selectedBottler && selectedBottler.id" 
-                                 class="mt-2 p-2 bg-light border rounded">
-                                <small class="text-success fw-bold">
-                                    ✓ Bottler Selected: {{ selectedBottler.producerName }}
-                                    <button type="button" class="btn btn-sm btn-outline-danger ms-2"
-                                            @click="clearSelectedBottler()">
-                                        Clear
-                                    </button>
-                                </small>
-                            </div>
-                        </div>
                         <!-- Input: Photo file -->
                         <div class="form-group mb-3 mobile-view-hide">
                             <p class="text-start mb-1 fw-bold">Photo of drink</p>
