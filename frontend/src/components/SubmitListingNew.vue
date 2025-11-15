@@ -1185,7 +1185,15 @@
                         for (let country of response.data) {
                             this.countries.push(country.originCountry);
                         }
-                        this.countries = this.countries.sort();
+                        this.countries = this.countries.sort((a, b) => {
+                            // Priority items at the top
+                            if (a === "Multi-Country") return -1;
+                            if (b === "Multi-Country") return 1;
+                            if (a === "World") return -1;
+                            if (b === "World") return 1;
+                            // Everything else alphabetically
+                            return a.localeCompare(b);
+                        });
                     } 
                     catch (error) {
                         console.error(error);
