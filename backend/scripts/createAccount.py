@@ -22,8 +22,8 @@ import secrets
 
 from psycopg2 import sql
 
-# Import the database manager for connection pooling
-from app import db_manager
+# Import username utilities for collision prevention
+from scripts.username_utils import generate_unique_username
 
 # load env variables
 load_dotenv()
@@ -465,22 +465,30 @@ def createProducerAccount():
                     "message": "Producer name must be between 2 and 100 characters."
                 }), 400
             
-            # Check if producerName already exists (case-insensitive)
-            cursor.execute('SELECT id FROM producers WHERE LOWER("producerName") = LOWER(%s)', (producer_name,))
-            existing_account = cursor.fetchone()
             
-            if existing_account:
-                return jsonify({
-                    "code": 400,
-                    "data": {"producerName": producer_name},
-                    "message": "Producer name already exists."
-                }), 400
+            # Check if producerName already exists (case-insensitive) - # DISABLED: Allow multiple producers with identical names (username collision prevention handles uniqueness)
+            # cursor.execute('SELECT id FROM producers WHERE LOWER("producerName") = LOWER(%s)', (producer_name,))
+            # existing_account = cursor.fetchone()
+            # 
+            # if existing_account:
+            #     return jsonify({
+            #         "code": 400,
+            #         "data": {"producerName": producer_name},
+            #         "message": "Producer name already exists."
+            #     }), 400
             
             # Prepare producer data with defaults
             # Always sanitize the producer name to create username (ignore any provided username)
             print(f"DEBUG: About to call sanitize_username with producer_name: '{producer_name}'")
             sanitized_username = sanitize_username(producer_name)
             print(f"DEBUG: sanitize_username returned: '{sanitized_username}'")
+            
+            # Ensure username uniqueness with collision prevention
+            if not sanitized_username:
+                sanitized_username = "producer"  # Fallback for empty sanitization result
+            
+            unique_username = generate_unique_username(sanitized_username, cursor)
+            print(f"DEBUG: generate_unique_username returned: '{unique_username}'")
             
             producer_data = {
                 'producerName': producer_name,
@@ -491,7 +499,7 @@ def createProducerAccount():
                 'hashedPassword': newBusinessData['hashedPassword'],
                 'claimStatus': newBusinessData.get('claimStatus', 'pending'),
                 'statusOB': newBusinessData.get('statusOB', 'active'),
-                'username': sanitized_username,
+                'username': unique_username,
                 'producerLink': newBusinessData.get('producerLink', '').strip() or None,
                 'stripeCustomerId': newBusinessData.get('stripeCustomerId', '').strip() or None,
                 'isIndependentBottler': bool(newBusinessData.get('isIndependentBottler', False)),
@@ -594,7 +602,7 @@ def createProducerAccount():
                 "data": {
                     "producerId": new_producer_id,
                     "producerName": producer_name,
-                    "username": sanitized_username
+                    "username": unique_username
                 },
                 "message": "Producer account created successfully"
             }

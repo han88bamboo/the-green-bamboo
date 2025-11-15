@@ -13,12 +13,68 @@ from fuzzywuzzy import fuzz
 # Import the database manager for connection pooling
 from app import db_manager
 
+# Import username utilities
+from scripts.username_utils import generate_unique_username
+
 file_name = os.path.basename(__file__)
 blueprint = Blueprint(file_name[:-3], __name__)
 
 # ============================================================================
 # UTILITY FUNCTIONS
 # ============================================================================
+
+def sanitize_username(producer_name):
+    """
+    Sanitize producer name for use as username by:
+    1. Removing Chinese/Japanese characters (CJK ideographs)
+    2. Removing accented characters (converting to ASCII equivalents)
+    3. Removing special characters including spaces (keep only alphanumeric, hyphens, underscores)
+    4. Converting to lowercase for consistency
+    5. Stripping leading/trailing whitespace
+    
+    WARNING: If the producer name contains ONLY Chinese/Japanese characters with no English letters
+    (e.g., "山崎蒸留所"), the result will be the original unsanitized producer name. This means
+    the username may contain special characters that could cause issues with authentication
+    or URL handling.
+    """
+    print(f"DEBUG: Input producer_name: '{producer_name}' (type: {type(producer_name)})")
+    
+    if not producer_name:
+        return ""
+    
+    # Step 1: Remove CJK (Chinese, Japanese, Korean) characters
+    # Unicode ranges for CJK characters:
+    # U+4E00-U+9FFF: CJK Unified Ideographs
+    # U+3400-U+4DBF: CJK Extension A
+    # U+20000-U+2A6DF: CJK Extension B
+    # U+3040-U+309F: Hiragana
+    # U+30A0-U+30FF: Katakana
+    cjk_pattern = re.compile(r'[\u4e00-\u9fff\u3400-\u4dbf\u3040-\u309f\u30a0-\u30ff]+')
+    cleaned_name = cjk_pattern.sub('', producer_name)
+    print(f"DEBUG: After CJK removal: '{cleaned_name}'")
+    
+    # Step 2: Convert accented characters to ASCII equivalents (NFD normalization)
+    # This converts characters like Ā, Å, é, ñ to their base ASCII forms
+    normalized = unicodedata.normalize('NFD', cleaned_name)
+    ascii_name = ''.join(char for char in normalized if unicodedata.category(char) != 'Mn')
+    print(f"DEBUG: After ASCII conversion: '{ascii_name}'")
+    
+    # Step 3: Remove any remaining non-ASCII characters and special characters including spaces
+    # Keep only alphanumeric, hyphens, and underscores
+    sanitized = re.sub(r'[^a-zA-Z0-9\-_]', '', ascii_name)
+    print(f"DEBUG: After special char and space removal: '{sanitized}'")
+    
+    # Step 4: Convert to lowercase for consistency
+    sanitized = sanitized.lower()
+    print(f"DEBUG: After lowercase conversion: '{sanitized}'")
+    
+    # Step 5: If the result is empty (all characters were removed), use original producer name
+    if not sanitized:
+        print(f"DEBUG: Result was empty, returning original: '{producer_name}'")
+        return producer_name
+    
+    print(f"DEBUG: Final result: '{sanitized}'")
+    return sanitized
 
 def hash_password(id, password):
     combinedString = str(id) + password
@@ -611,8 +667,17 @@ def create_new_listing(cur, mapped_data, owner_type, owner_id):
             producer_id = producer['id']
             print(f"Found existing producer: {producer['producerName']} (ID: {producer_id})")
         else:
-            # Create new producer
+            # Create new producer with unique username
             print(f"Creating new producer: {producer_name}")
+            
+            # First sanitize the producer name, then ensure uniqueness
+            sanitized_username = sanitize_username(producer_name)
+            if not sanitized_username:
+                sanitized_username = "producer"  # Fallback for empty sanitization result
+            
+            unique_username = generate_unique_username(sanitized_username, cur)
+            print(f"Generated unique username: {unique_username}")
+            
             cur.execute("""
                 INSERT INTO "producers" (
                     "producerName", "producerDesc", "originCountry", "mainDrinks",
@@ -623,11 +688,11 @@ def create_new_listing(cur, mapped_data, owner_type, owner_id):
                 RETURNING "id"
             """, (
                 producer_name, "", origin_country or "", [],
-                "", hash_password(producer_name, "admin1234"), False, "",
-                None, "", None, False
+                "", hash_password(unique_username, "admin1234"), False, "",
+                unique_username, "", None, False
             ))
             producer_id = cur.fetchone()['id']
-            print(f"Created new producer with ID: {producer_id}")
+            print(f"Created new producer with ID: {producer_id} and username: {unique_username}")
     
     # === STEP 1: Record in requestListings for tracking ===
     # Determine user/venue ID based on owner type

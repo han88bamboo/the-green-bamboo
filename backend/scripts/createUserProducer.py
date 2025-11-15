@@ -13,6 +13,9 @@ from dotenv import load_dotenv
 # Import the database manager for connection pooling
 from app import db_manager
 
+# Import username utilities for collision prevention
+from scripts.username_utils import generate_unique_username
+
 # Load env variables
 load_dotenv()
 
@@ -103,6 +106,10 @@ def create_user_producer():
         print(f"DEBUG: About to call sanitize_username with producer_name: '{producer_name}'")
         sanitized_username = sanitize_username(producer_name)
         print(f"DEBUG: sanitize_username returned: '{sanitized_username}'")
+        
+        # Ensure username uniqueness with collision prevention
+        if not sanitized_username:
+            sanitized_username = "producer"  # Fallback for empty sanitization result
 
         # Use connection pooling with manual transaction control for multiple operations
         with db_manager.get_cursor(commit=False) as cursor:
@@ -112,6 +119,10 @@ def create_user_producer():
             
             if existing_producer:
                 return jsonify({"message": "A producer with this name already exists"}), 400
+
+            # Generate unique username to prevent collisions
+            unique_username = generate_unique_username(sanitized_username, cursor)
+            print(f"DEBUG: generate_unique_username returned: '{unique_username}'")
 
             # Begin transaction to ensure consistency across all related tables
             try:
@@ -142,7 +153,7 @@ def create_user_producer():
                         '{}',  # mainDrinks as empty array
                         '',    # photo as empty string
                         '',    # statusOB as empty string
-                        sanitized_username,  # username set to sanitized producerName
+                        unique_username,  # username set to unique username with collision prevention
                         '',    # producerLink as empty string
                         None,  # stripeCustomerId as null
                         'Location not specified',  # default location
