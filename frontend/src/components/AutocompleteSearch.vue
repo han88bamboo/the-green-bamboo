@@ -129,9 +129,15 @@
             <div class="d-flex justify-content-between align-items-center w-100">
               <div class="d-flex flex-column">
                 <span class="fw-small text-dark item-name">{{ item.listingName }}</span>
-                <small class="text-muted producer-name">{{ item.producerName || "Unknown Producer" }}</small>
+                <small v-if="item.producerName || (item.drinkType && item.drinkType !== 'Other') || item.abv" class="text-muted producer-name">
+                  <template v-if="item.producerName">{{ item.producerName }}</template>
+                  <template v-if="item.producerName && ((item.drinkType && item.drinkType !== 'Other') || item.abv)"> | </template>
+                  <template v-if="item.drinkType && item.drinkType !== 'Other'">{{ item.drinkType }}</template>
+                  <template v-if="(item.drinkType && item.drinkType !== 'Other') && item.abv"> | </template>
+                  <template v-if="item.abv">{{ item.abv }}%</template>
+                </small>
               </div>
-              <small class="text-muted item-detail">{{ item.originCountry || item.drinkType }}</small>
+              <small v-if="item.originCountry" class="text-muted item-detail">{{ item.originCountry }}</small>
             </div>
           </div>
           <div class="dropdown-divider my-1" v-if="results.venues.length > 0 || results.producers.length > 0 || results.users.length > 0"></div>

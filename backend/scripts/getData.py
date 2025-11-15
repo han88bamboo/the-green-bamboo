@@ -3113,6 +3113,7 @@ def get_bottle_listings():
                 l."originCountry", 
                 l."bottler",
                 l."photo",
+                l."abv",
                 p."producerName",
                 (similarity(unaccent(l."listingName"), unaccent(%s)) + 3 * similarity(unaccent(p."producerName"), unaccent(%s))) AS combined_sim_score
             FROM "listings" l
@@ -3128,6 +3129,7 @@ def get_bottle_listings():
                 l."originCountry", 
                 l."bottler",
                 l."photo",
+                l."abv",
                 p."producerName",
                 (similarity(unaccent(l."listingName"), unaccent(%s)) + 3 * similarity(unaccent(p."producerName"), unaccent(%s))) AS combined_sim_score
             FROM "listings" l
@@ -3156,6 +3158,7 @@ def get_bottle_listings():
                     "originCountry": row.get("originCountry", ""),
                     "photo": row.get("photo", ""),
                     "bottler": row.get("bottler", ""),
+                    "abv": row.get("abv", ""),
                     "producerName": row.get("producerName", "")
                 } 
                 for row in rows
