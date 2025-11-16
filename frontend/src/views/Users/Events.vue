@@ -112,7 +112,17 @@
                 </div>
 
                   
-
+                <div class="d-flex justify-content-between align-items-center mb-2 mt-3 ">
+                    <!-- Organizer Dashboard Button -->
+                    <router-link 
+                        v-if="userID && userType && userType !== 'defaultUser'"
+                        :to="`/events/organiser-dashboard/${userType}/${userID}`" 
+                        class="btn btn-outline-primary btn-sm"
+                        title="Manage all your events in one place"
+                    >
+                        Organizer Dashboard
+                    </router-link>
+                </div>
                 <!-- YOUR UPCOMING EVENTS -->
                 <div class="collapse d-md-block my-4" id="sidebarContent">
                     <h5 class="text-start fw-bold my-3">Your Upcoming Events <button v-if="upcomingEvents.length > 5" type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#upcomingEventsModal">View All</button></h5>
