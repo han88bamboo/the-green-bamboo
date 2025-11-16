@@ -821,11 +821,11 @@
                             <!-- {{ organisingEvents.length > 0 ? '' : 'No events found.' }} -->
                             <div v-if="organisingEvents.length > 0" class="mt-4">
                                 <!-- Upcoming Events You're Organising -->
-                                <div v-if="organisingEvents.filter(event => new Date(event.eventStartDate) >= new Date()).length > 0">
+                                <div v-if="upcomingOrganisingEvents.length > 0">
                                     <h6 class="fw-bold mb-3 text-start">Upcoming</h6>
                                     <div class="row">
                                         <div 
-                                            v-for="event in organisingEvents.filter(event => new Date(event.eventStartDate) >= new Date())" 
+                                            v-for="event in upcomingOrganisingEvents" 
                                             :key="`org-upcoming-${event.eventID}`"
                                             class="col-6 mb-3"
                                         >
@@ -881,11 +881,11 @@
                                 </div>
 
                                 <!-- Past Events You're Organising -->
-                                <div v-if="organisingEvents.filter(event => new Date(event.eventStartDate) < new Date()).length > 0" class="mt-4">
+                                <div v-if="pastOrganisingEvents.length > 0" class="mt-4">
                                     <h6 class="fw-bold mb-3 text-start">Past Events</h6>
                                     <div class="row">
                                         <div 
-                                            v-for="event in organisingEvents.filter(event => new Date(event.eventStartDate) < new Date())" 
+                                            v-for="event in pastOrganisingEvents" 
                                             :key="`org-past-${event.eventID}`"
                                             class="col-6 mb-3"
                                         >
@@ -1579,6 +1579,46 @@ export default {
         // Return past trending events from separate API call
         pastTrendingEventsComputed() {
             return this.pastTrendingEvents;
+        },
+        // Filter organising events using the new classification rules
+        upcomingOrganisingEvents() {
+            return this.organisingEvents.filter(event => {
+                const now = new Date();
+                
+                // If event has both start and end date
+                if (event.eventEndDate && event.eventEndDate !== event.eventStartDate) {
+                    const endDate = new Date(`${event.eventEndDate}T${event.eventEndTime || '23:59'}`);
+                    const oneDayAfterEnd = new Date(endDate);
+                    oneDayAfterEnd.setDate(oneDayAfterEnd.getDate() + 1);
+                    return now < oneDayAfterEnd;
+                } else {
+                    // Event has only start date
+                    const startDate = new Date(`${event.eventStartDate}T${event.eventStartTime || '00:00'}`);
+                    const oneDayAfterStart = new Date(startDate);
+                    oneDayAfterStart.setDate(oneDayAfterStart.getDate() + 1);
+                    return now < oneDayAfterStart;
+                }
+            });
+        },
+        // Filter past organising events using the new classification rules
+        pastOrganisingEvents() {
+            return this.organisingEvents.filter(event => {
+                const now = new Date();
+                
+                // If event has both start and end date
+                if (event.eventEndDate && event.eventEndDate !== event.eventStartDate) {
+                    const endDate = new Date(`${event.eventEndDate}T${event.eventEndTime || '23:59'}`);
+                    const oneDayAfterEnd = new Date(endDate);
+                    oneDayAfterEnd.setDate(oneDayAfterEnd.getDate() + 1);
+                    return now >= oneDayAfterEnd;
+                } else {
+                    // Event has only start date
+                    const startDate = new Date(`${event.eventStartDate}T${event.eventStartTime || '00:00'}`);
+                    const oneDayAfterStart = new Date(startDate);
+                    oneDayAfterStart.setDate(oneDayAfterStart.getDate() + 1);
+                    return now >= oneDayAfterStart;
+                }
+            });
         }
     },
     mounted() {

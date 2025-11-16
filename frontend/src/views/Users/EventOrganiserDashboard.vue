@@ -113,44 +113,49 @@
                                 <p class="section-subtitle">Manage your scheduled events</p>
                             </div>
 
+                            <!-- Loading State -->
+                            <div v-if="loadingEvents || loadingAttendees" class="text-center py-5">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Loading events...</span>
+                                </div>
+                                <p class="mt-3 text-muted">Loading your events...</p>
+                            </div>
+
                             <!-- Event Cards -->
-                            <div class="event-cards-container">
-                                <!-- TODO: Replace with real data from getUserOrganisingEvents -->
+                            <div v-else class="event-cards-container">
                                 <div 
-                                    v-for="event in mockUpcomingEvents" 
+                                    v-for="event in upcomingAndOngoingEvents" 
                                     :key="event.id"
                                     class="event-card"
                                     @click="openEventManagementModal(event)"
                                 >
                                     <div class="event-thumbnail">
-                                        <img :src="event.thumbnail || defaultEventBanner" :alt="event.name" />
+                                        <img :src="(event.eventBanners && event.eventBanners[0]) || defaultEventBanner" :alt="event.eventName" />
                                     </div>
                                     <div class="event-details">
-                                        <h4 class="event-title">{{ event.name }}</h4>
+                                        <h4 class="event-title">{{ event.eventName }}</h4>
                                         <div class="event-datetime">
                                             <div class="datetime-row">
                                                 <i class="bi bi-calendar-event"></i>
-                                                <span>{{ formatEventDate(event.startDate) }}</span>
+                                                <span>{{ formatEventDate(event.eventStartDate) }}</span>
+                                                <span v-if="event.eventEndDate && event.eventEndDate !== event.eventStartDate"> - {{ formatEventDate(event.eventEndDate) }}</span>
                                             </div>
                                             <div class="datetime-row">
                                                 <i class="bi bi-clock"></i>
-                                                <span>{{ formatEventTime(event.startTime) }} - {{ formatEventTime(event.endTime) }}</span>
+                                                <span>{{ formatEventTime(event.eventStartTime) }} - {{ formatEventTime(event.eventEndTime) }}</span>
                                             </div>
                                         </div>
                                     </div>
                                     <div class="event-stats">
                                         <div class="attendee-count">
-                                            <span class="count">{{ event.attendees }}/{{ event.capacity }}</span>
+                                            <span class="count">{{ event.attendeeCount || 0 }}/{{ event.eventCapacity || 'N/A' }}</span>
                                             <span class="label">Attendees</span>
-                                        </div>
-                                        <div class="event-status">
-                                            <span class="status-badge upcoming">Upcoming</span>
                                         </div>
                                     </div>
                                 </div>
 
                                 <!-- Empty State -->
-                                <div v-if="mockUpcomingEvents.length === 0" class="empty-state">
+                                <div v-if="upcomingAndOngoingEvents.length === 0" class="empty-state">
                                     <i class="bi bi-calendar-plus"></i>
                                     <h4>No Upcoming or Ongoing Events</h4>
                                     <p>You don't have any upcoming or ongoing events scheduled.</p>
@@ -166,47 +171,52 @@
                                 <p class="section-subtitle">Review your completed events</p>
                             </div>
 
+                            <!-- Loading State -->
+                            <div v-if="loadingEvents || loadingAttendees" class="text-center py-5">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Loading events...</span>
+                                </div>
+                                <p class="mt-3 text-muted">Loading your past events...</p>
+                            </div>
+
                             <!-- Event Cards -->
-                            <div class="event-cards-container">
-                                <!-- TODO: Replace with real data from getUserOrganisingEvents filtered for past events -->
+                            <div v-else class="event-cards-container">
                                 <div 
-                                    v-for="event in mockPastEvents" 
+                                    v-for="event in completedEvents" 
                                     :key="event.id"
                                     class="event-card past-event"
                                     @click="openEventManagementModal(event)"
                                 >
                                     <div class="event-thumbnail">
-                                        <img :src="event.thumbnail || defaultEventBanner" :alt="event.name" />
+                                        <img :src="(event.eventBanners && event.eventBanners[0]) || defaultEventBanner" :alt="event.eventName" />
                                         <div class="past-overlay">
                                             <i class="bi bi-check-circle"></i>
                                         </div>
                                     </div>
                                     <div class="event-details">
-                                        <h4 class="event-title">{{ event.name }}</h4>
+                                        <h4 class="event-title">{{ event.eventName }}</h4>
                                         <div class="event-datetime">
                                             <div class="datetime-row">
                                                 <i class="bi bi-calendar-event"></i>
-                                                <span>{{ formatEventDate(event.startDate) }}</span>
+                                                <span>{{ formatEventDate(event.eventStartDate) }}</span>
+                                                <span v-if="event.eventEndDate && event.eventEndDate !== event.eventStartDate"> - {{ formatEventDate(event.eventEndDate) }}</span>
                                             </div>
                                             <div class="datetime-row">
                                                 <i class="bi bi-clock"></i>
-                                                <span>{{ formatEventTime(event.startTime) }} - {{ formatEventTime(event.endTime) }}</span>
+                                                <span>{{ formatEventTime(event.eventStartTime) }} - {{ formatEventTime(event.eventEndTime) }}</span>
                                             </div>
                                         </div>
                                     </div>
                                     <div class="event-stats">
                                         <div class="attendee-count">
-                                            <span class="count">{{ event.attendees }}/{{ event.capacity }}</span>
+                                            <span class="count">{{ event.attendeeCount || 0 }}/{{ event.eventCapacity || 'N/A' }}</span>
                                             <span class="label">Attended</span>
-                                        </div>
-                                        <div class="event-status">
-                                            <span class="status-badge completed">Completed</span>
                                         </div>
                                     </div>
                                 </div>
 
                                 <!-- Empty State -->
-                                <div v-if="mockPastEvents.length === 0" class="empty-state">
+                                <div v-if="completedEvents.length === 0" class="empty-state">
                                     <i class="bi bi-calendar-check"></i>
                                     <h4>No Past Events</h4>
                                     <p>You haven't hosted any events yet.</p>
@@ -230,7 +240,7 @@
                                     </div>
                                     <div class="card-content">
                                         <div class="metric-large">
-                                            <span class="number"><!-- TODO: Calculate from real data -->85%</span>
+                                            <span class="number">{{ analyticsData.averageFillRate }}%</span>
                                             <span class="label">Average Fill Rate</span>
                                         </div>
                                         <div class="chart-placeholder">
@@ -253,23 +263,19 @@
                                         <i class="bi bi-trophy"></i>
                                     </div>
                                     <div class="card-content">
-                                        <!-- TODO: Replace with real top events data -->
-                                        <div class="top-events-list">
-                                            <div class="top-event-item">
-                                                <span class="rank">1</span>
-                                                <span class="event-name">Wine Tasting Masterclass</span>
-                                                <span class="attendees">48/50</span>
+                                        <div v-if="analyticsData.topEvents.length > 0" class="top-events-list">
+                                            <div 
+                                                v-for="(event, index) in analyticsData.topEvents" 
+                                                :key="event.id"
+                                                class="top-event-item"
+                                            >
+                                                <span class="rank">{{ index + 1 }}</span>
+                                                <span class="event-name">{{ event.eventName }}</span>
+                                                <span class="attendees">{{ event.attendeeCount || 0 }}/{{ event.eventCapacity || 'N/A' }}</span>
                                             </div>
-                                            <div class="top-event-item">
-                                                <span class="rank">2</span>
-                                                <span class="event-name">Cocktail Workshop</span>
-                                                <span class="attendees">42/45</span>
-                                            </div>
-                                            <div class="top-event-item">
-                                                <span class="rank">3</span>
-                                                <span class="event-name">Brewery Tour</span>
-                                                <span class="attendees">35/40</span>
-                                            </div>
+                                        </div>
+                                        <div v-else class="text-center text-muted py-3">
+                                            <p>No event data available yet</p>
                                         </div>
                                     </div>
                                 </div>
@@ -282,16 +288,16 @@
                                     <div class="card-content">
                                         <div class="overview-stats">
                                             <div class="stat-item">
-                                                <span class="stat-number">12</span>
-                                                <span class="stat-label">Events This Month</span>
+                                                <span class="stat-number">{{ analyticsData.totalEvents }}</span>
+                                                <span class="stat-label">Total Events</span>
                                             </div>
                                             <div class="stat-item">
-                                                <span class="stat-number">456</span>
+                                                <span class="stat-number">{{ analyticsData.totalAttendees }}</span>
                                                 <span class="stat-label">Total Attendees</span>
                                             </div>
                                             <div class="stat-item">
-                                                <span class="stat-number">92%</span>
-                                                <span class="stat-label">Avg. Attendance</span>
+                                                <span class="stat-number">{{ analyticsData.averageFillRate }}%</span>
+                                                <span class="stat-label">Avg. Fill Rate</span>
                                             </div>
                                         </div>
                                     </div>
@@ -330,7 +336,7 @@
                     <div class="modal-dialog modal-dialog-centered modal-lg">
                         <div class="modal-content">
                             <div class="modal-header">
-                                <h5 class="modal-title">Manage Event: {{ selectedEvent?.name }}</h5>
+                                <h5 class="modal-title">Manage Event: {{ selectedEvent?.eventName || selectedEvent?.name }}</h5>
                                 <button type="button" class="btn-close" @click="closeEventManagementModal" aria-label="Close"></button>
                             </div>
                             <div class="modal-body">
@@ -411,14 +417,19 @@ export default {
             // Tab management
             activeTab: 'upcoming',
             
-            // Data placeholders (TODO: implement API calls)
+            // Real data from API
+            allOrganisingEvents: [],
             upcomingEvents: [],
             pastEvents: [],
-            allAttendees: [],
+            eventsWithAttendees: [], // Combined event + attendee data
             
-            // Statistics placeholders
+            // Statistics 
             totalEvents: 0,
             totalAttendees: 0,
+            
+            // Loading states
+            loadingEvents: false,
+            loadingAttendees: false,
             
             // Filter and search
             attendeeSearchQuery: '',
@@ -503,24 +514,64 @@ export default {
                    this.currentUserType === this.dashboardUserType;
         },
         
-        // TODO: Implement filtered attendees computed property
-        // filteredAttendees() {
-        //     let filtered = this.allAttendees;
-        //     
-        //     if (this.attendeeSearchQuery) {
-        //         filtered = filtered.filter(attendee => 
-        //             attendee.firstName.toLowerCase().includes(this.attendeeSearchQuery.toLowerCase()) ||
-        //             attendee.lastName.toLowerCase().includes(this.attendeeSearchQuery.toLowerCase()) ||
-        //             attendee.email.toLowerCase().includes(this.attendeeSearchQuery.toLowerCase())
-        //         );
-        //     }
-        //     
-        //     if (this.filterByEvent) {
-        //         filtered = filtered.filter(attendee => attendee.eventId === this.filterByEvent);
-        //     }
-        //     
-        //     return filtered;
-        // }
+        // Filter events that haven't started yet or are ongoing (upcoming + ongoing)
+        upcomingAndOngoingEvents() {
+            return this.eventsWithAttendees.filter(event => {
+                const now = new Date();
+                
+                // If event has both start and end date
+                if (event.eventEndDate && event.eventEndDate !== event.eventStartDate) {
+                    const endDate = new Date(`${event.eventEndDate}T${event.eventEndTime || '23:59'}`);
+                    const oneDayAfterEnd = new Date(endDate);
+                    oneDayAfterEnd.setDate(oneDayAfterEnd.getDate() + 1);
+                    return now < oneDayAfterEnd;
+                } else {
+                    // Event has only start date
+                    const startDate = new Date(`${event.eventStartDate}T${event.eventStartTime || '00:00'}`);
+                    const oneDayAfterStart = new Date(startDate);
+                    oneDayAfterStart.setDate(oneDayAfterStart.getDate() + 1);
+                    return now < oneDayAfterStart;
+                }
+            });
+        },
+        
+        // Filter events that are classified as past based on the rules
+        completedEvents() {
+            return this.eventsWithAttendees.filter(event => {
+                const now = new Date();
+                
+                // If event has both start and end date
+                if (event.eventEndDate && event.eventEndDate !== event.eventStartDate) {
+                    const endDate = new Date(`${event.eventEndDate}T${event.eventEndTime || '23:59'}`);
+                    const oneDayAfterEnd = new Date(endDate);
+                    oneDayAfterEnd.setDate(oneDayAfterEnd.getDate() + 1);
+                    return now >= oneDayAfterEnd;
+                } else {
+                    // Event has only start date
+                    const startDate = new Date(`${event.eventStartDate}T${event.eventStartTime || '00:00'}`);
+                    const oneDayAfterStart = new Date(startDate);
+                    oneDayAfterStart.setDate(oneDayAfterStart.getDate() + 1);
+                    return now >= oneDayAfterStart;
+                }
+            });
+        },
+        
+        // Calculate analytics data
+        analyticsData() {
+            const totalEvents = this.eventsWithAttendees.length;
+            const totalAttendees = this.eventsWithAttendees.reduce((sum, event) => sum + (event.attendeeCount || 0), 0);
+            const totalCapacity = this.eventsWithAttendees.reduce((sum, event) => sum + (event.eventCapacity || 0), 0);
+            const averageFillRate = totalCapacity > 0 ? Math.round((totalAttendees / totalCapacity) * 100) : 0;
+            
+            return {
+                totalEvents,
+                totalAttendees,
+                averageFillRate,
+                topEvents: [...this.eventsWithAttendees]
+                    .sort((a, b) => (b.attendeeCount || 0) - (a.attendeeCount || 0))
+                    .slice(0, 3)
+            };
+        }
     },
     methods: {
         // Utility methods (same as other Vue components)
@@ -594,37 +645,81 @@ export default {
             this.closeEventManagementModal();
         },
         
-        // TODO: Implement API methods for data fetching
-        // async fetchOrganizerEvents() {
-        //     try {
-        //         const response = await this.$axios.get(
-        //             `${process.env.VUE_APP_API_URL}/events/getUserEvents/${this.dashboardUserID}/${this.dashboardUserType}`
-        //         );
-        //         
-        //         const events = response.data.events;
-        //         this.upcomingEvents = events.filter(event => new Date(event.eventStartDate) >= new Date());
-        //         this.pastEvents = events.filter(event => new Date(event.eventStartDate) < new Date());
-        //         this.totalEvents = events.length;
-        //         
-        //         this.dataLoaded = true;
-        //     } catch (error) {
-        //         console.error('Error fetching organizer events:', error);
-        //         this.dataLoaded = null;
-        //     }
-        // },
+        // Fetch all events the user is organizing
+        async fetchOrganizerEvents() {
+            this.loadingEvents = true;
+            try {
+                const response = await this.$axios.get(
+                    `${process.env.VUE_APP_API_URL}/events/getUserOrganisingEvents/${this.dashboardUserID}/${this.dashboardUserType}`
+                );
+                
+                this.allOrganisingEvents = response.data.events || [];
+                console.log('Fetched organizer events:', this.allOrganisingEvents);
+                
+                // Fetch attendees for each event
+                await this.fetchAttendeesForAllEvents();
+                
+            } catch (error) {
+                console.error('Error fetching organizer events:', error);
+                if (error.response && error.response.status === 404) {
+                    // No events found, that's okay
+                    this.allOrganisingEvents = [];
+                    this.eventsWithAttendees = [];
+                } else {
+                    this.dataLoaded = null;
+                    const toast = useToast();
+                    toast.error('Failed to load events. Please try again.');
+                }
+            } finally {
+                this.loadingEvents = false;
+            }
+        },
         
-        // async fetchAllAttendees() {
-        //     try {
-        //         const response = await this.$axios.get(
-        //             `${process.env.VUE_APP_API_URL}/events/getOrganizerAttendees/${this.dashboardUserID}/${this.dashboardUserType}`
-        //         );
-        //         
-        //         this.allAttendees = response.data.attendees;
-        //         this.totalAttendees = this.allAttendees.length;
-        //     } catch (error) {
-        //         console.error('Error fetching attendees:', error);
-        //     }
-        // },
+        // Fetch attendees for all events
+        async fetchAttendeesForAllEvents() {
+            this.loadingAttendees = true;
+            try {
+                const eventsWithAttendees = [];
+                
+                for (const event of this.allOrganisingEvents) {
+                    try {
+                        const attendeeResponse = await this.$axios.get(
+                            `${process.env.VUE_APP_API_URL}/events/getAttendees/${event.id}`
+                        );
+                        
+                        const attendees = attendeeResponse.data.attendees || [];
+                        const eventWithAttendees = {
+                            ...event,
+                            attendeeCount: attendees.length,
+                            attendeesList: attendees // Store full attendee data for modal
+                        };
+                        
+                        eventsWithAttendees.push(eventWithAttendees);
+                        console.log(`Event ${event.eventName}: ${attendees.length} attendees`);
+                        
+                    } catch (attendeeError) {
+                        console.warn(`Could not fetch attendees for event ${event.id}:`, attendeeError);
+                        // Add event with 0 attendees if attendee fetch fails
+                        eventsWithAttendees.push({
+                            ...event,
+                            attendeeCount: 0,
+                            attendeesList: []
+                        });
+                    }
+                }
+                
+                this.eventsWithAttendees = eventsWithAttendees;
+                this.totalEvents = eventsWithAttendees.length;
+                this.totalAttendees = eventsWithAttendees.reduce((sum, event) => sum + event.attendeeCount, 0);
+                
+                console.log('All events with attendees:', this.eventsWithAttendees);
+                
+            } catch (error) {
+                console.error('Error fetching attendees data:', error);
+            } finally {
+                this.loadingAttendees = false;
+            }
+        },
         
         // TODO: Implement event management methods
         // editEvent(eventId) {
@@ -651,7 +746,7 @@ export default {
         //     // Implementation for marking attendee as paid
         // },
         
-        // TODO: Implement initialization method
+        // Initialize dashboard with real data
         async initializeDashboard() {
             // Check access permissions
             if (!this.canViewDashboard) {
@@ -661,12 +756,15 @@ export default {
                 return;
             }
             
-            // TODO: Uncomment when API methods are implemented
-            // await this.fetchOrganizerEvents();
-            // await this.fetchAllAttendees();
-            
-            // Temporary: Set loaded to true for placeholder content
-            this.dataLoaded = true;
+            try {
+                // Fetch real data
+                await this.fetchOrganizerEvents();
+                this.dataLoaded = true;
+                
+            } catch (error) {
+                console.error('Dashboard initialization failed:', error);
+                this.dataLoaded = null;
+            }
         }
     },
     async mounted() {
@@ -1006,6 +1104,11 @@ export default {
 .status-badge.upcoming {
     background: #e3f2fd;
     color: #1976d2;
+}
+
+.status-badge.ongoing {
+    background: #fff3e0;
+    color: #f57c00;
 }
 
 .status-badge.completed {

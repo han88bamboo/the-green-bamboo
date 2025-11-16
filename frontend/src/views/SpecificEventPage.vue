@@ -1197,14 +1197,22 @@ export default {
         isEventEnded() {
             if (!this.event.eventStartDate) return false;
             
-            const currentDate = new Date();
-            const currentDateString = currentDate.toISOString().split('T')[0];
+            const now = new Date();
             
-            // If there's an end date, use that; otherwise use start date
-            const eventEndDate = this.event.eventEndDate || this.event.eventStartDate;
-            
-            // Compare dates - event is ended if current date is after the event end date
-            return currentDateString > eventEndDate;
+            // Use the same classification logic as dashboard for consistency
+            // If event has both start and end date
+            if (this.event.eventEndDate && this.event.eventEndDate !== this.event.eventStartDate) {
+                const endDate = new Date(`${this.event.eventEndDate}T${this.event.eventEndTime || '23:59'}`);
+                const oneDayAfterEnd = new Date(endDate);
+                oneDayAfterEnd.setDate(oneDayAfterEnd.getDate() + 1);
+                return now >= oneDayAfterEnd;
+            } else {
+                // Event has only start date
+                const startDate = new Date(`${this.event.eventStartDate}T${this.event.eventStartTime || '00:00'}`);
+                const oneDayAfterStart = new Date(startDate);
+                oneDayAfterStart.setDate(oneDayAfterStart.getDate() + 1);
+                return now >= oneDayAfterStart;
+            }
         }
     },
     methods: {
