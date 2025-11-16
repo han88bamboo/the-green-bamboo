@@ -355,10 +355,210 @@
                                     </ul>
                                     <div class="tab-content mt-3">
                                         <div class="tab-pane fade show active" id="edit-tab">
-                                            <div class="alert alert-info">
-                                                <h6>Event Edit Form</h6>
-                                                <p class="mb-0">This will contain the same edit form from SpecificEventPage.vue</p>
-                                                <!-- TODO: Implement event edit form -->
+                                            <div class="text-start">
+                                                <!-- Event Name Edit Field -->
+                                                <div class="mb-3">
+                                                    <label for="eventName" class="form-label fw-bold">Event Name <span style="color: red;">*</span></label>
+                                                    <input type="text" class="form-control" id="eventName" v-model="selectedEventCopy.eventName">
+                                                </div>
+
+                                                <!-- Event description editor -->
+                                                <div class="mb-3">
+                                                    <label for="eventDescEditor" class="form-label fw-bold">Event Description</label>
+                                                    <div id="dashboard-editor-container" style="height: 300px;" class="mb-3"></div>
+                                                </div>
+
+                                                <!-- Event type -->
+                                                <div class="mb-3 row">
+                                                    <label for="eventType" class="fw-bold">Event Type <span style="color: red;">*</span></label>
+                                                
+                                                <div>
+                                                    <div class="form-check form-check-inline">
+                                                        <!-- Online option -->
+                                                        <input type="radio" id="onlineEvent" name="eventType" value="Online" v-model="selectedEventCopy.eventType" class="form-check-input" required>
+                                                        <label for="onlineEvent" class="form-check-label">&nbsp;Online</label>
+                                                    </div>
+                                                    <div class="form-check form-check-inline">
+                                                        <!-- In Person option -->
+                                                        <input type="radio" id="inPersonEvent" name="eventType" value="Location" v-model="selectedEventCopy.eventType" class="form-check-input">
+                                                        <label for="inPersonEvent" class="form-check-label">&nbsp;In Person</label>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <hr>
+
+                                                <div class="mb-3 row">
+                                                    <!-- Event start date -->
+                                                    <div class="col">
+                                                        <label for="eventStartDate" class="form-label fw-bold text-start">Event Start Date <span style="color: red;">*</span></label>
+                                                        <input type="date" class="form-control" id="eventStartDate" required v-model="selectedEventCopy.eventStartDate" :min="new Date().toISOString().split('T')[0]"> 
+                                                    </div>
+
+                                                    <!-- Event start time -->
+                                                    <div class="col">
+                                                        <label for="eventStartTime" class="form-label fw-bold text-start">Event Start Time</label>
+                                                        <input type="time" class="form-control" id="eventStartTime" v-model="selectedEventCopy.eventStartTime">
+                                                    </div>
+                                                </div>
+
+                                                <div class="mb-3 row">
+                                                    <!-- Event end date -->
+                                                    <div class="col">
+                                                        <label for="eventEndDate" class="form-label fw-bold text-start">Event End Date</label>
+                                                        <input type="date" class="form-control" id="eventEndDate" required v-model="selectedEventCopy.eventEndDate" :min="selectedEventCopy.eventStartDate">
+                                                    </div>
+
+                                                    <!-- Event end time -->
+                                                    <div class="col">
+                                                        <label for="eventEndTime" class="form-label fw-bold text-start">Event End Time</label>
+                                                        <input type="time" class="form-control" id="eventEndTime" v-model="selectedEventCopy.eventEndTime">
+                                                    </div>
+                                                </div>                                            <!-- All Day Checkbox -->
+                                            <div class="mb-3">
+                                                <input class="form-check-input" type="checkbox" id="allDay" 
+                                                    v-model="selectedEventCopy.allDay">
+                                                <label class="form-check-label" for="allDay">
+                                                    All Day Event
+                                                </label>
+                                            </div>
+
+                                            <hr>
+
+                                            <!-- Event wallpaper upload -->
+                                            <div class="mb-3">
+                                                <label for="eventBanner" class="form-label fw-bold">Add Event Wallpaper (upload up to 3 images)</label>
+                                                <input type="file" class="form-control" id="eventBanner" multiple accept="image/*" @change="uploadImages" :disabled="selectedEventCopy.eventBanners && selectedEventCopy.eventBanners.length == 3">
+                                            </div>
+
+                                            <!-- Display uploaded banners --> 
+                                            <div class="mb-3 row">
+                                                <div v-for="(banner, index) in selectedEventCopy.eventBanners" :key="index" class="col-4 position-relative">
+                                                    <img :src="banner" class="img-fluid" alt="Event Banner">
+                                                    <button class="btn primary-btn-red btn-sm position-absolute top-0 end-0 mt-3 me-3" @click="removePhotoNew(index)">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash-fill" viewBox="0 0 16 16">
+                                                            <path d="M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1zm3 4a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5M8 5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7A.5.5 0 0 1 8 5m3 .5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 1 0"/>
+                                                        </svg>
+                                                    </button>
+                                                </div>
+                                            </div>
+
+                                            <!-- Event limit -->
+                                            <div class="mb-3">
+                                                <label for="eventLimit" class="form-label fw-bold">Event Limit</label>
+                                                <input type="number" class="form-control" min="1" id="eventLimit" required v-model="selectedEventCopy.eventLimit">
+                                            </div>
+
+                                            <!-- Ticketed event -->
+                                            <div class="mb-3">
+                                                <label for="ticketedEventYes" class="fw-bold d-block">Is this a ticketed event? (Click yes if this event requires a pre-sign up for entry.) <span style="color: red;">*</span></label>
+                                                <div>
+                                                    <div class="form-check form-check-inline">
+                                                        <!-- Yes Option -->
+                                                        <input type="radio" id="ticketedEventYes" name="ticketedEvent" value="true" v-model="selectedEventCopy.ticketed" class="form-check-input" required>
+                                                        <label for="ticketedEventYes" class="form-check-label">&nbsp;Yes</label>
+                                                    </div>
+                                                    <div class="form-check form-check-inline">
+                                                        <!-- No Option -->
+                                                        <input type="radio" id="ticketedEventNo" name="ticketedEvent" value="false" v-model="selectedEventCopy.ticketed" class="form-check-input">
+                                                        <label for="ticketedEventNo" class="form-check-label">&nbsp;No</label>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <!-- Paid event -->
+                                            <div v-if="selectedEventCopy.ticketed == true" class="mb-3">
+                                                <label for="paidEventYes" class="fw-bold">If it is a ticketed event, are tickets free or paid?</label>
+                                                <div>
+                                                    <!-- Yes Option -->
+                                                    <input type="radio" id="paidEventYes" name="paidEvent" value="false" v-model="selectedEventCopy.paidEvent" required>
+                                                    <label for="paidEventYes">&nbsp;Tickets are free, but participants must RSVP first to enter.</label>
+                                                </div>
+                                                <div>
+                                                    <!-- No Option -->
+                                                    <input type="radio" id="paidEventNo" name="paidEvent" value="true" v-model="selectedEventCopy.paidEvent">
+                                                    <label for="paidEventNo">&nbsp;Tickets are paid, and participants will have to make payment at the below link:</label>
+
+                                                    <!-- Payment link -->
+                                                    <input v-if="selectedEventCopy.paidEvent == 'true'" type="text" class="form-control" id="paymentLink" v-model="selectedEventCopy.paymentLink" required>
+                                                </div>
+                                            </div>
+
+                                            <!-- Event location -->
+                                            <div class="mb-3">
+                                                <label for="eventLocation" class="form-label fw-bold">
+                                                    <span v-if="selectedEventCopy.eventType == 'Location'">Event Location</span>
+                                                    <span v-else>Event Link</span>
+                                                </label>
+                                                <input type="text" class="form-control" id="eventLocation" v-model="selectedEventCopy.eventLocation">
+                                            </div>
+
+                                            <!-- Event passcodes -->
+                                            <div class="mb-3">
+                                                <label class="form-label fw-bold">Event Passcodes <span class="text-muted">Optional</span></label>
+                                                <small class="text-muted d-block mb-2">Set passcodes with usage limits to control access to your event</small>
+                                                
+                                                <!-- Passcode input fields -->
+                                                <div v-for="(passcode, index) in selectedEventCopy.eventPasscodes" :key="index" class="mb-3 p-3 border rounded">
+                                                    <div class="row align-items-end">
+                                                        <!-- Passcode input -->
+                                                        <div class="col-md-5">
+                                                            <label :for="'dashboard-passcode-' + index" class="form-label small">Passcode {{ index + 1 }}</label>
+                                                            <input 
+                                                                type="text" 
+                                                                class="form-control" 
+                                                                :id="'dashboard-passcode-' + index"
+                                                                v-model="passcode.code" 
+                                                                :placeholder="'Enter passcode ' + (index + 1)"
+                                                            >
+                                                        </div>
+                                                        
+                                                        <!-- Limit input -->
+                                                        <div class="col-md-2">
+                                                            <label :for="'dashboard-limit-' + index" class="form-label small">Limit</label>
+                                                            <input 
+                                                                type="number" 
+                                                                class="form-control" 
+                                                                :id="'dashboard-limit-' + index"
+                                                                v-model.number="passcode.limit" 
+                                                                min="1" 
+                                                                max="10000"
+                                                                placeholder="50"
+                                                            >
+                                                        </div>
+                                                        
+                                                        <!-- Usage display -->
+                                                        <div class="col-md-3">
+                                                            <label class="form-label small">Usage Limit</label>
+                                                            <div class="form-control-plaintext small">
+                                                                <span class="badge bg-secondary">Max: {{ passcode.limit }}</span>
+                                                                <div class="text-muted">Usage tracked via attendees</div>
+                                                            </div>
+                                                        </div>
+                                                        
+                                                        <!-- Remove button -->
+                                                        <div class="col-md-2">
+                                                            <button 
+                                                                type="button" 
+                                                                class="btn btn-outline-danger btn-sm w-100"
+                                                                @click="removePasscodeEdit(index)"
+                                                                :disabled="selectedEventCopy.eventPasscodes.length <= 1"
+                                                            >
+                                                                Remove
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                
+                                                <!-- Add passcode button -->
+                                                <button 
+                                                    type="button" 
+                                                    class="btn btn-outline-primary btn-sm" 
+                                                    @click="addPasscodeEdit"
+                                                >
+                                                    Add Passcode
+                                                </button>
+                                            </div>
                                             </div>
                                         </div>
                                         <div class="tab-pane fade" id="attendees-tab">
@@ -379,8 +579,8 @@
                                 </div>
                             </div>
                             <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" @click="closeEventManagementModal">Close</button>
-                                <button type="button" class="btn btn-primary" @click="saveEventChanges">Save Changes</button>
+                                <button type="button" class="btn btn-secondary" @click="cancelEdit">Close</button>
+                                <button type="button" class="btn btn-primary" @click="updateEvent">Save Changes</button>
                             </div>
                         </div>
                     </div>
@@ -395,6 +595,8 @@
 <script>
 import NavBar from '@/components/NavBar.vue';
 import { useToast } from 'vue-toastification';
+import Quill from 'quill';
+import DOMPurify from 'dompurify';
 
 export default {
     name: 'EventOrganiserDashboard',
@@ -444,6 +646,10 @@ export default {
             // Modal management
             selectedEvent: null,
             showEventManagementModal: false,
+            
+            // Edit form data (adapted from SpecificEventPage.vue)
+            selectedEventCopy: {}, // Copy of selected event details for editing
+            quill: null, // Quill editor instance
 
             // Mock data for development (TODO: Replace with real API calls)
             mockUpcomingEvents: [
@@ -631,18 +837,266 @@ export default {
         // Event management methods
         openEventManagementModal(event) {
             this.selectedEvent = event;
+            this.selectedEventCopy = JSON.parse(JSON.stringify(event));
+            this.initializeEventPasscodes();
             this.showEventManagementModal = true;
+            
+            // Initialize Quill editor after modal is shown
+            this.$nextTick(() => {
+                setTimeout(() => {
+                    this.initializeQuillEditor();
+                    this.syncQuillEditor();
+                }, 200);
+            });
         },
         
         closeEventManagementModal() {
             this.showEventManagementModal = false;
             this.selectedEvent = null;
+            this.selectedEventCopy = {};
+            
+            // Clean up Quill editor
+            if (this.quill) {
+                this.quill = null;
+            }
         },
+
+        // Edit form methods (adapted from SpecificEventPage.vue)
         
-        saveEventChanges() {
-            // TODO: Implement save functionality
-            console.log('Saving changes for event:', this.selectedEvent);
+        // Function to cancel editing event details
+        cancelEdit() {
+            if (this.selectedEvent) {
+                this.selectedEventCopy = JSON.parse(JSON.stringify(this.selectedEvent));
+                this.initializeEventPasscodes();
+                this.syncQuillEditor();
+            }
             this.closeEventManagementModal();
+        },
+
+        // Function to add a new passcode field in edit mode
+        addPasscodeEdit() {
+            this.selectedEventCopy.eventPasscodes.push({ code: '', limit: 50 });
+        },
+
+        // Function to remove a passcode field in edit mode
+        removePasscodeEdit(index) {
+            if (this.selectedEventCopy.eventPasscodes.length > 1) {
+                this.selectedEventCopy.eventPasscodes.splice(index, 1);
+            }
+        },
+
+        // Function to initialize eventPasscodes array for editing
+        initializeEventPasscodes() {
+            if (this.selectedEvent.passcode && Array.isArray(this.selectedEvent.passcode)) {
+                // Handle JSONB format: array of objects with code and limit
+                this.selectedEventCopy.eventPasscodes = this.selectedEvent.passcode.map(p => ({
+                    code: p.code || '',
+                    limit: p.limit || 50
+                }));
+            } else {
+                this.selectedEventCopy.eventPasscodes = [{ code: '', limit: 50 }];
+            }
+        },
+
+        // Function to sync Quill editor with selectedEventCopy.eventDesc
+        syncQuillEditor() {
+            if (this.quill) {
+                this.$nextTick(() => {
+                    setTimeout(() => {
+                        if (this.selectedEventCopy.eventDesc) {
+                            this.quill.root.innerHTML = this.selectedEventCopy.eventDesc;
+                        } else {
+                            this.quill.setText('');
+                        }
+                    }, 100);
+                });
+            }
+        },
+
+        // Function to initialize Quill editor
+        initializeQuillEditor() {
+            if (!document.getElementById('dashboard-editor-container')) {
+                return;
+            }
+            
+            if (this.quill) {
+                // Destroy existing instance
+                this.quill = null;
+            }
+
+            this.quill = new Quill('#dashboard-editor-container', {
+                theme: 'snow',
+                modules: {
+                    toolbar: [
+                    [{ 'header': '1' }, { 'header': '2' }, { 'font': [] }],
+                    [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+                    ['bold', 'italic', 'underline'],
+                    ['link'],
+                    ]
+                }
+            });
+        },
+
+        // Function to upload images (adapted from SpecificEventPage.vue)
+        async uploadImages(event) {
+            const files = event.target.files;
+            const toast = useToast();
+
+            if (!files || files.length === 0) {
+                return;
+            }
+
+            if (!this.selectedEventCopy.eventBanners) {
+                this.selectedEventCopy.eventBanners = [];
+            }
+
+            if (this.selectedEventCopy.eventBanners.length + files.length > 3) {
+                toast.error('You can only upload up to 3 images.');
+                return;
+            }
+
+            for (let file of files) {
+                if (file.size > 5 * 1024 * 1024) { // 5MB limit
+                    toast.error(`File ${file.name} is too large. Maximum size is 5MB.`);
+                    continue;
+                }
+
+                try {
+                    const formData = new FormData();
+                    formData.append('image', file);
+                    
+                    const response = await this.$axios.post(
+                        `${process.env.VUE_APP_API_URL}/events/uploadEventBanner`,
+                        formData,
+                        {
+                            headers: {
+                                'Content-Type': 'multipart/form-data'
+                            }
+                        }
+                    );
+
+                    if (response.data && response.data.imageUrl) {
+                        this.selectedEventCopy.eventBanners.push(response.data.imageUrl);
+                    }
+                } catch (error) {
+                    console.error('Error uploading image:', error);
+                    toast.error(`Failed to upload ${file.name}`);
+                }
+            }
+        },
+
+        // Function to remove uploaded photo
+        removePhotoNew(index) {
+            this.selectedEventCopy.eventBanners.splice(index, 1);
+        },
+
+        // Function to update event details (adapted from SpecificEventPage.vue)
+        async updateEvent() {
+            const toast = useToast();
+
+            // Show loading toast
+            const toastId = toast.info('Updating event details...', {
+                timeout: false,
+                closeOnClick: false,
+                pauseOnHover: true,
+            });
+
+            try {
+                // Get the event description from the editor
+                this.selectedEventCopy.eventDesc = this.quill.root.innerHTML;
+                
+                // Sanitize the event description
+                this.selectedEventCopy.eventDesc = DOMPurify.sanitize(this.selectedEventCopy.eventDesc);
+
+                // Get current time
+                let currentTime = new Date().toTimeString().split(' ')[0];
+                let currentDate = new Date().toISOString().split('T')[0];
+
+                if (this.selectedEventCopy.allDay == true) {
+                    this.selectedEventCopy.eventStartTime = '00:00';
+                    this.selectedEventCopy.eventEndTime = '23:59';
+                } else {
+                    // Check if the event time is valid
+                    if (this.selectedEventCopy.eventStartDate == currentDate && this.selectedEventCopy.eventStartTime <= currentTime) {
+                        toast.dismiss(toastId);
+                        toast.error('Event start time cannot be earlier than current time.');
+                        return;
+                    }
+                    if (this.selectedEventCopy.eventEndDate != null && this.selectedEventCopy.eventEndDate != '' ) {
+                        if (this.selectedEventCopy.eventEndDate < this.selectedEventCopy.eventStartDate) {
+                            toast.dismiss(toastId);
+                            toast.error('Event end date cannot be earlier than event start date.');
+                            return;
+                        }
+                        if (this.selectedEventCopy.eventEndDate == this.selectedEventCopy.eventStartDate && this.selectedEventCopy.eventEndTime <= this.selectedEventCopy.eventStartTime) {
+                            toast.dismiss(toastId);
+                            toast.error('Event end time cannot be earlier than event start time.');
+                            return;
+                        }
+                    }
+                }
+
+                // Process eventPasscodes before comparison
+                if (this.selectedEventCopy.eventPasscodes) {
+                    const validPasscodes = this.selectedEventCopy.eventPasscodes.filter(p => p && p.code && p.code.trim());
+                    this.selectedEventCopy.eventPasscodes = validPasscodes.length > 0 ? validPasscodes : null;
+                }
+
+                // Compare with original event to find changes
+                // Use the correct ID field - try multiple possibilities
+                const eventID = this.selectedEvent.id || this.selectedEvent.eventID || this.selectedEvent.ID;
+                
+                if (!eventID) {
+                    toast.dismiss(toastId);
+                    toast.error('Event ID is missing. Cannot update event.');
+                    return;
+                }
+                
+                const changedFields = { 
+                    eventID: eventID,
+                    eventOwnerID: this.currentUserID,
+                    eventOwnerType: this.currentUserType
+                };
+                const fieldsToCheck = [
+                    'eventName', 'eventDesc', 'eventType', 'eventStartDate', 'eventStartTime',
+                    'eventEndDate', 'eventEndTime', 'allDay', 'eventBanners', 'eventLimit',
+                    'ticketed', 'paidEvent', 'paymentLink', 'eventLocation', 'eventPasscodes'
+                ];
+
+                fieldsToCheck.forEach(field => {
+                    if (JSON.stringify(this.selectedEventCopy[field]) !== JSON.stringify(this.selectedEvent[field])) {
+                        changedFields[field] = this.selectedEventCopy[field];
+                    }
+                });
+
+                // Only proceed if there are changes
+                if (Object.keys(changedFields).length === 3) { // Only eventID, eventOwnerID, eventOwnerType means no changes
+                    toast.dismiss(toastId);
+                    toast.info('No changes detected.');
+                    this.closeEventManagementModal();
+                    return;
+                }
+
+                // Make API call to update event
+                await this.$axios.put(`${process.env.VUE_APP_API_URL}/events/updateEvent`, changedFields);
+
+                toast.dismiss(toastId);
+                toast.success('Event updated successfully!');
+
+                // Close modal and refresh event list
+                this.closeEventManagementModal();
+                await this.fetchOrganizerEvents();
+
+            } catch (error) {
+                toast.dismiss(toastId);
+                console.error('Error updating event:', error);
+                
+                let errorMessage = 'Failed to update event. Please try again.';
+                if (error.response && error.response.data && error.response.data.message) {
+                    errorMessage = error.response.data.message;
+                }
+                toast.error(errorMessage);
+            }
         },
         
         // Fetch all events the user is organizing
@@ -784,6 +1238,54 @@ export default {
     }
 }
 </script>
+
+<style>
+/* Import Quill styles */
+@import 'quill/dist/quill.snow.css';
+
+/* Resize Quill toolbar icons */
+.ql-toolbar .ql-formats button {
+    width: 28px;
+    height: 28px;
+    padding: 3px;
+}
+
+.ql-toolbar .ql-formats .ql-picker {
+    font-size: 14px;
+}
+
+.ql-editor {
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+/* Primary button color for dashboard */
+.primary-btn-red {
+    background-color: #dc3545;
+    border-color: #dc3545;
+    color: white;
+}
+
+.primary-btn-red:hover {
+    background-color: #c82333;
+    border-color: #bd2130;
+    color: white;
+}
+
+/* Modal form alignment */
+.modal-body .tab-content {
+    text-align: left;
+}
+
+.modal-body .form-label {
+    text-align: left;
+    display: block;
+}
+
+.modal-body .form-check-label {
+    text-align: left;
+}
+</style>
 
 <style scoped>
 /* Tab styling consistent with Events.vue */
