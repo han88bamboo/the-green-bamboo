@@ -23,283 +23,34 @@
             </button>
         </div>
 
-        <!-- Main Content -->
-        <div v-if="dataLoaded" class="container mt-5 mobile-mt-3 mobile-px-4 px-5">
-            <!-- Dashboard Header -->
-            <div class="row mb-4">
-                <div class="col-12">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h2 class="fw-bold mb-1" style="color:#027562">Event Organiser Dashboard</h2>
-                            <p class="text-muted mb-0">Manage your events and attendees</p>
-                        </div>
-                        <!-- Quick Actions -->
-                        <div class="d-flex gap-2">
-                            <router-link to="/events/view" class="btn btn-outline-secondary">
-                                <i class="bi bi-arrow-left me-2"></i>Back to Events
-                            </router-link>
-                            <!-- TODO: Add Create New Event button -->
-                            <!-- <button class="btn primary-btn" @click="createNewEvent">
-                                <i class="bi bi-plus-circle me-2"></i>Create New Event
-                            </button> -->
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Dashboard Statistics Cards -->
-            <div class="row mb-4">
-                <!-- TODO: Implement dashboard statistics -->
-                <!-- 
-                <div class="col-md-3 col-6">
-                    <div class="card text-center">
-                        <div class="card-body">
-                            <h5 class="card-title fw-bold" style="color:#027562">{{ totalEvents }}</h5>
-                            <p class="card-text text-muted">Total Events</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3 col-6">
-                    <div class="card text-center">
-                        <div class="card-body">
-                            <h5 class="card-title fw-bold" style="color:#027562">{{ upcomingEvents.length }}</h5>
-                            <p class="card-text text-muted">Upcoming Events</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3 col-6">
-                    <div class="card text-center">
-                        <div class="card-body">
-                            <h5 class="card-title fw-bold" style="color:#027562">{{ totalAttendees }}</h5>
-                            <p class="card-text text-muted">Total Attendees</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3 col-6">
-                    <div class="card text-center">
-                        <div class="card-body">
-                            <h5 class="card-title fw-bold" style="color:#027562">{{ pastEvents.length }}</h5>
-                            <p class="card-text text-muted">Past Events</p>
-                        </div>
-                    </div>
-                </div>
-                -->
-            </div>
-
-            <!-- Events Management Section -->
-            <div class="row">
-                <div class="col-12">
-                    <!-- Tab Navigation -->
-                    <ul class="nav nav-tabs mb-4" role="tablist">
-                        <li class="nav-item">
-                            <button class="nav-link active" @click="activeTab = 'upcoming'" :class="{active: activeTab === 'upcoming'}">
-                                Upcoming Events
-                            </button>
-                        </li>
-                        <li class="nav-item">
-                            <button class="nav-link" @click="activeTab = 'past'" :class="{active: activeTab === 'past'}">
-                                Past Events
-                            </button>
-                        </li>
-                        <li class="nav-item">
-                            <button class="nav-link" @click="activeTab = 'attendees'" :class="{active: activeTab === 'attendees'}">
-                                All Attendees
-                            </button>
-                        </li>
-                    </ul>
-
-                    <!-- Tab Content -->
-                    <div class="tab-content">
-                        <!-- Upcoming Events Tab -->
-                        <div v-if="activeTab === 'upcoming'" class="tab-pane active">
-                            <!-- TODO: Implement upcoming events list with management tools -->
-                            <!-- 
-                            <div v-if="upcomingEvents.length > 0" class="row">
-                                <div v-for="event in upcomingEvents" :key="event.id" class="col-md-6 col-lg-4 mb-4">
-                                    <div class="card h-100">
-                                        <div class="card-header d-flex justify-content-between align-items-center">
-                                            <h6 class="mb-0 fw-bold">{{ event.eventName }}</h6>
-                                            <div class="dropdown">
-                                                <button class="btn btn-sm btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown">
-                                                    Actions
-                                                </button>
-                                                <ul class="dropdown-menu">
-                                                    <li><a class="dropdown-item" @click="editEvent(event.id)">Edit Event</a></li>
-                                                    <li><a class="dropdown-item" @click="viewAttendees(event.id)">View Attendees</a></li>
-                                                    <li><a class="dropdown-item" @click="exportAttendees(event.id)">Export Attendees</a></li>
-                                                    <li><hr class="dropdown-divider"></li>
-                                                    <li><a class="dropdown-item text-danger" @click="deleteEvent(event.id)">Delete Event</a></li>
-                                                </ul>
-                                            </div>
-                                        </div>
-                                        <div class="card-body">
-                                            <p class="text-muted small mb-2">{{ formatDate(event.eventStartDate) }}</p>
-                                            <p class="card-text mb-3">{{ truncateText(event.eventDesc, 100) }}</p>
-                                            <div class="d-flex justify-content-between align-items-center">
-                                                <span class="badge bg-primary">{{ event.numAttendees || 0 }} attendees</span>
-                                                <router-link :to="`/event/${event.id}/${slugify(event.eventName)}`" class="btn btn-sm primary-btn">
-                                                    View Event
-                                                </router-link>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
+        <div class="main-content py-4">
+            <!-- Main Content -->
+            <div v-if="dataLoaded" class="container-fluid ">
+                <!-- Dashboard Header -->
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h2 class="fw-bold mb-1" style="color:#027562">Event Organiser Dashboard</h2>
+                                <p class="text-muted mb-0">Manage your events and attendees</p>
                             </div>
-                            <div v-else class="text-center py-5">
-                                <p class="text-muted">No upcoming events found.</p>
-                                <button class="btn primary-btn" @click="createNewEvent">Create Your First Event</button>
-                            </div>
-                            -->
-                            <div class="text-center py-5">
-                                <div class="alert alert-info">
-                                    <h5>Upcoming Events Management</h5>
-                                    <p class="mb-0">This section will display your upcoming events with management tools including:</p>
-                                    <ul class="mt-2 mb-0">
-                                        <li>Event editing and deletion</li>
-                                        <li>Attendee management per event</li>
-                                        <li>Quick actions for check-in and payment tracking</li>
-                                        <li>Export attendee lists</li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Past Events Tab -->
-                        <div v-if="activeTab === 'past'" class="tab-pane">
-                            <!-- TODO: Implement past events list with analytics -->
-                            <!-- 
-                            <div v-if="pastEvents.length > 0" class="row">
-                                <div v-for="event in pastEvents" :key="event.id" class="col-md-6 col-lg-4 mb-4">
-                                    <div class="card h-100 opacity-75">
-                                        <div class="card-header">
-                                            <h6 class="mb-0 fw-bold">{{ event.eventName }}</h6>
-                                            <span class="badge bg-secondary">Completed</span>
-                                        </div>
-                                        <div class="card-body">
-                                            <p class="text-muted small mb-2">{{ formatDate(event.eventStartDate) }}</p>
-                                            <p class="card-text mb-3">{{ truncateText(event.eventDesc, 100) }}</p>
-                                            <div class="row text-center">
-                                                <div class="col-6">
-                                                    <div class="fw-bold">{{ event.numAttendees || 0 }}</div>
-                                                    <small class="text-muted">Registered</small>
-                                                </div>
-                                                <div class="col-6">
-                                                    <div class="fw-bold">{{ event.checkedInCount || 0 }}</div>
-                                                    <small class="text-muted">Attended</small>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="card-footer">
-                                            <button class="btn btn-sm btn-outline-primary w-100" @click="viewEventAnalytics(event.id)">
-                                                View Analytics
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div v-else class="text-center py-5">
-                                <p class="text-muted">No past events found.</p>
-                            </div>
-                            -->
-                            <div class="text-center py-5">
-                                <div class="alert alert-info">
-                                    <h5>Past Events Analytics</h5>
-                                    <p class="mb-0">This section will display your completed events with analytics including:</p>
-                                    <ul class="mt-2 mb-0">
-                                        <li>Attendance statistics and check-in rates</li>
-                                        <li>Payment completion rates for paid events</li>
-                                        <li>Event performance metrics</li>
-                                        <li>Attendee feedback summaries</li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- All Attendees Management Tab -->
-                        <div v-if="activeTab === 'attendees'" class="tab-pane">
-                            <!-- TODO: Implement consolidated attendee management across all events -->
-                            <!-- 
-                            <div class="row mb-4">
-                                <div class="col-md-6">
-                                    <input type="text" class="form-control" placeholder="Search attendees..." v-model="attendeeSearchQuery">
-                                </div>
-                                <div class="col-md-3">
-                                    <select class="form-select" v-model="filterByEvent">
-                                        <option value="">All Events</option>
-                                        <option v-for="event in allEvents" :key="event.id" :value="event.id">{{ event.eventName }}</option>
-                                    </select>
-                                </div>
-                                <div class="col-md-3">
-                                    <button class="btn btn-outline-primary w-100" @click="exportAllAttendees">
-                                        Export All Attendees
-                                    </button>
-                                </div>
-                            </div>
-
-                            <div class="table-responsive">
-                                <table class="table table-striped">
-                                    <thead>
-                                        <tr>
-                                            <th>Name</th>
-                                            <th>Email</th>
-                                            <th>Phone</th>
-                                            <th>Event</th>
-                                            <th>RSVP Date</th>
-                                            <th>Status</th>
-                                            <th>Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr v-for="attendee in filteredAttendees" :key="attendee.id">
-                                            <td>{{ attendee.firstName }} {{ attendee.lastName }}</td>
-                                            <td>{{ attendee.email }}</td>
-                                            <td>{{ attendee.phoneNumber }}</td>
-                                            <td>
-                                                <router-link :to="`/event/${attendee.eventId}/${slugify(attendee.eventName)}`" class="text-decoration-none">
-                                                    {{ attendee.eventName }}
-                                                </router-link>
-                                            </td>
-                                            <td>{{ formatRSVPDate(attendee.rsvpDate) }}</td>
-                                            <td>
-                                                <span class="badge" :class="attendee.attendanceStatus === 'Checked In' ? 'bg-success' : 'bg-warning'">
-                                                    {{ attendee.attendanceStatus }}
-                                                </span>
-                                            </td>
-                                            <td>
-                                                <div class="dropdown">
-                                                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown">
-                                                        Actions
-                                                    </button>
-                                                    <ul class="dropdown-menu">
-                                                        <li><a class="dropdown-item" @click="checkInAttendee(attendee.id)">Check In</a></li>
-                                                        <li><a class="dropdown-item" @click="markPaid(attendee.id)">Mark Paid</a></li>
-                                                        <li><a class="dropdown-item" @click="contactAttendee(attendee)">Contact</a></li>
-                                                        <li><hr class="dropdown-divider"></li>
-                                                        <li><a class="dropdown-item text-danger" @click="removeAttendee(attendee.id)">Remove</a></li>
-                                                    </ul>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                            -->
-                            <div class="text-center py-5">
-                                <div class="alert alert-info">
-                                    <h5>Consolidated Attendee Management</h5>
-                                    <p class="mb-0">This section will provide unified attendee management across all your events including:</p>
-                                    <ul class="mt-2 mb-0">
-                                        <li>Search and filter attendees across all events</li>
-                                        <li>Bulk check-in and payment status updates</li>
-                                        <li>Export attendee data with customizable filters</li>
-                                        <li>Contact management and communication tools</li>
-                                        <li>Attendee analytics and engagement tracking</li>
-                                    </ul>
-                                </div>
+                            <!-- Quick Actions -->
+                            <div class="d-flex gap-2">
+                                <router-link to="/events/view" class="btn btn-outline-secondary">
+                                    <i class="bi bi-arrow-left me-2"></i>Back to Events
+                                </router-link>
+                                <!-- TODO: Add Create New Event button -->
+                                <!-- <button class="btn primary-btn" @click="createNewEvent">
+                                    <i class="bi bi-plus-circle me-2"></i>Create New Event
+                                </button> -->
                             </div>
                         </div>
                     </div>
                 </div>
+
+                XYZ
+
+
             </div>
         </div>
     </div>

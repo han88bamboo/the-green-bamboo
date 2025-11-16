@@ -117,7 +117,7 @@
                     <router-link 
                         v-if="userID && userType && userType !== 'defaultUser'"
                         :to="`/events/organiser-dashboard/${userType}/${userID}`" 
-                        class="btn btn-outline-primary btn-sm"
+                        class="btn btn-primary btn-lg mobile-rating-smaller-text-2 fw-bold"
                         title="Manage all your events in one place"
                     >
                         Organizer Dashboard
