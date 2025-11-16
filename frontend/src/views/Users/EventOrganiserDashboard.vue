@@ -146,18 +146,110 @@
                                         </div>
                                     </div>
                                     <div class="event-stats">
-                                        <div class="attendee-count">
+                                        <button 
+                                            class="attendee-count-btn"
+                                            @click="toggleAttendeeManagement(event)"
+                                            :class="{ 'active': expandedEventId === event.id, 'compressed': expandedEventId === event.id }"
+                                            title="Manage Attendees"
+                                        >
                                             <span class="count">{{ event.attendeeCount || 0 }}/{{ event.eventLimit || 'N/A' }}</span>
                                             <span class="label">Attendees</span>
-                                        </div>
+                                        </button>
                                         <button 
-                                            class="btn btn-outline-primary btn-sm edit-event-btn"
+                                            class="btn primary-btn btn-sm edit-event-btn"
                                             @click="openEventManagementModal(event)"
                                             title="Edit Event"
                                         >
                                             <i class="bi bi-pencil me-1"></i>
                                             Edit
                                         </button>
+                                    </div>
+                                    
+                                    <!-- Attendee Management Section (collapsible) -->
+                                    <div 
+                                        v-if="expandedEventId === event.id" 
+                                        class="attendee-management-section"
+                                    >
+                                        <div class="attendee-management-content">
+                                            <h5 class="fw-bold mb-3" style="color:#027562">
+                                                Manage Attendees for "{{ event.eventName }}"
+                                            </h5>
+                                            
+                                            <!-- Loading state -->
+                                            <div v-if="loadingAttendeeManagement[event.id]" class="text-center py-3">
+                                                <div class="spinner-border spinner-border-sm text-primary" role="status">
+                                                    <span class="visually-hidden">Loading attendees...</span>
+                                                </div>
+                                                <span class="ms-2">Loading attendees...</span>
+                                            </div>
+                                            
+                                            <!-- Attendee table -->
+                                            <div v-else-if="attendeesForManagement[event.id] && attendeesForManagement[event.id].length > 0" class="table-responsive">
+                                                <table class="table table-striped table-sm">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Account Name</th>
+                                                            <th>Full Name</th>
+                                                            <th>Phone Number</th>
+                                                            <th>Email</th>
+                                                            <th>RSVP Date</th>
+                                                            <th v-if="event.paidEvent">Has Paid? <span class="text-muted">(Marked by Organiser)</span></th>
+                                                            <th>Attendance <span class="text-muted">(Marked by Organiser)</span></th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <tr v-for="attendee in attendeesForManagement[event.id]" :key="attendee.attendeeId">
+                                                            <td>
+                                                                {{ attendee.displayName || attendee.venueName || attendee.producerName }}
+                                                            </td>
+                                                            <td>
+                                                                <span v-if="attendee.firstName || attendee.lastName">
+                                                                    {{ attendee.firstName }} {{ attendee.lastName }}
+                                                                </span>
+                                                                <span v-else class="text-muted">N/A</span>
+                                                            </td>
+                                                            <td>
+                                                                <span v-if="attendee.phoneNumber">{{ attendee.phoneNumber }}</span>
+                                                                <span v-else class="text-muted">N/A</span>
+                                                            </td>
+                                                            <td>
+                                                                <span v-if="attendee.email">{{ attendee.email }}</span>
+                                                                <span v-else class="text-muted">N/A</span>
+                                                            </td>
+                                                            <td>
+                                                                {{ formatRSVPDate(attendee.rsvpDate) }}
+                                                            </td>
+                                                            <td v-if="event.paidEvent" class="text-center">
+                                                                <div class="form-check d-flex justify-content-center">
+                                                                    <input 
+                                                                        class="form-check-input" 
+                                                                        type="checkbox" 
+                                                                        :checked="attendee.hasPaid"
+                                                                        @change="updatePaymentStatus(attendee.attendeeId, $event.target.checked)"
+                                                                    >
+                                                                </div>
+                                                            </td>
+                                                            <td>
+                                                                <select 
+                                                                    class="form-select form-select-sm"
+                                                                    :value="attendee.attendanceStatus"
+                                                                    @change="updateAttendanceStatus(attendee.attendeeId, $event.target.value)"
+                                                                >
+                                                                    <option value="Not Checked In">Not Checked In</option>
+                                                                    <option value="Checked In">Checked In</option>
+                                                                </select>
+                                                            </td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                            
+                                            <!-- No attendees message -->
+                                            <div v-else class="text-center py-4 text-muted">
+                                                <i class="bi bi-people fs-3 mb-2"></i>
+                                                <p class="mb-0">No attendees registered for this event yet.</p>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
 
@@ -214,10 +306,15 @@
                                         </div>
                                     </div>
                                     <div class="event-stats">
-                                        <div class="attendee-count">
+                                        <button 
+                                            class="attendee-count-btn"
+                                            @click="toggleAttendeeManagement(event)"
+                                            :class="{ 'active': expandedEventId === event.id, 'compressed': expandedEventId === event.id }"
+                                            title="Manage Attendees"
+                                        >
                                             <span class="count">{{ event.attendeeCount || 0 }}/{{ event.eventLimit || 'N/A' }}</span>
                                             <span class="label">Attended</span>
-                                        </div>
+                                        </button>
                                         <button 
                                             class="btn btn-outline-primary btn-sm edit-event-btn"
                                             @click="openEventManagementModal(event)"
@@ -226,6 +323,93 @@
                                             <i class="bi bi-pencil me-1"></i>
                                             Edit
                                         </button>
+                                    </div>
+                                    
+                                    <!-- Attendee Management Section (collapsible) -->
+                                    <div 
+                                        v-if="expandedEventId === event.id" 
+                                        class="attendee-management-section"
+                                    >
+                                        <div class="attendee-management-content">
+                                            <h5 class="fw-bold mb-3" style="color:#027562">
+                                                Manage Attendees for "{{ event.eventName }}"
+                                            </h5>
+                                            
+                                            <!-- Loading state -->
+                                            <div v-if="loadingAttendeeManagement[event.id]" class="text-center py-3">
+                                                <div class="spinner-border spinner-border-sm text-primary" role="status">
+                                                    <span class="visually-hidden">Loading attendees...</span>
+                                                </div>
+                                                <span class="ms-2">Loading attendees...</span>
+                                            </div>
+                                            
+                                            <!-- Attendee table -->
+                                            <div v-else-if="attendeesForManagement[event.id] && attendeesForManagement[event.id].length > 0" class="table-responsive">
+                                                <table class="table table-striped table-sm">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Account Name</th>
+                                                            <th>Full Name</th>
+                                                            <th>Phone Number</th>
+                                                            <th>Email</th>
+                                                            <th>RSVP Date</th>
+                                                            <th v-if="event.paidEvent">Has Paid? <span class="text-muted">(Marked by Organiser)</span></th>
+                                                            <th>Attendance <span class="text-muted">(Marked by Organiser)</span></th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <tr v-for="attendee in attendeesForManagement[event.id]" :key="attendee.attendeeId">
+                                                            <td>
+                                                                {{ attendee.displayName || attendee.venueName || attendee.producerName }}
+                                                            </td>
+                                                            <td>
+                                                                <span v-if="attendee.firstName || attendee.lastName">
+                                                                    {{ attendee.firstName }} {{ attendee.lastName }}
+                                                                </span>
+                                                                <span v-else class="text-muted">N/A</span>
+                                                            </td>
+                                                            <td>
+                                                                <span v-if="attendee.phoneNumber">{{ attendee.phoneNumber }}</span>
+                                                                <span v-else class="text-muted">N/A</span>
+                                                            </td>
+                                                            <td>
+                                                                <span v-if="attendee.email">{{ attendee.email }}</span>
+                                                                <span v-else class="text-muted">N/A</span>
+                                                            </td>
+                                                            <td>
+                                                                {{ formatRSVPDate(attendee.rsvpDate) }}
+                                                            </td>
+                                                            <td v-if="event.paidEvent" class="text-center">
+                                                                <div class="form-check d-flex justify-content-center">
+                                                                    <input 
+                                                                        class="form-check-input" 
+                                                                        type="checkbox" 
+                                                                        :checked="attendee.hasPaid"
+                                                                        @change="updatePaymentStatus(attendee.attendeeId, $event.target.checked)"
+                                                                    >
+                                                                </div>
+                                                            </td>
+                                                            <td>
+                                                                <select 
+                                                                    class="form-select form-select-sm"
+                                                                    :value="attendee.attendanceStatus"
+                                                                    @change="updateAttendanceStatus(attendee.attendeeId, $event.target.value)"
+                                                                >
+                                                                    <option value="Not Checked In">Not Checked In</option>
+                                                                    <option value="Checked In">Checked In</option>
+                                                                </select>
+                                                            </td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                            
+                                            <!-- No attendees message -->
+                                            <div v-else class="text-center py-4 text-muted">
+                                                <i class="bi bi-people fs-3 mb-2"></i>
+                                                <p class="mb-0">No attendees registered for this event yet.</p>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
 
@@ -631,6 +815,11 @@ export default {
             // Edit form data (adapted from SpecificEventPage.vue)
             selectedEventCopy: {}, // Copy of selected event details for editing
             quill: null, // Quill editor instance
+            
+            // Attendee management data
+            expandedEventId: null, // Track which event's attendees are expanded
+            attendeesForManagement: {}, // Object to store attendees by event ID
+            loadingAttendeeManagement: {}, // Track loading state per event
 
             // Mock data for development (TODO: Replace with real API calls)
             mockUpcomingEvents: [
@@ -839,6 +1028,72 @@ export default {
             // Clean up Quill editor
             if (this.quill) {
                 this.quill = null;
+            }
+        },
+
+        // Attendee Management methods (adapted from SpecificEventPage.vue)
+        
+        // Toggle attendee management section
+        async toggleAttendeeManagement(event) {
+            if (this.expandedEventId === event.id) {
+                // Collapse if already expanded
+                this.expandedEventId = null;
+            } else {
+                // Expand and load attendees
+                this.expandedEventId = event.id;
+                await this.getAttendeesForManagement(event.id);
+            }
+        },
+
+        // Get attendees with management data for a specific event
+        async getAttendeesForManagement(eventId) {
+            this.loadingAttendeeManagement[eventId] = true;
+            try {
+                const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/events/getAttendees/${eventId}`);
+                this.attendeesForManagement[eventId] = response.data.attendees;
+            } catch (error) {
+                console.error('Error fetching attendees for management:', error);
+                this.attendeesForManagement[eventId] = [];
+            } finally {
+                this.loadingAttendeeManagement[eventId] = false;
+            }
+        },
+
+        // Update attendee payment status
+        async updatePaymentStatus(attendeeId, hasPaid) {
+            try {
+                await this.$axios.put(`${process.env.VUE_APP_API_URL}/events/updateAttendeeStatus`, {
+                    attendeeId: attendeeId,
+                    hasPaid: hasPaid,
+                    eventOwnerID: this.currentUserID,
+                    eventOwnerType: this.currentUserType
+                });
+
+                const toast = useToast();
+                toast.success('Payment status updated successfully!');
+            } catch (error) {
+                console.error('Error updating payment status:', error);
+                const toast = useToast();
+                toast.error('Failed to update payment status');
+            }
+        },
+
+        // Update attendee attendance status
+        async updateAttendanceStatus(attendeeId, attendanceStatus) {
+            try {
+                await this.$axios.put(`${process.env.VUE_APP_API_URL}/events/updateAttendeeStatus`, {
+                    attendeeId: attendeeId,
+                    attendanceStatus: attendanceStatus,
+                    eventOwnerID: this.currentUserID,
+                    eventOwnerType: this.currentUserType
+                });
+
+                const toast = useToast();
+                toast.success('Attendance status updated successfully!');
+            } catch (error) {
+                console.error('Error updating attendance status:', error);
+                const toast = useToast();
+                toast.error('Failed to update attendance status');
             }
         },
 
@@ -1307,16 +1562,20 @@ export default {
     box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
 }
 
-/* Primary button color consistency */
-.primary-btn {
-    background-color: #027562;
-    border-color: #027562;
-    color: white;
+.primary-btn,
+.primary-btn-outline:hover {
+  color: black; /*TZH changed whitesmoke to black*/
+  background-color: #f0b258; /*TZH changed 535C72 to F0B258 */
+  border: 4px solid #f0b258; /*TZH changed 535C72 to F0B258 */
+  font-weight: bold;
 }
 
+.primary-btn-outline,
 .primary-btn:hover {
-    background-color: #025a4a;
-    border-color: #025a4a;
+  color: black; /*TZH changed 535C72 to black */
+  background-color: #c9964a; /*TZH changed whitesmoke to c9964a */
+  border: 4px solid #f0b258; /*TZH changed 535C72 to c9964a */
+  font-weight: bold;
 }
 
 /* Statistics cards */
@@ -1600,21 +1859,11 @@ export default {
 
 /* Edit Event Button */
 .edit-event-btn {
-    border-color: #027562;
-    color: #027562;
     font-size: 0.8rem;
     padding: 0.375rem 0.75rem;
     border-radius: 6px;
     transition: all 0.2s ease;
     white-space: nowrap;
-}
-
-.edit-event-btn:hover {
-    background-color: #027562;
-    border-color: #027562;
-    color: white;
-    transform: translateY(-1px);
-    box-shadow: 0 2px 8px rgba(2, 117, 98, 0.2);
 }
 
 .edit-event-btn:focus {
@@ -1623,6 +1872,87 @@ export default {
 
 .edit-event-btn i {
     font-size: 0.75rem;
+}
+
+/* Attendee Count Button */
+.attendee-count-btn {
+    background: #027562;
+    border: 2px solid #027562;
+    border-radius: 8px;
+    padding: 8px 12px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: inherit;
+    box-shadow: 0 2px 4px rgba(2, 117, 98, 0.1);
+}
+
+.attendee-count-btn:hover {
+    background: #ffffff;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(2, 117, 98, 0.2);
+}
+
+.attendee-count-btn:hover .count,
+.attendee-count-btn:hover .label {
+    color: #027562 !important;
+}
+
+.attendee-count-btn.active {
+    background: #027562;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(2, 117, 98, 0.2);
+}
+
+.attendee-count-btn.active .count,
+.attendee-count-btn.active .label {
+    color: white !important;
+}
+
+.attendee-count-btn.compressed {
+    transform: scale(0.95);
+    opacity: 0.8;
+}
+
+.attendee-count-btn .count {
+    display: block;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: white;
+}
+
+.attendee-count-btn .label {
+    display: block;
+    font-size: 0.75rem;
+    color: white;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Attendee Management Section */
+.attendee-management-section {
+    /* margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 2px solid #e9ecef; */
+    animation: slideDown 0.3s ease-out;
+}
+
+.attendee-management-content {
+    background: #f8f9fa;
+    padding: 1.5rem;
+    border-radius: 8px;
+    border-left: 4px solid #027562;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 /* Empty State */
@@ -1877,6 +2207,18 @@ export default {
         flex-shrink: 0;
     }
     
+    .attendee-count-btn {
+        text-align: center;
+    }
+    
+    .attendee-management-content {
+        padding: 1rem;
+    }
+    
+    .attendee-management-section .table-responsive {
+        font-size: 0.8rem;
+    }
+    
     .analytics-grid {
         grid-template-columns: 1fr;
     }
@@ -1910,6 +2252,24 @@ export default {
     .mobile-px-4 {
         padding-left: 1.5rem !important;
         padding-right: 1.5rem !important;
+    }
+    
+    .attendee-count-btn {
+        font-size: 0.9rem;
+    }
+    
+    .attendee-management-content {
+        padding: 0.5rem;
+    }
+    
+    .attendee-management-section .table-responsive {
+        font-size: 0.75rem;
+    }
+    
+    .attendee-management-section .table th,
+    .attendee-management-section .table td {
+        padding: 0.3rem 0.2rem;
+        white-space: nowrap;
     }
 }
 </style>
