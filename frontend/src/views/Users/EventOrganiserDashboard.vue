@@ -1,5 +1,5 @@
 <template>
-    <div class="mb-3">
+    <div >
         <NavBar />
 
         <!-- Display when data is still loading -->
@@ -23,7 +23,7 @@
             </button>
         </div>
 
-        <div class="main-content py-4">
+        <div class="main-content pt-4">
             <!-- Main Content -->
             <div v-if="dataLoaded" class="container-fluid ">
                 <!-- Dashboard Header -->
@@ -766,13 +766,20 @@ export default {
 .dashboard-container {
     display: flex;
     min-height: calc(100vh - 200px);
-    gap: 1rem;
+    gap: 0;
 }
 
 /* Vertical Navigation Rail (Desktop) */
 .vertical-nav-rail {
-    width: 60px;
+    width: 100px;
     flex-shrink: 0;
+    background: #dee2e2;
+    padding: 1rem 0.75rem;
+    box-shadow: inset -1px 0 0 rgba(2, 117, 98, 0.1);
+    margin-left: -1rem;
+    padding-left: 1.75rem;
+    min-height: 100vh;
+    position: relative;
 }
 
 .nav-tabs-vertical {
@@ -840,6 +847,8 @@ export default {
 .dashboard-content {
     flex: 1;
     min-height: 600px;
+    margin-left: 2rem;
+    padding-right: 1rem;
 }
 
 .content-section {
