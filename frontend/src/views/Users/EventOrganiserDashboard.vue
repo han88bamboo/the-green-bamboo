@@ -127,7 +127,6 @@
                                     v-for="event in upcomingAndOngoingEvents" 
                                     :key="event.id"
                                     class="event-card"
-                                    @click="openEventManagementModal(event)"
                                 >
                                     <div class="event-thumbnail">
                                         <img :src="(event.eventBanners && event.eventBanners[0]) || defaultEventBanner" :alt="event.eventName" />
@@ -151,6 +150,14 @@
                                             <span class="count">{{ event.attendeeCount || 0 }}/{{ event.eventLimit || 'N/A' }}</span>
                                             <span class="label">Attendees</span>
                                         </div>
+                                        <button 
+                                            class="btn btn-outline-primary btn-sm edit-event-btn"
+                                            @click="openEventManagementModal(event)"
+                                            title="Edit Event"
+                                        >
+                                            <i class="bi bi-pencil me-1"></i>
+                                            Edit
+                                        </button>
                                     </div>
                                 </div>
 
@@ -185,7 +192,6 @@
                                     v-for="event in completedEvents" 
                                     :key="event.id"
                                     class="event-card past-event"
-                                    @click="openEventManagementModal(event)"
                                 >
                                     <div class="event-thumbnail">
                                         <img :src="(event.eventBanners && event.eventBanners[0]) || defaultEventBanner" :alt="event.eventName" />
@@ -212,6 +218,14 @@
                                             <span class="count">{{ event.attendeeCount || 0 }}/{{ event.eventLimit || 'N/A' }}</span>
                                             <span class="label">Attended</span>
                                         </div>
+                                        <button 
+                                            class="btn btn-outline-primary btn-sm edit-event-btn"
+                                            @click="openEventManagementModal(event)"
+                                            title="Edit Event"
+                                        >
+                                            <i class="bi bi-pencil me-1"></i>
+                                            Edit
+                                        </button>
                                     </div>
                                 </div>
 
@@ -336,26 +350,11 @@
                     <div class="modal-dialog modal-dialog-centered modal-lg">
                         <div class="modal-content">
                             <div class="modal-header">
-                                <h5 class="modal-title">Manage Event: {{ selectedEvent?.eventName || selectedEvent?.name }}</h5>
+                                <h5 class="modal-title">Edit Event: {{ selectedEvent?.eventName || selectedEvent?.name }}</h5>
                                 <button type="button" class="btn-close" @click="closeEventManagementModal" aria-label="Close"></button>
                             </div>
-                            <div class="modal-body">
-                                <!-- TODO: Implement management tabs similar to SpecificEventPage -->
-                                <div class="management-tabs">
-                                    <ul class="nav nav-tabs" role="tablist">
-                                        <li class="nav-item">
-                                            <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#edit-tab">Edit Event</button>
-                                        </li>
-                                        <li class="nav-item">
-                                            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#attendees-tab">Manage Attendees</button>
-                                        </li>
-                                        <li class="nav-item">
-                                            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#analytics-tab">Event Analytics</button>
-                                        </li>
-                                    </ul>
-                                    <div class="tab-content mt-3">
-                                        <div class="tab-pane fade show active" id="edit-tab">
-                                            <div class="text-start">
+                            <div class="modal-body text-start">
+
                                                 <!-- Event Name Edit Field -->
                                                 <div class="mb-3">
                                                     <label for="eventName" class="form-label fw-bold">Event Name <span style="color: red;">*</span></label>
@@ -559,24 +558,6 @@
                                                     Add Passcode
                                                 </button>
                                             </div>
-                                            </div>
-                                        </div>
-                                        <div class="tab-pane fade" id="attendees-tab">
-                                            <div class="alert alert-info">
-                                                <h6>Attendee Management</h6>
-                                                <p class="mb-0">This will contain the attendee management table from SpecificEventPage.vue</p>
-                                                <!-- TODO: Implement attendee management -->
-                                            </div>
-                                        </div>
-                                        <div class="tab-pane fade" id="analytics-tab">
-                                            <div class="alert alert-info">
-                                                <h6>Event-Specific Analytics</h6>
-                                                <p class="mb-0">Individual event performance metrics and attendee insights</p>
-                                                <!-- TODO: Implement event-specific analytics -->
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
                             </div>
                             <div class="modal-footer">
                                 <button type="button" class="btn btn-secondary" @click="cancelEdit">Close</button>
@@ -1492,15 +1473,13 @@ export default {
     display: flex;
     align-items: center;
     gap: 1.5rem;
-    cursor: pointer;
     transition: all 0.2s ease;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
 }
 
 .event-card:hover {
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
-    transform: translateY(-2px);
-    border-color: #027562;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    border-color: #dee2e6;
 }
 
 .event-card.past-event {
@@ -1571,8 +1550,9 @@ export default {
     display: flex;
     flex-direction: column;
     align-items: flex-end;
-    gap: 0.5rem;
+    gap: 0.75rem;
     flex-shrink: 0;
+    min-width: 120px;
 }
 
 .attendee-count {
@@ -1616,6 +1596,33 @@ export default {
 .status-badge.completed {
     background: #e8f5e8;
     color: #2e7d32;
+}
+
+/* Edit Event Button */
+.edit-event-btn {
+    border-color: #027562;
+    color: #027562;
+    font-size: 0.8rem;
+    padding: 0.375rem 0.75rem;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.edit-event-btn:hover {
+    background-color: #027562;
+    border-color: #027562;
+    color: white;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(2, 117, 98, 0.2);
+}
+
+.edit-event-btn:focus {
+    box-shadow: 0 0 0 0.2rem rgba(2, 117, 98, 0.25);
+}
+
+.edit-event-btn i {
+    font-size: 0.75rem;
 }
 
 /* Empty State */
@@ -1862,6 +1869,12 @@ export default {
         flex-direction: row;
         justify-content: space-between;
         width: 100%;
+        gap: 1rem;
+    }
+    
+    .edit-event-btn {
+        margin-left: auto;
+        flex-shrink: 0;
     }
     
     .analytics-grid {
