@@ -123,56 +123,54 @@
 
                             <!-- Event Cards -->
                             <div v-else class="event-cards-container">
-                                <div 
-                                    v-for="event in upcomingAndOngoingEvents" 
-                                    :key="event.id"
-                                    class="event-card"
-                                >
-                                    <div class="event-thumbnail">
-                                        <img :src="(event.eventBanners && event.eventBanners[0]) || defaultEventBanner" :alt="event.eventName" />
-                                    </div>
-                                    <div class="event-details">
-                                        <h4 class="event-title">{{ event.eventName }}</h4>
-                                        <div class="event-datetime">
-                                            <div class="datetime-row">
-                                                <i class="bi bi-calendar-event"></i>
-                                                <span>{{ formatEventDate(event.eventStartDate) }}</span>
-                                                <span v-if="event.eventEndDate && event.eventEndDate !== event.eventStartDate"> - {{ formatEventDate(event.eventEndDate) }}</span>
-                                            </div>
-                                            <div class="datetime-row">
-                                                <i class="bi bi-clock"></i>
-                                                <span>{{ formatEventTime(event.eventStartTime) }} - {{ formatEventTime(event.eventEndTime) }}</span>
+                                <template v-for="event in upcomingAndOngoingEvents" :key="event.id">
+                                    <div class="event-card">
+                                        <div class="event-thumbnail">
+                                            <img :src="(event.eventBanners && event.eventBanners[0]) || defaultEventBanner" :alt="event.eventName" />
+                                        </div>
+                                        <div class="event-details">
+                                            <h4 class="event-title">{{ event.eventName }}</h4>
+                                            <div class="event-datetime">
+                                                <div class="datetime-row">
+                                                    <i class="bi bi-calendar-event"></i>
+                                                    <span>{{ formatEventDate(event.eventStartDate) }}</span>
+                                                    <span v-if="event.eventEndDate && event.eventEndDate !== event.eventStartDate"> - {{ formatEventDate(event.eventEndDate) }}</span>
+                                                </div>
+                                                <div class="datetime-row">
+                                                    <i class="bi bi-clock"></i>
+                                                    <span>{{ formatEventTime(event.eventStartTime) }} - {{ formatEventTime(event.eventEndTime) }}</span>
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
-                                    <div class="event-stats">
-                                        <button 
-                                            class="attendee-count-btn"
-                                            @click="toggleAttendeeManagement(event)"
-                                            :class="{ 'active': expandedEventId === event.id, 'compressed': expandedEventId === event.id }"
-                                            title="Manage Attendees"
-                                        >
-                                            <span class="count">{{ event.attendeeCount || 0 }}/{{ event.eventLimit || 'N/A' }}</span>
-                                            <span class="label">Attendees</span>
-                                        </button>
-                                        <button 
-                                            class="btn primary-btn btn-sm edit-event-btn"
-                                            @click="openEventManagementModal(event)"
-                                            title="Edit Event"
-                                        >
-                                            <i class="bi bi-pencil me-1"></i>
-                                            Edit
-                                        </button>
+                                        <div class="event-stats">
+                                            <button 
+                                                class="attendee-count-btn"
+                                                @click="toggleAttendeeManagement(event)"
+                                                :class="{ 'active': expandedEventId === event.id, 'compressed': expandedEventId === event.id }"
+                                                title="Manage Attendees"
+                                            >
+                                                <span class="count">{{ event.attendeeCount || 0 }}/{{ event.eventLimit || 'N/A' }}</span>
+                                                <span class="label">Attendees</span>
+                                            </button>
+                                            <button 
+                                                class="btn primary-btn btn-sm edit-event-btn"
+                                                @click="openEventManagementModal(event)"
+                                                title="Edit Event"
+                                            >
+                                                <i class="bi bi-pencil me-1"></i>
+                                                Edit
+                                            </button>
+                                        </div>
                                     </div>
                                     
-                                    <!-- Attendee Management Section (collapsible) -->
+                                    <!-- Attendee Management Drawer (appears below the event card) -->
                                     <div 
                                         v-if="expandedEventId === event.id" 
-                                        class="attendee-management-section"
+                                        class="attendee-management-drawer"
                                     >
                                         <div class="attendee-management-content">
                                             <h5 class="fw-bold mb-3" style="color:#027562">
-                                                Manage Attendees for "{{ event.eventName }}"
+                                                Manage Attendees for "{{ event.eventName }}" ({{ event.attendeeCount || 0 }}/{{ event.eventLimit }})
                                             </h5>
                                             
                                             <!-- Loading state -->
@@ -251,7 +249,7 @@
                                             </div>
                                         </div>
                                     </div>
-                                </div>
+                                </template>
 
                                 <!-- Empty State -->
                                 <div v-if="upcomingAndOngoingEvents.length === 0" class="empty-state">
@@ -280,59 +278,57 @@
 
                             <!-- Event Cards -->
                             <div v-else class="event-cards-container">
-                                <div 
-                                    v-for="event in completedEvents" 
-                                    :key="event.id"
-                                    class="event-card past-event"
-                                >
-                                    <div class="event-thumbnail">
-                                        <img :src="(event.eventBanners && event.eventBanners[0]) || defaultEventBanner" :alt="event.eventName" />
-                                        <div class="past-overlay">
-                                            <i class="bi bi-check-circle"></i>
-                                        </div>
-                                    </div>
-                                    <div class="event-details">
-                                        <h4 class="event-title">{{ event.eventName }}</h4>
-                                        <div class="event-datetime">
-                                            <div class="datetime-row">
-                                                <i class="bi bi-calendar-event"></i>
-                                                <span>{{ formatEventDate(event.eventStartDate) }}</span>
-                                                <span v-if="event.eventEndDate && event.eventEndDate !== event.eventStartDate"> - {{ formatEventDate(event.eventEndDate) }}</span>
-                                            </div>
-                                            <div class="datetime-row">
-                                                <i class="bi bi-clock"></i>
-                                                <span>{{ formatEventTime(event.eventStartTime) }} - {{ formatEventTime(event.eventEndTime) }}</span>
+                                <template v-for="event in completedEvents" :key="event.id">
+                                    <div class="event-card past-event">
+                                        <div class="event-thumbnail">
+                                            <img :src="(event.eventBanners && event.eventBanners[0]) || defaultEventBanner" :alt="event.eventName" />
+                                            <div class="past-overlay">
+                                                <i class="bi bi-check-circle"></i>
                                             </div>
                                         </div>
-                                    </div>
-                                    <div class="event-stats">
-                                        <button 
-                                            class="attendee-count-btn"
-                                            @click="toggleAttendeeManagement(event)"
-                                            :class="{ 'active': expandedEventId === event.id, 'compressed': expandedEventId === event.id }"
-                                            title="Manage Attendees"
-                                        >
-                                            <span class="count">{{ event.attendeeCount || 0 }}/{{ event.eventLimit || 'N/A' }}</span>
-                                            <span class="label">Attended</span>
-                                        </button>
-                                        <button 
-                                            class="btn btn-outline-primary btn-sm edit-event-btn"
-                                            @click="openEventManagementModal(event)"
-                                            title="Edit Event"
-                                        >
-                                            <i class="bi bi-pencil me-1"></i>
-                                            Edit
-                                        </button>
+                                        <div class="event-details">
+                                            <h4 class="event-title">{{ event.eventName }}</h4>
+                                            <div class="event-datetime">
+                                                <div class="datetime-row">
+                                                    <i class="bi bi-calendar-event"></i>
+                                                    <span>{{ formatEventDate(event.eventStartDate) }}</span>
+                                                    <span v-if="event.eventEndDate && event.eventEndDate !== event.eventStartDate"> - {{ formatEventDate(event.eventEndDate) }}</span>
+                                                </div>
+                                                <div class="datetime-row">
+                                                    <i class="bi bi-clock"></i>
+                                                    <span>{{ formatEventTime(event.eventStartTime) }} - {{ formatEventTime(event.eventEndTime) }}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="event-stats">
+                                            <button 
+                                                class="attendee-count-btn"
+                                                @click="toggleAttendeeManagement(event)"
+                                                :class="{ 'active': expandedEventId === event.id, 'compressed': expandedEventId === event.id }"
+                                                title="Manage Attendees"
+                                            >
+                                                <span class="count">{{ event.attendeeCount || 0 }}/{{ event.eventLimit || 'N/A' }}</span>
+                                                <span class="label">Attended</span>
+                                            </button>
+                                            <button 
+                                                class="btn btn-outline-primary btn-sm edit-event-btn"
+                                                @click="openEventManagementModal(event)"
+                                                title="Edit Event"
+                                            >
+                                                <i class="bi bi-pencil me-1"></i>
+                                                Edit
+                                            </button>
+                                        </div>
                                     </div>
                                     
-                                    <!-- Attendee Management Section (collapsible) -->
+                                    <!-- Attendee Management Drawer (appears below the event card) -->
                                     <div 
                                         v-if="expandedEventId === event.id" 
-                                        class="attendee-management-section"
+                                        class="attendee-management-drawer"
                                     >
                                         <div class="attendee-management-content">
                                             <h5 class="fw-bold mb-3" style="color:#027562">
-                                                Manage Attendees for "{{ event.eventName }}"
+                                                Manage Attendees for "{{ event.eventName }}" ({{ event.attendeeCount || 0 }}/{{ event.eventLimit }})
                                             </h5>
                                             
                                             <!-- Loading state -->
@@ -411,7 +407,7 @@
                                             </div>
                                         </div>
                                     </div>
-                                </div>
+                                </template>
 
                                 <!-- Empty State -->
                                 <div v-if="completedEvents.length === 0" class="empty-state">
@@ -785,18 +781,18 @@ export default {
             activeTab: 'upcoming',
             
             // Real data from API
-            allOrganisingEvents: [],
+            allOrganisingEvents: [], // Basic event info from getUserOrganisingEvents
+            eventsWithAttendees: [], // Combined event + attendee data from new API
+            
             upcomingEvents: [],
             pastEvents: [],
-            eventsWithAttendees: [], // Combined event + attendee data
-            
+
             // Statistics 
             totalEvents: 0,
             totalAttendees: 0,
             
             // Loading states
             loadingEvents: false,
-            loadingAttendees: false,
             
             // Filter and search
             attendeeSearchQuery: '',
@@ -890,9 +886,26 @@ export default {
                    this.currentUserType === this.dashboardUserType;
         },
         
+        // Merge event details with attendee data
+        combinedEventsData() {
+            return this.allOrganisingEvents.map(event => {
+                // Find corresponding attendee data
+                const attendeeData = this.eventsWithAttendees.find(
+                    attendeeEvent => attendeeEvent.id === event.eventID
+                );
+                
+                return {
+                    ...event, // Basic event info
+                    id: event.eventID, // Standardize to 'id' for template consistency
+                    attendeeCount: attendeeData?.attendeeCount || 0,
+                    attendees: attendeeData?.attendees || []
+                };
+            });
+        },
+        
         // Filter events that haven't started yet or are ongoing (upcoming + ongoing)
         upcomingAndOngoingEvents() {
-            return this.eventsWithAttendees.filter(event => {
+            return this.combinedEventsData.filter(event => {
                 const now = new Date();
                 
                 // If event has both start and end date
@@ -913,7 +926,7 @@ export default {
         
         // Filter events that are classified as past based on the rules
         completedEvents() {
-            return this.eventsWithAttendees.filter(event => {
+            return this.combinedEventsData.filter(event => {
                 const now = new Date();
                 
                 // If event has both start and end date
@@ -934,16 +947,16 @@ export default {
         
         // Calculate analytics data
         analyticsData() {
-            const totalEvents = this.eventsWithAttendees.length;
-            const totalAttendees = this.eventsWithAttendees.reduce((sum, event) => sum + (event.attendeeCount || 0), 0);
-            const totalCapacity = this.eventsWithAttendees.reduce((sum, event) => sum + (event.eventLimit || 0), 0);
+            const totalEvents = this.combinedEventsData.length;
+            const totalAttendees = this.combinedEventsData.reduce((sum, event) => sum + (event.attendeeCount || 0), 0);
+            const totalCapacity = this.combinedEventsData.reduce((sum, event) => sum + (event.eventLimit || 0), 0);
             const averageFillRate = totalCapacity > 0 ? Math.round((totalAttendees / totalCapacity) * 100) : 0;
             
             return {
                 totalEvents,
                 totalAttendees,
                 averageFillRate,
-                topEvents: [...this.eventsWithAttendees]
+                topEvents: [...this.combinedEventsData]
                     .sort((a, b) => (b.attendeeCount || 0) - (a.attendeeCount || 0))
                     .slice(0, 3)
             };
@@ -1049,8 +1062,16 @@ export default {
         async getAttendeesForManagement(eventId) {
             this.loadingAttendeeManagement[eventId] = true;
             try {
-                const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/events/getAttendees/${eventId}`);
-                this.attendeesForManagement[eventId] = response.data.attendees;
+                // Find the event in our combined events data
+                const event = this.combinedEventsData.find(e => e.id === eventId);
+                if (event && event.attendees) {
+                    // Use the attendees we already have
+                    this.attendeesForManagement[eventId] = event.attendees;
+                } else {
+                    // Fallback to API call if attendees not found locally
+                    const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/events/getAttendees/${eventId}`);
+                    this.attendeesForManagement[eventId] = response.data.attendees;
+                }
             } catch (error) {
                 console.error('Error fetching attendees for management:', error);
                 this.attendeesForManagement[eventId] = [];
@@ -1335,19 +1356,23 @@ export default {
             }
         },
         
-        // Fetch all events the user is organizing
+        // Fetch all events the user is organizing with attendee data
         async fetchOrganizerEvents() {
             this.loadingEvents = true;
             try {
-                const response = await this.$axios.get(
+                // Fetch basic event information
+                const basicEventsResponse = await this.$axios.get(
                     `${process.env.VUE_APP_API_URL}/events/getUserOrganisingEvents/${this.dashboardUserID}/${this.dashboardUserType}`
                 );
+                this.allOrganisingEvents = basicEventsResponse.data.events || [];
                 
-                this.allOrganisingEvents = response.data.events || [];
-                console.log('Fetched organizer events:', this.allOrganisingEvents);
-                
-                // Fetch attendees for each event
-                await this.fetchAttendeesForAllEvents();
+                // Fetch attendee data
+                const attendeesResponse = await this.$axios.get(
+                    `${process.env.VUE_APP_API_URL}/events/getOrganizerEventsWithAttendees/${this.dashboardUserID}/${this.dashboardUserType}`
+                );
+                this.eventsWithAttendees = attendeesResponse.data.events || [];
+                this.totalEvents = attendeesResponse.data.totalEvents || 0;
+                this.totalAttendees = attendeesResponse.data.totalAttendees || 0;
                 
             } catch (error) {
                 console.error('Error fetching organizer events:', error);
@@ -1355,6 +1380,8 @@ export default {
                     // No events found, that's okay
                     this.allOrganisingEvents = [];
                     this.eventsWithAttendees = [];
+                    this.totalEvents = 0;
+                    this.totalAttendees = 0;
                 } else {
                     this.dataLoaded = null;
                     const toast = useToast();
@@ -1362,52 +1389,6 @@ export default {
                 }
             } finally {
                 this.loadingEvents = false;
-            }
-        },
-        
-        // Fetch attendees for all events
-        async fetchAttendeesForAllEvents() {
-            this.loadingAttendees = true;
-            try {
-                const eventsWithAttendees = [];
-                
-                for (const event of this.allOrganisingEvents) {
-                    try {
-                        const attendeeResponse = await this.$axios.get(
-                            `${process.env.VUE_APP_API_URL}/events/getAttendees/${event.id}`
-                        );
-                        
-                        const attendees = attendeeResponse.data.attendees || [];
-                        const eventWithAttendees = {
-                            ...event,
-                            attendeeCount: attendees.length,
-                            attendeesList: attendees // Store full attendee data for modal
-                        };
-                        
-                        eventsWithAttendees.push(eventWithAttendees);
-                        console.log(`Event ${event.eventName}: ${attendees.length} attendees`);
-                        
-                    } catch (attendeeError) {
-                        console.warn(`Could not fetch attendees for event ${event.id}:`, attendeeError);
-                        // Add event with 0 attendees if attendee fetch fails
-                        eventsWithAttendees.push({
-                            ...event,
-                            attendeeCount: 0,
-                            attendeesList: []
-                        });
-                    }
-                }
-                
-                this.eventsWithAttendees = eventsWithAttendees;
-                this.totalEvents = eventsWithAttendees.length;
-                this.totalAttendees = eventsWithAttendees.reduce((sum, event) => sum + event.attendeeCount, 0);
-                
-                console.log('All events with attendees:', this.eventsWithAttendees);
-                
-            } catch (error) {
-                console.error('Error fetching attendees data:', error);
-            } finally {
-                this.loadingAttendees = false;
             }
         },
         
@@ -1929,19 +1910,22 @@ export default {
     letter-spacing: 0.5px;
 }
 
-/* Attendee Management Section */
-.attendee-management-section {
-    /* margin-top: 1.5rem;
-    padding-top: 1.5rem;
-    border-top: 2px solid #e9ecef; */
+/* Attendee Management Drawer */
+.attendee-management-drawer {
+    width: 100%;
+    margin-top: 1rem;
+    margin-bottom: 1rem;
     animation: slideDown 0.3s ease-out;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .attendee-management-content {
     background: #f8f9fa;
     padding: 1.5rem;
-    border-radius: 8px;
     border-left: 4px solid #027562;
+    width: 100%;
 }
 
 @keyframes slideDown {
@@ -2215,7 +2199,7 @@ export default {
         padding: 1rem;
     }
     
-    .attendee-management-section .table-responsive {
+    .attendee-management-drawer .table-responsive {
         font-size: 0.8rem;
     }
     
@@ -2262,12 +2246,12 @@ export default {
         padding: 0.5rem;
     }
     
-    .attendee-management-section .table-responsive {
+    .attendee-management-drawer .table-responsive {
         font-size: 0.75rem;
     }
     
-    .attendee-management-section .table th,
-    .attendee-management-section .table td {
+    .attendee-management-drawer .table th,
+    .attendee-management-drawer .table td {
         padding: 0.3rem 0.2rem;
         white-space: nowrap;
     }

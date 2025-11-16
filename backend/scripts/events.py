@@ -3,7 +3,8 @@
 #   [events]    /getEvents (GET), /getSpecificEvent (GET), /getUserEvents (GET), 
 #               /getTrendingEvents (GET), /getUpcomingFollowingEvents (GET), /getUserPastEvents (GET),
 #               /getUserUpcomingEvents (GET), /getRecentlyAddedEvents (GET), /searchEvents (GET),
-#               /canCreateEvents (GET),
+#               /canCreateEvents (GET), /getUserOrganisingEvents (GET), /getUserAttendingEvents (GET),
+#               /getOrganizerEventsWithAttendees (GET),
 #               /createEvent (POST), 
 #               /updateEvent (PUT), 
 #               /deleteEvent (DELETE)
@@ -1677,7 +1678,7 @@ def getUserOrganisingEvents(user_id, user_type):
                 ev = {}
                 ev['eventID'] = event['id']
                 ev['eventName'] = event['eventName']
-                ev['eventDesc'] = event['eventDesc'].replace('<p>', '').replace('</p>', '')
+                ev['eventDesc'] = event['eventDesc'].replace('<p>', '').replace('</p>', '') if event['eventDesc'] else ''
 
                 ev['eventType'] = event['eventType']
                 ev['eventStartDate'] = event['eventStartDate'].strftime('%Y-%m-%d')
@@ -1758,6 +1759,132 @@ def getUserAttendingEvents(user_id, user_type):
 
             return jsonify({
                 'events': return_data
+            }), 200
+
+    except Exception as e:
+        print(str(e))
+        return jsonify({'error': str(e)}), 500
+
+
+# -----------------------------------------------------------------------------------------
+# [GET] Get organizer events with attendee counts and details
+# Purpose: Get all events organized by a user/venue/producer with attendee counts and attendee information
+# Used: EventOrganiserDashboard.vue 
+# Output: Possible return codes [200 - Retrieval success, 404 - No events found, 500 - Internal server error]
+@blueprint.route('/getOrganizerEventsWithAttendees/<user_id>/<user_type>', methods=['GET'])
+def getOrganizerEventsWithAttendees(user_id, user_type):
+    return_data = []
+
+    try:
+        with db_manager.get_cursor() as cursor:
+            # Efficient single query using JOINs to get all events with their attendees and user info
+            cursor.execute('''
+                SELECT 
+                    e.id as event_id,
+                    ea.id as attendee_id,
+                    ea."hasPaid",
+                    ea."attendanceStatus",
+                    ea."rsvpTimestamp",
+                    ea."eventDate",
+                    ea."firstName" as attendee_first_name,
+                    ea."lastName" as attendee_last_name,
+                    ea."phoneNumber",
+                    ea."email",
+                    ea."passcodeUsed",
+                    ea."userID",
+                    ea."attendeeType" as attendee_type,
+                    -- User info from users table
+                    u.id as user_id,
+                    u."displayName",
+                    u.photo as user_photo,
+                    -- Producer info from producers table  
+                    p.id as producer_id,
+                    p."producerName",
+                    p.photo as producer_photo,
+                    -- Venue info from venues table
+                    v.id as venue_id,
+                    v."venueName", 
+                    v.photo as venue_photo
+                FROM events e
+                LEFT JOIN "eventAttendees" ea ON e.id = ea."eventID"
+                LEFT JOIN users u ON (ea."attendeeType" = 'user' AND ea."userID" = u.id)
+                LEFT JOIN producers p ON (ea."attendeeType" = 'producer' AND ea."userID" = p.id)
+                LEFT JOIN venues v ON (ea."attendeeType" = 'venue' AND ea."userID" = v.id)
+                WHERE e."eventOwnerID" = %s AND e."eventOwnerType" = %s
+                ORDER BY e."eventStartDate" DESC, e."eventStartTime" DESC, ea."rsvpTimestamp" ASC
+            ''', (user_id, user_type))
+            
+            results = cursor.fetchall()
+
+            if not results:
+                return jsonify({'error': 'No events found'}), 404
+
+            # Group results by event ID
+            events_dict = {}
+            
+            for row in results:
+                event_id = row['event_id']
+                
+                # Initialize event if not seen before
+                if event_id not in events_dict:
+                    events_dict[event_id] = {
+                        'id': event_id,
+                        'attendeeCount': 0,
+                        'attendees': []
+                    }
+                
+                # If this row has attendee data, process it
+                if row['attendee_id'] is not None:
+                    # Determine user info based on attendee type
+                    if row['attendee_type'] == 'user' and row['user_id']:
+                        user_info = {
+                            'id': row['user_id'],
+                            'displayName': row['displayName'],
+                            'photo': row['user_photo'],
+                            'userType': 'user'
+                        }
+                    elif row['attendee_type'] == 'producer' and row['producer_id']:
+                        user_info = {
+                            'id': row['producer_id'],
+                            'producerName': row['producerName'],
+                            'photo': row['producer_photo'],
+                            'userType': 'producer'
+                        }
+                    elif row['attendee_type'] == 'venue' and row['venue_id']:
+                        user_info = {
+                            'id': row['venue_id'],
+                            'venueName': row['venueName'],
+                            'photo': row['venue_photo'],
+                            'userType': 'venue'
+                        }
+                    else:
+                        # Skip if user info not found
+                        continue
+                    
+                    # Add attendee-specific information
+                    user_info.update({
+                        'attendeeId': row['attendee_id'],
+                        'hasPaid': row['hasPaid'] or False,
+                        'attendanceStatus': row['attendanceStatus'] or 'Not Checked In',
+                        'rsvpDate': row['rsvpTimestamp'],
+                        'eventDate': row['eventDate'],
+                        'firstName': row['attendee_first_name'],
+                        'lastName': row['attendee_last_name'],
+                        'phoneNumber': row['phoneNumber'],
+                        'email': row['email'],
+                        'passcodeUsed': row['passcodeUsed']
+                    })
+                    
+                    events_dict[event_id]['attendees'].append(user_info)
+                    events_dict[event_id]['attendeeCount'] += 1
+
+            # Convert to list format
+            return_data = list(events_dict.values())
+
+            return jsonify({
+                'events': return_data,
+                'totalEvents': len(return_data),
+                'totalAttendees': sum(event['attendeeCount'] for event in return_data)
             }), 200
 
     except Exception as e:
