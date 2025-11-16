@@ -757,13 +757,11 @@
                             <input type="text" class="form-control" id="eventName" v-model="eventCopy.eventName">
                         </div>
 
-                        <!-- Original event description -->
-                        <label for="originalEventDesc" class="form-label fw-bold">Original Event Description:</label>
-                        <p v-html="eventCopy.eventDesc"></p>
-
-                        <!-- Event description input editor -->
-                        <p class="fw-bold">New Event Description (Input the new description here, leave blank if there is no changes.)</p>
-                        <div id="editor-container" style="height: 300px;" class="mb-3"></div>
+                        <!-- Event description editor -->
+                        <div class="mb-3">
+                            <label for="eventDescEditor" class="form-label fw-bold">Event Description</label>
+                            <div id="editor-container" style="height: 300px;" class="mb-3"></div>
+                        </div>
 
                         <!-- Event type -->
                         <div class="mb-3 row">
@@ -1241,6 +1239,9 @@ export default {
                 
                 // Initialize passcodes for editing (convert single passcode field to eventPasscodes array)
                 this.initializeEventPasscodes();
+                
+                // Sync Quill editor with the event description
+                this.syncQuillEditor();
 
                 this.dataLoaded = true;
 
@@ -1461,6 +1462,23 @@ export default {
             this.eventCopy = JSON.parse(JSON.stringify(this.event));
             // Ensure eventPasscodes is always an array for editing
             this.initializeEventPasscodes();
+            // Sync Quill editor with the reset eventCopy
+            this.syncQuillEditor();
+        },
+
+        // Function to sync Quill editor with eventCopy.eventDesc
+        syncQuillEditor() {
+            if (this.quill) {
+                this.$nextTick(() => {
+                    setTimeout(() => {
+                        if (this.eventCopy.eventDesc) {
+                            this.quill.root.innerHTML = this.eventCopy.eventDesc;
+                        } else {
+                            this.quill.setText('');
+                        }
+                    }, 100);
+                });
+            }
         },
 
         // Function to add a new passcode field in edit mode
@@ -1500,15 +1518,11 @@ export default {
             });
 
             try {
-                // Check if there is a change in the event description
-                const content = this.quill.getText(); // Get the plain text
-                if (content.trim().length > 0) {
-                    // Update the event description
-                    this.eventCopy.eventDesc = this.quill.root.innerHTML;
-
-                    // Sanitize the event description
-                    this.eventCopy.eventDesc = DOMPurify.sanitize(this.eventCopy.eventDesc);
-                }
+                // Get the event description from the editor
+                this.eventCopy.eventDesc = this.quill.root.innerHTML;
+                
+                // Sanitize the event description
+                this.eventCopy.eventDesc = DOMPurify.sanitize(this.eventCopy.eventDesc);
 
                 // Get current time
                 let currentTime = new Date().toTimeString().split(' ')[0];
@@ -2104,6 +2118,14 @@ export default {
                 ]
             }
         });
+
+        // Add Bootstrap modal event listener to sync Quill editor when modal is shown
+        const editModal = document.getElementById('editEventModal');
+        if (editModal) {
+            editModal.addEventListener('shown.bs.modal', () => {
+                this.syncQuillEditor();
+            });
+        }
         
         this.getEvent();
         this.getAttendees();
