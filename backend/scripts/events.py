@@ -1694,6 +1694,7 @@ def getUserOrganisingEvents(user_id, user_type):
                 ev['eventLocation'] = event['eventLocation']
                 ev['numAttendees'] = event['numAttendees']
                 ev['eventPasscode'] = event['passcode']
+                ev['eventLimit'] = event['eventLimit']
 
                 return_data.append(ev)
 

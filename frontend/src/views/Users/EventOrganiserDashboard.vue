@@ -148,7 +148,7 @@
                                     </div>
                                     <div class="event-stats">
                                         <div class="attendee-count">
-                                            <span class="count">{{ event.attendeeCount || 0 }}/{{ event.eventCapacity || 'N/A' }}</span>
+                                            <span class="count">{{ event.attendeeCount || 0 }}/{{ event.eventLimit || 'N/A' }}</span>
                                             <span class="label">Attendees</span>
                                         </div>
                                     </div>
@@ -209,7 +209,7 @@
                                     </div>
                                     <div class="event-stats">
                                         <div class="attendee-count">
-                                            <span class="count">{{ event.attendeeCount || 0 }}/{{ event.eventCapacity || 'N/A' }}</span>
+                                            <span class="count">{{ event.attendeeCount || 0 }}/{{ event.eventLimit || 'N/A' }}</span>
                                             <span class="label">Attended</span>
                                         </div>
                                     </div>
@@ -271,7 +271,7 @@
                                             >
                                                 <span class="rank">{{ index + 1 }}</span>
                                                 <span class="event-name">{{ event.eventName }}</span>
-                                                <span class="attendees">{{ event.attendeeCount || 0 }}/{{ event.eventCapacity || 'N/A' }}</span>
+                                                <span class="attendees">{{ event.attendeeCount || 0 }}/{{ event.eventLimit || 'N/A' }}</span>
                                             </div>
                                         </div>
                                         <div v-else class="text-center text-muted py-3">
@@ -560,7 +560,7 @@ export default {
         analyticsData() {
             const totalEvents = this.eventsWithAttendees.length;
             const totalAttendees = this.eventsWithAttendees.reduce((sum, event) => sum + (event.attendeeCount || 0), 0);
-            const totalCapacity = this.eventsWithAttendees.reduce((sum, event) => sum + (event.eventCapacity || 0), 0);
+            const totalCapacity = this.eventsWithAttendees.reduce((sum, event) => sum + (event.eventLimit || 0), 0);
             const averageFillRate = totalCapacity > 0 ? Math.round((totalAttendees / totalCapacity) * 100) : 0;
             
             return {
