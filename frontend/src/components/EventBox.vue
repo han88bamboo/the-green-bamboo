@@ -182,43 +182,48 @@
 
                         <!-- All Events Grid -->
                         <div v-else-if="allEvents.length > 0" class="row">
-                            <div v-for="event in allEvents" :key="event.id" class="col-6 col-md-3 mb-4">
-                                <div class="d-flex flex-column justify-content-start align-items-center">
+                            <div v-for="event in allEvents" :key="event.id" class="col-6 col-sm-4 col-lg-3 mb-3 px-2">
+                                <div class="d-flex flex-column h-100 event-card-container rounded-4 shadow-sm p-3">
                                     <!-- Banner -->
-                                    <div class="row" style="cursor: pointer; aspect-ratio: 2 / 1; overflow: hidden;" @click="navigateToEvent(event)">
+                                    <div class="event-banner-container mb-2" style="cursor: pointer; aspect-ratio: 2 / 1; overflow: hidden;" @click="navigateToEvent(event)">
                                         <img
                                             v-if="event.eventBanners"
                                             :src="event.eventBanners[0]"
                                             alt="Event Banner"
-                                            class="w-100 h-100 rounded mb-2"
+                                            class="w-100 h-100 rounded"
                                             style="object-fit: cover;"
                                         />
                                         <img
                                             v-else
                                             :src="defaultEventBanner"
                                             alt="Event Banner"
-                                            class="w-100 h-100 rounded mb-2"
+                                            class="w-100 h-100 rounded"
                                             style="object-fit: cover;"
                                         />
                                     </div>
                                     
-                                    <!-- Event Name -->
-                                    <div @click="navigateToEvent(event)" style="cursor: pointer;" class="text-center">
-                                        <p class="m-0 my-2 fw-semibold mobile-rating-smaller-text-2" style="color: black;">
-                                            <span v-if="isEventPast(event)" class="text-muted">[Event Ended] </span>{{ event.eventName }}
-                                        </p>
-                                    </div>
+                                    <!-- Event content (grows to fill available space) -->
+                                    <div class="flex-grow-1 d-flex flex-column justify-content-between">
+                                        <div>
+                                            <!-- Event Name -->
+                                            <div @click="navigateToEvent(event)" style="cursor: pointer;" class="text-center mb-2">
+                                                <p class="m-0 fw-semibold mobile-rating-smaller-text-2 event-title" style="color: black; line-height: 1.3;">
+                                                    <span v-if="isEventPast(event)" class="text-muted">[Event Ended] </span>{{ event.eventName }}
+                                                </p>
+                                            </div>
 
-                                    <!-- Event date and time -->
-                                    <p class="fw-normal mobile-rating-smaller-text-2 text-center" style="color: #027562">
-                                        {{ formatDate(event.eventStartDate) }}<span v-if="event.eventStartTime">, {{ formatTime(event.eventStartTime) }}</span><span v-if="event.eventEndTime"> - {{ formatTime(event.eventEndTime) }}</span>
-                                    </p>
+                                            <!-- Event date and time -->
+                                            <p class="fw-normal mobile-rating-smaller-text-2 text-center mb-3" style="color: #027562">
+                                                {{ formatDate(event.eventStartDate) }}<span v-if="event.eventStartTime">, {{ formatTime(event.eventStartTime) }}</span><span v-if="event.eventEndTime"> - {{ formatTime(event.eventEndTime) }}</span>
+                                            </p>
+                                        </div>
 
-                                    <!-- View Event button -->
-                                    <div class="text-center mt-1">
-                                        <button @click="navigateToEvent(event)" class="btn btn-read-more btn-sm fw-bold rounded-pill mobile-pb-1 mobile-pt-1 mobile-mb-2 mobile-fs-7">
-                                            View Event
-                                        </button>
+                                        <!-- View Event button (always at bottom) -->
+                                        <div class="text-center">
+                                            <button @click="navigateToEvent(event)" class="btn btn-read-more btn-sm fw-bold rounded-pill mobile-pb-1 mobile-pt-1 mobile-fs-7">
+                                                View Event
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -289,6 +294,45 @@
 
     .carousel-indicators-custom button:hover {
         opacity: 0.8;
+    }
+
+    /* Event card alignment styles - Responsive */
+    .event-card-container {
+        transition: transform 0.2s ease-in-out;
+    }
+
+    .event-card-container:hover {
+        transform: translateY(-2px);
+    }
+
+    .event-title {
+        line-height: 1.3;
+        word-wrap: break-word;
+        hyphens: auto;
+    }
+
+    .event-banner-container {
+        flex-shrink: 0; /* Prevent banner from shrinking */
+    }
+
+    /* Large devices (col-lg-3) - 4 cards per row */
+    @media (max-width: 991px)  {
+        .event-card-container {
+            min-height: 230px;
+        }
+        .event-title {
+            font-size: 0.95rem;
+        }
+    }
+
+    /* Extra large devices (col-lg-3) - 4 cards per row with more space */
+    @media (min-width: 992px) {
+        .event-card-container {
+            min-height: 310px;
+        }
+        .event-title {
+            font-size: 1rem;
+        }
     }
 
 </style>
