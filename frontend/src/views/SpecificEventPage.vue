@@ -122,7 +122,7 @@
                             <!-- Buttons: RSVP + Invite -->
                             <div class="d-flex gap-1 flex-shrink-0 mobile-view-hide">
                             <!-- RSVP Button -->
-                                <div v-if="!isEventEnded">
+                                <div v-if="!isEventEnded && isSignupOpen">
                                     <div v-if="event.paidEvent == false">
                                         <button v-if="attendees.length <= event.eventLimit && !rsvpStatus"
                                                 class="btn primary-btn-less-round-blue fw-bold"
@@ -142,7 +142,7 @@
                                 </div>
 
                                 <!-- UnRSVP Button -->
-                                <div v-if="rsvpStatus && !selfView && !isEventEnded">
+                                <div v-if="rsvpStatus && !selfView && !isEventEnded && isSignupOpen">
                                     <button class="btn btn-danger fw-bold" data-bs-toggle="modal" data-bs-target="#unRSVPConfirmationModal">Withdraw RSVP</button>
                                 </div>                                
 
@@ -162,7 +162,7 @@
                         </div>
                         <div class="d-flex gap-1 flex-shrink-0 mobile-view-show mb-3 mt-0">
                             <!-- RSVP Button -->
-                                <div v-if="!isEventEnded">
+                                <div v-if="!isEventEnded && isSignupOpen">
                                     <div v-if="event.paidEvent == false">
                                     <button v-if="attendees.length <= event.eventLimit && !rsvpStatus"
                                             class="btn primary-btn-less-round-blue fw-bold"
@@ -225,12 +225,28 @@
                                 Edit Event
                             </button>
                             <button
+                                v-if="isSignupOpen"
+                                class="btn btn-sm mobile-rating-smaller-text-2 lock-signup-btn"
+                                data-bs-toggle="modal"
+                                data-bs-target="#lockSignupsModal"
+                            >
+                                Lock Signups
+                            </button>
+                            <button
+                                v-if="!isSignupOpen"
+                                class="btn btn-sm mobile-rating-smaller-text-2 lock-signup-btn"
+                                data-bs-toggle="modal"
+                                data-bs-target="#lockSignupsModal"
+                            >
+                                Unlock Signups
+                            </button>
+                            <!-- <button
                                 class="btn primary-btn-red btn-sm mobile-rating-smaller-text-2"
                                 data-bs-toggle="modal"
                                 data-bs-target="#deleteEventModal"
                             >
                                 Delete Event
-                            </button>
+                            </button> -->
                             </div>
                             <div v-if="!followStatus && !selfView">
                                 <button class="btn btn-outline-light btn-md" style="font-weight: bold" @click="editFollow('follow')">Follow</button>
@@ -263,10 +279,11 @@
                             <div v-if="event.paidEvent == false">
                                 <p class="mobile-rating-smaller-text-2 mx-1 mobile-view-show">This event is ticketed. Entry is free, but click below to RSVP and save your spot!</p>
                                 <!-- button to RSVP -->
-                                <button v-if="attendees.length <= event.eventLimit && !rsvpStatus && !isEventEnded" class="btn primary-btn-less-round-blue"  style="font-weight:bold" @click="showAttendeeInfoModal" :disabled="rsvpButtonStatus">I'm interested</button>
-                                <p v-if="!isUserLoggedIn && !isEventEnded" class="mt-1" style="color:#0002FF; font-weight:bolder;">Log In to RSVP!</p>
+                                <button v-if="attendees.length <= event.eventLimit && !rsvpStatus && !isEventEnded && isSignupOpen" class="btn primary-btn-less-round-blue"  style="font-weight:bold" @click="showAttendeeInfoModal" :disabled="rsvpButtonStatus">I'm interested</button>
+                                <p v-if="!isUserLoggedIn && !isEventEnded && isSignupOpen" class="mt-1" style="color:#0002FF; font-weight:bolder;">Log In to RSVP!</p>
                                 <p v-if="isEventEnded" class="mt-1 text-muted">This event has ended. RSVPs are no longer available.</p>
-                                <p v-if="attendees.length >= event.eventlimit && !rsvpStatus" class="text-danger mobile-rating-smaller-text-2">Event is full. No more RSVPs allowed.</p>
+                                <p v-if="!isSignupOpen && !isEventEnded" class="mt-1 text-muted">Signups are closed for this event.</p>
+                                <p v-if="attendees.length >= event.eventlimit && !rsvpStatus && isSignupOpen" class="text-danger mobile-rating-smaller-text-2">Event is full. No more RSVPs allowed.</p>
                                 <p v-if="rsvpStatus" class="text-danger mobile-rating-smaller-text-2">You have already RSVPed for this event.</p>
                             </div>
 
@@ -274,9 +291,10 @@
                             <div v-else> 
                                 <p class="mobile-rating-smaller-text-2 mx-1 mobile-view-show">This event is ticketed. RSVP and purchase your ticket!</p>
                                 <!-- button to purchase ticket -->
-                                <button v-if="attendees.length <= event.eventLimit && !rsvpStatus && !isEventEnded" class="btn primary-btn-less-round-blue"  style="font-weight:bold" @click="showAttendeeInfoModal" :disabled="rsvpButtonStatus">I'm interested</button>
-                                <p v-if="!isUserLoggedIn && !isEventEnded" class="mt-1" style="color:#0002FF; font-weight:bolder;">Log In to RSVP!</p>
+                                <button v-if="attendees.length <= event.eventLimit && !rsvpStatus && !isEventEnded && isSignupOpen" class="btn primary-btn-less-round-blue"  style="font-weight:bold" @click="showAttendeeInfoModal" :disabled="rsvpButtonStatus">I'm interested</button>
+                                <p v-if="!isUserLoggedIn && !isEventEnded && isSignupOpen" class="mt-1" style="color:#0002FF; font-weight:bolder;">Log In to RSVP!</p>
                                 <p v-if="isEventEnded" class="mt-1 text-muted">This event has ended. RSVPs are no longer available.</p>
+                                <p v-if="!isSignupOpen && !isEventEnded" class="mt-1 text-muted">Signups are closed for this event.</p>
                             </div>
                             
                         </div>
@@ -433,10 +451,11 @@
                             <div v-if="event.paidEvent == false">
                                 <p class="fw-bold mobile-rating-smaller-text-2">This event is ticketed. Entry is free but click below to RSVP and save your spot!</p>
                                 <!-- button to RSVP -->
-                                <button v-if="attendees.length <= event.eventLimit && !rsvpStatus && !isEventEnded" class="btn primary-btn-less-round-blue"  style="font-weight:bold" @click="showAttendeeInfoModal" :disabled="rsvpButtonStatus">I'm interested</button>
-                                <p v-if="!isUserLoggedIn && !isEventEnded" class="mt-1" style="color:#0002FF; font-weight:bolder;">Log In to RSVP!</p>
+                                <button v-if="attendees.length <= event.eventLimit && !rsvpStatus && !isEventEnded && isSignupOpen" class="btn primary-btn-less-round-blue"  style="font-weight:bold" @click="showAttendeeInfoModal" :disabled="rsvpButtonStatus">I'm interested</button>
+                                <p v-if="!isUserLoggedIn && !isEventEnded && isSignupOpen" class="mt-1" style="color:#0002FF; font-weight:bolder;">Log In to RSVP!</p>
                                 <p v-if="isEventEnded" class="mt-1 text-muted">This event has ended. RSVPs are no longer available.</p>
-                                <p v-if="attendees.length >= event.eventlimit && !rsvpStatus" class="text-danger mobile-rating-smaller-text-2">Event is full. No more RSVPs allowed.</p>
+                                <p v-if="!isSignupOpen && !isEventEnded" class="mt-1 text-muted">Signups are closed for this event.</p>
+                                <p v-if="attendees.length >= event.eventlimit && !rsvpStatus && isSignupOpen" class="text-danger mobile-rating-smaller-text-2">Event is full. No more RSVPs allowed.</p>
                                 <p v-if="rsvpStatus" class="text-danger mobile-rating-smaller-text-2">You have already RSVPed for this event.</p>
                             </div>
 
@@ -444,9 +463,10 @@
                             <div v-else> 
                                 <p class="fw-bold mobile-rating-smaller-text-2">This event is ticketed. RSVP and purchase your ticket! <Span class="text-muted">(Payment on separate system.)</Span></p>
                                 <!-- button to purchase ticket -->
-                                <button v-if="attendees.length <= event.eventLimit && !rsvpStatus && !isEventEnded" class="btn primary-btn-less-round-blue"  style="font-weight:bold" @click="showAttendeeInfoModal" :disabled="rsvpButtonStatus">I'm interested</button>
-                                <p v-if="!isUserLoggedIn && !isEventEnded" class="mt-1" style="color:#0002FF; font-weight:bolder;">Log In to RSVP!</p>
+                                <button v-if="attendees.length <= event.eventLimit && !rsvpStatus && !isEventEnded && isSignupOpen" class="btn primary-btn-less-round-blue"  style="font-weight:bold" @click="showAttendeeInfoModal" :disabled="rsvpButtonStatus">I'm interested</button>
+                                <p v-if="!isUserLoggedIn && !isEventEnded && isSignupOpen" class="mt-1" style="color:#0002FF; font-weight:bolder;">Log In to RSVP!</p>
                                 <p v-if="isEventEnded" class="mt-1 text-muted">This event has ended. RSVPs are no longer available.</p>
+                                <p v-if="!isSignupOpen && !isEventEnded" class="mt-1 text-muted">Signups are closed for this event.</p>
                             </div>
                             
                         </div>
@@ -987,6 +1007,39 @@
         </div>
         <!-- Delete Event Modal End -->
 
+        <!-- Lock/Unlock Signups Modal Start -->
+        <div class="modal fade" id="lockSignupsModal" tabindex="-1" aria-labelledby="lockSignupsModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="lockSignupsModalLabel">
+                            <span v-if="isSignupOpen">Lock Event Signups</span>
+                            <span v-else>Unlock Event Signups</span>
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <!-- Lock Signups Content -->
+                        <div v-if="isSignupOpen">
+                            <p class="fw-bold">Are you sure you want to lock signups for this event?</p>
+                            <p class="text-muted">This action will prevent anyone from RSVPing or withdrawing their RSVP. Existing attendees will remain registered, but no new signups will be allowed.</p>
+                        </div>
+                        <!-- Unlock Signups Content -->
+                        <div v-else>
+                            <p class="fw-bold">Are you sure you want to reopen signups for this event?</p>
+                            <p class="text-muted">This will allow people to RSVP and withdraw their RSVPs again. New attendees will be able to register for the event.</p>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button v-if="isSignupOpen" type="button" class="btn lock-signup-btn" data-bs-dismiss="modal" @click="lockSignups">Lock Signups</button>
+                        <button v-if="!isSignupOpen" type="button" class="btn lock-signup-btn" data-bs-dismiss="modal" @click="unlockSignups">Unlock Signups</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Lock/Unlock Signups Modal End -->
+
         <!-- Invite Friend Modal Start (QR Code) -->
         <div class="modal fade" id="inviteFriendModal" tabindex="-1" aria-labelledby="inviteFriendModalLabel" aria-hidden="true">
             <div class="modal-dialog">
@@ -1211,6 +1264,9 @@ export default {
                 oneDayAfterStart.setDate(oneDayAfterStart.getDate() + 1);
                 return now >= oneDayAfterStart;
             }
+        },
+        isSignupOpen() {
+            return this.event.signupOpen === true || this.event.signupOpen === 'true';
         }
     },
     methods: {
@@ -1690,6 +1746,66 @@ export default {
             }
         },
 
+        // Function to lock event signups
+        async lockSignups() {
+            try {
+                await this.$axios.put(`${process.env.VUE_APP_API_URL}/events/lockSignups`, {
+                    eventID: this.event.id,
+                    eventOwnerID: this.userID,
+                    eventOwnerType: this.userType
+                })
+                .then((response) => {
+                    if (response.status == 200) {
+                        const toast = useToast();
+                        toast.success('Event signups have been locked successfully!');
+                        // Refresh event data to update the UI
+                        this.getEvent();
+                    }
+                    else {
+                        console.log(response.data.error);
+                        const toast = useToast();
+                        toast.error(response.data.error || 'Failed to lock signups. Please try again!');
+                    }
+                })
+            }
+            catch (error) {
+                console.log(error);
+                const toast = useToast();
+                const errorMessage = error.response?.data?.error || 'Failed to lock signups. Please try again!';
+                toast.error(errorMessage);
+            }
+        },
+
+        // Function to unlock event signups
+        async unlockSignups() {
+            try {
+                await this.$axios.put(`${process.env.VUE_APP_API_URL}/events/unlockSignups`, {
+                    eventID: this.event.id,
+                    eventOwnerID: this.userID,
+                    eventOwnerType: this.userType
+                })
+                .then((response) => {
+                    if (response.status == 200) {
+                        const toast = useToast();
+                        toast.success('Event signups have been unlocked successfully!');
+                        // Refresh event data to update the UI
+                        this.getEvent();
+                    }
+                    else {
+                        console.log(response.data.error);
+                        const toast = useToast();
+                        toast.error(response.data.error || 'Failed to unlock signups. Please try again!');
+                    }
+                })
+            }
+            catch (error) {
+                console.log(error);
+                const toast = useToast();
+                const errorMessage = error.response?.data?.error || 'Failed to unlock signups. Please try again!';
+                toast.error(errorMessage);
+            }
+        },
+
         // Function to change date "YYYY-MM-DD" to "Weekday DD Month YYYY"
         formatDate(date) {
             const options = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' };
@@ -2165,5 +2281,19 @@ export default {
 #attendeeInfoModal .form-control:focus {
     border-color: #027562;
     box-shadow: 0 0 0 0.2rem rgba(2, 117, 98, 0.25);
+}
+
+/* Lock/Unlock Signups Button Hover Effects */
+.lock-signup-btn {
+    background-color: #ff6000 !important;
+    color: white !important;
+    font-weight: bold !important;
+    border-radius: 30px !important;
+    transition: background-color 0.3s ease !important;
+}
+
+.lock-signup-btn:hover {
+    background-color: #e55500 !important;
+    color: white !important;
 }
 </style>

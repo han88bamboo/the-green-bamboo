@@ -131,7 +131,12 @@
                                             <img :src="(event.eventBanners && event.eventBanners[0]) || defaultEventBanner" :alt="event.eventName" />
                                         </div>
                                         <div class="event-details">
-                                            <h4 class="event-title">{{ event.eventName }}</h4>
+                                            <router-link 
+                                                :to="`/event/${event.id}/${slugify(event.eventName)}`"
+                                                class="event-title-link"
+                                            >
+                                                <h4 class="event-title">{{ event.eventName }}</h4>
+                                            </router-link>
                                             <div class="event-datetime">
                                                 <div class="datetime-row">
                                                     <i class="bi bi-calendar-event"></i>
@@ -155,14 +160,32 @@
                                                 <span class="count">{{ event.attendeeCount || 0 }}/{{ event.eventLimit || 'N/A' }}</span>
                                                 <span class="label">&nbsp;Attendees</span>
                                             </button>
-                                            <button 
-                                                class="btn primary-btn btn-sm edit-event-btn"
-                                                @click="openEventManagementModal(event)"
-                                                title="Edit Event"
-                                            >
-                                                <i class="bi bi-pencil me-1"></i>
-                                                Edit
-                                            </button>
+                                            <div class="button-group">
+                                                <button 
+                                                    class="btn primary-btn btn-sm edit-event-btn"
+                                                    @click="openEventManagementModal(event)"
+                                                    title="Edit Event"
+                                                >
+                                                    <i class="bi bi-pencil me-1"></i>
+                                                    Edit
+                                                </button>
+                                                <button
+                                                    v-if="isSignupOpen(event)"
+                                                    class="btn btn-sm lock-signup-btn"
+                                                    @click="openSignupManagementModal(event)"
+                                                    title="Lock Signups"
+                                                >
+                                                    Lock Signups
+                                                </button>
+                                                <button
+                                                    v-if="!isSignupOpen(event)"
+                                                    class="btn btn-sm lock-signup-btn"
+                                                    @click="openSignupManagementModal(event)"
+                                                    title="Unlock Signups"
+                                                >
+                                                    Unlock Signups
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
                                     
@@ -290,7 +313,12 @@
                                             </div>
                                         </div>
                                         <div class="event-details">
-                                            <h4 class="event-title">{{ event.eventName }}</h4>
+                                            <router-link 
+                                                :to="`/event/${event.id}/${slugify(event.eventName)}`"
+                                                class="event-title-link"
+                                            >
+                                                <h4 class="event-title">{{ event.eventName }}</h4>
+                                            </router-link>
                                             <div class="event-datetime">
                                                 <div class="datetime-row">
                                                     <i class="bi bi-calendar-event"></i>
@@ -750,6 +778,57 @@
                     </div>
                 </div>
 
+                <!-- Lock/Unlock Signups Modal Start -->
+                <div 
+                    v-if="showLockSignupsModal" 
+                    class="modal d-block" 
+                    style="background-color: rgba(0, 0, 0, 0.5); position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 1050;"
+                    @click.self="closeLockSignupsModal"
+                >
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">
+                                    <span v-if="selectedEventForSignupManagement && isSignupOpen(selectedEventForSignupManagement)">Lock Event Signups</span>
+                                    <span v-else>Unlock Event Signups</span>
+                                </h5>
+                                <button type="button" class="btn-close" @click="closeLockSignupsModal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <!-- Lock Signups Content -->
+                                <div v-if="selectedEventForSignupManagement && isSignupOpen(selectedEventForSignupManagement)">
+                                    <p class="fw-bold">Are you sure you want to lock signups for "{{ selectedEventForSignupManagement.eventName }}"?</p>
+                                    <p class="text-muted">This action will prevent anyone from RSVPing or withdrawing their RSVP. Existing attendees will remain registered, but no new signups will be allowed.</p>
+                                </div>
+                                <!-- Unlock Signups Content -->
+                                <div v-else-if="selectedEventForSignupManagement">
+                                    <p class="fw-bold">Are you sure you want to reopen signups for "{{ selectedEventForSignupManagement.eventName }}"?</p>
+                                    <p class="text-muted">This will allow people to RSVP and withdraw their RSVPs again. New attendees will be able to register for the event.</p>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" @click="closeLockSignupsModal">Cancel</button>
+                                <button 
+                                    v-if="selectedEventForSignupManagement && isSignupOpen(selectedEventForSignupManagement)" 
+                                    type="button" 
+                                    class="btn lock-signup-btn" 
+                                    @click="lockSignups"
+                                >
+                                    Lock Signups
+                                </button>
+                                <button 
+                                    v-else-if="selectedEventForSignupManagement"
+                                    type="button" 
+                                    class="btn lock-signup-btn" 
+                                    @click="unlockSignups"
+                                >
+                                    Unlock Signups
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Lock/Unlock Signups Modal End -->
 
             </div>
         </div>
@@ -822,6 +901,10 @@ export default {
             expandedEventId: null, // Track which event's attendees are expanded
             attendeesForManagement: {}, // Object to store attendees by event ID
             loadingAttendeeManagement: {}, // Track loading state per event
+
+            // Signup management
+            showLockSignupsModal: false,
+            selectedEventForSignupManagement: null,
 
             // Mock data for development (TODO: Replace with real API calls)
             mockUpcomingEvents: [
@@ -905,10 +988,12 @@ export default {
                 );
                 
                 return {
-                    ...event, // Basic event info
+                    ...event, // Basic event info (includes signupOpen)
                     id: event.eventID, // Standardize to 'id' for template consistency
                     attendeeCount: attendeeData?.attendeeCount || 0,
-                    attendees: attendeeData?.attendees || []
+                    attendees: attendeeData?.attendees || [],
+                    // Ensure signupOpen is properly preserved with default value
+                    signupOpen: event.signupOpen !== undefined ? event.signupOpen : true
                 };
             });
         },
@@ -1141,6 +1226,81 @@ export default {
                 console.error('Error updating attendance status:', error);
                 const toast = useToast();
                 toast.error('Failed to update attendance status');
+            }
+        },
+
+        // Signup management methods (adapted from SpecificEventPage.vue)
+        
+        // Check if signups are open for a specific event
+        isSignupOpen(event) {
+            // Default to true if signupOpen is undefined, similar to SpecificEventPage.vue logic
+            if (event.signupOpen === undefined || event.signupOpen === null) {
+                return true;
+            }
+            return event.signupOpen === true || event.signupOpen === 'true';
+        },
+
+        // Open signup management modal
+        openSignupManagementModal(event) {
+            this.selectedEventForSignupManagement = event;
+            this.showLockSignupsModal = true;
+        },
+
+        // Close signup management modal
+        closeLockSignupsModal() {
+            this.showLockSignupsModal = false;
+            this.selectedEventForSignupManagement = null;
+        },
+
+        // Lock signups for an event
+        async lockSignups() {
+            const toast = useToast();
+            
+            try {
+                await this.$axios.put(`${process.env.VUE_APP_API_URL}/events/lockSignups`, {
+                    eventID: this.selectedEventForSignupManagement.id,
+                    eventOwnerID: this.currentUserID,
+                    eventOwnerType: this.currentUserType
+                });
+
+                toast.success('Signups locked successfully!');
+                
+                // Update the event's signupOpen status locally in allOrganisingEvents
+                const eventIndex = this.allOrganisingEvents.findIndex(e => e.eventID === this.selectedEventForSignupManagement.id);
+                if (eventIndex !== -1) {
+                    this.allOrganisingEvents[eventIndex].signupOpen = false;
+                }
+                
+                this.closeLockSignupsModal();
+            } catch (error) {
+                console.error('Error locking signups:', error);
+                toast.error('Failed to lock signups. Please try again.');
+            }
+        },
+
+        // Unlock signups for an event
+        async unlockSignups() {
+            const toast = useToast();
+            
+            try {
+                await this.$axios.put(`${process.env.VUE_APP_API_URL}/events/unlockSignups`, {
+                    eventID: this.selectedEventForSignupManagement.id,
+                    eventOwnerID: this.currentUserID,
+                    eventOwnerType: this.currentUserType
+                });
+
+                toast.success('Signups unlocked successfully!');
+                
+                // Update the event's signupOpen status locally in allOrganisingEvents
+                const eventIndex = this.allOrganisingEvents.findIndex(e => e.eventID === this.selectedEventForSignupManagement.id);
+                if (eventIndex !== -1) {
+                    this.allOrganisingEvents[eventIndex].signupOpen = true;
+                }
+                
+                this.closeLockSignupsModal();
+            } catch (error) {
+                console.error('Error unlocking signups:', error);
+                toast.error('Failed to unlock signups. Please try again.');
             }
         },
 
@@ -1392,6 +1552,15 @@ export default {
                 );
                 this.allOrganisingEvents = basicEventsResponse.data.events || [];
                 
+                // Debug log to check what signupOpen data we're getting from the API
+                console.log('fetchOrganizerEvents - allOrganisingEvents with signupOpen data:', 
+                    this.allOrganisingEvents.map(event => ({
+                        id: event.eventID,
+                        name: event.eventName,
+                        signupOpen: event.signupOpen
+                    }))
+                );
+                
                 // Fetch attendee data
                 const attendeesResponse = await this.$axios.get(
                     `${process.env.VUE_APP_API_URL}/events/getOrganizerEventsWithAttendees/${this.dashboardUserID}/${this.dashboardUserType}`
@@ -1572,6 +1741,20 @@ export default {
     background-color: #c82333;
     border-color: #bd2130;
     color: white;
+}
+
+/* Lock/Unlock Signups Button Hover Effects */
+.lock-signup-btn {
+    background-color: #ff6000 !important;
+    color: white !important;
+    font-weight: bold !important;
+    /* border-radius: 30px !important; */
+    transition: background-color 0.3s ease !important;
+}
+
+.lock-signup-btn:hover {
+    background-color: #e55500 !important;
+    color: white !important;
 }
 
 /* Modal form alignment */
@@ -1845,11 +2028,28 @@ export default {
     flex: 1;
 }
 
+/* Event Title Link Styling */
+.event-title-link {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+    transition: color 0.2s ease;
+}
+
+.event-title-link:hover {
+    text-decoration: none;
+}
+
+.event-title-link:hover .event-title {
+    color: #027562;
+}
+
 .event-title {
     font-size: 1.1rem;
     font-weight: 600;
     margin: 0 0 0.5rem 0;
     color: #212529;
+    transition: color 0.2s ease;
 }
 
 .event-datetime {
@@ -1877,7 +2077,14 @@ export default {
     align-items: flex-end;
     gap: 0.75rem;
     flex-shrink: 0;
-    min-width: 120px;
+    min-width: 200px;
+}
+
+.event-stats .button-group {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    justify-content: flex-end;
 }
 
 .attendee-count {
@@ -2271,8 +2478,14 @@ export default {
         gap: 1rem;
     }
     
-    .edit-event-btn {
+    .event-stats .button-group {
+        flex-direction: column;
+        gap: 0.25rem;
         margin-left: auto;
+        flex-shrink: 0;
+    }
+    
+    .edit-event-btn {
         flex-shrink: 0;
     }
     

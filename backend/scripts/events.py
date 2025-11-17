@@ -6,7 +6,7 @@
 #               /canCreateEvents (GET), /getUserOrganisingEvents (GET), /getUserAttendingEvents (GET),
 #               /getOrganizerEventsWithAttendees (GET),
 #               /createEvent (POST), 
-#               /updateEvent (PUT), 
+#               /updateEvent (PUT), /lockSignups (PUT), /unlockSignups (PUT),
 #               /deleteEvent (DELETE)
 #   [attendees] /getAttendees (GET), /checkAttendance (GET), 
 #               /addAttendee (POST), 
@@ -1222,6 +1222,94 @@ def deleteEvent():
 
 
 # -----------------------------------------------------------------------------------------
+# [PUT] Lock event signups
+# Purpose: Set signupOpen to false for an event, preventing new RSVPs and withdrawals
+# Used: SpecificEventPage.vue (inside views folder)
+# Output: Possible return codes [200 - Success, 400 - Missing required fields / No such event, 403 - Unauthorized, 500 - Internal server error]
+@blueprint.route('/lockSignups', methods=['PUT'])
+def lockSignups():
+
+    try:
+        with db_manager.get_cursor() as cursor:
+            data = request.get_json()
+
+            # Step 1: Check if all required fields are provided
+            if not data or not data.get('eventID') or not data.get('eventOwnerID') or not data.get('eventOwnerType'):
+                return jsonify({'error': 'Missing required fields'}), 400
+
+            # Step 2: Check if the event exists
+            cursor.execute('SELECT * FROM events WHERE id = %s', (data['eventID'],))
+            event = cursor.fetchone()
+
+            if not event:
+                return jsonify({'error': 'No such event'}), 400
+
+            # Convert eventOwnerID to integer for comparison
+            data['eventOwnerID'] = int(data['eventOwnerID'])
+
+            # Step 3: Check if the user who is locking signups is the owner of the event
+            if event['eventOwnerID'] != data['eventOwnerID'] or event['eventOwnerType'] != data['eventOwnerType']:
+                return jsonify({'error': 'Unauthorized to lock signups for this event'}), 403
+            
+            # Step 4: Check if signups are already locked
+            if not event['signupOpen']:
+                return jsonify({'error': 'Signups are already locked for this event'}), 400
+
+            # Step 5: Lock the signups by setting signupOpen to false
+            cursor.execute('UPDATE events SET "signupOpen" = false WHERE id = %s', (data['eventID'],))
+
+            return jsonify({'message': 'Event signups locked successfully'}), 200
+
+    except Exception as e:
+        print(str(e))
+        return jsonify({'error': str(e)}), 500
+
+
+# -----------------------------------------------------------------------------------------
+# [PUT] Unlock event signups
+# Purpose: Set signupOpen to true for an event, allowing new RSVPs and withdrawals
+# Used: SpecificEventPage.vue (inside views folder)
+# Output: Possible return codes [200 - Success, 400 - Missing required fields / No such event, 403 - Unauthorized, 500 - Internal server error]
+@blueprint.route('/unlockSignups', methods=['PUT'])
+def unlockSignups():
+
+    try:
+        with db_manager.get_cursor() as cursor:
+            data = request.get_json()
+
+            # Step 1: Check if all required fields are provided
+            if not data or not data.get('eventID') or not data.get('eventOwnerID') or not data.get('eventOwnerType'):
+                return jsonify({'error': 'Missing required fields'}), 400
+
+            # Step 2: Check if the event exists
+            cursor.execute('SELECT * FROM events WHERE id = %s', (data['eventID'],))
+            event = cursor.fetchone()
+
+            if not event:
+                return jsonify({'error': 'No such event'}), 400
+
+            # Convert eventOwnerID to integer for comparison
+            data['eventOwnerID'] = int(data['eventOwnerID'])
+
+            # Step 3: Check if the user who is unlocking signups is the owner of the event
+            if event['eventOwnerID'] != data['eventOwnerID'] or event['eventOwnerType'] != data['eventOwnerType']:
+                return jsonify({'error': 'Unauthorized to unlock signups for this event'}), 403
+            
+            # Step 4: Check if signups are already unlocked
+            if event['signupOpen']:
+                return jsonify({'error': 'Signups are already open for this event'}), 400
+
+            # Step 5: Unlock the signups by setting signupOpen to true
+            cursor.execute('UPDATE events SET "signupOpen" = true WHERE id = %s', (data['eventID'],))
+
+            return jsonify({'message': 'Event signups unlocked successfully'}), 200
+
+    except Exception as e:
+        print(str(e))
+        return jsonify({'error': str(e)}), 500
+
+
+# -----------------------------------------------------------------------------------------
 # [GET] Get all attendees of an event
 # Purpose: Get all attendees of an event
 # Used: SpecifiEventPage.vue (inside views folder)
@@ -1696,6 +1784,7 @@ def getUserOrganisingEvents(user_id, user_type):
                 ev['numAttendees'] = event['numAttendees']
                 ev['eventPasscode'] = event['passcode']
                 ev['eventLimit'] = event['eventLimit']
+                ev['signupOpen'] = event['signupOpen']  # Include signupOpen field for dashboard
 
                 return_data.append(ev)
 
