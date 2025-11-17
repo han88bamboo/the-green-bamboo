@@ -426,9 +426,14 @@
                         data-bs-toggle="collapse" :data-bs-target="'#collapseMenuSection' + index"
                         aria-expanded="false" :aria-controls="'collapseMenuSection' + index"
                         @click="handleSectionExpand(menuSection, $event)"
-                        style="white-space: nowrap; overflow:hidden;text-overflow: ellipsis;">
+                        :style="{
+                            'white-space': 'nowrap', 
+                            'overflow': 'hidden',
+                            'text-overflow': 'ellipsis',
+                            'background-color': getSectionBackgroundColor(menuSection.sectionName) ? '#' + getSectionBackgroundColor(menuSection.sectionName) : ''
+                        }">
                         <span style="flex: 1; overflow: hidden; text-overflow: ellipsis;">
-                            {{ menuSection.sectionName }}
+                            {{ getCleanSectionName(menuSection.sectionName) }}
                             <span v-if="selfView"> [{{ getSectionItemCount(menuSection) }} items]</span>
                         </span>
                         <i class="bi bi-chevron-down collapse-indicator ms-2" style="flex-shrink: 0; transition: transform 0.3s ease;"></i>
@@ -4664,6 +4669,21 @@ export default {
                 return subsection.sectionMenu.length;
             }
             return 0;
+        },
+
+        // Extract hex color and clean section name
+        getCleanSectionName(sectionName) {
+            if (!sectionName) return '';
+            // Remove 6-digit hex codes at the end (e.g., "Wine Section#ff0000" -> "Wine Section")
+            return sectionName.replace(/#[0-9a-fA-F]{6}$/, '');
+        },
+
+        // Get background color from section name
+        getSectionBackgroundColor(sectionName) {
+            if (!sectionName) return '';
+            // Extract 6-digit hex code at the end
+            const match = sectionName.match(/#([0-9a-fA-F]{6})$/);
+            return match ? match[1] : '';
         },
         
         // Load currency symbols from API
