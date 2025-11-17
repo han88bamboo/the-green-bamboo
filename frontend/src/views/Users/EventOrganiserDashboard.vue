@@ -23,16 +23,18 @@
             </button>
         </div>
 
-        <div class="main-content pt-4">
+        <div class="main-content">
             <!-- Main Content -->
             <div v-if="dataLoaded" class="container-fluid ">
                 <!-- Dashboard Header -->
-                <div class="row mb-4">
+                <div class="row border-bottom pb-4 pt-3 shadow">
                     <div class="col-12">
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
-                                <h2 class="fw-bold mb-1" style="color:#027562">Event Organiser Dashboard</h2>
-                                <p class="text-muted mb-0">Manage your events and attendees</p>
+                                <h3 class="fw-bold mb-1" style="color:#027562">
+                                    Manage events and attendees<span v-if="dashboardUserDisplayName">: <span style="color:black;">{{ dashboardUserDisplayName }}</span></span>
+                                </h3>
+                                
                             </div>
                             <!-- Quick Actions -->
                             <div class="d-flex gap-2">
@@ -105,7 +107,7 @@
                     </div>
 
                     <!-- Content Area -->
-                    <div class="dashboard-content">
+                    <div class="dashboard-content mt-3">
                         <!-- Upcoming Events Tab -->
                         <div v-if="activeTab === 'upcoming'" class="content-section">
                             <div class="section-header mb-4">
@@ -124,7 +126,7 @@
                             <!-- Event Cards -->
                             <div v-else class="event-cards-container">
                                 <template v-for="event in upcomingAndOngoingEvents" :key="event.id">
-                                    <div class="event-card">
+                                    <div class="event-card ps-3">
                                         <div class="event-thumbnail">
                                             <img :src="(event.eventBanners && event.eventBanners[0]) || defaultEventBanner" :alt="event.eventName" />
                                         </div>
@@ -148,9 +150,10 @@
                                                 @click="toggleAttendeeManagement(event)"
                                                 :class="{ 'active': expandedEventId === event.id, 'compressed': expandedEventId === event.id }"
                                                 title="Manage Attendees"
+                                                style=" display: inline-flex; flex-direction: row;"
                                             >
                                                 <span class="count">{{ event.attendeeCount || 0 }}/{{ event.eventLimit || 'N/A' }}</span>
-                                                <span class="label">Attendees</span>
+                                                <span class="label">&nbsp;Attendees</span>
                                             </button>
                                             <button 
                                                 class="btn primary-btn btn-sm edit-event-btn"
@@ -166,7 +169,7 @@
                                     <!-- Attendee Management Drawer (appears below the event card) -->
                                     <div 
                                         v-if="expandedEventId === event.id" 
-                                        class="attendee-management-drawer"
+                                        class="attendee-management-drawer mt-0"
                                     >
                                         <div class="attendee-management-content">
                                             <h5 class="fw-bold mb-3" style="color:#027562">
@@ -279,7 +282,7 @@
                             <!-- Event Cards -->
                             <div v-else class="event-cards-container">
                                 <template v-for="event in completedEvents" :key="event.id">
-                                    <div class="event-card past-event">
+                                    <div class="event-card past-event ps-3">
                                         <div class="event-thumbnail">
                                             <img :src="(event.eventBanners && event.eventBanners[0]) || defaultEventBanner" :alt="event.eventName" />
                                             <div class="past-overlay">
@@ -324,7 +327,7 @@
                                     <!-- Attendee Management Drawer (appears below the event card) -->
                                     <div 
                                         v-if="expandedEventId === event.id" 
-                                        class="attendee-management-drawer"
+                                        class="attendee-management-drawer mt-0"
                                     >
                                         <div class="attendee-management-content">
                                             <h5 class="fw-bold mb-3" style="color:#027562">
@@ -769,13 +772,16 @@ export default {
             // Page state
             dataLoaded: false,
             
-            // Route parameters
-            dashboardUserType: this.$route.params.userType, // 'user', 'venue', or 'producer'
-            dashboardUserID: this.$route.params.userID,
+            // Route parameters (will be set in mounted)
+            dashboardUserType: null,
+            dashboardUserID: null,
             
             // Current user (for access control)
             currentUserID: null,
             currentUserType: null,
+            
+            // Dashboard user information
+            dashboardUserInfo: null,
             
             // Tab management
             activeTab: 'upcoming',
@@ -882,7 +888,11 @@ export default {
     computed: {
         // Check if current user can view this dashboard
         canViewDashboard() {
-            return this.currentUserID === this.dashboardUserID && 
+            // Ensure both IDs are strings for comparison
+            const currentID = String(this.currentUserID);
+            const dashboardID = String(this.dashboardUserID);
+            
+            return currentID === dashboardID && 
                    this.currentUserType === this.dashboardUserType;
         },
         
@@ -960,6 +970,22 @@ export default {
                     .sort((a, b) => (b.attendeeCount || 0) - (a.attendeeCount || 0))
                     .slice(0, 3)
             };
+        },
+        
+        // Format display name for dashboard user
+        dashboardUserDisplayName() {
+            if (!this.dashboardUserInfo) return '';
+            
+            switch (this.dashboardUserType) {
+                case 'user':
+                    return `@${this.dashboardUserInfo.username || this.dashboardUserInfo.displayName || 'Unknown User'}`;
+                case 'venue':
+                    return this.dashboardUserInfo.venueName || 'Unknown Venue';
+                case 'producer':
+                    return this.dashboardUserInfo.producerName || 'Unknown Producer';
+                default:
+                    return '';
+            }
         }
     },
     methods: {
@@ -1392,6 +1418,40 @@ export default {
             }
         },
         
+        // Fetch dashboard user information
+        async fetchDashboardUserInfo() {
+            console.log('fetchDashboardUserInfo called with:', {
+                userType: this.dashboardUserType,
+                userID: this.dashboardUserID,
+                apiUrl: process.env.VUE_APP_API_URL
+            });
+            
+            let endpoint;
+            try {
+                switch (this.dashboardUserType) {
+                    case 'user':
+                        endpoint = `/getData/getUser/${this.dashboardUserID}`;
+                        break;
+                    case 'venue':
+                        endpoint = `/getData/getVenue/${this.dashboardUserID}`;
+                        break;
+                    case 'producer':
+                        endpoint = `/getData/getProducer/${this.dashboardUserID}`;
+                        break;
+                    default:
+                        console.error('Invalid dashboard user type:', this.dashboardUserType);
+                        return;
+                }
+                
+                const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}${endpoint}`);
+                this.dashboardUserInfo = response.data;
+            } catch (error) {
+                console.error('Error fetching dashboard user info:', error);
+                console.error('Failed endpoint:', endpoint);
+                // Don't fail the whole page if user info fails to load
+            }
+        },
+        
         // TODO: Implement event management methods
         // editEvent(eventId) {
         //     this.$router.push(`/event/${eventId}/edit`);
@@ -1419,8 +1479,17 @@ export default {
         
         // Initialize dashboard with real data
         async initializeDashboard() {
+            console.log('initializeDashboard - Access check:', {
+                canViewDashboard: this.canViewDashboard,
+                currentUserID: this.currentUserID,
+                dashboardUserID: this.dashboardUserID,
+                currentUserType: this.currentUserType,
+                dashboardUserType: this.dashboardUserType
+            });
+            
             // Check access permissions
             if (!this.canViewDashboard) {
+                console.error('Access denied - user cannot view this dashboard');
                 const toast = useToast();
                 toast.error('You are not authorized to view this dashboard');
                 this.$router.push('/events/view');
@@ -1428,8 +1497,13 @@ export default {
             }
             
             try {
+                console.log('Access granted - fetching data...');
                 // Fetch real data
-                await this.fetchOrganizerEvents();
+                await Promise.all([
+                    this.fetchOrganizerEvents(),
+                    this.fetchDashboardUserInfo()
+                ]);
+                console.log('Data fetched successfully, dashboardUserInfo:', this.dashboardUserInfo);
                 this.dataLoaded = true;
                 
             } catch (error) {
@@ -1442,6 +1516,17 @@ export default {
         // Get current user info
         this.currentUserID = localStorage.getItem("88B_accID");
         this.currentUserType = localStorage.getItem("88B_accType");
+        
+        // Get route parameters
+        this.dashboardUserType = this.$route.params.userType;
+        this.dashboardUserID = this.$route.params.userID;
+        
+        console.log('Route params extracted:', {
+            dashboardUserType: this.dashboardUserType,
+            dashboardUserID: this.dashboardUserID,
+            currentUserID: this.currentUserID,
+            currentUserType: this.currentUserType
+        });
         
         if (!this.currentUserID || this.currentUserType === 'defaultUser') {
             const toast = useToast();
@@ -1709,7 +1794,7 @@ export default {
     background: white;
     border: 1px solid #e9ecef;
     border-radius: 12px;
-    padding: 1.5rem;
+    padding: 0.5rem;
     display: flex;
     align-items: center;
     gap: 1.5rem;
@@ -1801,7 +1886,7 @@ export default {
 
 .attendee-count .count {
     display: block;
-    font-size: 1.2rem;
+    font-size: 1rem;
     font-weight: 700;
     color: #027562;
 }
@@ -1897,7 +1982,7 @@ export default {
 
 .attendee-count-btn .count {
     display: block;
-    font-size: 1.2rem;
+    font-size: 1rem;
     font-weight: 700;
     color: white;
 }

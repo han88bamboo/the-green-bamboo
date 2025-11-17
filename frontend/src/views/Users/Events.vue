@@ -117,7 +117,7 @@
                     <router-link 
                         v-if="userID && userType && userType !== 'defaultUser'"
                         :to="`/events/organiser-dashboard/${userType}/${userID}`" 
-                        class="btn btn-primary btn-lg mobile-rating-smaller-text-2 fw-bold"
+                        class="btn btn-lg mobile-rating-smaller-text-2 fw-bold organizer-dashboard-btn"
                         title="Manage all your events in one place"
                     >
                         Organizer Dashboard
@@ -1747,6 +1747,27 @@ export default {
 .banner-stack .banner-fore {
   object-fit: contain;  /* key: prevents cropping for vertical images */
   z-index: 1;
+}
+
+/* Organizer Dashboard Button */
+.organizer-dashboard-btn {
+  background-color: #027562 !important;
+  border-color: #027562 !important;
+  color: white !important;
+}
+
+.organizer-dashboard-btn:hover {
+  background-color: #025a4a !important;
+  border-color: #025a4a !important;
+  color: white !important;
+}
+
+.organizer-dashboard-btn:focus,
+.organizer-dashboard-btn:active {
+  background-color: #025a4a !important;
+  border-color: #025a4a !important;
+  color: white !important;
+  box-shadow: 0 0 0 0.2rem rgba(2, 117, 98, 0.25) !important;
 }
 
 </style>
