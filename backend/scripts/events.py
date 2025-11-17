@@ -1552,6 +1552,10 @@ def addAttendee():
             if attendee:
                 return jsonify({'error': 'User is already an attendee'}), 400
 
+            # Step 4.5: Check if event has reached its attendance limit
+            if event['eventLimit'] and event['numAttendees'] >= event['eventLimit']:
+                return jsonify({'error': 'Event is full. No more registrations allowed.'}), 400
+
             # Step 5: Add the attendee to the event
             cursor.execute('''
                 INSERT INTO "eventAttendees" 
