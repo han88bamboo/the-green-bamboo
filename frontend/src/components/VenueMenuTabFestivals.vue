@@ -427,7 +427,10 @@
                         aria-expanded="false" :aria-controls="'collapseMenuSection' + index"
                         @click="handleSectionExpand(menuSection, $event)"
                         style="white-space: nowrap; overflow:hidden;text-overflow: ellipsis;">
-                        <span style="flex: 1; overflow: hidden; text-overflow: ellipsis;">{{ menuSection.sectionName }}</span>
+                        <span style="flex: 1; overflow: hidden; text-overflow: ellipsis;">
+                            {{ menuSection.sectionName }}
+                            <span v-if="selfView"> [{{ getSectionItemCount(menuSection) }} items]</span>
+                        </span>
                         <i class="bi bi-chevron-down collapse-indicator ms-2" style="flex-shrink: 0; transition: transform 0.3s ease;"></i>
                     </button>
                 </div>
@@ -887,7 +890,10 @@
                                     aria-expanded="false" :aria-controls="'collapseSubSection' + index + '_' + subIndex"
                                     @click="handleSectionExpand(subsection, $event)"
                                     style="white-space: nowrap; overflow:hidden;text-overflow: ellipsis; margin-left: 20px;">
-                                    <span style="flex: 1; overflow: hidden; text-overflow: ellipsis;">{{ subsection.sectionName }}</span>
+                                    <span style="flex: 1; overflow: hidden; text-overflow: ellipsis;">
+                                        {{ subsection.sectionName }}
+                                        <span v-if="selfView"> [{{ getSubsectionItemCount(subsection) }} items]</span>
+                                    </span>
                                     <i class="bi bi-chevron-down collapse-indicator ms-2" style="flex-shrink: 0; transition: transform 0.3s ease;"></i>
                                 </button>
                             </div>
@@ -1350,6 +1356,7 @@
                                 :aria-controls="'collapseEditMenuSection' + menuSection.sectionOrder"
                                 style="white-space: nowrap; overflow:hidden;text-overflow: ellipsis;">
                                 {{ menuSection.sectionName }}
+                                <span v-if="selfView"> [{{ getSectionItemCount(menuSection) }} items]</span>
                             </button>
                         </div>
                         
@@ -1375,6 +1382,7 @@
                                 :aria-controls="'collapseEditMenuSection' + menuSection.sectionOrder"
                                 style="white-space: nowrap; overflow:hidden;text-overflow: ellipsis;">
                                 {{ menuSection.sectionName }}
+                                <span v-if="selfView"> [{{ getSectionItemCount(menuSection) }} items]</span>
                             </button>
                         </div>
                         
@@ -1816,6 +1824,7 @@
                                                     :aria-controls="'collapseEditSubSection' + subsection.sectionOrder"
                                                     style="white-space: nowrap; overflow:hidden;text-overflow: ellipsis;">
                                                     {{ subsection.sectionName }}
+                                                    <span v-if="selfView"> [{{ getSubsectionItemCount(subsection) }} items]</span>
                                                 </button>
                                             </div>
                                             
@@ -1842,6 +1851,7 @@
                                                     :aria-controls="'collapseEditSubSection' + subsection.sectionOrder"
                                                     style="white-space: nowrap; overflow:hidden;text-overflow: ellipsis;">
                                                     {{ subsection.sectionName }}
+                                                    <span v-if="selfView"> [{{ getSubsectionItemCount(subsection) }} items]</span>
                                                 </button>
                                             </div>
                                             
@@ -4627,6 +4637,35 @@ export default {
     },
     methods: {
         
+        // Calculate total item count for main sections (direct items + subsection items)
+        getSectionItemCount(menuSection) {
+            let count = 0;
+            
+            // Count direct items in the section
+            if (menuSection.sectionMenu && menuSection.sectionMenu.length > 0) {
+                count += menuSection.sectionMenu.length;
+            }
+            
+            // Count items in all subsections
+            if (menuSection.subsections && menuSection.subsections.length > 0) {
+                menuSection.subsections.forEach(subsection => {
+                    if (subsection.sectionMenu && subsection.sectionMenu.length > 0) {
+                        count += subsection.sectionMenu.length;
+                    }
+                });
+            }
+            
+            return count;
+        },
+        
+        // Calculate item count for subsections (only direct items)
+        getSubsectionItemCount(subsection) {
+            if (subsection.sectionMenu && subsection.sectionMenu.length > 0) {
+                return subsection.sectionMenu.length;
+            }
+            return 0;
+        },
+        
         // Load currency symbols from API
         async loadCurrencies() {
             try {
@@ -4899,32 +4938,6 @@ export default {
                     }
                 }
             }, 300); // Wait 300ms for sheet close animation
-        },
-
-        // Get total item count for a section (including subsections)
-        getSectionItemCount(section) {
-            let count = 0;
-            
-            // Count direct items in this section
-            if (section.sectionMenu && Array.isArray(section.sectionMenu)) {
-                count += section.sectionMenu.length;
-            }
-            
-            // Count items in all subsections
-            if (section.subsections && Array.isArray(section.subsections)) {
-                section.subsections.forEach(subsection => {
-                    if (subsection.sectionMenu && Array.isArray(subsection.sectionMenu)) {
-                        count += subsection.sectionMenu.length;
-                    }
-                });
-            }
-            
-            console.log('🔵 Jump to Sheet: Section item count', {
-                sectionName: section.sectionName,
-                count
-            });
-            
-            return count;
         },
 
         // ------- END Jump to Section Methods ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
