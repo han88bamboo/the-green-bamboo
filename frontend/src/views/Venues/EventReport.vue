@@ -35,7 +35,7 @@
                         </div>
                         
                         <!-- Main Title -->
-                        <h1 class="mb-2">Drink-X Event Report: {{ venueName }}</h1>
+                        <h1 class="mb-2">Drink-X Festival Report: {{ venueName }}</h1>
                         <p class="text-muted mb-4">Date Generated: {{ getCurrentDate() }}</p>
                         
                         <!-- Event Overview & Summary -->

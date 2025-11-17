@@ -286,14 +286,14 @@
                     height: 64px;
                     object-fit: contain;
                     border-radius: 4px;
-                " alt="View Event Report" />
+                " alt="View Festival Report" />
                                 <div class="text-start">
                                     <p class="mobile-rating-smaller-text-2 mb-2 text-start">
-                                        <strong>View Event Report</strong> (Access comprehensive analytics and insights about your event's performance, including tasting patterns, popular sections, and attendee engagement!)
+                                        <strong>View Festival Report</strong> (Access comprehensive analytics and insights about your event's performance, including tasting patterns, popular sections, and attendee engagement!)
                                     </p>
                                     <router-link :to="`/venue/${targetVenueID || targetVenue.id}/event-report`">
                                         <button class="btn btn-warning btn-sm rounded fw-bold fs-8">
-                                            View Event Report
+                                            View Festival Report
                                         </button>
                                     </router-link>
                                 </div>
@@ -3101,11 +3101,19 @@
                 <!-- ------- START View Analytics ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
                 
                 
+                <!-- Event Organiser Dashboard Button -->
+                <div v-if="selfView" class="row">
+                    <router-link class="d-grid pb-3 text-decoration-none" :to="`/events/organiser-dashboard/${viewerType}/${viewerID}`">
+                        <button type="button" class="btn btn-lg mobile-rating-smaller-text-2 fw-bold organizer-dashboard-btn"
+                            title="Manage all your events in one place"> Event Organiser Dashboard </button>
+                    </router-link>
+                </div>
+                
                 <!-- View Event Report Button (Festival/Event venues only) -->
                 <div v-if="selfView && targetVenue?.specialStatus === 'EVENT_FESTIVAL'" class="row">
                     <router-link class="d-grid pb-3 text-decoration-none" :to="`/venue/${targetVenueID || targetVenue.id}/event-report`">
                         <button type="button" class="btn secondary-btn-not-rounded rounded-0"
-                            style=" font-weight: bold;"> View Event Report </button>
+                            style=" font-weight: bold;"> View Festival Report </button>
                     </router-link>
                 </div>
                 
@@ -9555,5 +9563,26 @@ letter-spacing: 1px;
 /* Expanded state: chevron points down */
 .amenities-toggle-btn[aria-expanded="true"] .amenities-chevron {
     transform: rotate(0deg);
+}
+
+/* Organizer Dashboard Button */
+.organizer-dashboard-btn {
+  background-color: #027562 !important;
+  border-color: #027562 !important;
+  color: white !important;
+}
+
+.organizer-dashboard-btn:hover {
+  background-color: #025a4a !important;
+  border-color: #025a4a !important;
+  color: white !important;
+}
+
+.organizer-dashboard-btn:focus,
+.organizer-dashboard-btn:active {
+  background-color: #025a4a !important;
+  border-color: #025a4a !important;
+  color: white !important;
+  box-shadow: 0 0 0 0.2rem rgba(2, 117, 98, 0.25) !important;
 }
 </style>
