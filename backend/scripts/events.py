@@ -1789,6 +1789,12 @@ def getUserOrganisingEvents(user_id, user_type):
                 ev['eventPasscode'] = event['passcode']
                 ev['eventLimit'] = event['eventLimit']
                 ev['signupOpen'] = event['signupOpen']  # Include signupOpen field for dashboard
+                
+                # Add missing fields needed for edit modal
+                ev['ticketed'] = event['ticketed']
+                ev['paidEvent'] = event['paidEvent']
+                ev['paymentLink'] = event['paymentLink']
+                ev['passcode'] = event['passcode']  # Also provide as 'passcode' for consistency
 
                 return_data.append(ev)
 

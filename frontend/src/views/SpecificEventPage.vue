@@ -884,7 +884,7 @@
                         </div>
 
                         <!-- Paid event -->
-                        <div v-if="eventCopy.ticketed == true" class="mb-3">
+                        <div v-if="eventCopy.ticketed == 'true'" class="mb-3">
                             <label for="paidEventYes" class="fw-bold">If it is a ticketed event, are tickets free or paid?</label>
                             <div>
                                 <!-- Yes Option -->
@@ -2239,6 +2239,13 @@ export default {
         const editModal = document.getElementById('editEventModal');
         if (editModal) {
             editModal.addEventListener('shown.bs.modal', () => {
+                // Convert boolean fields to strings for radio buttons
+                if (this.eventCopy.ticketed !== undefined) {
+                    this.eventCopy.ticketed = String(this.eventCopy.ticketed);
+                }
+                if (this.eventCopy.paidEvent !== undefined) {
+                    this.eventCopy.paidEvent = String(this.eventCopy.paidEvent);
+                }
                 this.syncQuillEditor();
             });
         }

@@ -69,13 +69,13 @@
                             >
                                 <span class="rotated-text">Past Events</span>
                             </button>
-                            <button 
+                            <!-- <button 
                                 class="nav-tab-vertical"
                                 :class="{ active: activeTab === 'analytics' }"
                                 @click="activeTab = 'analytics'"
                             >
                                 <span class="rotated-text">Analytics</span>
-                            </button>
+                            </button> -->
                         </div>
                     </div>
 
@@ -96,13 +96,13 @@
                             >
                                 Past Events
                             </button>
-                            <button 
+                            <!-- <button 
                                 class="nav-link"
                                 :class="{ active: activeTab === 'analytics' }"
                                 @click="activeTab = 'analytics'"
                             >
                                 Analytics
-                            </button>
+                            </button> -->
                         </div>
                     </div>
 
@@ -450,13 +450,12 @@
                         </div>
 
                         <!-- Analytics Tab -->
-                        <div v-if="activeTab === 'analytics'" class="content-section">
+                        <!-- <div v-if="activeTab === 'analytics'" class="content-section">
                             <div class="section-header mb-4">
                                 <h3 class="section-title">Analytics</h3>
                                 <p class="section-subtitle">Track your event performance</p>
                             </div>
 
-                            <!-- Analytics Cards -->
                             <div class="analytics-grid">
                                 <div class="analytics-card">
                                     <div class="card-header">
@@ -547,7 +546,7 @@
                                     </div>
                                 </div>
                             </div>
-                        </div>
+                        </div> -->
                     </div>
                 </div>
 
@@ -677,7 +676,7 @@
                                             </div>
 
                                             <!-- Paid event -->
-                                            <div v-if="selectedEventCopy.ticketed == true" class="mb-3">
+                                            <div v-if="selectedEventCopy.ticketed == 'true'" class="mb-3">
                                                 <label for="paidEventYes" class="fw-bold">If it is a ticketed event, are tickets free or paid?</label>
                                                 <div>
                                                     <!-- Yes Option -->
@@ -1132,6 +1131,15 @@ export default {
         openEventManagementModal(event) {
             this.selectedEvent = event;
             this.selectedEventCopy = JSON.parse(JSON.stringify(event));
+            
+            // Convert boolean fields to strings for radio buttons
+            if (this.selectedEventCopy.ticketed !== undefined) {
+                this.selectedEventCopy.ticketed = String(this.selectedEventCopy.ticketed);
+            }
+            if (this.selectedEventCopy.paidEvent !== undefined) {
+                this.selectedEventCopy.paidEvent = String(this.selectedEventCopy.paidEvent);
+            }
+            
             this.initializeEventPasscodes();
             this.showEventManagementModal = true;
             
