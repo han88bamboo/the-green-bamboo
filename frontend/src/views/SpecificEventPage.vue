@@ -2095,6 +2095,7 @@ export default {
                 'RAFFLES18': 'WLS2025SATVIP',                    // String for single code
                 'CHANGI88': ['WLS2025SATCON', 'WLS2025SUNCON'],
                 'MACRITCHIE93': 'WLS2025SATCON',
+                'MACRITICHIE93': 'WLS2025SATCON',
                 'ESPLANADE12': 'WLS2025SUNVIP',
                 'PADANG90': 'WLS2025SUNCON'
                 // Add more hardcoded passcode mappings here as needed
