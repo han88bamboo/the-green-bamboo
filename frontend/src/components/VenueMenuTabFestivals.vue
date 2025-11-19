@@ -12082,6 +12082,7 @@ export default {
 
     // Initiate sharing bookmarks
     async initiateShareBookmarks() {
+      const toast = useToast();
       try {
         // Generate shareable link
         this.shareableLink = await this.generateShareableLink();
@@ -12092,29 +12093,31 @@ export default {
         
       } catch (error) {
         console.error('Error sharing bookmarks:', error);
-        this.$toast.error('Failed to generate share link. Please try again.');
+        toast.error('Failed to generate share link. Please try again.');
       }
     },
 
     // Generate a shareable API link for current user's bookmarks
     async generateShareableLink() {
-      const venueId = this.targetVenue?.id;
-      const userId = this.$store.getters.user?.id;
+      const venueName = this.targetVenue?.venueName || this.targetVenue?.name;
+      const userId = this.currentUserId;
       
-      if (!venueId || !userId) {
+      if (!venueName || !userId) {
         throw new Error('Missing venue or user information');
       }
 
       // Create a shareable API link that others can use to import bookmarks
+      // Use the original endpoint format: /getFestivalBookmarks/<user_id>/<venue_name>
       const baseUrl = process.env.VUE_APP_API_URL || 'https://api.drink-x.com';
-      return `${baseUrl}/getData/getFestivalBookmarks/${venueId}/${userId}`;
+      return `${baseUrl}/getData/getFestivalBookmarks/${userId}/${encodeURIComponent(venueName)}`;
     },
 
     // Copy shareable link to clipboard
     async copyShareableLink() {
+      const toast = useToast();
       try {
         await navigator.clipboard.writeText(this.shareableLink);
-        this.$toast.success('Share link copied to clipboard!');
+        toast.success('Share link copied to clipboard!');
       } catch (error) {
         console.error('Failed to copy to clipboard:', error);
         
@@ -12126,7 +12129,7 @@ export default {
         document.execCommand('copy');
         document.body.removeChild(textArea);
         
-        this.$toast.success('Share link copied to clipboard!');
+        toast.success('Share link copied to clipboard!');
       }
     },
 
@@ -12144,62 +12147,87 @@ export default {
 
     // Load friend's bookmarks from API link
     async loadFriendBookmarks() {
+      const toast = useToast();
       if (!this.importApiLink.trim()) {
-        this.$toast.error('Please enter a valid share link');
+        toast.error('Please enter a valid share link');
         return;
       }
 
       // Validate link format
       if (!this.validateImportLink(this.importApiLink)) {
-        this.$toast.error('Invalid share link format. Please check the link and try again.');
+        toast.error('Invalid share link format. Please check the link and try again.');
         return;
       }
 
       this.importLoadingItems = true;
       
       try {
-        // Extract venue and user IDs from the API link
-        const linkMatch = this.importApiLink.match(/\/getFestivalBookmarks\/(\d+)\/(\d+)/);
+        // Extract user ID and venue name from the API link
+        const linkMatch = this.importApiLink.match(/\/getFestivalBookmarks\/(\d+)\/(.+)$/);
         if (!linkMatch) {
           throw new Error('Could not parse share link');
         }
 
-        const [, friendVenueId, friendUserId] = linkMatch;
-        const currentVenueId = this.targetVenue?.id?.toString();
+        const [, friendUserId, friendVenueName] = linkMatch;
+        const currentVenueName = this.targetVenue?.venueName || this.targetVenue?.name;
+
+        // Decode the venue name from URL encoding
+        const decodedFriendVenueName = decodeURIComponent(friendVenueName);
 
         // Check if venues match
-        if (friendVenueId !== currentVenueId) {
-          this.$toast.error('This bookmark list is for a different venue. Please visit the correct venue page first.');
+        if (decodedFriendVenueName !== currentVenueName) {
+          toast.error('This bookmark list is for a different venue. Please visit the correct venue page first.');
           return;
         }
 
-        // Fetch friend's bookmarks
+        // Fetch friend's bookmarks using original endpoint
         const response = await this.axios.get(this.importApiLink);
         
-        if (response.data && response.data.bookmarks) {
-          this.friendBookmarks = response.data.bookmarks.map(bookmark => ({
-            ...bookmark,
-            selected: true // Default all items to selected
-          }));
-          this.friendUsername = response.data.username || 'Your friend';
+        if (response.data && response.data.bookmarkedItems && response.data.bookmarkedItems.length > 0) {
+          // Get friend's username
+          const userResponse = await this.axios.get(`/getData/getUser/${friendUserId}`);
+          this.friendUsername = userResponse.data?.username || 'Your friend';
 
-          // Close import modal and show confirmation
-          this.showImportModal = false;
-          this.showImportConfirmModal = true;
+          // Get detailed item information for all bookmarked items
+          const itemsResponse = await this.axios.post('/getData/getListingsByIDs', {
+            listingIDs: response.data.bookmarkedItems
+          });
 
+          if (itemsResponse.data && Array.isArray(itemsResponse.data)) {
+            this.friendBookmarks = itemsResponse.data.map(item => ({
+              itemID: item.id,
+              itemVintage: null, // No vintage info from original endpoint
+              selected: true, // Default all items to selected
+              itemDetails: {
+                itemName: item.itemName,
+                itemProducer: item.itemProducer,
+                itemPhoto: item.itemPhoto,
+                itemType: item.itemType,
+                itemRegion: item.itemRegion,
+                itemCountry: item.itemCountry,
+                itemABV: item.itemABV
+              }
+            }));
+
+            // Close import modal and show confirmation
+            this.showImportModal = false;
+            this.showImportConfirmModal = true;
+          } else {
+            toast.error('Could not load bookmark details');
+          }
         } else {
-          this.$toast.error('No bookmarks found in the shared list');
+          toast.error('No bookmarks found in the shared list');
         }
 
       } catch (error) {
         console.error('Error loading friend bookmarks:', error);
         
         if (error.response?.status === 404) {
-          this.$toast.error('Bookmark list not found. The link may be invalid or expired.');
+          toast.error('Bookmark list not found. The link may be invalid or expired.');
         } else if (error.response?.status === 403) {
-          this.$toast.error('Access denied. Make sure you are logged in.');
+          toast.error('Access denied. Make sure you are logged in.');
         } else {
-          this.$toast.error('Failed to load bookmarks. Please check the link and try again.');
+          toast.error('Failed to load bookmarks. Please check the link and try again.');
         }
       } finally {
         this.importLoadingItems = false;
@@ -12208,8 +12236,8 @@ export default {
 
     // Validate the import link format
     validateImportLink(link) {
-      // Check if it's a valid API link format
-      const apiPattern = /^https?:\/\/[^\/]+\/getData\/getFestivalBookmarks\/\d+\/\d+$/;
+      // Check if it's a valid API link format: /getData/getFestivalBookmarks/<user_id>/<venue_name>
+      const apiPattern = /^https?:\/\/[^\/]+\/getData\/getFestivalBookmarks\/\d+\/.+$/;
       return apiPattern.test(link.trim());
     },
 
@@ -12229,10 +12257,11 @@ export default {
 
     // Confirm and perform bulk import
     async confirmImportBookmarks() {
+      const toast = useToast();
       const selectedItems = this.friendBookmarks.filter(item => item.selected);
       
       if (selectedItems.length === 0) {
-        this.$toast.error('Please select at least one item to import');
+        toast.error('Please select at least one item to import');
         return;
       }
 
@@ -12250,7 +12279,7 @@ export default {
         for (const item of selectedItems) {
           try {
             const bookmarkData = {
-              userId: this.$store.getters.user?.id,
+              userId: this.currentUserId,
               listName: listName,
               drinkId: item.itemID
             };
@@ -12269,14 +12298,14 @@ export default {
 
         // Show results
         if (successCount > 0) {
-          this.$toast.success(`Successfully imported ${successCount} bookmark${successCount > 1 ? 's' : ''}!`);
+          toast.success(`Successfully imported ${successCount} bookmark${successCount > 1 ? 's' : ''}!`);
           
           // Refresh bookmarks to get updated data
           await this.loadUserBookmarks();
         }
         
         if (failCount > 0) {
-          this.$toast.warning(`${failCount} item${failCount > 1 ? 's' : ''} could not be imported (may already be bookmarked)`);
+          toast.warning(`${failCount} item${failCount > 1 ? 's' : ''} could not be imported (may already be bookmarked)`);
         }
 
         // Close modal and clear import data
@@ -12287,7 +12316,7 @@ export default {
 
       } catch (error) {
         console.error('Error during bulk import:', error);
-        this.$toast.error('Failed to import bookmarks. Please try again.');
+        toast.error('Failed to import bookmarks. Please try again.');
       } finally {
         this.bulkImportLoading = false;
       }
