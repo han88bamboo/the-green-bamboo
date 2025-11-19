@@ -3832,15 +3832,15 @@
                     <div class="modal-body">
                         <p class="mb-3">Paste the bookmark share link from your friend:</p>
                         
-                        <div class="input-group mb-3">
+                        <div class="mb-3">
                             <input 
                                 type="text" 
-                                class="form-control custom-placeholder-text" 
+                                class="form-control custom-placeholder-text mb-2" 
                                 v-model="importApiLink"
-                                placeholder="https://api.drink-x.com/getData/getFestivalBookmarks/..."
+                                placeholder="Paste link here..."
                             >
                             <button 
-                                class="btn btn-primary" 
+                                class="btn btn-primary w-100" 
                                 type="button" 
                                 @click="loadFriendBookmarks"
                                 :disabled="!importApiLink.trim() || importLoadingItems"
@@ -3866,7 +3866,7 @@
             <div class="modal-backdrop fade show bookmark-modal-backdrop" @click="closeImportModal"></div>
             <div class="modal-dialog modal-lg">
                 <div class="modal-content">
-                    <div class="modal-header">
+                    <div class="modal-header" style="background-color:#f2994a;">
                         <h5 class="modal-title" id="importConfirmationModalLabel">
                             Import Bookmarks from {{ friendUsername }}
                         </h5>
