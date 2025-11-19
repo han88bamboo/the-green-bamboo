@@ -239,7 +239,7 @@
                     <i class="bi bi-trophy me-2"></i>
                     Randomly Pick A Winner
                   </button>
-                  <button 
+                  <!-- <button 
                     class="btn btn-outline-info btn-sm"
                     @click="toggleDetailedResponses(currentPoll.id)"
                     :disabled="loadingDetailedResponses"
@@ -250,7 +250,7 @@
                       <span v-if="loadingDetailedResponses" class="spinner-border spinner-border-sm ms-2"></span>
                     </span>
                     <span v-else>Hide Detailed Responses</span>
-                  </button>
+                  </button> -->
                 </div>
                 
                 <div v-if="showDetailedResponses[currentPoll.id]" class="detailed-responses-content mt-3">
