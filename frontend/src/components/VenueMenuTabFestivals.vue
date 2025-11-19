@@ -12162,6 +12162,8 @@ export default {
       this.importLoadingItems = true;
       
       try {
+        console.log('🔍 Starting import process with link:', this.importApiLink);
+        
         // Extract user ID and venue name from the API link
         const linkMatch = this.importApiLink.match(/\/getFestivalBookmarks\/(\d+)\/(.+)$/);
         if (!linkMatch) {
@@ -12171,8 +12173,20 @@ export default {
         const [, friendUserId, friendVenueName] = linkMatch;
         const currentVenueName = this.targetVenue?.venueName || this.targetVenue?.name;
 
+        console.log('🔍 Parsed values:', {
+          friendUserId,
+          friendVenueName,
+          currentVenueName
+        });
+
         // Decode the venue name from URL encoding
         const decodedFriendVenueName = decodeURIComponent(friendVenueName);
+        
+        console.log('🔍 Venue comparison:', {
+          decodedFriendVenueName,
+          currentVenueName,
+          matches: decodedFriendVenueName === currentVenueName
+        });
 
         // Check if venues match
         if (decodedFriendVenueName !== currentVenueName) {
@@ -12180,18 +12194,30 @@ export default {
           return;
         }
 
+        console.log('🔍 Making API call to:', this.importApiLink);
+        
         // Fetch friend's bookmarks using original endpoint
-        const response = await this.axios.get(this.importApiLink);
+        const response = await this.$axios.get(this.importApiLink);
+        
+        console.log('🔍 API response:', response.data);
         
         if (response.data && response.data.bookmarkedItems && response.data.bookmarkedItems.length > 0) {
+          console.log('🔍 Found bookmarked items:', response.data.bookmarkedItems);
+          
           // Get friend's username
-          const userResponse = await this.axios.get(`/getData/getUser/${friendUserId}`);
+          console.log('🔍 Getting user info for ID:', friendUserId);
+          const userResponse = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getUser/${friendUserId}`);
           this.friendUsername = userResponse.data?.username || 'Your friend';
+          
+          console.log('🔍 Friend username:', this.friendUsername);
 
           // Get detailed item information for all bookmarked items
-          const itemsResponse = await this.axios.post('/getData/getListingsByIDs', {
+          console.log('🔍 Getting detailed item info for IDs:', response.data.bookmarkedItems);
+          const itemsResponse = await this.$axios.post(`${process.env.VUE_APP_API_URL}/getData/getListingsByIDs`, {
             listingIDs: response.data.bookmarkedItems
           });
+          
+          console.log('🔍 Items response:', itemsResponse.data);
 
           if (itemsResponse.data && Array.isArray(itemsResponse.data)) {
             this.friendBookmarks = itemsResponse.data.map(item => ({
@@ -12208,14 +12234,20 @@ export default {
                 itemABV: item.itemABV
               }
             }));
+            
+            console.log('🔍 Processed friendBookmarks:', this.friendBookmarks);
 
             // Close import modal and show confirmation
             this.showImportModal = false;
             this.showImportConfirmModal = true;
+            
+            console.log('🔍 Successfully opened confirmation modal');
           } else {
+            console.error('🔍 Invalid items response format:', itemsResponse.data);
             toast.error('Could not load bookmark details');
           }
         } else {
+          console.error('🔍 No bookmarked items in response:', response.data);
           toast.error('No bookmarks found in the shared list');
         }
 
