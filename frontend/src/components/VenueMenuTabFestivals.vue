@@ -180,7 +180,7 @@
         <div class="container" v-if="targetVenue['claimStatus']">
             <div class="row align-items-stretch mobile-view-show">
                 <!-- Search Bar -->
-                <div v-if="!editMenuMode" :class="isSignedInUser ? 'col-8' : 'col-12'" class="p-0 position-relative">
+                <div v-if="!editMenuMode" :class="isSignedInUser ? 'col-12 mb-1' : 'col-12'" class="p-0 position-relative">
                     <input class="form-control rounded fst-italic" style="border: 2px solid #83a9e8"
                         type="text" placeholder="Search festival line up 🔎" v-model="searchMenuTerm"
                         @keyup.enter="searchMenu"
@@ -195,7 +195,7 @@
                 </div>
                 
                 <!-- Tasting Filter Toggle Button -->
-                <div v-if="!editMenuMode && isSignedInUser" class="col-2 pe-1 position-relative">
+                <div v-if="!editMenuMode && isSignedInUser" class="col-4 ps-0 pe-1 position-relative">
                     <div class="d-grid gap-2 h-100">
                         <button 
                             class="btn h-100" 
@@ -227,7 +227,7 @@
                 </div>
 
                 <!-- Bookmark Filter Toggle Button -->
-                <div v-if="!editMenuMode && isSignedInUser" class="col-2 ps-1 position-relative">
+                <div v-if="!editMenuMode && isSignedInUser" class="col-4 ps-0 pe-1 position-relative">
                     <div class="d-grid gap-2 h-100">
                         <button 
                             class="btn h-100" 
@@ -259,7 +259,7 @@
                 </div>
 
                 <!-- Share/Import Bookmarks Button -->
-                <div v-if="!editMenuMode && isSignedInUser" class="col-2 ps-1 position-relative">
+                <div v-if="!editMenuMode && isSignedInUser" class="col-4 ps-0 pe-1 position-relative">
                     <div class="d-grid gap-2 h-100">
                         <button 
                             class="btn h-100" 
@@ -278,7 +278,7 @@
                                 paddingX: '3px',
                                 paddingY: '0.2rem'
                             }">
-                            <i class="bi bi-journal-bookmark-fill"></i>
+                            <i class="bi bi-journal-bookmark-fill"></i> <i class="bi bi-arrow-left-right"></i>
                         </button>
                     </div>
                 </div>
@@ -3762,7 +3762,7 @@
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content">
                     <div class="modal-header" style="background-color:#f2994a;">
-                        <h5 class="modal-title" id="shareImportBookmarksModalLabel">Instantly Share Bookmarked Drinks</h5>
+                        <h5 class="modal-title" id="shareImportBookmarksModalLabel">Instantly Share Bookmarks</h5>
                         <button type="button" class="btn-close" @click="showShareImportModal = false" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
@@ -3795,7 +3795,7 @@
             <div class="modal-backdrop fade show bookmark-modal-backdrop" @click="showShareResultModal = false"></div>
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content">
-                    <div class="modal-header">
+                    <div class="modal-header" style="background-color:#f2994a;">
                         <h5 class="modal-title" id="shareBookmarksResultModalLabel">Share Your Bookmarks</h5>
                         <button type="button" class="btn-close" @click="showShareResultModal = false" aria-label="Close"></button>
                     </div>
@@ -3804,7 +3804,7 @@
                         
                         <div class="input-group mb-3">
                             <input type="text" class="form-control" :value="shareableLink" readonly>
-                            <button class="btn btn-outline-secondary" type="button" @click="copyShareableLink">
+                            <button class="btn btn-primary" type="button" @click="copyShareableLink">
                                 <i class="bi bi-clipboard"></i> Copy Link
                             </button>
                         </div>
@@ -3825,7 +3825,7 @@
             <div class="modal-backdrop fade show bookmark-modal-backdrop" @click="showImportModal = false"></div>
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content">
-                    <div class="modal-header">
+                    <div class="modal-header" style="background-color:#f2994a;">
                         <h5 class="modal-title" id="importBookmarksModalLabel">Import Friend's Bookmarks</h5>
                         <button type="button" class="btn-close" @click="showImportModal = false" aria-label="Close"></button>
                     </div>
