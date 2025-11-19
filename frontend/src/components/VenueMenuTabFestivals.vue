@@ -269,7 +269,7 @@
                                 whiteSpace: 'nowrap',
                                 overflow: 'hidden',
                                 textOverflow: 'ellipsis',
-                                backgroundColor: '#f2994a',
+                                backgroundColor: '#1380d5',
                                 borderWidth: '1px',
                                 borderStyle: 'solid',
                                 color: 'white',
