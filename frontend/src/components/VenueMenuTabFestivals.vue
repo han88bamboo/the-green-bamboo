@@ -269,8 +269,7 @@
                                 whiteSpace: 'nowrap',
                                 overflow: 'hidden',
                                 textOverflow: 'ellipsis',
-                                backgroundColor: '#28a745',
-                                borderColor: '#28a745',
+                                backgroundColor: '#f2994a',
                                 borderWidth: '1px',
                                 borderStyle: 'solid',
                                 color: 'white',
@@ -3762,28 +3761,28 @@
             <div class="modal-backdrop fade show bookmark-modal-backdrop" @click="showShareImportModal = false"></div>
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="shareImportBookmarksModalLabel">Bookmark Sharing</h5>
+                    <div class="modal-header" style="background-color:#f2994a;">
+                        <h5 class="modal-title" id="shareImportBookmarksModalLabel">Instantly Share Bookmarked Drinks</h5>
                         <button type="button" class="btn-close" @click="showShareImportModal = false" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
-                        <p class="mb-3">What would you like to do with your bookmarks?</p>
+                        <p class="mb-3">Instantly share your drinks list with friends!</p>
                         
                         <div class="row g-3">
                             <div class="col-12">
                                 <button type="button" class="btn btn-primary w-100" @click="initiateShareBookmarks">
-                                    <i class="bi bi-box-arrow-up me-2"></i>
-                                    Share My Bookmarks
+                                    <i class="bi bi-box-arrow-up me-2"></i><i class="bi bi-bookmarks-fill"></i>
+                                    Share Your Bookmarks
                                 </button>
-                                <small class="text-muted">Generate a link to share your bookmarked items with friends</small>
+                                <small class="text-muted">Pass your entire drinks list to friends</small>
                             </div>
                             
                             <div class="col-12">
                                 <button type="button" class="btn btn-success w-100" @click="initiateImportBookmarks">
-                                    <i class="bi bi-box-arrow-in-down me-2"></i>
-                                    Import Friend's Bookmarks
+                                    <i class="bi bi-box-arrow-in-down me-2"></i><i class="bi bi-bookmarks-fill"></i>
+                                    Import Bookmarks
                                 </button>
-                                <small class="text-muted">Import bookmarked items from a friend's shared list</small>
+                                <small class="text-muted">Review (and instantly bookmark) your friend's list</small>
                             </div>
                         </div>
                     </div>
@@ -3806,7 +3805,7 @@
                         <div class="input-group mb-3">
                             <input type="text" class="form-control" :value="shareableLink" readonly>
                             <button class="btn btn-outline-secondary" type="button" @click="copyShareableLink">
-                                <i class="bi bi-clipboard"></i>
+                                <i class="bi bi-clipboard"></i> Copy Link
                             </button>
                         </div>
                         
@@ -3836,7 +3835,7 @@
                         <div class="input-group mb-3">
                             <input 
                                 type="text" 
-                                class="form-control" 
+                                class="form-control custom-placeholder-text" 
                                 v-model="importApiLink"
                                 placeholder="https://api.drink-x.com/getData/getFestivalBookmarks/..."
                             >
@@ -3847,7 +3846,7 @@
                                 :disabled="!importApiLink.trim() || importLoadingItems"
                             >
                                 <span v-if="importLoadingItems" class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
-                                View Friend's Bookmarks
+                                Review Bookmarks
                             </button>
                         </div>
                         
@@ -3864,14 +3863,14 @@
 
         <!-- Import Confirmation Modal -->
         <div v-if="showImportConfirmModal" class="modal fade show d-block bookmark-modal" tabindex="-1" aria-labelledby="importConfirmationModalLabel">
-            <div class="modal-backdrop fade show bookmark-modal-backdrop" @click="showImportConfirmModal = false"></div>
+            <div class="modal-backdrop fade show bookmark-modal-backdrop" @click="closeImportModal"></div>
             <div class="modal-dialog modal-lg">
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title" id="importConfirmationModalLabel">
                             Import Bookmarks from {{ friendUsername }}
                         </h5>
-                        <button type="button" class="btn-close" @click="showImportConfirmModal = false" aria-label="Close"></button>
+                        <button type="button" class="btn-close" @click="closeImportModal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
                         <p class="mb-3">Select the items you want to bookmark:</p>
@@ -3923,7 +3922,7 @@
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" @click="showImportConfirmModal = false">Cancel</button>
+                        <button type="button" class="btn btn-secondary" @click="closeImportModal">Cancel</button>
                         <button 
                             type="button" 
                             class="btn btn-primary" 
@@ -12279,6 +12278,15 @@ export default {
       });
     },
 
+    // Close import modal and clear all import data
+    closeImportModal() {
+      this.showImportConfirmModal = false;
+      // Clear import data when modal is closed
+      this.friendBookmarks = [];
+      this.importApiLink = '';
+      this.friendUsername = '';
+    },
+
     // Confirm and perform bulk import
     async confirmImportBookmarks() {
       const toast = useToast();
@@ -12352,14 +12360,8 @@ export default {
           }
         }
 
-        // Close modal
-        const confirmModal = this.$bootstrap.Modal.getInstance(document.getElementById('importConfirmationModal'));
-        if (confirmModal) confirmModal.hide();
-
-        // Clear import data
-        this.friendBookmarks = [];
-        this.importApiLink = '';
-        this.friendUsername = '';
+        // Close modal and clear data
+        this.closeImportModal();
 
       } catch (error) {
         console.error('Error during bulk import:', error);
@@ -12381,6 +12383,10 @@ export default {
 </script>
 
 <style scoped>
+
+.custom-placeholder{
+    color: #929aa1;
+}
 
 .festival-bookmark {
   color: #F2994A;
