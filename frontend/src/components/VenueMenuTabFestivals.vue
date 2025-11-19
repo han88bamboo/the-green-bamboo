@@ -279,8 +279,7 @@
                                 paddingX: '3px',
                                 paddingY: '0.2rem'
                             }">
-                            <i class="bi bi-box-arrow-up me-1"></i>
-                            <i class="bi bi-box-arrow-in-down"></i>
+                            <i class="bi bi-journal-bookmark-fill"></i>
                         </button>
                     </div>
                 </div>
