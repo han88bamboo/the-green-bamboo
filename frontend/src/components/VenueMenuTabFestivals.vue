@@ -12225,13 +12225,13 @@ export default {
               itemVintage: null, // No vintage info from original endpoint
               selected: true, // Default all items to selected
               itemDetails: {
-                itemName: item.itemName,
-                itemProducer: item.itemProducer,
-                itemPhoto: item.itemPhoto,
-                itemType: item.itemType,
-                itemRegion: item.itemRegion,
-                itemCountry: item.itemCountry,
-                itemABV: item.itemABV
+                itemName: item.listingName,
+                itemProducer: item.producerName,
+                itemPhoto: item.photo,
+                itemType: item.drinkType,
+                itemCountry: item.originCountry,
+                typeCategory: item.typeCategory,
+                bottler: item.bottler
               }
             }));
             
