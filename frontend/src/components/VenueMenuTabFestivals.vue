@@ -258,6 +258,33 @@
                     </div>
                 </div>
 
+                <!-- Share/Import Bookmarks Button -->
+                <div v-if="!editMenuMode && isSignedInUser" class="col-2 ps-1 position-relative">
+                    <div class="d-grid gap-2 h-100">
+                        <button 
+                            class="btn h-100" 
+                            type="button"
+                            @click="openShareImportModal"
+                            :style="{
+                                whiteSpace: 'nowrap',
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                backgroundColor: '#28a745',
+                                borderColor: '#28a745',
+                                borderWidth: '1px',
+                                borderStyle: 'solid',
+                                color: 'white',
+                                fontWeight: 'bold',
+                                fontSize: '0.8rem',
+                                paddingX: '3px',
+                                paddingY: '0.2rem'
+                            }">
+                            <i class="bi bi-box-arrow-up me-1"></i>
+                            <i class="bi bi-box-arrow-in-down"></i>
+                        </button>
+                    </div>
+                </div>
+
                 <!-- Edit Menu Options: Reset Section Order / Add New Section / Add Menu Item / Save Menu / Reset / Exit -->
                 <!--<div v-if="editMenuMode" class="col-2 d-grid px-1">
                 <button type="button" class="btn secondary-btn-border-thick rounded-0 reverse-clickable-text px-0" @click="editMenu.sort((a, b) => (a.sectionOrder > b.sectionOrder) ? 1 : -1);"  style="color:black;"> Reset Section Order </button>
@@ -3731,6 +3758,187 @@
         </div>
         <!-- END OF MODAL -->
 
+        <!-- Share/Import Bookmarks Modal -->
+        <div v-if="showShareImportModal" class="modal fade show d-block bookmark-modal" tabindex="-1" aria-labelledby="shareImportBookmarksModalLabel">
+            <div class="modal-backdrop fade show bookmark-modal-backdrop" @click="showShareImportModal = false"></div>
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="shareImportBookmarksModalLabel">Bookmark Sharing</h5>
+                        <button type="button" class="btn-close" @click="showShareImportModal = false" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p class="mb-3">What would you like to do with your bookmarks?</p>
+                        
+                        <div class="row g-3">
+                            <div class="col-12">
+                                <button type="button" class="btn btn-primary w-100" @click="initiateShareBookmarks">
+                                    <i class="bi bi-box-arrow-up me-2"></i>
+                                    Share My Bookmarks
+                                </button>
+                                <small class="text-muted">Generate a link to share your bookmarked items with friends</small>
+                            </div>
+                            
+                            <div class="col-12">
+                                <button type="button" class="btn btn-success w-100" @click="initiateImportBookmarks">
+                                    <i class="bi bi-box-arrow-in-down me-2"></i>
+                                    Import Friend's Bookmarks
+                                </button>
+                                <small class="text-muted">Import bookmarked items from a friend's shared list</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Share Bookmarks Results Modal -->
+        <div v-if="showShareResultModal" class="modal fade show d-block bookmark-modal" tabindex="-1" aria-labelledby="shareBookmarksResultModalLabel">
+            <div class="modal-backdrop fade show bookmark-modal-backdrop" @click="showShareResultModal = false"></div>
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="shareBookmarksResultModalLabel">Share Your Bookmarks</h5>
+                        <button type="button" class="btn-close" @click="showShareResultModal = false" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p class="mb-3">Copy this link and share it with your friends:</p>
+                        
+                        <div class="input-group mb-3">
+                            <input type="text" class="form-control" :value="shareableLink" readonly>
+                            <button class="btn btn-outline-secondary" type="button" @click="copyShareableLink">
+                                <i class="bi bi-clipboard"></i>
+                            </button>
+                        </div>
+                        
+                        <div class="alert alert-info">
+                            <small>
+                                <i class="bi bi-info-circle me-1"></i>
+                                Your friend must be logged in and visit this same venue page to import your bookmarks.
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Import Bookmarks Modal -->
+        <div v-if="showImportModal" class="modal fade show d-block bookmark-modal" tabindex="-1" aria-labelledby="importBookmarksModalLabel">
+            <div class="modal-backdrop fade show bookmark-modal-backdrop" @click="showImportModal = false"></div>
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="importBookmarksModalLabel">Import Friend's Bookmarks</h5>
+                        <button type="button" class="btn-close" @click="showImportModal = false" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p class="mb-3">Paste the bookmark share link from your friend:</p>
+                        
+                        <div class="input-group mb-3">
+                            <input 
+                                type="text" 
+                                class="form-control" 
+                                v-model="importApiLink"
+                                placeholder="https://api.drink-x.com/getData/getFestivalBookmarks/..."
+                            >
+                            <button 
+                                class="btn btn-primary" 
+                                type="button" 
+                                @click="loadFriendBookmarks"
+                                :disabled="!importApiLink.trim() || importLoadingItems"
+                            >
+                                <span v-if="importLoadingItems" class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                View Friend's Bookmarks
+                            </button>
+                        </div>
+                        
+                        <div class="alert alert-warning">
+                            <small>
+                                <i class="bi bi-exclamation-triangle me-1"></i>
+                                Make sure you're on the same venue page as your friend's shared bookmarks.
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Import Confirmation Modal -->
+        <div v-if="showImportConfirmModal" class="modal fade show d-block bookmark-modal" tabindex="-1" aria-labelledby="importConfirmationModalLabel">
+            <div class="modal-backdrop fade show bookmark-modal-backdrop" @click="showImportConfirmModal = false"></div>
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="importConfirmationModalLabel">
+                            Import Bookmarks from {{ friendUsername }}
+                        </h5>
+                        <button type="button" class="btn-close" @click="showImportConfirmModal = false" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p class="mb-3">Select the items you want to bookmark:</p>
+                        
+                        <div class="mb-3">
+                            <button type="button" class="btn btn-sm btn-outline-primary me-2" @click="selectAllImportItems">
+                                Select All
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary" @click="deselectAllImportItems">
+                                Deselect All
+                            </button>
+                        </div>
+                        
+                        <div class="import-items-list" style="max-height: 400px; overflow-y: auto;">
+                            <div v-for="item in friendBookmarks" :key="item.itemID" class="d-flex align-items-center mb-3 p-2 border rounded">
+                                <div class="form-check me-3">
+                                    <input 
+                                        class="form-check-input" 
+                                        type="checkbox" 
+                                        :id="`import-item-${item.itemID}`"
+                                        v-model="item.selected"
+                                    >
+                                </div>
+                                
+                                <div class="item-image me-3">
+                                    <img 
+                                        :src="item.itemDetails?.itemPhoto || defaultPhoto" 
+                                        :alt="item.itemDetails?.itemName"
+                                        class="producer-bottle-listing-page-bottle-image"
+                                        style="width: 60px; height: auto; object-fit: contain;"
+                                        loading="lazy"
+                                    >
+                                </div>
+                                
+                                <div class="item-details flex-grow-1">
+                                    <h6 class="mb-1 fw-bold">{{ item.itemDetails?.itemName }}</h6>
+                                    <p class="mb-0 text-muted small">
+                                        <span v-if="item.itemDetails?.itemProducer">{{ item.itemDetails.itemProducer }}</span>
+                                        <span v-if="item.itemDetails?.itemProducer && item.itemVintage"> | </span>
+                                        <span v-if="item.itemVintage">{{ item.itemVintage }} Vintage</span>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div v-if="friendBookmarks.length === 0" class="text-center text-muted py-4">
+                            <i class="bi bi-bookmark display-4"></i>
+                            <p class="mt-2">No bookmarks found to import</p>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" @click="showImportConfirmModal = false">Cancel</button>
+                        <button 
+                            type="button" 
+                            class="btn btn-primary" 
+                            @click="confirmImportBookmarks"
+                            :disabled="!hasSelectedImportItems || bulkImportLoading"
+                        >
+                            <span v-if="bulkImportLoading" class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                            Confirm Import ({{ selectedImportItemsCount }} items)
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
 </template>
 
 <script>
@@ -4047,6 +4255,16 @@ export default {
                 // Use reactive currentTime to trigger re-evaluation
                 return this.currentTime - expandTime > this.noItemsMessageDelay;
             };
+        },
+
+        // Check if any import items are selected
+        hasSelectedImportItems() {
+            return this.friendBookmarks.some(item => item.selected);
+        },
+
+        // Count selected import items
+        selectedImportItemsCount() {
+            return this.friendBookmarks.filter(item => item.selected).length;
         }
     },
     data() {
@@ -4178,6 +4396,21 @@ export default {
             // Festival Bookmark data
             userBookmarks: new Map(), // Key: `itemID`, Value: bookmark record (simplified for venue-specific bookmarking)
             bookmarkLoadingItems: new Set(), // Track which items are being bookmarked
+            
+            // Share/Import Bookmarks data
+            importApiLink: '',
+            importBookmarkItems: [], // Items to import from friend's list
+            importLoadingItems: false,
+            bulkImportLoading: false,
+            shareableLink: '',
+            friendBookmarks: [],
+            friendUsername: '',
+            
+            // Modal visibility states - declarative approach
+            showShareImportModal: false,
+            showShareResultModal: false,
+            showImportModal: false,
+            showImportConfirmModal: false,
 
             // User Reviews Tracker data
             userReviews: new Map(), // Key: `${itemID}-${variant}`, Value: review record
@@ -11838,6 +12071,226 @@ export default {
 
     getTagColor(tag) {
       return getTagColor(tag);
+    },
+
+    // ===== SHARE/IMPORT BOOKMARK METHODS =====
+    
+    // Open the share/import selection modal
+    openShareImportModal() {
+      this.showShareImportModal = true;
+    },
+
+    // Initiate sharing bookmarks
+    async initiateShareBookmarks() {
+      try {
+        // Generate shareable link
+        this.shareableLink = await this.generateShareableLink();
+        
+        // Close selection modal and show share results modal
+        this.showShareImportModal = false;
+        this.showShareResultModal = true;
+        
+      } catch (error) {
+        console.error('Error sharing bookmarks:', error);
+        this.$toast.error('Failed to generate share link. Please try again.');
+      }
+    },
+
+    // Generate a shareable API link for current user's bookmarks
+    async generateShareableLink() {
+      const venueId = this.targetVenue?.id;
+      const userId = this.$store.getters.user?.id;
+      
+      if (!venueId || !userId) {
+        throw new Error('Missing venue or user information');
+      }
+
+      // Create a shareable API link that others can use to import bookmarks
+      const baseUrl = process.env.VUE_APP_API_URL || 'https://api.drink-x.com';
+      return `${baseUrl}/getData/getFestivalBookmarks/${venueId}/${userId}`;
+    },
+
+    // Copy shareable link to clipboard
+    async copyShareableLink() {
+      try {
+        await navigator.clipboard.writeText(this.shareableLink);
+        this.$toast.success('Share link copied to clipboard!');
+      } catch (error) {
+        console.error('Failed to copy to clipboard:', error);
+        
+        // Fallback for older browsers
+        const textArea = document.createElement('textarea');
+        textArea.value = this.shareableLink;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+        
+        this.$toast.success('Share link copied to clipboard!');
+      }
+    },
+
+    // Initiate importing bookmarks
+    initiateImportBookmarks() {
+      // Clear previous import data
+      this.importApiLink = '';
+      this.friendBookmarks = [];
+      this.friendUsername = '';
+      
+      // Close selection modal and show import modal
+      this.showShareImportModal = false;
+      this.showImportModal = true;
+    },
+
+    // Load friend's bookmarks from API link
+    async loadFriendBookmarks() {
+      if (!this.importApiLink.trim()) {
+        this.$toast.error('Please enter a valid share link');
+        return;
+      }
+
+      // Validate link format
+      if (!this.validateImportLink(this.importApiLink)) {
+        this.$toast.error('Invalid share link format. Please check the link and try again.');
+        return;
+      }
+
+      this.importLoadingItems = true;
+      
+      try {
+        // Extract venue and user IDs from the API link
+        const linkMatch = this.importApiLink.match(/\/getFestivalBookmarks\/(\d+)\/(\d+)/);
+        if (!linkMatch) {
+          throw new Error('Could not parse share link');
+        }
+
+        const [, friendVenueId, friendUserId] = linkMatch;
+        const currentVenueId = this.targetVenue?.id?.toString();
+
+        // Check if venues match
+        if (friendVenueId !== currentVenueId) {
+          this.$toast.error('This bookmark list is for a different venue. Please visit the correct venue page first.');
+          return;
+        }
+
+        // Fetch friend's bookmarks
+        const response = await this.axios.get(this.importApiLink);
+        
+        if (response.data && response.data.bookmarks) {
+          this.friendBookmarks = response.data.bookmarks.map(bookmark => ({
+            ...bookmark,
+            selected: true // Default all items to selected
+          }));
+          this.friendUsername = response.data.username || 'Your friend';
+
+          // Close import modal and show confirmation
+          this.showImportModal = false;
+          this.showImportConfirmModal = true;
+
+        } else {
+          this.$toast.error('No bookmarks found in the shared list');
+        }
+
+      } catch (error) {
+        console.error('Error loading friend bookmarks:', error);
+        
+        if (error.response?.status === 404) {
+          this.$toast.error('Bookmark list not found. The link may be invalid or expired.');
+        } else if (error.response?.status === 403) {
+          this.$toast.error('Access denied. Make sure you are logged in.');
+        } else {
+          this.$toast.error('Failed to load bookmarks. Please check the link and try again.');
+        }
+      } finally {
+        this.importLoadingItems = false;
+      }
+    },
+
+    // Validate the import link format
+    validateImportLink(link) {
+      // Check if it's a valid API link format
+      const apiPattern = /^https?:\/\/[^\/]+\/getData\/getFestivalBookmarks\/\d+\/\d+$/;
+      return apiPattern.test(link.trim());
+    },
+
+    // Select all items for import
+    selectAllImportItems() {
+      this.friendBookmarks.forEach(item => {
+        item.selected = true;
+      });
+    },
+
+    // Deselect all items for import
+    deselectAllImportItems() {
+      this.friendBookmarks.forEach(item => {
+        item.selected = false;
+      });
+    },
+
+    // Confirm and perform bulk import
+    async confirmImportBookmarks() {
+      const selectedItems = this.friendBookmarks.filter(item => item.selected);
+      
+      if (selectedItems.length === 0) {
+        this.$toast.error('Please select at least one item to import');
+        return;
+      }
+
+      this.bulkImportLoading = true;
+
+      try {
+        // Create a favourite list for imported bookmarks
+        const venueId = this.targetVenue?.id;
+        const listName = `Favourites from ${this.friendUsername}`;
+        
+        // Use existing bookmark creation logic for each selected item
+        let successCount = 0;
+        let failCount = 0;
+
+        for (const item of selectedItems) {
+          try {
+            const bookmarkData = {
+              userId: this.$store.getters.user?.id,
+              listName: listName,
+              drinkId: item.itemID
+            };
+
+            await this.axios.post('/editProfile/createAndAddToFestivalFavouriteList', bookmarkData);
+            successCount++;
+            
+            // Update local bookmark state
+            this.userBookmarks.set(item.itemID, listName);
+            
+          } catch (itemError) {
+            console.error(`Failed to import item ${item.itemID}:`, itemError);
+            failCount++;
+          }
+        }
+
+        // Show results
+        if (successCount > 0) {
+          this.$toast.success(`Successfully imported ${successCount} bookmark${successCount > 1 ? 's' : ''}!`);
+          
+          // Refresh bookmarks to get updated data
+          await this.loadUserBookmarks();
+        }
+        
+        if (failCount > 0) {
+          this.$toast.warning(`${failCount} item${failCount > 1 ? 's' : ''} could not be imported (may already be bookmarked)`);
+        }
+
+        // Close modal and clear import data
+        this.showImportConfirmModal = false;
+        this.friendBookmarks = [];
+        this.importApiLink = '';
+        this.friendUsername = '';
+
+      } catch (error) {
+        console.error('Error during bulk import:', error);
+        this.$toast.error('Failed to import bookmarks. Please try again.');
+      } finally {
+        this.bulkImportLoading = false;
+      }
     }
     }
 }
@@ -13156,6 +13609,20 @@ input[type="range"].form-range::-webkit-slider-thumb {
 .read-more-link:hover {
     color: #004d39;
     text-decoration: underline;
+}
+
+/* Bookmark Modal Z-Index Fixes */
+.bookmark-modal {
+    z-index: 1055 !important;
+}
+
+.bookmark-modal-backdrop {
+    z-index: 1050 !important;
+}
+
+.bookmark-modal .modal-dialog {
+    z-index: 1060 !important;
+    position: relative;
 }
 
 

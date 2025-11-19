@@ -6545,6 +6545,147 @@ def getFestivalBookmarks(user_id, venue_name):
         }), 500
 
 # -----------------------------------------------------------------------------------------
+# [GET] Get detailed festival bookmarks for sharing/importing
+@blueprint.route("/getFestivalBookmarks/<int:venue_id>/<int:user_id>", methods=['GET'])
+def getFestivalBookmarksDetailed(venue_id, user_id):
+    """
+    Get detailed bookmarks for a specific user and venue for sharing/importing.
+    This endpoint provides full item details needed for import functionality.
+    
+    Args:
+        venue_id (int): The ID of the venue
+        user_id (int): The ID of the user whose bookmarks to retrieve
+        
+    Returns:
+        JSON object with:
+        - bookmarks: Array of detailed bookmark objects with item information
+        - username: The username of the bookmark owner
+        - venueName: The name of the venue
+        - count: Total number of bookmarks
+    """
+    
+    try:
+        with db_manager.get_cursor() as cursor:
+            # First get the venue name
+            venue_sql = '''
+                SELECT "venueName" 
+                FROM "venuesNewSchema" 
+                WHERE "id" = %s
+            '''
+            cursor.execute(venue_sql, (venue_id,))
+            venue_result = cursor.fetchone()
+            
+            if not venue_result:
+                return jsonify({
+                    'error': 'Venue not found',
+                    'bookmarks': [],
+                    'count': 0
+                }), 404
+            
+            venue_name = venue_result['venueName']
+            
+            # Get the user's username
+            user_sql = '''
+                SELECT "username" 
+                FROM "users" 
+                WHERE "id" = %s
+            '''
+            cursor.execute(user_sql, (user_id,))
+            user_result = cursor.fetchone()
+            
+            if not user_result:
+                return jsonify({
+                    'error': 'User not found',
+                    'bookmarks': [],
+                    'count': 0
+                }), 404
+            
+            username = user_result['username']
+            
+            # Find the "Favourites from <venue_name>" list for this user
+            list_name = f"Favourites from {venue_name}"
+            
+            # Query to get the list ID first
+            list_sql = '''
+                SELECT "id" 
+                FROM "usersDrinkLists" 
+                WHERE "userId" = %s AND "listName" = %s
+            '''
+            
+            cursor.execute(list_sql, (user_id, list_name))
+            list_result = cursor.fetchone()
+            
+            if not list_result:
+                # No favourites list found for this venue
+                return jsonify({
+                    'bookmarks': [],
+                    'username': username,
+                    'venueName': venue_name,
+                    'count': 0,
+                    'listName': list_name
+                })
+            
+            list_id = list_result['id']
+            
+            # Query to get detailed bookmark information with item details
+            bookmarks_sql = '''
+                SELECT 
+                    uli."drinkId" as "itemID",
+                    uli."addedDate",
+                    uli."itemVintage",
+                    l."itemName",
+                    l."itemProducer",
+                    l."itemPhoto",
+                    l."itemType",
+                    l."itemRegion",
+                    l."itemCountry",
+                    l."itemABV"
+                FROM "usersDrinkListItems" uli
+                LEFT JOIN "listings" l ON uli."drinkId" = l."id"
+                WHERE uli."listId" = %s
+                ORDER BY uli."addedDate" DESC
+            '''
+            
+            cursor.execute(bookmarks_sql, (list_id,))
+            bookmarks = cursor.fetchall()
+            
+            # Format the response with detailed item information
+            detailed_bookmarks = []
+            for bookmark in bookmarks:
+                detailed_bookmarks.append({
+                    'itemID': bookmark['itemID'],
+                    'itemVintage': bookmark['itemVintage'],
+                    'addedDate': bookmark['addedDate'].isoformat() if bookmark['addedDate'] else None,
+                    'itemDetails': {
+                        'itemName': bookmark['itemName'],
+                        'itemProducer': bookmark['itemProducer'],
+                        'itemPhoto': bookmark['itemPhoto'],
+                        'itemType': bookmark['itemType'],
+                        'itemRegion': bookmark['itemRegion'],
+                        'itemCountry': bookmark['itemCountry'],
+                        'itemABV': bookmark['itemABV']
+                    }
+                })
+            
+            return jsonify({
+                'bookmarks': detailed_bookmarks,
+                'username': username,
+                'venueName': venue_name,
+                'count': len(detailed_bookmarks),
+                'listName': list_name,
+                'venueId': venue_id,
+                'userId': user_id
+            })
+            
+    except Exception as e:
+        print(f"Error getting detailed festival bookmarks: {str(e)}")
+        return jsonify({
+            'error': 'Failed to retrieve detailed festival bookmarks',
+            'bookmarks': [],
+            'count': 0
+        }), 500
+
+# -----------------------------------------------------------------------------------------
 # [GET] Get aggregated festival tasting analytics for a venue
 @blueprint.route("/getUserFestivalTastedListAggregatedData/<int:venue_id>", methods=['GET'])
 def getUserFestivalTastedListAggregatedData(venue_id):
