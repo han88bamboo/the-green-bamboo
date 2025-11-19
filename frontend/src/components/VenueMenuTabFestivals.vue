@@ -12289,6 +12289,12 @@ export default {
         return;
       }
 
+      // Check if user is authenticated
+      if (!this.currentUserId) {
+        toast.error('Please sign in to import bookmarks');
+        return;
+      }
+
       this.bulkImportLoading = true;
 
       try {
@@ -12301,7 +12307,7 @@ export default {
         const bookmarkedItems = selectedItems.map(item => item.itemID);
         
         const bulkImportData = {
-          userId: this.$store.getters.user?.id,
+          userId: this.currentUserId,
           listName: listName,
           bookmarkedItems: bookmarkedItems,
           count: bookmarkedItems.length,
@@ -12311,7 +12317,7 @@ export default {
         console.log('🔖 Bulk import payload:', bulkImportData);
 
         // Call the new bulk import endpoint
-        const response = await this.$axios.post('/editProfile/bulkAddToFestivalFavouriteList', bulkImportData);
+        const response = await this.$axios.post(`${process.env.VUE_APP_API_URL}/editProfile/bulkAddToFestivalFavouriteList`, bulkImportData);
 
         if (response.data && response.data.data) {
           const { itemsAdded, itemsAlreadyExisting, itemsFailed, summary } = response.data.data;
