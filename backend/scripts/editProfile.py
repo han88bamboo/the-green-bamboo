@@ -943,6 +943,168 @@ def create_and_add_to_festival_favourite_list():
         }), 500
 
 # -----------------------------------------------------------------------------------------
+# [POST] Bulk add to festival favourites list
+# - Create favourites list if needed and add multiple drinks at once
+# - Handles duplicates gracefully and provides detailed feedback
+# - Possible return codes: 200 (Partial success), 201 (All added), 400 (Empty list), 500 (Error)
+@blueprint.route('/bulkAddToFestivalFavouriteList', methods=['POST'])
+def bulk_add_to_festival_favourite_list():
+    """Bulk add multiple drinks to festival favourites list with detailed feedback"""
+    data = request.get_json()
+    userID = int(data['userId'])
+    listName = data['listName'] 
+    bookmarkedItems = data.get('bookmarkedItems', [])
+    
+    # Validate input
+    if not bookmarkedItems or len(bookmarkedItems) == 0:
+        return jsonify({
+            "code": 400,
+            "data": {
+                "userId": userID,
+                "listName": listName,
+                "totalItems": 0
+            },
+            "message": "The bookmark list appears to be empty. Please check if your friend has any bookmarked items."
+        }), 400
+    
+    try:
+        with db_manager.get_cursor() as cursor:
+            # Check if the favourites list already exists
+            cursor.execute(
+                'SELECT "id" FROM "usersDrinkLists" WHERE "userId" = %s AND "listName" = %s',
+                (userID, listName)
+            )
+            
+            existing_list = cursor.fetchone()
+            list_id = None
+            
+            if existing_list:
+                list_id = existing_list['id']
+                print(f"Found existing list '{listName}' with ID: {list_id}")
+            else:
+                # Create the favourites list
+                list_desc = "Drinks you bookmarked at this event"
+                cursor.execute(
+                    'INSERT INTO "usersDrinkLists" ("userId", "listName", "listDesc", "isPublic") VALUES (%s, %s, %s, %s) RETURNING "id"',
+                    (userID, listName, list_desc, True)  # Default to public
+                )
+                list_id = cursor.fetchone()["id"]
+                print(f"Created new list '{listName}' with ID: {list_id}")
+            
+            # Check which items already exist in the list
+            format_strings = ','.join(['%s'] * len(bookmarkedItems))
+            cursor.execute(
+                f'SELECT "drinkId" FROM "usersDrinkListItems" WHERE "listId" = %s AND "drinkId" IN ({format_strings})',
+                [list_id] + bookmarkedItems
+            )
+            existing_items = set(row['drinkId'] for row in cursor.fetchall())
+            
+            # Separate items into new and already existing
+            items_to_add = [item_id for item_id in bookmarkedItems if item_id not in existing_items]
+            already_existing_items = [item_id for item_id in bookmarkedItems if item_id in existing_items]
+            
+            print(f"Items to add: {len(items_to_add)}, Already existing: {len(already_existing_items)}")
+            
+            # Bulk insert new items
+            items_added = 0
+            items_failed = []
+            
+            if items_to_add:
+                try:
+                    # Prepare bulk insert data
+                    insert_data = [(list_id, drink_id) for drink_id in items_to_add]
+                    
+                    # Execute bulk insert
+                    cursor.executemany(
+                        'INSERT INTO "usersDrinkListItems" ("listId", "drinkId", "addedDate") VALUES (%s, %s, NOW())',
+                        insert_data
+                    )
+                    
+                    items_added = len(items_to_add)
+                    print(f"Successfully added {items_added} items")
+                    
+                except Exception as insert_error:
+                    print(f"Error during bulk insert: {insert_error}")
+                    # If bulk insert fails, try individual inserts to identify problematic items
+                    for drink_id in items_to_add:
+                        try:
+                            cursor.execute(
+                                'INSERT INTO "usersDrinkListItems" ("listId", "drinkId", "addedDate") VALUES (%s, %s, NOW())',
+                                (list_id, drink_id)
+                            )
+                            items_added += 1
+                        except Exception as individual_error:
+                            print(f"Failed to add item {drink_id}: {individual_error}")
+                            items_failed.append(drink_id)
+            
+            # Prepare response message
+            total_items = len(bookmarkedItems)
+            already_existing_count = len(already_existing_items)
+            failed_count = len(items_failed)
+            
+            # Build detailed message
+            message_parts = []
+            
+            if items_added > 0:
+                message_parts.append(f"{items_added} item{'s' if items_added != 1 else ''} added")
+            
+            if already_existing_count > 0:
+                message_parts.append(f"{already_existing_count} item{'s' if already_existing_count != 1 else ''} already bookmarked")
+            
+            if failed_count > 0:
+                message_parts.append(f"{failed_count} item{'s' if failed_count != 1 else ''} failed to add")
+            
+            summary_message = ", ".join(message_parts) + "."
+            
+            # Determine response code
+            if items_added == total_items and failed_count == 0 and already_existing_count == 0:
+                # Perfect success - all items added
+                response_code = 201
+                summary_message = f"All {items_added} items successfully added to your favourites!"
+            elif items_added > 0 or already_existing_count > 0:
+                # Partial success - some items processed
+                response_code = 200
+                summary_message = f"Import completed: {summary_message}"
+            else:
+                # Nothing was processed successfully
+                response_code = 400
+                summary_message = "No items could be added to your favourites."
+            
+            return jsonify({
+                "code": response_code,
+                "data": {
+                    "listName": listName,
+                    "listId": list_id,
+                    "userId": userID,
+                    "totalItems": total_items,
+                    "itemsAdded": items_added,
+                    "itemsAlreadyExisting": already_existing_count,
+                    "itemsFailed": failed_count,
+                    "failedItems": items_failed,
+                    "summary": {
+                        "added": items_added,
+                        "alreadyExists": already_existing_count,
+                        "failed": failed_count,
+                        "total": total_items
+                    }
+                },
+                "message": summary_message
+            }), response_code
+        
+    except Exception as e:
+        print("Bulk add to festival favourites error:", str(e))
+        # Rollback will happen automatically due to context manager
+        return jsonify({
+            "code": 500,
+            "data": {
+                "userId": userID,
+                "listName": listName,
+                "totalItems": len(bookmarkedItems) if bookmarkedItems else 0
+            },
+            "message": "A database error occurred during bulk import. No changes were made."
+        }), 500
+
+# -----------------------------------------------------------------------------------------
 # [POST] Remove from festival favourites list
 # - Remove drink from "Favourites from <Venue Name>" list
 # - Possible return codes: 200 (Removed), 404 (Not found), 500 (Error)

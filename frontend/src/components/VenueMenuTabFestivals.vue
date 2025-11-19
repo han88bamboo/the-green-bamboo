@@ -10303,7 +10303,6 @@ export default {
             if (!venueName) {
                 console.error('🔖 Venue name not available for bookmark');
                 console.error('🔖 targetVenue object:', this.targetVenue);
-                const { useToast } = await import('vue-toastification');
                 const toast = useToast();
                 toast.error('Unable to bookmark: venue information missing');
                 return;
@@ -10327,7 +10326,6 @@ export default {
                 }
             } catch (error) {
                 console.error('🔖 Error toggling bookmark:', error);
-                const { useToast } = await import('vue-toastification');
                 const toast = useToast();
                 toast.error('Failed to update bookmark. Please try again.');
             } finally {
@@ -10383,7 +10381,6 @@ export default {
                     console.log('🔖 Updated local bookmark state for itemID:', menuItem.itemID);
                     
                     // Show success toast
-                    const { useToast } = await import('vue-toastification');
                     const toast = useToast();
                     
                     const itemName = menuItem.listingName || menuItem.name || 'Drink';
@@ -10447,7 +10444,6 @@ export default {
                     console.log('🔖 Updated local bookmark state - removed itemID:', menuItem.itemID);
                     
                     // Show success toast
-                    const { useToast } = await import('vue-toastification');
                     const toast = useToast();
                     
                     const itemName = menuItem.listingName || menuItem.name || 'Drink';
@@ -10466,7 +10462,6 @@ export default {
                     this.userBookmarks.delete(menuItem.itemID);
                     console.log('🔖 Item not found on server, removed from local state anyway');
                     
-                    const { useToast } = await import('vue-toastification');
                     const toast = useToast();
                     toast.info('Item was not in your favourites list');
                     return; // Don't re-throw for 404s
@@ -11540,7 +11535,6 @@ export default {
                 });
                 
                 // Show success feedback to user (using existing toast system)
-                const { useToast } = await import('vue-toastification');
                 const toast = useToast();
                 toast.success(`Rating display ${this.localShowRating ? 'enabled' : 'disabled'} successfully!`);
             } else {
@@ -11554,7 +11548,6 @@ export default {
             this.localShowRating = !this.localShowRating;
             
             // Show error feedback to user
-            const { useToast } = await import('vue-toastification');
             const toast = useToast();
             toast.error('Failed to update rating display setting. Please try again.');
         }
@@ -12299,55 +12292,80 @@ export default {
       this.bulkImportLoading = true;
 
       try {
-        // Create a favourite list for imported bookmarks
+        // Prepare bulk import data
         const venueId = this.targetVenue?.id;
-        const listName = `Favourites from ${this.friendUsername}`;
+        const venueName = this.targetVenue?.venueName || this.targetVenue?.name;
+        const listName = `Favourites from ${venueName}`;
         
-        // Use existing bookmark creation logic for each selected item
-        let successCount = 0;
-        let failCount = 0;
+        // Extract just the item IDs for bulk import
+        const bookmarkedItems = selectedItems.map(item => item.itemID);
+        
+        const bulkImportData = {
+          userId: this.$store.getters.user?.id,
+          listName: listName,
+          bookmarkedItems: bookmarkedItems,
+          count: bookmarkedItems.length,
+          venueName: venueName
+        };
 
-        for (const item of selectedItems) {
-          try {
-            const bookmarkData = {
-              userId: this.currentUserId,
-              listName: listName,
-              drinkId: item.itemID
-            };
+        console.log('🔖 Bulk import payload:', bulkImportData);
 
-            await this.axios.post('/editProfile/createAndAddToFestivalFavouriteList', bookmarkData);
-            successCount++;
+        // Call the new bulk import endpoint
+        const response = await this.$axios.post('/editProfile/bulkAddToFestivalFavouriteList', bulkImportData);
+
+        if (response.data && response.data.data) {
+          const { itemsAdded, itemsAlreadyExisting, itemsFailed, summary } = response.data.data;
+          
+          // Update local bookmark state for successfully added items
+          selectedItems.forEach(item => {
+            // Add to local state if it was added or already existed
+            if (!response.data.data.failedItems.includes(item.itemID)) {
+              this.userBookmarks.set(item.itemID, listName);
+            }
+          });
+
+          // Show appropriate success message based on the response
+          if (response.data.code === 201) {
+            // Perfect success
+            toast.success(response.data.message);
+          } else if (response.data.code === 200) {
+            // Partial success
+            toast.success(response.data.message);
             
-            // Update local bookmark state
-            this.userBookmarks.set(item.itemID, listName);
-            
-          } catch (itemError) {
-            console.error(`Failed to import item ${item.itemID}:`, itemError);
-            failCount++;
+            // Show additional info for partial success
+            if (itemsAlreadyExisting > 0) {
+              setTimeout(() => {
+                toast.info(`${itemsAlreadyExisting} item${itemsAlreadyExisting > 1 ? 's were' : ' was'} already in your bookmarks`);
+              }, 1000);
+            }
+          }
+          
+          // Refresh bookmarks to get updated data
+          if (itemsAdded > 0) {
+            await this.loadUserBookmarks();
           }
         }
 
-        // Show results
-        if (successCount > 0) {
-          toast.success(`Successfully imported ${successCount} bookmark${successCount > 1 ? 's' : ''}!`);
-          
-          // Refresh bookmarks to get updated data
-          await this.loadUserBookmarks();
-        }
-        
-        if (failCount > 0) {
-          toast.warning(`${failCount} item${failCount > 1 ? 's' : ''} could not be imported (may already be bookmarked)`);
-        }
+        // Close modal
+        const confirmModal = this.$bootstrap.Modal.getInstance(document.getElementById('importConfirmationModal'));
+        if (confirmModal) confirmModal.hide();
 
-        // Close modal and clear import data
-        this.showImportConfirmModal = false;
+        // Clear import data
         this.friendBookmarks = [];
         this.importApiLink = '';
         this.friendUsername = '';
 
       } catch (error) {
         console.error('Error during bulk import:', error);
-        toast.error('Failed to import bookmarks. Please try again.');
+        
+        // Handle specific error responses
+        if (error.response?.data?.message) {
+          toast.error(error.response.data.message);
+        } else if (error.response?.status === 400) {
+          toast.error('The bookmark list appears to be empty or invalid');
+        } else {
+          toast.error('Failed to import bookmarks. Please try again.');
+        }
       } finally {
         this.bulkImportLoading = false;
       }
