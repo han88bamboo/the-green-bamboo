@@ -430,7 +430,8 @@
                             'white-space': 'nowrap', 
                             'overflow': 'hidden',
                             'text-overflow': 'ellipsis',
-                            'background-color': getSectionBackgroundColor(menuSection.sectionName) ? '#' + getSectionBackgroundColor(menuSection.sectionName) : ''
+                            'background-color': getSectionBackgroundColor(menuSection.sectionName) ? '#' + getSectionBackgroundColor(menuSection.sectionName) : '',
+                            'color': getSectionTextColor(menuSection.sectionName)
                         }">
                         <span style="flex: 1; overflow: hidden; text-overflow: ellipsis;">
                             {{ getCleanSectionName(menuSection.sectionName) }}
@@ -457,12 +458,12 @@
                                         <!-- Mobile: Truncated description -->
                                         <div class="mobile-view-show">
                                             <span v-html="formatDescriptionMobileTruncated(menuSection.sectionDescription)"></span>
-                                            <span class="read-more-link" @click="openDescriptionModal(menuSection.sectionName, menuSection.sectionDescription, menuSection.subscribersEnabled, menuSection.subscribers, menuSection.id)">(Read More)</span>
+                                            <span class="read-more-link" @click="openDescriptionModal(getCleanSectionName(menuSection.sectionName), menuSection.sectionDescription, menuSection.subscribersEnabled, menuSection.subscribers, menuSection.id)">(Read More)</span>
                                         </div>
                                         <!-- Desktop: Full description -->
                                         <div class="mobile-view-hide">
                                             <span v-html="formatDescription(menuSection.sectionDescription)"></span>
-                                            <span class="read-more-link" @click="openDescriptionModal(menuSection.sectionName, menuSection.sectionDescription, menuSection.subscribersEnabled, menuSection.subscribers, menuSection.id)">(Read More)</span>
+                                            <span class="read-more-link" @click="openDescriptionModal(getCleanSectionName(menuSection.sectionName), menuSection.sectionDescription, menuSection.subscribersEnabled, menuSection.subscribers, menuSection.id)">(Read More)</span>
                                         </div>
                                     </div>
                                     
@@ -1359,8 +1360,14 @@
                                 :data-bs-target="'#collapseEditMenuSection' + menuSection.sectionOrder"
                                 aria-expanded="true"
                                 :aria-controls="'collapseEditMenuSection' + menuSection.sectionOrder"
-                                style="white-space: nowrap; overflow:hidden;text-overflow: ellipsis;">
-                                {{ menuSection.sectionName }}
+                                :style="{
+                                    'white-space': 'nowrap', 
+                                    'overflow': 'hidden',
+                                    'text-overflow': 'ellipsis',
+                                    'background-color': getSectionBackgroundColor(menuSection.sectionName) ? '#' + getSectionBackgroundColor(menuSection.sectionName) : '',
+                                    'color': getSectionTextColor(menuSection.sectionName)
+                                }">
+                                {{ getCleanSectionName(menuSection.sectionName) }}
                                 <span v-if="selfView"> [{{ getSectionItemCount(menuSection) }} items]</span>
                             </button>
                         </div>
@@ -1385,8 +1392,14 @@
                                 :data-bs-target="'#collapseEditMenuSection' + menuSection.sectionOrder"
                                 aria-expanded="true"
                                 :aria-controls="'collapseEditMenuSection' + menuSection.sectionOrder"
-                                style="white-space: nowrap; overflow:hidden;text-overflow: ellipsis;">
-                                {{ menuSection.sectionName }}
+                                :style="{
+                                    'white-space': 'nowrap', 
+                                    'overflow': 'hidden',
+                                    'text-overflow': 'ellipsis',
+                                    'background-color': getSectionBackgroundColor(menuSection.sectionName) ? '#' + getSectionBackgroundColor(menuSection.sectionName) : '',
+                                    'color': getSectionTextColor(menuSection.sectionName)
+                                }">
+                                {{ getCleanSectionName(menuSection.sectionName) }}
                                 <span v-if="selfView"> [{{ getSectionItemCount(menuSection) }} items]</span>
                             </button>
                         </div>
@@ -1571,7 +1584,7 @@
                                                 <path fill-rule="evenodd" d="M1 8a7 7 0 1 0 14 0A7 7 0 0 0 1 8m15 0A8 8 0 1 1 0 8a8 8 0 0 1 16 0M8.5 4.5a.5.5 0 0 0-1 0v5.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293z"/>
                                             </svg>
                                             <p class="mb-0" style="font-size: 0.9rem;">
-                                                <em>Drag items here to add them directly to "{{ menuSection.sectionName }}"</em>
+                                                <em>Drag items here to add them directly to "{{ getCleanSectionName(menuSection.sectionName) }}"</em>
                                             </p>
                                         </div>
                                     </template>
@@ -4684,6 +4697,28 @@ export default {
             // Extract 6-digit hex code at the end
             const match = sectionName.match(/#([0-9a-fA-F]{6})$/);
             return match ? match[1] : '';
+        },
+
+        // Get contrasting text color based on background luminance
+        getSectionTextColor(sectionName) {
+            const hexColor = this.getSectionBackgroundColor(sectionName);
+            if (!hexColor) return '';
+            
+            try {
+                // Convert hex to RGB
+                const r = parseInt(hexColor.substr(0, 2), 16);
+                const g = parseInt(hexColor.substr(2, 2), 16);
+                const b = parseInt(hexColor.substr(4, 2), 16);
+                
+                // Calculate luminance using standard formula
+                const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+                
+                // Return white for dark backgrounds, black for light backgrounds
+                return luminance > 0.5 ? '#000000' : '#ffffff';
+            } catch (error) {
+                console.warn('Error calculating text color for hex:', hexColor, error);
+                return ''; // Fallback to default
+            }
         },
         
         // Load currency symbols from API
