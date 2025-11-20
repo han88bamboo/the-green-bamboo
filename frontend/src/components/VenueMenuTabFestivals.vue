@@ -3874,7 +3874,7 @@
                         <button type="button" class="btn-close" @click="closeImportModal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
-                        <p class="mb-3">Select the items you want to bookmark:</p>
+                        <!-- <p class="mb-3">Select the items you want to bookmark:</p> -->
                         
                         <div class="mb-3">
                             <button type="button" class="btn btn-sm btn-outline-primary me-2" @click="selectAllImportItems">
@@ -3885,7 +3885,7 @@
                             </button>
                         </div>
                         
-                        <div class="import-items-list" style="max-height: 400px; overflow-y: auto;">
+                        <div class="import-items-list" style="max-height: 350px; overflow-y: auto;">
                             <div v-for="item in friendBookmarks" :key="item.itemID" class="d-flex align-items-center mb-3 p-2 border rounded">
                                 <div class="form-check me-3">
                                     <input 
