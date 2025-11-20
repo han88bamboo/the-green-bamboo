@@ -947,9 +947,14 @@ def create_and_add_to_festival_favourite_list():
 # - Create favourites list if needed and add multiple drinks at once
 # - Handles duplicates gracefully and provides detailed feedback
 # - Possible return codes: 200 (Partial success), 201 (All added), 400 (Empty list), 500 (Error)
-@blueprint.route('/bulkAddToFestivalFavouriteList', methods=['POST'])
-def bulk_add_to_festival_favourite_list():
+@blueprint.route('/bulkAddToFestivalFavouriteList', methods=['POST', 'OPTIONS'])
+def bulk_add_to_festival_favour_list():
     """Bulk add multiple drinks to festival favourites list with detailed feedback"""
+    
+    # Handle CORS preflight request
+    if request.method == 'OPTIONS':
+        return jsonify({"message": "CORS preflight successful"}), 200
+    
     data = request.get_json()
     userID = int(data['userId'])
     listName = data['listName'] 
