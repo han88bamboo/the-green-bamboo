@@ -63,7 +63,7 @@
                     </button>
                   </li>
 
-                  <li class="nav-item ms-auto">
+                  <!-- <li class="nav-item ms-auto">
                     <button 
                       class="nav-link folder-tab import-csv-tab"
                       type="button"
@@ -76,10 +76,10 @@
                       <span class="mobile-view-hide">Import CSV</span>
                       <span class="d-sm-none">Import</span>
                     </button>
-                  </li>
+                  </li> -->
                   
                   <!-- Cellar History Tab -->
-                  <li class="nav-item">
+                  <li class="nav-item ms-auto">
                     <button 
                       class="nav-link folder-tab history-tab"
                       :class="{ active: activeTab === 'history' }"
