@@ -2963,7 +2963,7 @@
                     @click="jumpToSection(index, section.sectionName)"
                     class="section-item">
                     <i class="bi bi-chevron-right"></i>
-                    {{ section.sectionName }}
+                    {{ getCleanSectionName(section.sectionName) }}
                     <!-- <span class="item-count">({{ getSectionItemCount(section) }} items)</span> -->
                 </div>
             </div>
