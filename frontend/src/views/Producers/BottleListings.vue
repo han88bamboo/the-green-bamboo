@@ -301,6 +301,20 @@
                         @click="onCellarModalOpen">
                         Add To My Cellar
                       </button>
+                      
+                      <!-- Mobile Follow Listing Button -->
+                      <button 
+                        v-if="userID !== 'defaultUser'"
+                        class="btn btn-sm"
+                        :style="{ backgroundColor: isFollowingListing(specified_listing.id) ? '#FF3E31' : '#FF3E31', color: 'white', borderRadius: '0px', height: '38px', minWidth: '40px' }"
+                        :aria-pressed="isFollowingListing(specified_listing.id)"
+                        :aria-label="isFollowingListing(specified_listing.id) ? 'Unfollow this listing' : 'Follow this listing'"
+                        @click="toggleListingFollow(specified_listing.id)"
+                        type="button"
+                      >
+                        <PhBellRinging v-if="isFollowingListing(specified_listing.id)" :size="16" color="white" />
+                        <PhBell v-else :size="16" color="white" />
+                      </button>
                     </template>
 
                     <!-- Blue Add To Cellar Button When User Is Logged Out -->
@@ -911,10 +925,23 @@
           <!-- ADD TO CELLAR BUTTON -->
           <div class="col-4 d-flex align-items-center mobile-view-hide me-0 mb-auto ms-0 ps-0">
             <!-- Logged-in users -->
-            <div v-if="userType === 'user' && userID !== 'defaultUser'">
+            <div v-if="userType === 'user' && userID !== 'defaultUser'" class="d-flex align-items-center gap-2">
               <button class="btn btn-lg cellar-btn-blue" data-bs-toggle="modal" data-bs-target="#cellarModal" 
                 @click="onCellarModalOpen">
                 Add To My Cellar
+              </button>
+              
+              <!-- Follow Listing Button -->
+              <button 
+                class="btn btn-lg"
+                :style="{ backgroundColor: isFollowingListing(specified_listing.id) ? '#FF3E31' : '#FF3E31', color: 'white', borderRadius: '8px' }"
+                :aria-pressed="isFollowingListing(specified_listing.id)"
+                :aria-label="isFollowingListing(specified_listing.id) ? 'Unfollow this listing' : 'Follow this listing'"
+                @click="toggleListingFollow(specified_listing.id)"
+                type="button"
+              >
+                <PhBellRinging v-if="isFollowingListing(specified_listing.id)" :size="20" color="white" />
+                <PhBell v-else :size="20" color="white" />
               </button>
             </div>
             <!-- Logged-out users -->
@@ -3659,6 +3686,12 @@ import CommentBox from '@/components/CommentBox.vue';
 import CommentsModal from '@/components/CommentsModal.vue';
 import { useToast } from "vue-toastification";
 
+// Import Phosphor Icons
+import { 
+  PhBell, 
+  PhBellRinging
+} from '@phosphor-icons/vue'
+
 // load in control 
 import { VARIANT_DRNK_TYP } from '@/composables/useConstants';
 import { parseActionTag, getTagDisplayText, getTagColor } from '@/utils/tagUtils';
@@ -3673,7 +3706,9 @@ export default {
     VintageList,
     BadgePopup,
     CommentBox,
-    CommentsModal
+    CommentsModal,
+    PhBell,
+    PhBellRinging
   },
   setup() {
     // Create reactive references for meta data
@@ -4642,6 +4677,60 @@ export default {
     // fetch specific listing data
     created() { },
 
+    // Check if user is following a specific listing
+    isFollowingListing(listingId) {
+      if (!this.user || !this.user.followLists) return false;
+      return this.user.followLists.listings && this.user.followLists.listings.includes(String(listingId));
+    },
+
+    // Toggle follow status for listing (mirrors existing producer follow pattern)
+    async toggleListingFollow(listingId) {
+      const isCurrentlyFollowing = this.isFollowingListing(listingId);
+      const action = isCurrentlyFollowing ? 'unfollow' : 'follow';
+      
+      // Optimistic UI update (immediate feedback)
+      if (!this.user.followLists.listings) {
+        this.user.followLists.listings = [];
+      }
+      
+      if (action === 'unfollow') {
+        const index = this.user.followLists.listings.indexOf(String(listingId));
+        if (index > -1) {
+          this.user.followLists.listings.splice(index, 1);
+        }
+      } else {
+        this.user.followLists.listings.push(String(listingId));
+      }
+      
+      try {
+        await this.$axios.post(
+          `${process.env.VUE_APP_API_URL}/editProfile/updateFollowLists`,
+          {
+            userID: this.userID,
+            action: action,
+            target: "listings",
+            followerID: listingId,
+          },
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+      } catch (error) {
+        console.error('Error updating listing follow status:', error);
+        // Revert optimistic update on failure
+        if (action === 'unfollow') {
+          this.user.followLists.listings.push(String(listingId));
+        } else {
+          const index = this.user.followLists.listings.indexOf(String(listingId));
+          if (index > -1) {
+            this.user.followLists.listings.splice(index, 1);
+          }
+        }
+      }
+    },
+
     // Handle review modal opening with scroll to top
     handleReviewClick() {
       try {
@@ -5016,6 +5105,10 @@ export default {
         this.users = response.data;
         this.user = this.users.find((user) => user.id == this.userID);
         if (this.user) {
+          // Ensure listings array exists in followLists
+          if (this.user.followLists && !this.user.followLists.listings) {
+            this.user.followLists.listings = [];
+          }
           this.userBookmarks = this.user.drinkLists;
           if (Object.keys(this.userBookmarks).length > 0) {
             this.drinkList.haveTried = this.userBookmarks?.['Drinks I Have Tried']?.listItems || [];
