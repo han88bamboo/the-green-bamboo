@@ -712,8 +712,8 @@
                                                             @click="toggleFollowListing(sectionItem)">
                                                             <PhBell v-if="!isListingFollowed(sectionItem)" :size="14" class="me-1" />
                                                             <PhBellRinging v-else :size="14" class="me-1" />
-                                                            <span v-if="!isListingFollowed(sectionItem)">Get Updates</span>
-                                                            <span v-else>Updates On</span>
+                                                            <span v-if="!isListingFollowed(sectionItem)">Off</span>
+                                                            <span v-else>On</span>
                                                         </button>
                                                     </template>
                                                     <!-- Logged-out users -->
@@ -724,7 +724,7 @@
                                                             style="font-weight: bold; border-radius: 20px; background-color: #FF3E31; border-color: #FF3E31; color: white; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 0.7rem;"
                                                             @click="goToAddReview(sectionItem)">
                                                             <PhBell :size="14" class="me-1" />
-                                                            Get Updates
+                                                            Off
                                                         </button>
                                                     </template>
                                                 </div>
@@ -902,8 +902,8 @@
                                                         @click="toggleFollowListing(sectionItem)">
                                                         <PhBell v-if="!isListingFollowed(sectionItem)" :size="16" class="me-1" />
                                                         <PhBellRinging v-else :size="16" class="me-1" />
-                                                        <span v-if="!isListingFollowed(sectionItem)">Get Updates</span>
-                                                        <span v-else>Updates On</span>
+                                                        <span v-if="!isListingFollowed(sectionItem)">Off</span>
+                                                        <span v-else>On</span>
                                                     </button>
                                                 </template>
                                                 <!-- Logged-out users -->
@@ -914,7 +914,7 @@
                                                         style="font-weight: bold; border-radius: 20px; background-color: #FF3E31; border-color: #FF3E31; color: white;"
                                                         @click="goToAddReview(sectionItem)">
                                                         <PhBell :size="16" class="me-1" />
-                                                        Get Updates
+                                                        Off
                                                     </button>
                                                 </template>
                                             </div>
@@ -1223,8 +1223,8 @@
                                                                     @click="toggleFollowListing(subsectionItem)">
                                                                     <PhBell v-if="!isListingFollowed(subsectionItem)" :size="14" class="me-1" />
                                                                     <PhBellRinging v-else :size="14" class="me-1" />
-                                                                    <span v-if="!isListingFollowed(subsectionItem)">Get Updates</span>
-                                                                    <span v-else>Updates On</span>
+                                                                    <span v-if="!isListingFollowed(subsectionItem)">Off</span>
+                                                                    <span v-else>On</span>
                                                                 </button>
                                                             </template>
                                                             <!-- Logged-out users -->
@@ -1235,7 +1235,7 @@
                                                                     style="font-weight: bold; border-radius: 20px; background-color: #FF3E31; border-color: #FF3E31; color: white; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 0.7rem;"
                                                                     @click="goToAddReview(subsectionItem)">
                                                                     <PhBell :size="14" class="me-1" />
-                                                                    Get Updates
+                                                                    Off
                                                                 </button>
                                                             </template>
                                                         </div>
@@ -1389,8 +1389,8 @@
                                                                 @click="toggleFollowListing(subsectionItem)">
                                                                 <PhBell v-if="!isListingFollowed(subsectionItem)" :size="16" class="me-1" />
                                                                 <PhBellRinging v-else :size="16" class="me-1" />
-                                                                <span v-if="!isListingFollowed(subsectionItem)">Get Updates</span>
-                                                                <span v-else>Updates On</span>
+                                                                <span v-if="!isListingFollowed(subsectionItem)">Off</span>
+                                                                <span v-else>On</span>
                                                             </button>
                                                         </template>
                                                         <!-- Logged-out users -->
@@ -1401,7 +1401,7 @@
                                                                 style="font-weight: bold; border-radius: 20px; background-color: #FF3E31; border-color: #FF3E31; color: white;"
                                                                 @click="goToAddReview(subsectionItem)">
                                                                 <PhBell :size="16" class="me-1" />
-                                                                Get Updates
+                                                                Off
                                                             </button>
                                                         </template>
                                                     </div>
