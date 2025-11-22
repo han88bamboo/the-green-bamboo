@@ -525,6 +525,22 @@ CREATE INDEX idx_listings_name_trgm ON "listings" USING gin ("listingName" gin_t
 -- Create index for producer-aware randomized sorting
 CREATE INDEX idx_listings_producer_random_sort ON "listings" (ABS(HASHTEXT("id"::text || '-' || "producerID"::text)));
 
+-- Cleanup function to remove listing follows when a listing is deleted
+CREATE OR REPLACE FUNCTION cleanup_listing_follows()
+RETURNS TRIGGER AS $$
+BEGIN
+    UPDATE "usersFollowLists" 
+    SET "listings" = array_remove("listings", OLD.id::text);
+    RETURN OLD;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Trigger to automatically clean up follow relationships when listings are deleted
+CREATE TRIGGER cleanup_listing_follows_trigger
+    BEFORE DELETE ON "listings"
+    FOR EACH ROW
+    EXECUTE FUNCTION cleanup_listing_follows();
+
 -- ========= "listingVariants" ========= to store user's favourite
 -- CREATE TABLE "listingVariants" (
 --     "listing_id" INTEGER REFERENCES "listings"("id") ON DELETE CASCADE,
@@ -548,7 +564,8 @@ CREATE TABLE "usersFollowLists" (
     "userId" INTEGER REFERENCES "users"("id") ON DELETE SET NULL, -- [!] reference "users"("id")
     "users" TEXT[], -- Contains "users"("id")s
     "producers" TEXT[], -- Contains "producers"("id")s
-    "venues" TEXT[] -- Contains "venues"("id")s
+    "venues" TEXT[], -- Contains "venues"("id")s
+    "listings" TEXT[] -- Contains "listings"("id")s
 );
 
 -- ========= "usersDrinkLists" =========
