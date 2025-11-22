@@ -1028,7 +1028,7 @@ def editReservationDetails():
         ), 500
 
 # -----------------------------------------------------------------------------------------
-# [POST] Add listing to menu
+# [POST] Add listing to menu - only used when venue operator uses individual "Add Item" modal on BottleListing
 # - Add listing to menu
 # - Possible return codes: 201 (Updated), 500 (Error during update)
 @blueprint.route('/addListingToMenu', methods=['POST'])
