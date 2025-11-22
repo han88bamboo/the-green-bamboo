@@ -4685,6 +4685,7 @@ export default {
 
     // Toggle follow status for listing (mirrors existing producer follow pattern)
     async toggleListingFollow(listingId) {
+      const toast = useToast();
       const isCurrentlyFollowing = this.isFollowingListing(listingId);
       const action = isCurrentlyFollowing ? 'unfollow' : 'follow';
       
@@ -4717,8 +4718,24 @@ export default {
             },
           }
         );
+        
+        // Show success toast notification
+        const listingName = this.specified_listing?.listingName || 'this listing';
+        if (action === 'follow') {
+          toast.success(`You are now signed up for updates on ${listingName}!`, {
+            timeout: 4000,
+            position: "top-right"
+          });
+        } else {
+          toast.success(`You will no longer receive updates for ${listingName}.`, {
+            timeout: 4000,
+            position: "top-right"
+          });
+        }
+        
       } catch (error) {
         console.error('Error updating listing follow status:', error);
+        
         // Revert optimistic update on failure
         if (action === 'unfollow') {
           this.user.followLists.listings.push(String(listingId));
@@ -4728,6 +4745,12 @@ export default {
             this.user.followLists.listings.splice(index, 1);
           }
         }
+        
+        // Show error toast notification
+        toast.error('Failed to update follow status. Please try again.', {
+          timeout: 4000,
+          position: "top-right"
+        });
       }
     },
 

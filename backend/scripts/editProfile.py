@@ -407,23 +407,25 @@ def updateFollowList():
 
     try:
         with db_manager.get_cursor() as cursor:
-            cursor.execute('SELECT "users", "producers", "venues" FROM "usersFollowLists" WHERE "userId" = %s', (userID,))
+            cursor.execute('SELECT "users", "producers", "venues", "listings" FROM "usersFollowLists" WHERE "userId" = %s', (userID,))
             row = cursor.fetchone()
 
             if row:
                 follow_list = {
                     "users": row['users'],
                     "producers": row['producers'],
-                    "venues": row['venues']
+                    "venues": row['venues'],
+                    "listings": row['listings'] if row['listings'] else []
                 }
             else:
                 follow_list = {
                     "users": [],
                     "producers": [],
-                    "venues": []
+                    "venues": [],
+                    "listings": []
                 }
 
-            if target not in ['users', 'producers', 'venues']:
+            if target not in ['users', 'producers', 'venues', 'listings']:
                 return jsonify({"code": 400, "message": "Invalid target."}), 400
 
             target_list = follow_list[target]
@@ -509,27 +511,30 @@ def updateFollowList():
                     SET 
                         "users" = %s,
                         "producers" = %s,
-                        "venues" = %s
+                        "venues" = %s,
+                        "listings" = %s
                     WHERE "userId" = %s
                     """,
                     (
                         follow_list['users'],
                         follow_list['producers'],
                         follow_list['venues'],
+                        follow_list['listings'],
                         userID
                     )
                 )
             else:
                 cursor.execute(
                     """
-                    INSERT INTO "usersFollowLists" ("userId", "users", "producers", "venues")
-                    VALUES (%s, %s, %s, %s)
+                    INSERT INTO "usersFollowLists" ("userId", "users", "producers", "venues", "listings")
+                    VALUES (%s, %s, %s, %s, %s)
                     """,
                     (
                         userID,
                         follow_list['users'],
                         follow_list['producers'],
-                        follow_list['venues']
+                        follow_list['venues'],
+                        follow_list['listings']
                     )
                 )
 

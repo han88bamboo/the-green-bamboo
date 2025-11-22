@@ -325,7 +325,7 @@ def fetch_venue_lists(cursor, user_id):
 # Helper function to fetch follow lists for a user
 def fetch_follow_lists(cursor, user_id):
     cursor.execute("""
-        SELECT "users", "producers", "venues"
+        SELECT "users", "producers", "venues", "listings"
         FROM "usersFollowLists"
         WHERE "userId" = %s
     """, (user_id,))
@@ -334,7 +334,8 @@ def fetch_follow_lists(cursor, user_id):
     return {
         "users": follow_lists_data["users"] if follow_lists_data and follow_lists_data["users"] else [],
         "producers": follow_lists_data["producers"] if follow_lists_data and follow_lists_data["producers"] else [],
-        "venues": follow_lists_data["venues"] if follow_lists_data and follow_lists_data["venues"] else []
+        "venues": follow_lists_data["venues"] if follow_lists_data and follow_lists_data["venues"] else [],
+        "listings": follow_lists_data["listings"] if follow_lists_data and follow_lists_data["listings"] else []
     }
 
 # def modifyPhotos():
