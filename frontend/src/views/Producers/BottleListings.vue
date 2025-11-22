@@ -49,12 +49,12 @@
           <div class="text-start mobile-view-hide">
             <span class="fw-bold text-dark">This is the Master Listing for all vintages.</span><span class="text-muted ms-2">For {{
               specified_listing.drinkType ? `${specified_listing.drinkType} listings` : 'listings of this Drink Type'
-              }}, specific vintages can be reviewed under "Add Your Review".</span>
+              }}, specific vintages can be reviewed under "Add My Review".</span>
           </div>
           <div class="text-start mobile-view-show fs-8">
             <span class="fw-bold text-dark">This is the Master Listing for all vintages.</span><span class="text-muted ms-2">For {{
               specified_listing.drinkType ? `${specified_listing.drinkType} listings` : 'listings of this Drink Type'
-              }}, specific vintages can be reviewed in "Add Your Review".</span>
+              }}, specific vintages can be reviewed in "Add My Review".</span>
           </div>
         </div>
       </div>
@@ -171,7 +171,7 @@
                           style="border-radius: 0; height: 40px;"
                           @click="handleAddToMenuClick"
                           data-bs-toggle="modal" data-bs-target="#menuModal">
-                          Add To Your Menu
+                          Add To My Menu
                         </button>
                       </template>
 
@@ -197,7 +197,7 @@
                       <!-- Teal Bookmark Icon for non-venue logged-in users -->
                       <div v-if="userType == 'user'"
                         class="d-flex align-items-center justify-content-center teal-bookmark-icon"
-                        style="background-color: #006A50; width: 40px; height: 40px; cursor: pointer;">
+                        style="background-color: #f2994a; width: 40px; height: 40px; cursor: pointer;">
                         <BookmarkIcon v-if="user" :user="user" :listing="specified_listing" :overlay="false" size="20"
                           @icon-clicked="handleIconClick" />
                       </div>
@@ -205,7 +205,7 @@
                       <!-- Teal Bookmark Button When User Is Logged Out (not for venue users) -->
                       <router-link v-else-if="userType !== 'venue'" :to="{ path: '/login' }"
                         class="d-flex align-items-center justify-content-center text-decoration-none"
-                        style="background-color: #006A50; width: 38px; height: 38px;">
+                        style="background-color: #f2994a; width: 38px; height: 38px;">
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="#ffffff"
                           viewBox="0 0 16 16">
                           <path d="M2 2v13.5l5.5-3.5 5.5 3.5V2z" />
@@ -299,7 +299,7 @@
                       <button class="btn fw-semibold fs-7 cellar-btn-blue-mobile" data-bs-toggle="modal"
                         data-bs-target="#cellarModal"
                         @click="onCellarModalOpen">
-                        Add To Your Cellar
+                        Add To My Cellar
                       </button>
                     </template>
 
@@ -307,7 +307,7 @@
                     <router-link v-else :to="{ path: '/login' }" class="text-decoration-none">
                       <button class="btn fw-semibold px-2 cellar-btn-blue-mobile"
                         style="height: 38px;">
-                        Add To Your Cellar
+                        Add To My Cellar
                       </button>
                     </router-link>
                   </div>
@@ -841,24 +841,24 @@
               <button class="btn btn-lg venue-btn-green"
                 @click="handleAddToMenuClick"
                 data-bs-toggle="modal" data-bs-target="#menuModal">
-                Add To Your Menu
+                Add To My Menu
               </button>
             </div>
-            <!-- For non-venue users - show Add Your Review buttons -->
+            <!-- For non-venue users - show Add My Review buttons -->
             <div v-else-if="userType !== 'venue'">
               <!-- Logged-in users XYZ-->
               <div v-if="Array.isArray(VARIANT_DRNK_TYP) && VARIANT_DRNK_TYP.includes(specified_listing.drinkType)">
                 <div v-if="userType === 'user' && userID !== 'defaultUser'">
                   <button class="btn primary-btn-less-round-blue btn-lg" @click="handleReviewClick"
                     style="font-weight: bold;"> <!--v-if="!inEdit"-->
-                    Add Your Review
+                    Add My Review
                   </button>
                 </div>
                 <!-- Logged-out users -->
                 <div v-else>
                   <button class="btn primary-btn-less-round-blue btn-lg" @click="$router.push('/login')"
                     style="font-weight: bold;">
-                    Add Your Review
+                    Add My Review
                   </button>
                 </div>
               </div>
@@ -866,7 +866,7 @@
                 <div v-if="userType === 'user' && userID !== 'defaultUser'">
                   <button v-if="!inEdit" class="btn primary-btn-less-round-blue btn-lg" @click="handleReviewClick"
                     style="font-weight: bold;">
-                    Add Your Review
+                    Add My Review
                   </button>
                   <button v-else class="btn primary-btn-less-round-blue btn-lg" style="font-weight: bold;">
                     Review Added!
@@ -876,7 +876,7 @@
                 <div v-else>
                   <button class="btn primary-btn-less-round-blue btn-lg" @click="$router.push('/login')"
                     style="font-weight: bold;">
-                    Add Your Review
+                    Add My Review
                   </button>
                 </div>
               </div>
@@ -884,7 +884,7 @@
 
             <!-- Bookmark icon -->
             <div v-if="userType !== 'venue'" class="d-flex align-items-center ms-2 mobile-view-hide">
-              <button class="btn primary-btn-less-round-blue btn-lg">
+              <button class="btn primary-btn-less-round-blue btn-lg" style="background-color:#f2994a;">
                 <BookmarkIcon :user="user" :listing="specified_listing" :overlay="false" size="24"
                   @icon-clicked="handleIconClick" />
               </button>
@@ -914,13 +914,13 @@
             <div v-if="userType === 'user' && userID !== 'defaultUser'">
               <button class="btn btn-lg cellar-btn-blue" data-bs-toggle="modal" data-bs-target="#cellarModal" 
                 @click="onCellarModalOpen">
-                Add To Your Cellar
+                Add To My Cellar
               </button>
             </div>
             <!-- Logged-out users -->
             <div v-else>
               <button class="btn btn-lg cellar-btn-blue" @click="$router.push('/login')">
-                Add To Your Cellar
+                Add To My Cellar
               </button>
             </div>
           </div>
@@ -948,7 +948,7 @@
               <div class="modal-header" style="background: linear-gradient(135deg, #007bff, #0056b3);">
                 <h5 class="modal-title" id="cellarModalLabel" style="color: white; font-weight: bold">
                   <i class="bi bi-plus-circle me-2"></i>
-                  Add To Your Cellar
+                  Add To My Cellar
                 </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
               </div>
@@ -1554,7 +1554,7 @@
               <div class="modal-header" style="background: linear-gradient(135deg, #28a745, #1e7e34);">
                 <h5 class="modal-title" id="menuModalLabel" style="color: white; font-weight: bold">
                   
-                  Add To Your Menu
+                  Add To My Menu
                 </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
               </div>
@@ -1762,11 +1762,11 @@
                   <div>
                     <!-- V-if to edit or add review -->
                     <h5 v-if="!inEdit" class="modal-title mb-0" id="reviewModalLabel" style="color: black; font-weight: bold">
-                      Add Your Review of <b> {{ specified_listing["listingName"] }} </b>
+                      Add My Review of <b> {{ specified_listing["listingName"] }} </b>
                     </h5>
                     <!--tzh changed white to black and to bold-->
                     <h5 v-else class="modal-title mb-0" id="reviewModalLabel" style="color: black; font-weight: bold">
-                      Edit Your Review <b> {{ specified_listing["listingName"] }} </b>
+                      Edit My Review <b> {{ specified_listing["listingName"] }} </b>
                     </h5>
                   </div>
                   
@@ -1800,10 +1800,10 @@
                     <div class="flex-grow-1 me-2">
                       <!-- V-if to edit or add review -->
                       <h6 v-if="!inEdit" class="modal-title mb-0" id="reviewModalLabelMobile" style="color: black; font-weight: bold; font-size: 1rem; line-height: 1.3;">
-                        Add Your Review of <b> {{ specified_listing["listingName"] }} </b>
+                        Add My Review of <b> {{ specified_listing["listingName"] }} </b>
                       </h6>
                       <h6 v-else class="modal-title mb-0" id="reviewModalLabelMobile" style="color: black; font-weight: bold; font-size: 1rem; line-height: 1.3;">
-                        Edit Your Review <b> {{ specified_listing["listingName"] }} </b>
+                        Edit My Review <b> {{ specified_listing["listingName"] }} </b>
                       </h6>
                     </div>
                     <button type="button" class="btn-close review-modal" data-bs-dismiss="modal"
