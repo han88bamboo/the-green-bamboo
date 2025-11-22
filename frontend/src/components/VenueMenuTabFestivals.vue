@@ -676,7 +676,7 @@
                                                         data-bs-target="#menuItemReviewModal"
                                                         @click="initializeReviewForMenuItem(sectionItem)"
                                                         style="font-weight: bold; border-radius: 20px;">
-                                                        Add Your Review
+                                                        Add My Review
                                                     </button>
                                                     <button 
                                                         v-else 
@@ -694,7 +694,7 @@
                                                         class="btn primary-btn-less-round-blue btn-sm flex-fill" 
                                                         @click="goToAddReview(sectionItem)"
                                                         style="font-weight: bold; border-radius: 20px;">
-                                                        Add Your Review
+                                                        Add My Review
                                                     </button>
                                                 </template>
                                             </div>
@@ -838,7 +838,7 @@
                                                     data-bs-target="#menuItemReviewModal"
                                                     @click="initializeReviewForMenuItem(sectionItem)"
                                                     style="font-weight: bold; border-radius: 20px;">
-                                                    Add Your Review
+                                                    Add My Review
                                                 </button>
                                                 <button 
                                                     v-else 
@@ -856,7 +856,7 @@
                                                     class="btn primary-btn-less-round-blue" 
                                                     @click="goToAddReview(sectionItem)"
                                                     style="font-weight: bold; border-radius: 20px;">
-                                                    Add Your Review
+                                                    Add My Review
                                                 </button>
                                             </template>
                                         </div>
@@ -1128,7 +1128,7 @@
                                                                 data-bs-target="#menuItemReviewModal"
                                                                 @click="initializeReviewForMenuItem(subsectionItem)"
                                                                 style="font-weight: bold; border-radius: 20px;">
-                                                                Add Your Review
+                                                                Add My Review
                                                             </button>
                                                             <button 
                                                                 v-else 
@@ -1146,7 +1146,7 @@
                                                                 class="btn primary-btn-less-round-blue btn-sm flex-fill" 
                                                                 @click="goToAddReview(subsectionItem)"
                                                                 style="font-weight: bold; border-radius: 20px;">
-                                                                Add Your Review
+                                                                Add My Review
                                                             </button>
                                                         </template>
                                                     </div>
@@ -1266,7 +1266,7 @@
                                                             class="btn primary-btn-less-round-blue" 
                                                             @click="initializeReviewForMenuItem(subsectionItem)"
                                                             style="font-weight: bold; border-radius: 20px;">
-                                                            Add Your Review
+                                                            Add My Review
                                                         </button>
                                                         <button 
                                                             v-else 
@@ -1284,7 +1284,7 @@
                                                             class="btn primary-btn-less-round-blue" 
                                                             @click="goToAddReview(subsectionItem)"
                                                             style="font-weight: bold; border-radius: 20px;">
-                                                            Add Your Review
+                                                            Add My Review
                                                         </button>
                                                     </template>
                                                 </div>
@@ -3079,11 +3079,11 @@
                 <!--tzh changed #535C72 to #F0B358-->
                 <!-- V-if to edit or add review -->
                 <h5 v-if="!inEdit" class="modal-title" id="reviewModalLabel" style="color: black; font-weight: bold">
-                  Add Your Review of <b>{{ currentMenuItem?.itemDetails?.itemName || currentMenuItem?.listingName || 'Unknown Item' }}</b><span v-if="currentMenuItem?.variant || currentMenuItem?.itemVintage"> ({{ currentMenuItem?.variant || currentMenuItem?.itemVintage }})</span>
+                  Add My Review of <b>{{ currentMenuItem?.itemDetails?.itemName || currentMenuItem?.listingName || 'Unknown Item' }}</b><span v-if="currentMenuItem?.variant || currentMenuItem?.itemVintage"> ({{ currentMenuItem?.variant || currentMenuItem?.itemVintage }})</span>
                 </h5>
                 <!--tzh changed white to black and to bold-->
                 <h5 v-else class="modal-title" id="reviewModalLabel" style="color: black; font-weight: bold">
-                  Edit Your Review of <b> {{ currentMenuItem?.itemDetails?.itemName || currentMenuItem?.listingName || 'Unknown Item' }} </b><span v-if="currentMenuItem?.variant || currentMenuItem?.itemVintage"> ({{ currentMenuItem?.variant || currentMenuItem?.itemVintage }})</span>
+                  Edit My Review of <b> {{ currentMenuItem?.itemDetails?.itemName || currentMenuItem?.listingName || 'Unknown Item' }} </b><span v-if="currentMenuItem?.variant || currentMenuItem?.itemVintage"> ({{ currentMenuItem?.variant || currentMenuItem?.itemVintage }})</span>
                 </h5>
                 <button type="button" class="btn-close review-modal" data-bs-dismiss="modal"
                   aria-label="Close"></button>
