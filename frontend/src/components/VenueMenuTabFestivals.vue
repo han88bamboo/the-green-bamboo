@@ -713,7 +713,7 @@
                                                             <PhBell v-if="!isListingFollowed(sectionItem)" :size="14" class="me-1" />
                                                             <PhBellRinging v-else :size="14" class="me-1" />
                                                             <span v-if="!isListingFollowed(sectionItem)">Get Updates</span>
-                                                            <span v-else>Receiving Updates</span>
+                                                            <span v-else>Updates On</span>
                                                         </button>
                                                     </template>
                                                     <!-- Logged-out users -->
@@ -903,7 +903,7 @@
                                                         <PhBell v-if="!isListingFollowed(sectionItem)" :size="16" class="me-1" />
                                                         <PhBellRinging v-else :size="16" class="me-1" />
                                                         <span v-if="!isListingFollowed(sectionItem)">Get Updates</span>
-                                                        <span v-else>Receiving Updates</span>
+                                                        <span v-else>Updates On</span>
                                                     </button>
                                                 </template>
                                                 <!-- Logged-out users -->
@@ -1224,7 +1224,7 @@
                                                                     <PhBell v-if="!isListingFollowed(subsectionItem)" :size="14" class="me-1" />
                                                                     <PhBellRinging v-else :size="14" class="me-1" />
                                                                     <span v-if="!isListingFollowed(subsectionItem)">Get Updates</span>
-                                                                    <span v-else>Receiving Updates</span>
+                                                                    <span v-else>Updates On</span>
                                                                 </button>
                                                             </template>
                                                             <!-- Logged-out users -->
@@ -1390,7 +1390,7 @@
                                                                 <PhBell v-if="!isListingFollowed(subsectionItem)" :size="16" class="me-1" />
                                                                 <PhBellRinging v-else :size="16" class="me-1" />
                                                                 <span v-if="!isListingFollowed(subsectionItem)">Get Updates</span>
-                                                                <span v-else>Receiving Updates</span>
+                                                                <span v-else>Updates On</span>
                                                             </button>
                                                         </template>
                                                         <!-- Logged-out users -->
@@ -4940,6 +4940,14 @@ export default {
                 await this.loadUserReviews();
             } else {
                 console.log('🍽️ NOT loading user reviews - user not signed in');
+            }
+
+            // Load user follow data if user is signed in
+            if (this.isSignedInUser) {
+                console.log('🔔 Loading user follow data for listings');
+                await this.loadUserFollowData();
+            } else {
+                console.log('🔔 NOT loading user follow data - user not signed in');
             }
         });
         
@@ -10257,6 +10265,44 @@ export default {
             }
         },
 
+        // Load user follow data from backend
+        async loadUserFollowData() {
+            if (!this.isSignedInUser || !this.currentUserId) {
+                console.log('🔔 Skipping loadUserFollowData - user not signed in');
+                return;
+            }
+
+            try {
+                console.log('🔔 Loading user follow data for user:', this.currentUserId);
+                
+                const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getAllUserFollowingsIDs/${this.currentUserId}`);
+
+                console.log('🔔 Full response:', response.data);
+
+                if (response.status === 200 && response.data?.listings) {
+                    const followedListingIds = response.data.listings;
+                    console.log('🔔 Raw followed listings from API:', followedListingIds);
+                    console.log('🔔 Type of first ID:', typeof followedListingIds[0]);
+                    
+                    // Convert all IDs to strings to match backend storage format
+                    const stringIds = followedListingIds.map(id => String(id));
+                    this.followedListings = new Set(stringIds);
+                    
+                    console.log('🔔 Follow data loaded successfully:', this.followedListings.size, 'listings');
+                    console.log('🔔 Converted to strings:', Array.from(this.followedListings));
+                    
+                } else {
+                    console.log('🔔 No follow data found or invalid response structure');
+                    console.log('🔔 Response data:', response.data);
+                    this.followedListings = new Set();
+                }
+                
+            } catch (error) {
+                console.error('🔔 Error loading user follow data:', error);
+                this.followedListings = new Set();
+            }
+        },
+
         // Load user's existing bookmarks for this venue
         async loadUserBookmarks() {
             if (!this.currentUserId) {
@@ -11970,19 +12016,68 @@ export default {
 
         // Follow Listing helper methods
         isListingFollowed(menuItem) {
-            return this.followedListings.has(menuItem.itemID);
+            const stringId = String(menuItem.itemID);
+            const isFollowed = this.followedListings.has(stringId);
+            console.log('🔔 Checking if listing is followed:', {
+                itemID: menuItem.itemID,
+                stringId: stringId,
+                isFollowed: isFollowed,
+                followedListings: Array.from(this.followedListings)
+            });
+            return isFollowed;
         },
 
-        toggleFollowListing(menuItem) {
-            const isFollowed = this.isListingFollowed(menuItem);
-            if (isFollowed) {
-                this.followedListings.delete(menuItem.itemID);
-                console.log('Unfollowed listing:', menuItem.itemID);
-            } else {
-                this.followedListings.add(menuItem.itemID);
-                console.log('Followed listing:', menuItem.itemID);
+        async toggleFollowListing(menuItem) {
+            if (!this.isSignedInUser) {
+                // Redirect to login for non-authenticated users
+                this.goToAddReview(menuItem);
+                return;
             }
-            // TODO: Add API call to persist follow state
+
+            const listingId = String(menuItem.itemID);  // Convert to string
+            const isCurrentlyFollowed = this.followedListings.has(listingId);
+            
+            // Optimistic UI update
+            if (isCurrentlyFollowed) {
+                this.followedListings.delete(listingId);
+            } else {
+                this.followedListings.add(listingId);
+            }
+
+            try {
+                console.log('🔔 Updating follow status for listing:', listingId, 'follow:', !isCurrentlyFollowed);
+                
+                await this.$axios.post(`${process.env.VUE_APP_API_URL}/editProfile/updateFollowLists`, {
+                    userID: this.currentUserId,
+                    target: 'listings',
+                    followerID: Number(listingId),  // Backend expects number for followerID
+                    action: !isCurrentlyFollowed ? 'follow' : 'unfollow'
+                });
+
+                // Show success toast
+                const toast = useToast();
+                const itemName = menuItem.itemDetails?.itemName || 'this listing';
+                toast.success(
+                    isCurrentlyFollowed 
+                        ? `No longer following ${itemName}` 
+                        : `Now following ${itemName} for updates!`
+                );
+
+                console.log('🔔 Follow status updated successfully');
+
+            } catch (error) {
+                console.error('🔔 Error updating follow status:', error);
+                
+                // Revert optimistic update on error
+                if (isCurrentlyFollowed) {
+                    this.followedListings.add(listingId);
+                } else {
+                    this.followedListings.delete(listingId);
+                }
+
+                const toast = useToast();
+                toast.error('Failed to update follow status. Please try again.');
+            }
         },    // ===== AUTO-RESIZE TEXTAREA FUNCTIONALITY =====
     
     // Setup auto-resize functionality for textareas

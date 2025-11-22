@@ -8678,7 +8678,8 @@ def getAllUserFollowingsIDs(id):
             return jsonify({
                 'users': follow_list['users'],
                 'producers': follow_list['producers'],
-                'venues': follow_list['venues']
+                'venues': follow_list['venues'],
+                'listings': follow_list['listings']
             }), 200
 
     except Exception as e:
