@@ -660,43 +660,74 @@
                                         <div class="row mt-2">
                                             
                                             <!-- Review Buttons Side by Side -->
-                                            <div class="col-12 d-flex gap-2">
+                                            <div class="col-12 d-flex" style="gap: 6px;">
                                                 <!-- See Reviews Button -->
-                                                <router-link :to="{ path: '/listing/view/' + sectionItem.itemID + '/' + normalizeItemNameForUrl(sectionItem.itemDetails.itemName) }" class="flex-fill">
-                                                    <button type="button" class="btn btn-read-more btn-sm w-100"> See Reviews </button>
-                                                </router-link>
+                                                <div class="flex-fill">
+                                                    <router-link :to="{ path: '/listing/view/' + sectionItem.itemID + '/' + normalizeItemNameForUrl(sectionItem.itemDetails.itemName) }" class="d-block">
+                                                        <button type="button" class="btn btn-read-more btn-sm w-100" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"> See Reviews </button>
+                                                    </router-link>
+                                                </div>
                                                 
                                                 <!-- Add Your Review / Review Added Button -->
-                                                <template v-if="isSignedInUser">
-                                                    <button 
-                                                        v-if="!hasUserReviewed(sectionItem)" 
-                                                        type="button" 
-                                                        class="btn primary-btn-less-round-blue btn-sm flex-fill" 
-                                                        data-bs-toggle="modal"
-                                                        data-bs-target="#menuItemReviewModal"
-                                                        @click="initializeReviewForMenuItem(sectionItem)"
-                                                        style="font-weight: bold; border-radius: 20px;">
-                                                        Add My Review
-                                                    </button>
-                                                    <button 
-                                                        v-else 
-                                                        type="button" 
-                                                        class="btn primary-btn-less-round-blue btn-sm flex-fill" 
-                                                        disabled
-                                                        style="font-weight: bold; border-radius: 20px;">
-                                                        Review Added!
-                                                    </button>
-                                                </template>
-                                                <!-- Logged-out users -->
-                                                <template v-else>
-                                                    <button 
-                                                        type="button" 
-                                                        class="btn primary-btn-less-round-blue btn-sm flex-fill" 
-                                                        @click="goToAddReview(sectionItem)"
-                                                        style="font-weight: bold; border-radius: 20px;">
-                                                        Add My Review
-                                                    </button>
-                                                </template>
+                                                <div class="flex-fill">
+                                                    <template v-if="isSignedInUser">
+                                                        <button 
+                                                            v-if="!hasUserReviewed(sectionItem)" 
+                                                            type="button" 
+                                                            class="btn primary-btn-less-round-blue btn-sm w-100" 
+                                                            style="font-weight: bold; border-radius: 20px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"
+                                                            data-bs-toggle="modal"
+                                                            data-bs-target="#menuItemReviewModal"
+                                                            @click="initializeReviewForMenuItem(sectionItem)">
+                                                            Add My Review
+                                                        </button>
+                                                        <button 
+                                                            v-else 
+                                                            type="button" 
+                                                            class="btn primary-btn-less-round-blue btn-sm w-100" 
+                                                            style="font-weight: bold; border-radius: 20px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"
+                                                            disabled>
+                                                            Review Added!
+                                                        </button>
+                                                    </template>
+                                                    <!-- Logged-out users -->
+                                                    <template v-else>
+                                                        <button 
+                                                            type="button" 
+                                                            class="btn primary-btn-less-round-blue btn-sm w-100" 
+                                                            style="font-weight: bold; border-radius: 20px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"
+                                                            @click="goToAddReview(sectionItem)">
+                                                            Add My Review
+                                                        </button>
+                                                    </template>
+                                                </div>
+                                                
+                                                <!-- Follow Listing Button -->
+                                                <div class="flex-fill">
+                                                    <template v-if="isSignedInUser">
+                                                        <button 
+                                                            type="button" 
+                                                            class="btn btn-sm w-100" 
+                                                            :style="isListingFollowed(sectionItem) ? 'font-weight: bold; border-radius: 20px; background-color: #28a745; border-color: #28a745; color: white; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 0.7rem;' : 'font-weight: bold; border-radius: 20px; background-color: #FF3E31; border-color: #FF3E31; color: white; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 0.7rem;'"
+                                                            @click="toggleFollowListing(sectionItem)">
+                                                            <PhBell v-if="!isListingFollowed(sectionItem)" :size="14" class="me-1" />
+                                                            <PhBellRinging v-else :size="14" class="me-1" />
+                                                            <span v-if="!isListingFollowed(sectionItem)">Get Updates</span>
+                                                            <span v-else>Receiving Updates</span>
+                                                        </button>
+                                                    </template>
+                                                    <!-- Logged-out users -->
+                                                    <template v-else>
+                                                        <button 
+                                                            type="button" 
+                                                            class="btn btn-sm w-100" 
+                                                            style="font-weight: bold; border-radius: 20px; background-color: #FF3E31; border-color: #FF3E31; color: white; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 0.7rem;"
+                                                            @click="goToAddReview(sectionItem)">
+                                                            <PhBell :size="14" class="me-1" />
+                                                            Get Updates
+                                                        </button>
+                                                    </template>
+                                                </div>
                                             </div>
                                             <!-- Tasting Tracker 
                                             <div class="col-6" v-if="showTastingTracker">
@@ -823,42 +854,70 @@
                                                 Temporarily Unavailable
                                             </p>
 
-                                            <!-- See User Reviews -->
-                                            <router-link :to="{ path: '/listing/view/' + sectionItem.itemID + '/' + normalizeItemNameForUrl(sectionItem.itemDetails.itemName) }">
-                                                <button type="button" class="btn btn-read-more px-10"> See Reviews </button>
-                                            </router-link>
+                                            <!-- Button Container with Equal Distribution -->
+                                            <div class="d-flex gap-2 ms-auto flex-fill" style="max-width: 450px;">
+                                                <!-- See User Reviews -->
+                                                <router-link class="flex-fill" :to="{ path: '/listing/view/' + sectionItem.itemID + '/' + normalizeItemNameForUrl(sectionItem.itemDetails.itemName) }">
+                                                    <button type="button" class="btn btn-read-more w-100"> See Reviews </button>
+                                                </router-link>
 
-                                            <!-- Add Your Review / Review Added Button -->
-                                            <template v-if="isSignedInUser" >
-                                                <button 
-                                                    v-if="!hasUserReviewed(sectionItem)" 
-                                                    type="button" 
-                                                    class="btn primary-btn-less-round-blue" 
-                                                    data-bs-toggle="modal"
-                                                    data-bs-target="#menuItemReviewModal"
-                                                    @click="initializeReviewForMenuItem(sectionItem)"
-                                                    style="font-weight: bold; border-radius: 20px;">
-                                                    Add My Review
-                                                </button>
-                                                <button 
-                                                    v-else 
-                                                    type="button" 
-                                                    class="btn primary-btn-less-round-blue" 
-                                                    disabled
-                                                    style="font-weight: bold; border-radius: 20px;">
-                                                    Review Added!
-                                                </button>
-                                            </template>
-                                            <!-- Logged-out users -->
-                                            <template v-else >
-                                                <button 
-                                                    type="button" 
-                                                    class="btn primary-btn-less-round-blue" 
-                                                    @click="goToAddReview(sectionItem)"
-                                                    style="font-weight: bold; border-radius: 20px;">
-                                                    Add My Review
-                                                </button>
-                                            </template>
+                                                <!-- Add Your Review / Review Added Button -->
+                                                <template v-if="isSignedInUser" >
+                                                    <button 
+                                                        v-if="!hasUserReviewed(sectionItem)" 
+                                                        type="button" 
+                                                        class="btn primary-btn-less-round-blue flex-fill" 
+                                                        data-bs-toggle="modal"
+                                                        data-bs-target="#menuItemReviewModal"
+                                                        @click="initializeReviewForMenuItem(sectionItem)"
+                                                        style="font-weight: bold; border-radius: 20px;">
+                                                        Add My Review
+                                                    </button>
+                                                    <button 
+                                                        v-else 
+                                                        type="button" 
+                                                        class="btn primary-btn-less-round-blue flex-fill" 
+                                                        disabled
+                                                        style="font-weight: bold; border-radius: 20px;">
+                                                        Review Added!
+                                                    </button>
+                                                </template>
+                                                <!-- Logged-out users -->
+                                                <template v-else >
+                                                    <button 
+                                                        type="button" 
+                                                        class="btn primary-btn-less-round-blue flex-fill" 
+                                                        @click="goToAddReview(sectionItem)"
+                                                        style="font-weight: bold; border-radius: 20px;">
+                                                        Add My Review
+                                                    </button>
+                                                </template>
+                                                
+                                                <!-- Follow Listing Button -->
+                                                <template v-if="isSignedInUser">
+                                                    <button 
+                                                        type="button" 
+                                                        class="btn flex-fill" 
+                                                        :style="isListingFollowed(sectionItem) ? 'font-weight: bold; border-radius: 20px; background-color: #28a745; border-color: #28a745; color: white;' : 'font-weight: bold; border-radius: 20px; background-color: #FF3E31; border-color: #FF3E31; color: white;'"
+                                                        @click="toggleFollowListing(sectionItem)">
+                                                        <PhBell v-if="!isListingFollowed(sectionItem)" :size="16" class="me-1" />
+                                                        <PhBellRinging v-else :size="16" class="me-1" />
+                                                        <span v-if="!isListingFollowed(sectionItem)">Get Updates</span>
+                                                        <span v-else>Receiving Updates</span>
+                                                    </button>
+                                                </template>
+                                                <!-- Logged-out users -->
+                                                <template v-else>
+                                                    <button 
+                                                        type="button" 
+                                                        class="btn flex-fill" 
+                                                        style="font-weight: bold; border-radius: 20px; background-color: #FF3E31; border-color: #FF3E31; color: white;"
+                                                        @click="goToAddReview(sectionItem)">
+                                                        <PhBell :size="16" class="me-1" />
+                                                        Get Updates
+                                                    </button>
+                                                </template>
+                                            </div>
                                         </div>
                                     </div>
                                     <!-- RIGHT COLUMN (Rating + Reviews) -->
@@ -1112,43 +1171,74 @@
                                                 <div class="row mt-2">
                                                     
                                                     <!-- Review Buttons Side by Side -->
-                                                    <div class="col-12 d-flex gap-2">
+                                                    <div class="col-12 d-flex" style="gap: 6px;">
                                                         <!-- See Reviews Button -->
-                                                        <router-link :to="{ path: '/listing/view/' + subsectionItem.itemID + '/' + normalizeItemNameForUrl(subsectionItem.itemDetails.itemName) }" class="flex-fill">
-                                                            <button type="button" class="btn btn-read-more btn-sm w-100"> See Reviews </button>
-                                                        </router-link>
+                                                        <div class="flex-fill">
+                                                            <router-link :to="{ path: '/listing/view/' + subsectionItem.itemID + '/' + normalizeItemNameForUrl(subsectionItem.itemDetails.itemName) }" class="d-block">
+                                                                <button type="button" class="btn btn-read-more btn-sm w-100" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"> See Reviews </button>
+                                                            </router-link>
+                                                        </div>
                                                         
                                                         <!-- Add Your Review / Review Added Button -->
-                                                        <template v-if="isSignedInUser">
-                                                            <button 
-                                                                v-if="!hasUserReviewed(subsectionItem)" 
-                                                                type="button" 
-                                                                class="btn primary-btn-less-round-blue btn-sm flex-fill" 
-                                                                data-bs-toggle="modal"
-                                                                data-bs-target="#menuItemReviewModal"
-                                                                @click="initializeReviewForMenuItem(subsectionItem)"
-                                                                style="font-weight: bold; border-radius: 20px;">
-                                                                Add My Review
-                                                            </button>
-                                                            <button 
-                                                                v-else 
-                                                                type="button" 
-                                                                class="btn primary-btn-less-round-blue btn-sm flex-fill" 
-                                                                disabled
-                                                                style="font-weight: bold; border-radius: 20px;">
-                                                                Review Added!
-                                                            </button>
-                                                        </template>
-                                                        <!-- Logged-out users -->
-                                                        <template v-else>
-                                                            <button 
-                                                                type="button" 
-                                                                class="btn primary-btn-less-round-blue btn-sm flex-fill" 
-                                                                @click="goToAddReview(subsectionItem)"
-                                                                style="font-weight: bold; border-radius: 20px;">
-                                                                Add My Review
-                                                            </button>
-                                                        </template>
+                                                        <div class="flex-fill">
+                                                            <template v-if="isSignedInUser">
+                                                                <button 
+                                                                    v-if="!hasUserReviewed(subsectionItem)" 
+                                                                    type="button" 
+                                                                    class="btn primary-btn-less-round-blue btn-sm w-100" 
+                                                                    data-bs-toggle="modal"
+                                                                    data-bs-target="#menuItemReviewModal"
+                                                                    @click="initializeReviewForMenuItem(subsectionItem)"
+                                                                    style="font-weight: bold; border-radius: 20px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                                                    Add My Review
+                                                                </button>
+                                                                <button 
+                                                                    v-else 
+                                                                    type="button" 
+                                                                    class="btn primary-btn-less-round-blue btn-sm w-100" 
+                                                                    disabled
+                                                                    style="font-weight: bold; border-radius: 20px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                                                    Review Added!
+                                                                </button>
+                                                            </template>
+                                                            <!-- Logged-out users -->
+                                                            <template v-else>
+                                                                <button 
+                                                                    type="button" 
+                                                                    class="btn primary-btn-less-round-blue btn-sm w-100" 
+                                                                    style="font-weight: bold; border-radius: 20px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"
+                                                                    @click="goToAddReview(subsectionItem)">
+                                                                    Add My Review
+                                                                </button>
+                                                            </template>
+                                                        </div>
+                                                        
+                                                        <!-- Follow Listing Button -->
+                                                        <div class="flex-fill">
+                                                            <template v-if="isSignedInUser">
+                                                                <button 
+                                                                    type="button" 
+                                                                    class="btn btn-sm w-100" 
+                                                                    :style="isListingFollowed(subsectionItem) ? 'font-weight: bold; border-radius: 20px; background-color: #28a745; border-color: #28a745; color: white; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 0.7rem;' : 'font-weight: bold; border-radius: 20px; background-color: #FF3E31; border-color: #FF3E31; color: white; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 0.7rem;'"
+                                                                    @click="toggleFollowListing(subsectionItem)">
+                                                                    <PhBell v-if="!isListingFollowed(subsectionItem)" :size="14" class="me-1" />
+                                                                    <PhBellRinging v-else :size="14" class="me-1" />
+                                                                    <span v-if="!isListingFollowed(subsectionItem)">Get Updates</span>
+                                                                    <span v-else>Receiving Updates</span>
+                                                                </button>
+                                                            </template>
+                                                            <!-- Logged-out users -->
+                                                            <template v-else>
+                                                                <button 
+                                                                    type="button" 
+                                                                    class="btn btn-sm w-100" 
+                                                                    style="font-weight: bold; border-radius: 20px; background-color: #FF3E31; border-color: #FF3E31; color: white; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 0.7rem;"
+                                                                    @click="goToAddReview(subsectionItem)">
+                                                                    <PhBell :size="14" class="me-1" />
+                                                                    Get Updates
+                                                                </button>
+                                                            </template>
+                                                        </div>
                                                     </div>
                                                     
                                                 </div>
@@ -1251,42 +1341,70 @@
                                                         Temporarily Unavailable
                                                     </p>
 
-                                                    <!-- See User Reviews -->
-                                                    <router-link :to="{ path: '/listing/view/' + subsectionItem.itemID + '/' + normalizeItemNameForUrl(subsectionItem.itemDetails.itemName) }">
-                                                        <button type="button" class="btn btn-read-more px-10"> See Reviews </button>
-                                                    </router-link>
+                                                    <!-- Button Container with Equal Distribution -->
+                                                    <div class="d-flex gap-2 ms-auto flex-fill" style="max-width: 450px;">
+                                                        <!-- See User Reviews -->
+                                                        <router-link class="flex-fill" :to="{ path: '/listing/view/' + subsectionItem.itemID + '/' + normalizeItemNameForUrl(subsectionItem.itemDetails.itemName) }">
+                                                            <button type="button" class="btn btn-read-more w-100"> See Reviews </button>
+                                                        </router-link>
 
-                                                    <!-- Add Your Review / Review Added Button -->
-                                                    <template v-if="isSignedInUser" >
-                                                        <button 
-                                                            v-if="!hasUserReviewed(subsectionItem)" 
-                                                            type="button" 
-                                                            data-bs-toggle="modal"
-                                                            data-bs-target="#menuItemReviewModal"
-                                                            class="btn primary-btn-less-round-blue" 
-                                                            @click="initializeReviewForMenuItem(subsectionItem)"
-                                                            style="font-weight: bold; border-radius: 20px;">
-                                                            Add My Review
-                                                        </button>
-                                                        <button 
-                                                            v-else 
-                                                            type="button" 
-                                                            class="btn primary-btn-less-round-blue" 
-                                                            disabled
-                                                            style="font-weight: bold; border-radius: 20px;">
-                                                            Review Added!
-                                                        </button>
-                                                    </template>
-                                                    <!-- Logged-out users -->
-                                                    <template v-else >
-                                                        <button 
-                                                            type="button" 
-                                                            class="btn primary-btn-less-round-blue" 
-                                                            @click="goToAddReview(subsectionItem)"
-                                                            style="font-weight: bold; border-radius: 20px;">
-                                                            Add My Review
-                                                        </button>
-                                                    </template>
+                                                        <!-- Add Your Review / Review Added Button -->
+                                                        <template v-if="isSignedInUser" >
+                                                            <button 
+                                                                v-if="!hasUserReviewed(subsectionItem)" 
+                                                                type="button" 
+                                                                data-bs-toggle="modal"
+                                                                data-bs-target="#menuItemReviewModal"
+                                                                class="btn primary-btn-less-round-blue flex-fill" 
+                                                                @click="initializeReviewForMenuItem(subsectionItem)"
+                                                                style="font-weight: bold; border-radius: 20px;">
+                                                                Add My Review
+                                                            </button>
+                                                            <button 
+                                                                v-else 
+                                                                type="button" 
+                                                                class="btn primary-btn-less-round-blue flex-fill" 
+                                                                disabled
+                                                                style="font-weight: bold; border-radius: 20px;">
+                                                                Review Added!
+                                                            </button>
+                                                        </template>
+                                                        <!-- Logged-out users -->
+                                                        <template v-else >
+                                                            <button 
+                                                                type="button" 
+                                                                class="btn primary-btn-less-round-blue flex-fill" 
+                                                                @click="goToAddReview(subsectionItem)"
+                                                                style="font-weight: bold; border-radius: 20px;">
+                                                                Add My Review
+                                                            </button>
+                                                        </template>
+                                                        
+                                                        <!-- Follow Listing Button -->
+                                                        <template v-if="isSignedInUser">
+                                                            <button 
+                                                                type="button" 
+                                                                class="btn flex-fill" 
+                                                                :style="isListingFollowed(subsectionItem) ? 'font-weight: bold; border-radius: 20px; background-color: #28a745; border-color: #28a745; color: white;' : 'font-weight: bold; border-radius: 20px; background-color: #FF3E31; border-color: #FF3E31; color: white;'"
+                                                                @click="toggleFollowListing(subsectionItem)">
+                                                                <PhBell v-if="!isListingFollowed(subsectionItem)" :size="16" class="me-1" />
+                                                                <PhBellRinging v-else :size="16" class="me-1" />
+                                                                <span v-if="!isListingFollowed(subsectionItem)">Get Updates</span>
+                                                                <span v-else>Receiving Updates</span>
+                                                            </button>
+                                                        </template>
+                                                        <!-- Logged-out users -->
+                                                        <template v-else>
+                                                            <button 
+                                                                type="button" 
+                                                                class="btn flex-fill" 
+                                                                style="font-weight: bold; border-radius: 20px; background-color: #FF3E31; border-color: #FF3E31; color: white;"
+                                                                @click="goToAddReview(subsectionItem)">
+                                                                <PhBell :size="16" class="me-1" />
+                                                                Get Updates
+                                                            </button>
+                                                        </template>
+                                                    </div>
                                                 </div>
                                             </div>
                                             <!-- RIGHT COLUMN (Rating + Reviews) -->
@@ -3945,11 +4063,17 @@
 import { useToast } from 'vue-toastification';
 import draggable from 'vuedraggable';
 import { parseActionTag, getTagDisplayText, getTagColor } from '@/utils/tagUtils';
+import { 
+  PhBell,
+  PhBellRinging
+} from '@phosphor-icons/vue'
 
 export default {
     name: 'VenueMenuTabFestivals',
     components: {
-        draggable
+        draggable,
+        PhBell,
+        PhBellRinging
     },
     props: {
         // Props passed from parent component
@@ -4268,6 +4392,8 @@ export default {
     },
     data() {
         return {
+            // Follow Listing state management
+            followedListings: new Set(), // Set to store followed listing IDs
             drag: false,
             
             // Edit button disabled state for initial 10 seconds
@@ -11836,13 +11962,28 @@ export default {
         }
     },
 
-    // Manual SignUp Popup trigger method - emits event to parent VenueProfile
-    triggerSignUpPopup() {
-        this.$emit('trigger-signup-popup');
-        console.log('🎪 VenueMenuTabFestivals: Emitting signup popup trigger event to parent');
-    },
+        // Manual SignUp Popup trigger method - emits event to parent VenueProfile
+        triggerSignUpPopup() {
+            this.$emit('trigger-signup-popup');
+            console.log('🎪 VenueMenuTabFestivals: Emitting signup popup trigger event to parent');
+        },
 
-    // ===== AUTO-RESIZE TEXTAREA FUNCTIONALITY =====
+        // Follow Listing helper methods
+        isListingFollowed(menuItem) {
+            return this.followedListings.has(menuItem.itemID);
+        },
+
+        toggleFollowListing(menuItem) {
+            const isFollowed = this.isListingFollowed(menuItem);
+            if (isFollowed) {
+                this.followedListings.delete(menuItem.itemID);
+                console.log('Unfollowed listing:', menuItem.itemID);
+            } else {
+                this.followedListings.add(menuItem.itemID);
+                console.log('Followed listing:', menuItem.itemID);
+            }
+            // TODO: Add API call to persist follow state
+        },    // ===== AUTO-RESIZE TEXTAREA FUNCTIONALITY =====
     
     // Setup auto-resize functionality for textareas
     setupAutoResize() {
