@@ -312,8 +312,8 @@
                         @click="toggleListingFollow(specified_listing.id)"
                         type="button"
                       >
-                        <PhBellRinging v-if="isFollowingListing(specified_listing.id)" :size="16" color="white" />
-                        <PhBell v-else :size="16" color="white" />
+                        <PhBellRinging v-if="isFollowingListing(specified_listing.id)" :size="20" color="white" />
+                        <PhBell v-else :size="20" color="white" />
                       </button>
                     </template>
 
@@ -940,8 +940,8 @@
                 @click="toggleListingFollow(specified_listing.id)"
                 type="button"
               >
-                <PhBellRinging v-if="isFollowingListing(specified_listing.id)" :size="20" color="white" />
-                <PhBell v-else :size="20" color="white" />
+                <PhBellRinging v-if="isFollowingListing(specified_listing.id)" :size="24" color="white" />
+                <PhBell v-else :size="24" color="white" />
               </button>
             </div>
             <!-- Logged-out users -->
