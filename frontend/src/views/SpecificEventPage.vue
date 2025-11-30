@@ -240,13 +240,13 @@
                             >
                                 Unlock Signups
                             </button>
-                            <!-- <button
+                            <button
                                 class="btn primary-btn-red btn-sm mobile-rating-smaller-text-2"
                                 data-bs-toggle="modal"
                                 data-bs-target="#deleteEventModal"
                             >
                                 Delete Event
-                            </button> -->
+                            </button> 
                             </div>
                             <div v-if="!followStatus && !selfView">
                                 <button class="btn btn-outline-light btn-md" style="font-weight: bold" @click="editFollow('follow')">Follow</button>
