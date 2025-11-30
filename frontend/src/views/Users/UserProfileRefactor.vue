@@ -2173,7 +2173,7 @@
             
           </div>
 
-          <!-- Events Nearby Section -->
+          <!-- Events Nearby Section 
           <section v-if="ownProfile && user" class="dx-events card">
             <header class="dx-events__header w-100">
               <h3 class="dx-events__title">📍 Check Out Events Near You</h3>
@@ -2182,7 +2182,7 @@
             <div class="dx-events__body w-100">
               <article class="dx-event">
                 <a class="dx-event__media" href="https://drink-x.com/profile/venue/99/whiskylivesingapore2025" aria-label="Whisky Live Singapore 2025">
-                  <!-- Replace with your real image -->
+                  
                   <img
                     class="dx-event__img"
                     src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/imgi_1_509077392_18366084808196066_4416648360979910106_n.jpg?v=1758609153"
@@ -2202,7 +2202,7 @@
                 </div>
               </article>
             </div>
-          </section>
+          </section>-->
 
 
           <!-- reviews and lists -->
