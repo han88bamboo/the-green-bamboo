@@ -10,8 +10,6 @@ from datetime import datetime, timedelta
 import json
 import re
 
-from scripts.adminFunctions import hash_password
-from scripts.createReview import create_username
 from scripts import badge_helpers, notifications
 
 # Import the database manager for connection pooling
@@ -19,6 +17,23 @@ from app import db_manager
 
 file_name = os.path.basename(__file__)
 blueprint = Blueprint(file_name[:-3], __name__)
+
+# Helper function to create a unique username for the venue
+def create_username(location_name):
+    with db_manager.get_cursor() as cursor:
+        location_name = location_name.replace(" ", "").lower()
+
+        cursor.execute("""
+            SELECT id FROM "venues" WHERE "username" LIKE %s
+        """, (f"{location_name}%",))
+
+        existing_usernames = cursor.fetchall()
+
+        if not existing_usernames:
+            return location_name
+        else:
+            max_suffix = max([int(name[0].split('_')[-1]) for name in existing_usernames if '_' in name[0]], default=0)
+            return f"{location_name}_{max_suffix + 1}"
 
 def is_empty_photo(value):
     return value in (None, '', [])
