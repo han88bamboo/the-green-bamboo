@@ -379,6 +379,13 @@ def processAndDetectDuplicates():
         file = request.files['file']
         column_mapping_json = request.form.get('columnMapping')
         threshold = int(request.form.get('threshold', 85))
+        owner_type = request.form.get('ownerType')
+        owner_id = request.form.get('ownerId')
+        collection_id = request.form.get('collectionId')
+        
+        # Log collection context early in the process
+        if collection_id and owner_id:
+            print(f"CSV processing started - Collection ID: {collection_id}, Owner: {owner_type}/{owner_id}")
         
         if not column_mapping_json:
             return jsonify({"code": 400, "message": "Column mapping is required"}), 400

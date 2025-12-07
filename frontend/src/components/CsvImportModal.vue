@@ -919,6 +919,9 @@ export default {
             formData.append('file', this.selectedFile)
             formData.append('columnMapping', JSON.stringify(this.columnMapping))
             formData.append('threshold', '85')  // 85% similarity threshold
+            formData.append('ownerType', this.ownerType)
+            formData.append('ownerId', this.ownerId)
+            formData.append('collectionId', this.selectedCollectionId)
             
             const baseUrl = this.getApiBaseUrl()
             const response = await axios.post(
