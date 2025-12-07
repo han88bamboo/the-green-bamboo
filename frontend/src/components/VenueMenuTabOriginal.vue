@@ -2280,9 +2280,7 @@
 
                         <!-- Modal Body -->
                         <div class="modal-body">
-                            <label class="form-check-label" for="renameMenuSectionInput">Original
-                                Section Name: <span class="fw-bold fst-italic">{{
-                                    renameMenuSectionModalOld }}</span></label>
+                            <label class="form-check-label" for="renameMenuSectionInput">Section Name:</label>
                             <input id="renameMenuSectionInput" type="text" class="form-control"
                                 v-model="renameMenuSectionModalNew" placeholder="New Section Name">
                         </div>
