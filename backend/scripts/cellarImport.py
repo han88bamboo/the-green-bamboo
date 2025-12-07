@@ -442,182 +442,183 @@ def processAndDetectDuplicates():
         
         results = []
         
-        for index, row in df.iterrows():
-            # Map CSV columns to database fields
-            mapped_data = {}
-            for csv_column, db_field in column_mapping.items():
-                if db_field and csv_column in row:
-                    value = row[csv_column]
-                    # Skip empty values
-                    if pd.isna(value) or str(value).strip() == '':
-                        continue
-                    
-                    # Type conversion based on field
-                    if db_field in ['purchaseDate', 'deliveryDate', 'drinkOnwardsDate', 'drinkByDate']:
-                        parsed = parse_date(value)
-                        if parsed:
-                            mapped_data[db_field] = parsed
-                    elif db_field in ['purchasePrice', 'currentValueEstimation', 'abv']:
-                        parsed = parse_decimal(value)
-                        if parsed:
-                            mapped_data[db_field] = float(parsed) if db_field == 'abv' else parsed
-                    elif db_field in ['variant', 'quantity']:
-                        parsed = parse_integer(value)
-                        if parsed:
-                            mapped_data[db_field] = parsed
-                    elif db_field == 'volumeNumber':
-                        parsed = parse_decimal(value)
-                        if parsed:
-                            mapped_data[db_field] = parsed
-                    else:
-                        mapped_data[db_field] = str(value).strip()
-            
-            # Validate required fields
-            validation_errors = validate_import_row(mapped_data)
-            if validation_errors:
-                results.append({
-                    "rowNumber": index + 2,  # +2 because CSV is 1-indexed and has header row
-                    "mappedData": mapped_data,
-                    "possibleMatches": [],
-                    "validationErrors": validation_errors
-                })
-                continue
-            
-            # Search for potential duplicate drinks
-            drink_name = mapped_data.get('listingName', '').strip()
-            producer_name = mapped_data.get('producerName', '').strip()
-            variant = mapped_data.get('variant')
-            
-            if not drink_name:
-                results.append({
-                    "rowNumber": index + 2,
-                    "mappedData": mapped_data,
-                    "possibleMatches": [],
-                    "validationErrors": ["Drink name is required"]
-                })
-                continue
-            
-            # Normalize the search term
-            normalized_name = normalize_string(drink_name)
-            normalized_producer = normalize_string(producer_name) if producer_name else None
+        # Use a single database connection for all duplicate searches
+        with db_manager.get_cursor() as cursor:
+            for index, row in df.iterrows():
+                # Map CSV columns to database fields
+                mapped_data = {}
+                for csv_column, db_field in column_mapping.items():
+                    if db_field and csv_column in row:
+                        value = row[csv_column]
+                        # Skip empty values
+                        if pd.isna(value) or str(value).strip() == '':
+                            continue
+                        
+                        # Type conversion based on field
+                        if db_field in ['purchaseDate', 'deliveryDate', 'drinkOnwardsDate', 'drinkByDate']:
+                            parsed = parse_date(value)
+                            if parsed:
+                                mapped_data[db_field] = parsed
+                        elif db_field in ['purchasePrice', 'currentValueEstimation', 'abv']:
+                            parsed = parse_decimal(value)
+                            if parsed:
+                                mapped_data[db_field] = float(parsed) if db_field == 'abv' else parsed
+                        elif db_field in ['variant', 'quantity']:
+                            parsed = parse_integer(value)
+                            if parsed:
+                                mapped_data[db_field] = parsed
+                        elif db_field == 'volumeNumber':
+                            parsed = parse_decimal(value)
+                            if parsed:
+                                mapped_data[db_field] = parsed
+                        else:
+                            mapped_data[db_field] = str(value).strip()
+                
+                # Validate required fields
+                validation_errors = validate_import_row(mapped_data)
+                if validation_errors:
+                    results.append({
+                        "rowNumber": index + 2,  # +2 because CSV is 1-indexed and has header row
+                        "mappedData": mapped_data,
+                        "possibleMatches": [],
+                        "validationErrors": validation_errors
+                    })
+                    continue
+                
+                # Search for potential duplicate drinks
+                drink_name = mapped_data.get('listingName', '').strip()
+                producer_name = mapped_data.get('producerName', '').strip()
+                variant = mapped_data.get('variant')
+                
+                if not drink_name:
+                    results.append({
+                        "rowNumber": index + 2,
+                        "mappedData": mapped_data,
+                        "possibleMatches": [],
+                        "validationErrors": ["Drink name is required"]
+                    })
+                    continue
+                
+                # Normalize the search term
+                normalized_name = normalize_string(drink_name)
+                normalized_producer = normalize_string(producer_name) if producer_name else None
 
-            print(f"Searching for: {drink_name} (normalized: {normalized_name})")
+                print(f"Searching for: {drink_name} (normalized: {normalized_name})")
 
-            # Build search query with proper normalization
-            normalize_listing = get_normalize_sql().format(field='l."listingName"')
-            normalize_producer_sql = get_normalize_sql().format(field='p."producerName"')
+                # Build search query with proper normalization
+                normalize_listing = get_normalize_sql().format(field='l."listingName"')
+                normalize_producer_sql = get_normalize_sql().format(field='p."producerName"')
 
-            search_query = f"""
-                SELECT 
-                    l."id",
-                    l."listingName",
-                    l."producerID",
-                    p."producerName",
-                    l."drinkType",
-                    l."originCountry",
-                    l."abv",
-                    l."photo"
-                FROM "listings" l
-                LEFT JOIN "producers" p ON l."producerID" = p."id"
-                WHERE {normalize_listing} LIKE %s
-            """
+                search_query = f"""
+                    SELECT 
+                        l."id",
+                        l."listingName",
+                        l."producerID",
+                        p."producerName",
+                        l."drinkType",
+                        l."originCountry",
+                        l."abv",
+                        l."photo"
+                    FROM "listings" l
+                    LEFT JOIN "producers" p ON l."producerID" = p."id"
+                    WHERE {normalize_listing} LIKE %s
+                """
 
-            search_params = [f'%{normalized_name}%']
+                search_params = [f'%{normalized_name}%']
 
-            # Add producer filter if available
-            if normalized_producer:
-                search_query += f" OR {normalize_producer_sql} LIKE %s"
-                search_params.append(f'%{normalized_producer}%')
+                # Add producer filter if available
+                if normalized_producer:
+                    search_query += f" OR {normalize_producer_sql} LIKE %s"
+                    search_params.append(f'%{normalized_producer}%')
 
-            search_query += " LIMIT 20"
-            
-            try:
-                with db_manager.get_cursor() as cursor:
+                search_query += " LIMIT 20"
+                
+                try:
                     cursor.execute(search_query, search_params)
                     potential_matches = cursor.fetchall()
-                print(f"Found {len(potential_matches)} potential matches from database")
-            except Exception as e:
-                print(f"Error searching for matches: {e}")
-                import traceback
-                print(traceback.format_exc())
+                    print(f"Found {len(potential_matches)} potential matches from database")
+                except Exception as e:
+                    print(f"Error searching for matches: {e}")
+                    import traceback
+                    print(traceback.format_exc())
+                    results.append({
+                        "rowNumber": index + 2,
+                        "mappedData": mapped_data,
+                        "possibleMatches": [],
+                        "validationErrors": []
+                    })
+                    continue
+                
+                # Calculate fuzzy match scores
+                matches_with_scores = []
+                for match in potential_matches:
+                    try:
+                        # Normalize both strings for comparison
+                        match_name_normalized = normalize_string(match['listingName'])
+                        match_producer_normalized = normalize_string(match['producerName']) if match['producerName'] else ''
+                        
+                        # Name similarity (primary factor) - using normalized strings
+                        name_score = fuzz.ratio(normalized_name, match_name_normalized)
+                        
+                        # Producer match bonus
+                        producer_bonus = 0
+                        if normalized_producer and match_producer_normalized:
+                            producer_score = fuzz.ratio(normalized_producer, match_producer_normalized)
+                            if producer_score >= 90:
+                                producer_bonus = 20  # Increased bonus for exact producer match
+                            elif producer_score >= 80:
+                                producer_bonus = 15
+                            elif producer_score >= 60:
+                                producer_bonus = 10
+                        
+                        # Variant match bonus
+                        variant_bonus = 0
+                        if variant and match.get('variant'):
+                            # Exact variant match
+                            if str(variant) == str(match['variant']):
+                                variant_bonus = 15  # Increased bonus for exact variant match
+                            # Close variant match (within 1 year for vintages)
+                            elif abs(int(variant) - int(match['variant'])) <= 1:
+                                variant_bonus = 5
+                        elif variant and not match.get('variant'):
+                            # CSV has variant but DB doesn't - slight penalty
+                            variant_bonus = -5
+                        elif not variant and match.get('variant'):
+                            # CSV doesn't have variant but DB does - slight penalty
+                            variant_bonus = -5
+                        
+                        # Calculate total score
+                        total_score = min(100, name_score + producer_bonus + variant_bonus)
+                        
+                        print(f"Match '{match['listingName']}' - Name:{name_score}, Producer:{producer_bonus}, Variant:{variant_bonus}, Total:{total_score}")
+                        
+                        if total_score >= threshold:
+                            matches_with_scores.append({
+                                "id": match['id'],
+                                "listingName": match['listingName'],
+                                "producerName": match['producerName'],
+                                "variant": match.get('variant'),
+                                "drinkType": match['drinkType'],
+                                "originCountry": match['originCountry'],
+                                "abv": float(match['abv']) if match['abv'] else None,
+                                "photo": match['photo'],
+                                "similarity": round(total_score, 1)
+                            })
+                    except Exception as e:
+                        print(f"Error calculating match score: {e}")
+                        continue
+                
+                # Sort by similarity score (highest first)
+                matches_with_scores.sort(key=lambda x: x['similarity'], reverse=True)
+                
+                print(f"Row {index + 2} - {len(matches_with_scores)} matches above threshold")
+                
                 results.append({
                     "rowNumber": index + 2,
                     "mappedData": mapped_data,
-                    "possibleMatches": [],
+                    "possibleMatches": matches_with_scores[:10],  # Top 10 matches
                     "validationErrors": []
                 })
-                continue
-            
-            # Calculate fuzzy match scores
-            matches_with_scores = []
-            for match in potential_matches:
-                try:
-                    # Normalize both strings for comparison
-                    match_name_normalized = normalize_string(match['listingName'])
-                    match_producer_normalized = normalize_string(match['producerName']) if match['producerName'] else ''
-                    
-                    # Name similarity (primary factor) - using normalized strings
-                    name_score = fuzz.ratio(normalized_name, match_name_normalized)
-                    
-                    # Producer match bonus
-                    producer_bonus = 0
-                    if normalized_producer and match_producer_normalized:
-                        producer_score = fuzz.ratio(normalized_producer, match_producer_normalized)
-                        if producer_score >= 90:
-                            producer_bonus = 20  # Increased bonus for exact producer match
-                        elif producer_score >= 80:
-                            producer_bonus = 15
-                        elif producer_score >= 60:
-                            producer_bonus = 10
-                    
-                    # Variant match bonus
-                    variant_bonus = 0
-                    if variant and match.get('variant'):
-                        # Exact variant match
-                        if str(variant) == str(match['variant']):
-                            variant_bonus = 15  # Increased bonus for exact variant match
-                        # Close variant match (within 1 year for vintages)
-                        elif abs(int(variant) - int(match['variant'])) <= 1:
-                            variant_bonus = 5
-                    elif variant and not match.get('variant'):
-                        # CSV has variant but DB doesn't - slight penalty
-                        variant_bonus = -5
-                    elif not variant and match.get('variant'):
-                        # CSV doesn't have variant but DB does - slight penalty
-                        variant_bonus = -5
-                    
-                    # Calculate total score
-                    total_score = min(100, name_score + producer_bonus + variant_bonus)
-                    
-                    print(f"Match '{match['listingName']}' - Name:{name_score}, Producer:{producer_bonus}, Variant:{variant_bonus}, Total:{total_score}")
-                    
-                    if total_score >= threshold:
-                        matches_with_scores.append({
-                            "id": match['id'],
-                            "listingName": match['listingName'],
-                            "producerName": match['producerName'],
-                            "variant": match.get('variant'),
-                            "drinkType": match['drinkType'],
-                            "originCountry": match['originCountry'],
-                            "abv": float(match['abv']) if match['abv'] else None,
-                            "photo": match['photo'],
-                            "similarity": round(total_score, 1)
-                        })
-                except Exception as e:
-                    print(f"Error calculating match score: {e}")
-                    continue
-            
-            # Sort by similarity score (highest first)
-            matches_with_scores.sort(key=lambda x: x['similarity'], reverse=True)
-            
-            print(f"Row {index + 2} - {len(matches_with_scores)} matches above threshold")
-            
-            results.append({
-                "rowNumber": index + 2,
-                "mappedData": mapped_data,
-                "possibleMatches": matches_with_scores[:10],  # Top 10 matches
-                "validationErrors": []
-            })
         
         print(f"Processed {len(results)} rows successfully")
         
