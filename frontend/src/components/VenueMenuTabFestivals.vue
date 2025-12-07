@@ -1508,8 +1508,8 @@
                                     'white-space': 'nowrap', 
                                     'overflow': 'hidden',
                                     'text-overflow': 'ellipsis',
-                                    'background-color': getSectionBackgroundColor(menuSection.sectionName) ? '#' + getSectionBackgroundColor(menuSection.sectionName) : '',
-                                    'color': getSectionTextColor(menuSection.sectionName)
+                                    'background-color': getSectionBackgroundColor(menuSection.sectionName) ? '#' + getSectionBackgroundColor(menuSection.sectionName) : '#f0b358',
+                                    'color': getSectionTextColor(menuSection.sectionName) || 'black'
                                 }">
                                 {{ getCleanSectionName(menuSection.sectionName) }}
                                 <span v-if="selfView"> [{{ getSectionItemCount(menuSection) }} items]</span>
@@ -1517,7 +1517,11 @@
                         </div>
                         
                         <!-- Visibility Toggle (Desktop) -->
-                        <div class="col-2 d-flex align-items-center justify-content-center mobile-view-hide">
+                        <div class="col-2 d-flex align-items-center justify-content-center mobile-view-hide"
+                             :style="{
+                                 'background-color': getSectionBackgroundColor(menuSection.sectionName) ? '#' + getSectionBackgroundColor(menuSection.sectionName) : '#f0b358',
+                                 'color': getSectionTextColor(menuSection.sectionName) || 'black'
+                             }">
                             <div class="form-check form-switch visibility-switch">
                                 <input class="form-check-input" type="checkbox" 
                                        :id="'editMainSectionVisibility_' + menuSection.sectionOrder"
@@ -1540,8 +1544,8 @@
                                     'white-space': 'nowrap', 
                                     'overflow': 'hidden',
                                     'text-overflow': 'ellipsis',
-                                    'background-color': getSectionBackgroundColor(menuSection.sectionName) ? '#' + getSectionBackgroundColor(menuSection.sectionName) : '',
-                                    'color': getSectionTextColor(menuSection.sectionName)
+                                    'background-color': getSectionBackgroundColor(menuSection.sectionName) ? '#' + getSectionBackgroundColor(menuSection.sectionName) : '#f0b358',
+                                    'color': getSectionTextColor(menuSection.sectionName) || 'black'
                                 }">
                                 {{ getCleanSectionName(menuSection.sectionName) }}
                                 <span v-if="selfView"> [{{ getSectionItemCount(menuSection) }} items]</span>
@@ -1549,7 +1553,11 @@
                         </div>
                         
                         <!-- Visibility Toggle (Mobile) -->
-                        <div class="col-2 d-flex align-items-center justify-content-center mobile-view-show">
+                        <div class="col-2 d-flex align-items-center justify-content-center mobile-view-show"
+                             :style="{
+                                 'background-color': getSectionBackgroundColor(menuSection.sectionName) ? '#' + getSectionBackgroundColor(menuSection.sectionName) : '#f0b358',
+                                 'color': getSectionTextColor(menuSection.sectionName) || 'black'
+                             }">
                             <div class="form-check form-switch visibility-switch">
                                 <input class="form-check-input" type="checkbox" 
                                        :id="'editMainSectionVisibilityMobile_' + menuSection.sectionOrder"
@@ -1564,6 +1572,10 @@
                         <div class="col-2 d-grid p-0 mobile-view-hide">
                             <button type="button"
                                 class="btn secondary-btn-not-rounded rounded-0 pe-2 text-center"
+                                :style="{
+                                    'background-color': getSectionBackgroundColor(menuSection.sectionName) ? '#' + getSectionBackgroundColor(menuSection.sectionName) : '#f0b358',
+                                    'color': getSectionTextColor(menuSection.sectionName) || 'black'
+                                }"
                                 @click="menuSection.sectionMenu.sort((a, b) => (a.itemOrder > b.itemOrder) ? 1 : -1);">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
                                     fill="currentColor" class="bi bi-arrow-repeat" viewBox="0 0 16 16">
@@ -1580,6 +1592,10 @@
                         <div class="col-2 d-grid p-0 mobile-view-show">
                             <button type="button"
                                 class="btn secondary-btn-not-rounded rounded-0 pe-2 text-center"
+                                :style="{
+                                    'background-color': getSectionBackgroundColor(menuSection.sectionName) ? '#' + getSectionBackgroundColor(menuSection.sectionName) : '#f0b358',
+                                    'color': getSectionTextColor(menuSection.sectionName) || 'black'
+                                }"
                                 @click="menuSection.sectionMenu.sort((a, b) => (a.itemOrder > b.itemOrder) ? 1 : -1);">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
                                     fill="currentColor" class="bi bi-arrow-repeat" viewBox="0 0 16 16">
@@ -1596,6 +1612,10 @@
                         <div class="col-2 d-grid p-0 mobile-view-hide">
                             <button type="button"
                                 class="btn secondary-btn-not-rounded rounded-0 px-0 text-center"
+                                :style="{
+                                    'background-color': getSectionBackgroundColor(menuSection.sectionName) ? '#' + getSectionBackgroundColor(menuSection.sectionName) : '#f0b358',
+                                    'color': getSectionTextColor(menuSection.sectionName) || 'black'
+                                }"
                                 data-bs-toggle="modal" data-bs-target="#renameMenuSectionModal"
                                 @click="populateRenameMenuSectionModal(menuSection.sectionOrder)">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
@@ -1609,6 +1629,10 @@
                         <div class="col-2 d-grid p-0 mobile-view-show pe-0">
                             <button type="button"
                                 class="btn secondary-btn-not-rounded rounded-0 px-0 text-center"
+                                :style="{
+                                    'background-color': getSectionBackgroundColor(menuSection.sectionName) ? '#' + getSectionBackgroundColor(menuSection.sectionName) : '#f0b358',
+                                    'color': getSectionTextColor(menuSection.sectionName) || 'black'
+                                }"
                                 data-bs-toggle="modal" data-bs-target="#renameMenuSectionModal"
                                 @click="populateRenameMenuSectionModal(menuSection.sectionOrder)">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
@@ -1622,6 +1646,10 @@
                         <div class="col-1 d-grid ps-0 mobile-view-hide">
                             <button type="button"
                                 class="btn secondary-btn-not-rounded rounded-start-0 px-0 text-center "
+                                :style="{
+                                    'background-color': getSectionBackgroundColor(menuSection.sectionName) ? '#' + getSectionBackgroundColor(menuSection.sectionName) : '#f0b358',
+                                    'color': getSectionTextColor(menuSection.sectionName) || 'black'
+                                }"
                                 @click="deleteMenuSection(menuSection.sectionOrder)">
                                 <svg xmlns='http://www.w3.org/2000/svg' width="20" height="20"
                                     fill='#f5f5f5' class="pb-1" viewBox='0 0 16 16'>
@@ -1634,6 +1662,10 @@
                         <div class="col-1 d-grid ps-0 pe-0 mobile-view-show ">
                             <button type="button"
                                 class="btn secondary-btn-not-rounded rounded-start-0 px-0 text-center "
+                                :style="{
+                                    'background-color': getSectionBackgroundColor(menuSection.sectionName) ? '#' + getSectionBackgroundColor(menuSection.sectionName) : '#f0b358',
+                                    'color': getSectionTextColor(menuSection.sectionName) || 'black'
+                                }"
                                 @click="deleteMenuSection(menuSection.sectionOrder)">
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
                                     class="bi bi-sort-down " xmlns="http://www.w3.org/2000/svg">
