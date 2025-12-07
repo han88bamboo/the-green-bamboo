@@ -3001,17 +3001,118 @@
                         <div class="modal-body">
                             <!-- Section Name -->
                             <div class="mb-3">
-                                <label class="form-label" for="renameMenuSectionInput">
+                                <label class="form-label fw-bold" for="renameMenuSectionInput">
                                     {{ renameSectionType === 'section' ? 'Section' : 'Subsection' }} Name
                                 </label>
                                 <input id="renameMenuSectionInput" type="text" class="form-control"
                                     v-model="renameMenuSectionModalNew" 
                                     :placeholder="'Enter new' + (renameSectionType === 'section' ? 'section' : 'subsection') + ' name...'">
+                                                            
+                            <!-- Color Picker Section -->
+                            <div class="form-group mt-3">
+                                <label class="form-label ">Section Color (Optional)</label>
+                                
+                                <!-- Clickable Container to Toggle Drawer -->
+                                <div 
+                                    class="color-picker-toggle" 
+                                    :class="{ 'active': showColorPicker }"
+                                    @click="showColorPicker = !showColorPicker"
+                                    role="button"
+                                    tabindex="0"
+                                    @keydown.enter="showColorPicker = !showColorPicker"
+                                    @keydown.space.prevent="showColorPicker = !showColorPicker"
+                                    :aria-expanded="showColorPicker"
+                                    aria-controls="colorPickerDrawer">
+                                    <span class="toggle-text">Choose a color to customize your section header</span>
+                                    <span class="toggle-icon" :class="{ 'open': showColorPicker }">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                                            <path fill-rule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z"/>
+                                        </svg>
+                                    </span>
+                                </div>
+                                
+                                <!-- Collapsible Drawer -->
+                                <div 
+                                    v-show="showColorPicker" 
+                                    id="colorPickerDrawer"
+                                    class="color-picker-drawer">
+                                
+                                <!-- Preset Color Grid -->
+                                <div class="color-grid" :class="{ 'show-all': showAllColors }">
+                                    <div v-for="color in presetColors" :key="color" class="color-option">
+                                        <input 
+                                            type="radio" 
+                                            :id="'preset-color-' + color" 
+                                            name="sectionColor" 
+                                            :value="color"
+                                            v-model="selectedSectionColor"
+                                            class="color-radio">
+                                        <label 
+                                            :for="'preset-color-' + color" 
+                                            class="color-swatch"
+                                            :style="{ backgroundColor: color }"
+                                            :title="color"
+                                            :aria-label="'Select color ' + color">
+                                        </label>
+                                    </div>
+                                    
+                                    <!-- Custom Color Option (Position 21) -->
+                                    <div class="color-option custom-color-option">
+                                        <input 
+                                            type="radio" 
+                                            id="custom-color-radio" 
+                                            name="sectionColor" 
+                                            value="custom"
+                                            v-model="selectedSectionColor"
+                                            class="color-radio">
+                                        <label 
+                                            for="custom-color-radio" 
+                                            class="color-swatch custom-swatch"
+                                            title="Custom color"
+                                            aria-label="Select custom color">
+                                            <span class="custom-icon">+</span>
+                                        </label>
+                                    </div>
+                                </div>
+                                
+                                <!-- Show More Button (Mobile Only) -->
+                                <button 
+                                    v-if="!showAllColors"
+                                    type="button"
+                                    class="btn btn-sm btn-outline-secondary mt-2 mobile-view-show"
+                                    @click="showAllColors = true">
+                                    Show More Colors
+                                </button>
+                                
+                                <!-- Custom Color Picker (Shows when "custom" is selected) -->
+                                <div v-if="selectedSectionColor === 'custom'" class="mt-3">
+                                    <label for="customColorPicker" class="form-label">Pick Custom Color:</label>
+                                    <input 
+                                        type="color" 
+                                        id="customColorPicker"
+                                        v-model="selectedSectionColor"
+                                        class="form-control form-control-color"
+                                        title="Choose your custom color">
+                                    <small class="text-muted">Selected: {{ selectedSectionColor }}</small>
+                                </div>
+                                
+                                <!-- Remove Color Button -->
+                                <button 
+                                    v-if="selectedSectionColor && selectedSectionColor !== ''"
+                                    type="button"
+                                    class="btn btn-sm btn-outline-danger mt-2"
+                                    @click="removeSectionColor">
+                                    Remove Color
+                                </button>
+                                
+                                </div>
+                                <!-- End Color Picker Drawer -->
+                            </div>    
                             </div>
                             
                             <!-- Description -->
                             <div class="mb-3">
-                                <label class="form-label">Description</label>
+                                <label class="form-label fw-bold">Description</label>
                                 <textarea class="form-control" 
                                           v-model="renameMenuSectionModalTarget.data.sectionDescription"
                                           :placeholder="'Enter ' + (renameSectionType === 'section' ? 'section' : 'subsection') + ' description...'" 
@@ -3023,7 +3124,7 @@
                             
                             <!-- Subscription Settings -->
                             <div class="mb-3">
-                                <div class="form-check">
+                                <div class="form-check fw-bold">
                                     <input class="form-check-input" type="checkbox" 
                                            v-model="renameMenuSectionModalTarget.data.subscribersEnabled" 
                                            id="modalSubscribersEnabled"
@@ -4524,7 +4625,34 @@ export default {
             renameMenuSectionModalOld: '',
             renameMenuSectionModalNew: '',
             renameSectionType: '', // 'section' or 'subsection'
-            
+
+            // Color picker for sections
+            selectedSectionColor: '', // Current selected color (hex with #)
+            showAllColors: false, // Toggle for mobile "Show more" button
+            showColorPicker: false, // Toggle for color picker drawer
+            presetColors: [
+                '#FCAA0F',
+                '#052668',
+                '#B11226',
+                '#7A1020',
+                '#E9772F',
+                '#B45309',
+                '#FFD166',
+                '#C9A227',
+                '#14532D',
+                '#3F6F4E',
+                '#7FAE70',
+                '#0FB9B1',
+                '#3B82C4',
+                '#67AEE8',
+                '#5B1D6B',
+                '#3A1744',
+                '#8B5FBF',
+                '#111827',
+                '#4B5563',
+                '#E5E7EB'
+            ],
+
             // Subsection management
             newSubsectionName: '',
             selectedSectionForSubsection: null,
@@ -4748,6 +4876,18 @@ export default {
         }
     },
     watch: {
+        // Watch for color selection changes - update input field in real-time
+        selectedSectionColor(newColor) {
+            // Skip if no color selected or if it's the initial load
+            if (!newColor || newColor === '') return;
+            
+            // Skip if selecting "custom" radio (let user pick from color picker)
+            if (newColor === 'custom') return;
+            
+            // Apply color to input field in real-time
+            this.renameMenuSectionModalNew = this.applySectionColor(this.renameMenuSectionModalNew, newColor);
+        },
+
         // Watch for changes in detailedMenu from parent (for backward compatibility)
         detailedMenu: {
             handler(newMenu, oldMenu) {
@@ -7319,6 +7459,13 @@ export default {
             
             this.renameMenuSectionModalOld = this.renameMenuSectionModalTarget.data.sectionName;
             this.renameMenuSectionModalNew = this.renameMenuSectionModalTarget.data.sectionName;
+ 
+            // Detect and auto-select existing color
+            this.selectedSectionColor = this.detectExistingSectionColor(this.renameMenuSectionModalTarget.data.sectionName);
+            
+            // Reset drawer and mobile states
+            this.showAllColors = false;
+            this.showColorPicker = false;            
         },
 
         // Rename Menu Section - moved from parent
@@ -7329,8 +7476,10 @@ export default {
                 return;
             }
             
-            this.renameMenuSectionModalTarget.data.sectionName = this.renameMenuSectionModalNew;
-            
+            // Apply color to section name before saving
+            const finalSectionName = this.applySectionColor(this.renameMenuSectionModalNew, this.selectedSectionColor);
+            this.renameMenuSectionModalTarget.data.sectionName = finalSectionName;
+                        
             if (this.renameSectionType === 'section') {
                 // Update main section
                 this.editableMainSections = this.editableMainSections.map(s => 
@@ -10892,6 +11041,53 @@ export default {
             document.body.style.overflow = '';
         },
 
+        // Detect existing color from section name
+        detectExistingSectionColor(sectionName) {
+            if (!sectionName) return '';
+            
+            // Extract hex code from section name (e.g., "Wine Section#ff0000")
+            const match = sectionName.match(/#([0-9a-fA-F]{6})$/);
+            if (!match) return '';
+            
+            const hexColor = '#' + match[1];
+            
+            // Check if it matches a preset color
+            if (this.presetColors.includes(hexColor.toUpperCase())) {
+                return hexColor.toUpperCase();
+            }
+            
+            // If not in presets, mark as custom
+            if (hexColor) {
+                return hexColor; // Will trigger custom color picker
+            }
+            
+            return '';
+        },
+        
+        // Apply color to section name (strip old color, add new)
+        applySectionColor(sectionName, color) {
+            if (!sectionName) return sectionName;
+            
+            // Strip existing hex code if present
+            const cleanName = sectionName.replace(/#[0-9a-fA-F]{6}$/, '');
+            
+            // If no color selected or color is empty, return clean name
+            if (!color || color === '' || color === 'custom') {
+                return cleanName;
+            }
+            
+            // Append new color (ensure uppercase and remove # if present)
+            const hexCode = color.replace('#', '').toUpperCase();
+            return cleanName + '#' + hexCode;
+        },
+        
+        // Remove color from section
+        removeSectionColor() {
+            this.selectedSectionColor = '';
+            // Also strip color from the current section name in the input
+            this.renameMenuSectionModalNew = this.renameMenuSectionModalNew.replace(/#[0-9a-fA-F]{6}$/, '');
+        },
+               
         // Handle description modal opening
         openDescriptionModal(sectionName, description, subscribersEnabled, subscribers, sectionId) {
             this.modalSectionName = sectionName;
@@ -12832,6 +13028,172 @@ button[aria-expanded="true"] .collapse-indicator {
   .notch-text {
     font-size: 6px;
     letter-spacing: 0.1px;
+  }
+}
+
+/* ===== COLOR PICKER STYLES ===== */
+
+/* Clickable container to toggle color picker drawer */
+.color-picker-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background-color: #f8f9fa;
+  border: 2px solid #dee2e6;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  user-select: none;
+}
+
+.color-picker-toggle:hover {
+  background-color: #e9ecef;
+  border-color: #adb5bd;
+}
+
+.color-picker-toggle.active {
+  background-color: #fff;
+  border-color: #0d6efd;
+}
+
+.color-picker-toggle:focus {
+  outline: 2px solid #0d6efd;
+  outline-offset: 2px;
+}
+
+.toggle-text {
+  color: #495057;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.toggle-icon {
+  display: flex;
+  align-items: center;
+  transition: transform 0.3s ease;
+  color: #6c757d;
+}
+
+.toggle-icon.open {
+  transform: rotate(180deg);
+}
+
+/* Color picker drawer container */
+.color-picker-drawer {
+  margin-top: 12px;
+  padding: 16px;
+  background-color: #fff;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Color grid layout - 5 columns x 4 rows */
+.color-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+/* Hide extra colors on mobile initially (show first 10 = 2 rows) */
+@media (max-width: 768px) {
+  .color-grid:not(.show-all) .color-option:nth-child(n+11) {
+    display: none;
+  }
+}
+
+/* Color option container */
+.color-option {
+  position: relative;
+}
+
+/* Hide native radio button */
+.color-radio {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+/* Color swatch label */
+.color-swatch {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1;
+  border: 3px solid transparent;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Hover state */
+.color-swatch:hover {
+  transform: scale(1.1);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Checked state - uses native :checked selector */
+.color-radio:checked + .color-swatch {
+  border-color: #000;
+  box-shadow: 0 0 0 2px #fff, 0 0 0 4px #000;
+  transform: scale(1.05);
+}
+
+/* Focus state for keyboard navigation */
+.color-radio:focus + .color-swatch {
+  outline: 3px solid #0066cc;
+  outline-offset: 2px;
+}
+
+/* Custom color swatch styling */
+.custom-swatch {
+  background: linear-gradient(135deg, 
+    #ff0000 0%, #ff7f00 14%, #ffff00 28%, 
+    #00ff00 42%, #0000ff 57%, #4b0082 71%, 
+    #9400d3 85%, #ff0000 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Custom icon (+ symbol) */
+.custom-icon {
+  font-size: 24px;
+  font-weight: bold;
+  color: white;
+  text-shadow: 0 0 3px rgba(0, 0, 0, 0.5);
+}
+
+/* Native color input styling */
+.form-control-color {
+  width: 100px;
+  height: 40px;
+  padding: 4px;
+  border-radius: 4px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .color-grid {
+    gap: 6px;
+  }
+  
+  .color-swatch {
+    border-radius: 6px;
   }
 }
 
