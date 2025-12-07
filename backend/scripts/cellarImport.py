@@ -160,6 +160,7 @@ def parse_date(date_str):
         return None
     
     formats = [
+        # Common numeric formats (try these first for performance)
         '%Y-%m-%d',
         '%m/%d/%Y',
         '%d/%m/%Y',
@@ -170,7 +171,16 @@ def parse_date(date_str):
         '%Y-%m-%d %H:%M:%S',
         '%d/%m/%y',
         '%m/%d/%y',
-        '%Y%m%d'
+        '%Y%m%d',
+        # Month name formats (for human-readable dates)
+        '%d %B %Y',        # "04 June 2020" (full month name)
+        '%d %b %Y',        # "04 Jun 2020" (abbreviated month)
+        '%B %d, %Y',       # "June 04, 2020" 
+        '%b %d, %Y',       # "Jun 04, 2020"
+        '%d-%B-%Y',        # "04-June-2020"
+        '%d-%b-%Y',        # "04-Jun-2020"
+        '%Y %B %d',        # "2020 June 04"
+        '%Y %b %d',        # "2020 Jun 04"
     ]
     
     for fmt in formats:
