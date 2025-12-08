@@ -30,6 +30,7 @@
 #           /getVenuesWithSpecificListing/<listingID> (GET), /getVenuesBySearch (GET), /getVenues (GET), /getVenuesByIds
 #           /getVenue/<id> (GET), /getVenuesAPI (GET), /getVenuesProfileViewsByVenue/<id> (GET),
 #           /getWhatsOnMenu/<venue_id> (GET), /getVenueMenuItemsCount/<venue_id> (GET),
+#           /getUpcomingEventsByLocation/<user_id> (GET),
 
 #           [Users]
 #           /getUsers (GET), /getUsersFromList (POST), /getUserFollowListDetails (POST) /getUser/<id> (GET), 
@@ -5709,7 +5710,7 @@ def getVenue(id):
                         WHEN v."pdfMenuUrl" = '' THEN NULL
                         ELSE v."pdfMenuUrl"::json
                     END AS "pdfMenuUrl",
-                    v.username, v."stripeCustomerId", v.pin,
+                    v.username, v."stripeCustomerId", v.pin, v."eventID",
                     -- Get venue main type details
                     v."venueMainType" AS "venueMainTypeId",
                     vmt."venueMainType" AS "venueMainType",
@@ -5913,6 +5914,127 @@ def getVenueByRequestId(id):
                 "message": "An error occurred retrieving the venue."
             }
         ), 500
+
+# ----------------------
+# [NEW] Upcoming Events by Location
+# ----------------------
+
+@blueprint.route("/getUpcomingEventsByLocation/<user_id>", methods=['GET'])
+def getUpcomingEventsByLocation(user_id):
+    """
+    Get upcoming EVENT_FESTIVAL venues based on user's country.
+    
+    Logic:
+    - Match user's country with venue's originLocation (exact string match)
+    - Show events starting 2 months in advance
+    - Use eventEndDate for calculation (fallback to eventStartDate if NULL)
+    - Hide events after eventEndDate (or eventStartDate if no endDate) has passed
+    - Show all events regardless of signupOpen status
+    - Return up to 10 events, sorted by eventStartDate (soonest first)
+    
+    Returns:
+    - List of event-venue objects with event details
+    - Empty list if user has no country or no matching events
+    """
+    try:
+        with db_manager.get_cursor() as cursor:
+            # Get user's country
+            cursor.execute('SELECT "country" FROM "users" WHERE "id" = %s', (user_id,))
+            user_data = cursor.fetchone()
+            
+            if not user_data or not user_data['country']:
+                # User has no country set, return empty list
+                return jsonify({
+                    "code": 200,
+                    "data": [],
+                    "message": "No location set for user"
+                }), 200
+            
+            user_country = user_data['country']
+            
+            # Calculate date threshold (2 months from today)
+            today = date.today()
+            two_months_ahead = today + timedelta(days=60)
+            
+            # Query for upcoming events
+            query = """
+                SELECT 
+                    v.id as "venueId",
+                    v."venueName",
+                    v."venueDesc",
+                    v."originLocation",
+                    v.photo as "venuePhoto",
+                    v.address,
+                    v.website,
+                    v.instagram,
+                    v.facebook,
+                    v."specialStatus",
+                    e.id as "eventId",
+                    e."eventName",
+                    e."eventDesc",
+                    e."eventType",
+                    e."eventStartDate",
+                    e."eventEndDate",
+                    e."eventStartTime",
+                    e."eventEndTime",
+                    e."eventLimit",
+                    e."eventBanners",
+                    e."ticketed",
+                    e."paidEvent",
+                    e."eventLocation",
+                    e."paymentLink",
+                    e."numAttendees",
+                    e."createdDate"
+                FROM "venues" v
+                INNER JOIN "events" e ON v."eventID" = e.id
+                WHERE 
+                    v."specialStatus" = 'EVENT_FESTIVAL'
+                    AND v."originLocation" = %s
+                    AND (
+                        -- Use eventEndDate if available, otherwise eventStartDate
+                        COALESCE(e."eventEndDate", e."eventStartDate") >= %s
+                    )
+                    AND (
+                        -- Show events starting 2 months in advance
+                        e."eventStartDate" <= %s
+                    )
+                ORDER BY e."eventStartDate" ASC
+                LIMIT 10
+            """
+            
+            cursor.execute(query, (user_country, today, two_months_ahead))
+            events = cursor.fetchall()
+            
+            # Convert to list of dicts
+            events_list = [dict(event) for event in events]
+            
+            # Format dates to ISO string for JSON serialization
+            for event in events_list:
+                if event.get('eventStartDate'):
+                    event['eventStartDate'] = event['eventStartDate'].isoformat()
+                if event.get('eventEndDate'):
+                    event['eventEndDate'] = event['eventEndDate'].isoformat()
+                if event.get('eventStartTime'):
+                    event['eventStartTime'] = str(event['eventStartTime'])
+                if event.get('eventEndTime'):
+                    event['eventEndTime'] = str(event['eventEndTime'])
+                if event.get('createdDate'):
+                    event['createdDate'] = event['createdDate'].isoformat()
+            
+            return jsonify({
+                "code": 200,
+                "data": events_list,
+                "userCountry": user_country,
+                "count": len(events_list)
+            }), 200
+            
+    except Exception as e:
+        logger.error(f"Error fetching upcoming events: {str(e)}")
+        logger.error(traceback.format_exc())
+        return jsonify({
+            "code": 500,
+            "message": "An error occurred retrieving upcoming events."
+        }), 500
 
 # ----------------------
 # [NEW] TO BE ADDED:

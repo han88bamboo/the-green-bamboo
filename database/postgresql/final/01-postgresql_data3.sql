@@ -1804,4 +1804,23 @@ CREATE INDEX idx_poll_options_poll_order ON "pollOptions" ("pollId", "optionOrde
 CREATE INDEX idx_poll_responses_poll ON "pollResponses" ("pollId");
 CREATE INDEX idx_poll_responses_user ON "pollResponses" ("respondentId");
 
+-- ========= EVENT_FESTIVAL FEATURE: Add eventID column to venues =========
+-- Add eventID foreign key to venues table after events table exists
+ALTER TABLE "venues" 
+ADD COLUMN "eventID" INTEGER REFERENCES "events"("id") ON DELETE SET NULL;
+
+-- ========= INDEXES FOR EVENT_FESTIVAL FEATURE =========
+-- Index for performance when filtering events by location and date
+CREATE INDEX idx_events_location_dates 
+ON "events"("eventLocation", "eventStartDate", "eventEndDate") 
+WHERE "eventOwnerType" = 'venue';
+
+-- Index for venue-event relationship lookups
+CREATE INDEX idx_venues_event_id 
+ON "venues"("eventID") 
+WHERE "specialStatus" = 'EVENT_FESTIVAL';
+
+-- Compound index for the main upcoming events query (location + dates + signup status)
+CREATE INDEX idx_events_upcoming_query 
+ON "events"("eventLocation", "eventStartDate", "eventEndDate", "signupOpen");
 

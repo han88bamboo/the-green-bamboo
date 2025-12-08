@@ -744,6 +744,14 @@
                                     style="font-weight: bold;">
                                 {{ diningMenuText }}
                             </button>
+
+                            <!-- RSVP Button (only for regular users and EVENT_FESTIVAL venues) -->
+                            <button v-if="viewerType === 'user' && targetVenue?.specialStatus === 'EVENT_FESTIVAL' && targetVenue?.eventID"
+                                class="btn btn-md primary-btn-less-round-blue text-nowrap mobile-rating-smaller-text-2"
+                                style="font-weight: bold; background-color: #f0b358;"
+                                @click="$router.push(`/event/${targetVenue.eventID}/${slugify(targetVenue.venueName)}`)">
+                                RSVP
+                            </button>
                                 </div>
                             </div>
                         </div>
@@ -1587,6 +1595,14 @@
                                     @click="resetPdfNavigation"
                                     style="font-weight: bold;">
                                 {{ diningMenuText }}
+                            </button>
+
+                            <!-- RSVP Button (only for regular users and EVENT_FESTIVAL venues - Mobile) -->
+                            <button v-if="viewerType === 'user' && targetVenue?.specialStatus === 'EVENT_FESTIVAL' && targetVenue?.eventID"
+                                class="d-lg-none btn btn-lg primary-btn-less-round-blue text-nowrap mobile-rating-smaller-text-2"
+                                style="font-weight: bold; background-color: #f0b358;"
+                                @click="$router.push(`/event/${targetVenue.eventID}/${slugify(targetVenue.venueName)}`)">
+                                RSVP
                             </button>
                         </div>
                     </div>

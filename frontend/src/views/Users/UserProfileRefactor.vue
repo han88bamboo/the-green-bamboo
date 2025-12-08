@@ -2173,36 +2173,42 @@
             
           </div>
 
-          <!-- Events Nearby Section 
-          <section v-if="ownProfile && user" class="dx-events card">
+          <!--Events Nearby Section--> 
+          <section v-if="ownProfile && user && upcomingEvents.length > 0" class="dx-events card">
             <header class="dx-events__header w-100">
               <h3 class="dx-events__title">📍 Check Out Events Near You</h3>
             </header>
 
             <div class="dx-events__body w-100">
-              <article class="dx-event">
-                <a class="dx-event__media" href="https://drink-x.com/profile/venue/99/whiskylivesingapore2025" aria-label="Whisky Live Singapore 2025">
-                  
+              <article v-for="event in upcomingEvents" :key="event.eventId" class="dx-event">
+                <a 
+                  class="dx-event__media" 
+                  :href="getVenueProfileUrl(event.venueId, event.venueName)" 
+                  :aria-label="event.eventName"
+                >
                   <img
                     class="dx-event__img"
-                    src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/imgi_1_509077392_18366084808196066_4416648360979910106_n.jpg?v=1758609153"
-                    alt="Whisky Live Singapore 2025 poster"
+                    :src="event.venuePhoto || defaultVenueImage"
+                    :alt="event.eventName + ' poster'"
                     loading="lazy"
                   />
                 </a>
 
                 <div class="dx-event__content">
                   <h3 class="dx-event__name">
-                    <a href="https://drink-x.com/profile/venue/99/whiskylivesingapore2025" >
-                      Whisky Live Singapore 2025
+                    <a :href="getVenueProfileUrl(event.venueId, event.venueName)">
+                      {{ event.eventName }}
                     </a>
                   </h3>
-                  <p class="dx-event__meta"><em>22nd – 23rd November 2025</em></p>
-                  <p class="dx-event__desc">Taste 300+ Whiskies, Rums, Tequila and More!</p>
+                  <p class="dx-event__meta">
+                    <em>{{ formatEventDates(event.eventStartDate, event.eventEndDate) }}</em>
+                    <span v-if="event.originLocation"> • {{ event.originLocation }}</span>
+                  </p>
+                  <p v-if="event.eventDesc" class="dx-event__desc">{{ event.eventDesc.length > 95 ? event.eventDesc.substring(0, 95) + '...' : event.eventDesc }}</p>
                 </div>
               </article>
             </div>
-          </section>-->
+          </section>
 
 
           <!-- reviews and lists -->
@@ -4176,6 +4182,8 @@ export default {
         "https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultProfilePhoto.png?v=1748434288",
       defaultDrinkImage:
         "https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultDrinkImage.png?v=1750084739",
+      defaultVenueImage:
+        "https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultDrinkImage.png?v=1750084739",
 
       producers: [],
 
@@ -4218,6 +4226,10 @@ export default {
       selectedCellarCollectionItems: [],
       viewingCellarCollection: false,
       sharedCollectionId: null, // For handling shared collection URLs
+
+      // Upcoming Events Data
+      upcomingEvents: [],
+      upcomingEventsLoaded: false,
 
       // Display User Data
 
@@ -4670,6 +4682,7 @@ export default {
           this.getFollowingCount(),
           this.getCellarData(), // Add cellar data loading
           this.getTotalReviewsCount(), // Get total reviews count
+          this.getUpcomingEvents(), // Get upcoming events based on user location
         ]);
 
         await this.getReviewsSummary();
@@ -5131,6 +5144,35 @@ export default {
       }
     },
 
+    // Upcoming Events Data
+    async getUpcomingEvents() {
+      try {
+        const response = await this.$axios.get(
+          `${process.env.VUE_APP_API_URL}/getData/getUpcomingEventsByLocation/${this.displayUserID}`
+        );
+        
+        if (response.data && response.data.data) {
+          this.upcomingEvents = response.data.data;
+        } else {
+          this.upcomingEvents = [];
+        }
+        
+        this.upcomingEventsLoaded = true;
+      } catch (error) {
+        console.error("Error fetching upcoming events:", error);
+        if (error.response && error.response.status === 404) {
+          // No events found for user's location
+          this.upcomingEvents = [];
+          this.upcomingEventsLoaded = true;
+        } else {
+          // For other errors, mark as loaded with empty data
+          this.upcomingEvents = [];
+          this.upcomingEventsLoaded = true;
+          console.warn("Upcoming events could not be loaded, using empty state");
+        }
+      }
+    },
+
     formatCellarCollectionsForProfile(collections, items) {
       const formatted = {};
       
@@ -5173,6 +5215,52 @@ export default {
         this.selectedCellarCollectionData = collection;
         this.viewingCellarCollection = true;
       }
+    },
+
+    // Helper methods for upcoming events
+    formatEventDates(startDate, endDate) {
+      if (!startDate) return '';
+      
+      const start = new Date(startDate);
+      const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 
+                         'July', 'August', 'September', 'October', 'November', 'December'];
+      
+      // If no end date or same as start date, show single date
+      if (!endDate || startDate === endDate) {
+        const day = start.getDate();
+        const suffix = this.getOrdinalSuffix(day);
+        return `${day}${suffix} ${monthNames[start.getMonth()]} ${start.getFullYear()}`;
+      }
+      
+      // If different dates
+      const end = new Date(endDate);
+      const startDay = start.getDate();
+      const endDay = end.getDate();
+      const startSuffix = this.getOrdinalSuffix(startDay);
+      const endSuffix = this.getOrdinalSuffix(endDay);
+      
+      // Same month and year
+      if (start.getMonth() === end.getMonth() && start.getFullYear() === end.getFullYear()) {
+        return `${startDay}${startSuffix} – ${endDay}${endSuffix} ${monthNames[start.getMonth()]} ${start.getFullYear()}`;
+      }
+      
+      // Different months
+      return `${startDay}${startSuffix} ${monthNames[start.getMonth()]} – ${endDay}${endSuffix} ${monthNames[end.getMonth()]} ${start.getFullYear()}`;
+    },
+    
+    getOrdinalSuffix(day) {
+      if (day > 3 && day < 21) return 'th';
+      switch (day % 10) {
+        case 1: return 'st';
+        case 2: return 'nd';
+        case 3: return 'rd';
+        default: return 'th';
+      }
+    },
+    
+    getVenueProfileUrl(venueId, venueName) {
+      const slug = venueName ? this.slugify(venueName) : '';
+      return `/profile/venue/${venueId}${slug ? '/' + slug : ''}`;
     },
 
     // Handle shared collection URLs with collection query parameter

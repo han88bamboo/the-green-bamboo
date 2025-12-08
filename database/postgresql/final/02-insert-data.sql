@@ -879,12 +879,19 @@ INSERT INTO "venueSubTypes" ("venueSubType") VALUES
 ('Wine Bar'),
 ('Winery');
 
+-- Real users (admin, developers, testers)
 INSERT INTO "users" ("username","displayName","choiceDrinks","modType","photo","hashedPassword","joinDate","firstName","lastName","email","isAdmin","birthday","pin", "choiceFlavours", "preferences","categoryExpert") VALUES
 	 ('admin','admin','{}','{}','','-1522920846','2024-10-28 18:45:31.403','admin','admin','admin@drink-x.com',false,'2000-01-01 00:00:00','175029,2024-10-28 18:46:29', '{}', '{}',NULL),
 	 ('Lotusroot518','Lotusroot518','{}','{}','','-289780632','2024-10-29 01:31:56.379','Lotusroot518','Lotusroot518','Kailinchoo@gmail.com',false,'1995-08-11 00:00:00',NULL, '{}', '{}',NULL),
-	 ('charsiucharlie','charsiucharlie','{}','{beer}','','-65180891','2024-10-30 13:48:46.277','charsiucharlie','charsiucharlie','tzhehan@gmail.com',true,'1993-06-29 00:00:00',NULL, '{}', '{}',NULL),
-	 ('DumplingBoy','DumplingBoy','{}','{}','','2108394495','2024-11-03 09:49:51.179','DumplingBoy','DumplingBoy','jwleong.199@gmail.com',false,'1999-10-21 00:00:00',NULL, '{}', '{}',NULL),
-     ('cp', 'cp', '{}', '{}', '', '-301000982', '2024-11-03 09:49:51.179', 'cheng', 'pong', 'cpdeveloper101@gmail.com', false, '1999-10-21 00:00:00', NULL, '{}', '{}',NULL),
+	 ('DumplingBoy','DumplingBoy','{}','{}','','2108394495','2024-11-03 09:49:51.179','DumplingBoy','DumplingBoy','jwleong.199@gmail.com',false,'1999-10-21 00:00:00',NULL, '{}', '{}',NULL);
+
+-- Developer accounts
+INSERT INTO "users" ("username","displayName","choiceDrinks","modType","photo","hashedPassword","joinDate","firstName","lastName","email","isAdmin","birthday","pin", "choiceFlavours", "preferences","categoryExpert","country") VALUES
+	 ('charsiucharlie','charsiucharlie','{}','{beer}','','-65180891','2024-10-30 13:48:46.277','charsiucharlie','charsiucharlie','tzhehan@gmail.com',true,'1993-06-29 00:00:00',NULL, '{}', '{}',NULL,'France'),
+     ('cp', 'cp', '{}', '{}', '', '-301000982', '2024-11-03 09:49:51.179', 'cheng', 'pong', 'cpdeveloper101@gmail.com', false, '1999-10-21 00:00:00', NULL, '{}', '{}',NULL,'Singapore');
+
+-- Test users
+INSERT INTO "users" ("username","displayName","choiceDrinks","modType","photo","hashedPassword","joinDate","firstName","lastName","email","isAdmin","birthday","pin", "choiceFlavours", "preferences","categoryExpert") VALUES
      ('user1', 'User One', '{}', '{}', '', '-1799326735', '2024-02-02', 'John', 'Doe', 'user1@example.com', false, '1990-01-01', NULL, '{}', '{}',NULL),
      ('user2', 'User Two', '{}', '{}', '', '-1670244015', '2024-02-02', 'Jane', 'Smith', 'user2@example.com', false, '1992-05-12', NULL, '{}', '{}',NULL),
      ('user3', 'User Three', '{}', '{}', '', '-1541161295', '2024-02-02', 'Mike', 'Johnson', 'user3@example.com', false, '1988-07-24', NULL, '{}', '{}',NULL),
@@ -3109,6 +3116,124 @@ VALUES
     'EVENT_FESTIVAL'
 );
 
+-- Whisky Live Paris 2026 (EVENT_FESTIVAL venue)
+INSERT INTO "venues" (
+    "id",
+    "venueName", 
+    "address", 
+    "venueType", 
+    "originLocation", 
+    "venueDesc", 
+    "hashedPassword", 
+    "photo", 
+    "claimStatus", 
+    "claimStatusCheckDate", 
+    "reservationDetails", 
+    "username", 
+    "publicHolidays", 
+    "stripeCustomerId", 
+    "pin",
+    "pdfMenuUrl",
+    "venueMainType",
+    "venueSubType",
+    "specialStatus",
+    "showRating",
+    "instagram",
+    "facebook",
+    "tiktok",
+    "email",
+    "phoneNumber",
+    "whatsappNumber",
+    "website")
+VALUES
+(   '100',
+    'Whisky Live Paris',
+    'Espace Champerret, 6 Rue Jean Ostreicher, 75017 Paris, France',
+    'Event Space',
+    'France',
+    'Le plus grand festival de whisky en France. Découvrez des centaines de whiskies du monde entier!',
+    '-167833487',
+    'https://exhibitionsforyou.com/wp-content/uploads/2025/10/Whisky-Live-Paris-2026.png',
+    true,
+    NULL,
+    NULL,
+    'whiskyliveparis',
+    'Bastille Day Week, Christmas Week',
+    NULL,
+    NULL,
+    NULL,
+    1,
+    2,
+    'EVENT_FESTIVAL',
+    true,
+    'https://www.instagram.com/whiskylive_paris/',
+    'https://www.facebook.com/WhiskyLiveParis',
+    NULL,
+    'contact@whiskylive.fr',
+    '+33 1 42 67 99 12',
+    '+33 6 12 34 56 78',
+    'https://www.whiskylive.com/paris'
+);
+
+-- Tokyo Whisky & Spirits Festival 2026 (EVENT_FESTIVAL venue)
+INSERT INTO "venues" (
+    "id",
+    "venueName", 
+    "address", 
+    "venueType", 
+    "originLocation", 
+    "venueDesc", 
+    "hashedPassword", 
+    "photo", 
+    "claimStatus", 
+    "claimStatusCheckDate", 
+    "reservationDetails", 
+    "username", 
+    "publicHolidays", 
+    "stripeCustomerId", 
+    "pin",
+    "pdfMenuUrl",
+    "venueMainType",
+    "venueSubType",
+    "specialStatus",
+    "showRating",
+    "instagram",
+    "facebook",
+    "tiktok",
+    "email",
+    "phoneNumber",
+    "whatsappNumber",
+    "website")
+VALUES
+(   '101',
+    'Tokyo Whisky & Spirits Festival',
+    'Tokyo International Forum, 3-5-1 Marunouchi, Chiyoda City, Tokyo 100-0005, Japan',
+    'Event Space',
+    'Japan',
+    '日本最大級のウイスキー＆スピリッツフェスティバル。国内外の銘酒200種類以上が試飲可能。Japan''s premier spirits festival featuring Japanese whisky, sake, and international spirits.',
+    '1334220311',
+    'https://en.jpwhisky.net/wp-content/uploads/2025/02/pv_20250114063536_d998b293_249ba360.jpg',
+    true,
+    NULL,
+    'https://www.tokyospirits.jp',
+    'tokyospirits',
+    'Golden Week, New Year Week',
+    NULL,
+    NULL,
+    NULL,
+    1,
+    2,
+    'EVENT_FESTIVAL',
+    true,
+    'https://www.instagram.com/tokyospirits/',
+    'https://www.facebook.com/TokyoSpiritsFestival',
+    NULL,
+    'info@tokyospirits.jp',
+    '+81 3-5777-8600',
+    '+81 90-1234-5678',
+    'https://www.tokyospirits.jp/en'
+);
+
 -- Insert pollQuestions for venue ID 38 (Whisky Live Singapore)
 
 -- 1. Multiple Choice Single Selection Poll
@@ -4380,7 +4505,12 @@ VALUES
     ('Bourbon & Blues Night', 'Pair smooth bourbons with soulful blues music in a cozy atmosphere.', 'Location', '2025-03-15', '2025-03-15', '20:00:00', '23:00:00', 100, NULL, TRUE, TRUE, '10 Jln Serene, #01-03 Serene Centre, Singapore 258748', 'https://www.google.com', 1, 'producer', 0, '2025-02-15 18:45:31.403'),  
     ('IPA Showcase', 'Discover unique IPAs from local breweries in this beer lover’s event.', 'Location', '2025-06-15', '2025-06-15', '17:00:00', '20:00:00', 100, NULL, FALSE, FALSE, '10 Jln Serene, #01-03 Serene Centre, Singapore 258748', '', 1, 'venue', 0, '2025-05-03 18:45:31.403'),
     ('Cocktail Night: Around the World', 'Travel the globe one sip at a time with cocktails inspired by international flavors.', 'Location', '2024-12-25', '2024-12-25', '19:00:00', '23:00:00', 100, NULL, TRUE, FALSE, '10 Jln Serene, #01-03 Serene Centre, Singapore 258748', 'https://www.google.com', 1, 'user', 0, '2025-02-17 18:45:31.403'),
-    ('Cider Festival', 'Celebrate the best ciders with unlimited tastings and live music all day long.', 'Location', '2024-12-20', '2024-12-20', '14:00:00', '22:00:00', 100, NULL, TRUE, TRUE, '10 Jln Serene, #01-03 Serene Centre, Singapore 258748', 'https://www.google.com', 1, 'venue', 0, '2025-05-04 18:45:31.403');
+    ('Cider Festival', 'Celebrate the best ciders with unlimited tastings and live music all day long.', 'Location', '2024-12-20', '2024-12-20', '14:00:00', '22:00:00', 100, NULL, TRUE, TRUE, '10 Jln Serene, #01-03 Serene Centre, Singapore 258748', 'https://www.google.com', 1, 'venue', 0, '2025-05-04 18:45:31.403'),
+    -- EVENT_FESTIVAL sample events
+    ('Whisky Live Singapore 2025', 'Asia''s Premier Whisky Festival returns to Singapore! Join us for a spectacular weekend featuring 300+ whiskies, rums, tequilas and more from around the world. Meet master distillers, attend masterclasses, and discover rare expressions. Taste over 300 whiskies, rums, tequilas and more!', 'Festival', '2025-12-22', '2025-12-23', '14:00:00', '22:00:00', 5000, ARRAY['https://cdn.shopify.com/s/files/1/0353/9510/9003/files/imgi_1_509077392_18366084808196066_4416648360979910106_n.jpg?v=1758609153'], TRUE, TRUE, 'Singapore', 'https://www.whiskylivesingapore.com/tickets', 99, 'venue', 0, '2025-10-01 10:00:00'),
+    ('Whisky Live Paris 2026', 'Le rendez-vous incontournable des amateurs de whisky en France. Plus de 400 références à déguster, masterclasses exclusives, rencontres avec les distillateurs. Découvrez des centaines de whiskies du monde entier!', 'Festival', '2026-01-14', '2026-01-15', '10:00:00', '20:00:00', 8000, ARRAY['https://cdn.shopify.com/s/files/1/0353/9510/9003/files/paris-whisky-banner.jpg'], TRUE, TRUE, 'France', 'https://www.whiskylive.com/paris/tickets', 100, 'venue', 0, '2025-12-01 10:00:00'),
+    ('Tokyo Whisky & Spirits Festival 2026', '日本最大級のウイスキー＆スピリッツフェスティバル。国内外の銘酒200種類以上が試飲可能。Japan''s premier spirits festival featuring Japanese whisky, sake, and international spirits.', 'Festival', '2026-01-20', '2026-01-21', '11:00:00', '21:00:00', 6000, ARRAY['https://cdn.shopify.com/s/files/1/0353/9510/9003/files/tokyo-spirits-banner.jpg'], TRUE, TRUE, 'Japan', 'https://www.tokyospirits.jp/en/tickets', 101, 'venue', 0, '2026-01-15 10:00:00');
+
 
 
 INSERT INTO "eventAttendees"(
@@ -4911,3 +5041,9 @@ INSERT INTO "currencySymbols" ("symbol") VALUES
 ('$'), ('Tokens'), ('€'), ('£'), ('¥'), ('₩'), ('₹'), ('₽'), ('₺'), ('₫'), ('₦'), 
 ('₱'), ('₲'), ('₵'), ('₴'), ('₭'), ('฿'), ('₡'), ('₪'), ('₸'), ('؋'), 
 ('₮'), ('₿'), ('Ξ');
+
+-- ========= EVENT_FESTIVAL venue-event linking =========
+-- Link venues to their corresponding events
+UPDATE "venues" SET "eventID" = 11 WHERE "id" = 99;  -- Whisky Live Singapore 2025 -> Event ID 11
+UPDATE "venues" SET "eventID" = 12 WHERE "id" = 100; -- Whisky Live Paris 2026 -> Event ID 12
+UPDATE "venues" SET "eventID" = 13 WHERE "id" = 101; -- Tokyo Whisky & Spirits Festival 2026 -> Event ID 13
