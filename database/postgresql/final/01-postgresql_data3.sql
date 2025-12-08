@@ -752,8 +752,14 @@ CREATE TABLE "venuesMenu" (
     "isVisible" BOOLEAN NOT NULL DEFAULT TRUE,
     "sectionDescription" TEXT, -- Description text for the menu section
     "subscribersEnabled" BOOLEAN DEFAULT FALSE, -- Whether venue has enabled subscription for this section
-    "subscribers" TEXT[] DEFAULT '{}' -- Array of user IDs who have subscribed to this section
+    "subscribers" TEXT[] DEFAULT '{}', -- Array of user IDs who have subscribed to this section
+    "createdAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+-- Natural key for UPSERT matching (must be unique index with expression for COALESCE)
+CREATE UNIQUE INDEX "unique_section_per_venue" 
+ON "venuesMenu" ("venueId", "sectionName", COALESCE("parentSectionId", -1));
 
 -- 3. Copy data from old table
 -- INSERT INTO "venuesMenu" ("id", "sectionName", "sectionOrder", "venueId")
@@ -780,8 +786,15 @@ CREATE TABLE "menuItems" (
     "variant" SMALLINT DEFAULT NULL, -- 2 bytes per row, Handles years from -32,768 to 32,767
     "new" BOOLEAN,
     "staffPick" BOOLEAN,
-    "itemPriceCurrency" VARCHAR(10) DEFAULT 'Tokens' -- newly added to support currency drop-down list
+    "itemPriceCurrency" VARCHAR(10) DEFAULT 'Tokens', -- newly added to support currency drop-down list
+    "createdAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+-- Natural key for UPSERT matching (must be unique index with expression for COALESCE)
+CREATE UNIQUE INDEX "unique_item_per_section" 
+ON "menuItems" ("sectionId", "itemID", COALESCE("variant", -1));
+
 -- ALTER TABLE "menuItems" ADD COLUMN "variant" SMALLINT DEFAULT NULL;
 
 -- ========= "venuesOpeningHours" =========

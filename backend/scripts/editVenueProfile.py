@@ -1270,193 +1270,331 @@ def editMenuHierarchical():
         return response
     
     data = request.get_json()
-    print("Hierarchical menu data received:", data)
+    print("=== UPSERT Menu Update Started ===")
+    print(f"Venue ID: {data.get('venueID')}")
+    print(f"Total sections received: {len(data.get('updatedMenu', []))}")
 
     venueID = int(data['venueID'])
     updatedMenu = data['updatedMenu']
 
     try:
         with db_manager.get_cursor() as cursor:
-            # Debug: Print received menu structure
-            print("=== DEBUG: Hierarchical Menu Debug ===")
-            print(f"Total sections received: {len(updatedMenu)}")
-            for i, section in enumerate(updatedMenu):
-                print(f"Section {i}: {section.get('sectionName', 'Unknown')} - Order: {section.get('sectionOrder')} - isSubSection: {section.get('isSubSection', False)} - parentSectionId: {section.get('parentSectionId')}")
+            # Separate main sections and subsections
+            main_sections = [s for s in updatedMenu if not s.get('isSubSection', False)]
+            subsections = [s for s in updatedMenu if s.get('isSubSection', False)]
             
-            # Clear existing menu items and sections
-            cursor.execute('DELETE FROM "menuItems" WHERE "sectionId" IN (SELECT "id" FROM "venuesMenu" WHERE "venueId" = %s)', (venueID,))
-            cursor.execute('DELETE FROM "venuesMenu" WHERE "venueId" = %s', (venueID,))
-
-            # First pass: Insert all main sections (those without parentSectionId)
-            section_id_mapping = {}  # Map old IDs and sectionOrder to new database IDs
-            main_sections = [section for section in updatedMenu if not section.get('isSubSection', False)]
-            print(f"Main sections found: {len(main_sections)}")
-            for section in main_sections:
-                print(f"  Main section: {section.get('sectionName')} (order: {section.get('sectionOrder')}, old_id: {section.get('id')})")
+            print(f"Main sections: {len(main_sections)}, Subsections: {len(subsections)}")
             
+            # Track IDs to keep (for orphan deletion later)
+            kept_section_ids = []
+            section_id_mapping = {}  # Map sectionOrder to database ID
+            
+            # ===== STEP 1: UPSERT Main Sections =====
+            print("\n--- Step 1: Upserting Main Sections ---")
             for section in main_sections:
-                print(f"  Inserting main section: {section.get('sectionName')} with order {section.get('sectionOrder')}")
-                
-                # Prepare subscription fields
-                section_description = section.get('sectionDescription', '')
+                section_name = section['sectionName']
+                section_order = section['sectionOrder']
+                is_visible = section.get('isVisible', True)
+                section_desc = section.get('sectionDescription', '')
                 subscribers_enabled = section.get('subscribersEnabled', False)
                 
+                # Try to find existing section by natural key
                 cursor.execute(
                     '''
-                    INSERT INTO "venuesMenu" ("sectionName", "sectionOrder", "venueId", "isVisible", "sectionDescription", "subscribersEnabled")
-                    VALUES (%s, %s, %s, %s, %s, %s)
-                    RETURNING id
+                    SELECT "id", "subscribers" 
+                    FROM "venuesMenu" 
+                    WHERE "venueId" = %s 
+                    AND "sectionName" = %s 
+                    AND "parentSectionId" IS NULL
                     ''',
-                    (section['sectionName'], section['sectionOrder'], venueID, section.get('isVisible', True), section_description, subscribers_enabled)
+                    (venueID, section_name)
                 )
-                new_section_id = cursor.fetchone()['id']
+                existing = cursor.fetchone()
                 
-                # Create mapping from sectionOrder to new database ID (for all sections)
-                section_id_mapping[section['sectionOrder']] = new_section_id
+                if existing:
+                    # UPDATE existing section (preserves ID and subscribers!)
+                    section_id = existing['id']
+                    print(f"  UPDATE: '{section_name}' (ID: {section_id})")
+                    
+                    cursor.execute(
+                        '''
+                        UPDATE "venuesMenu" 
+                        SET "sectionOrder" = %s,
+                            "isVisible" = %s,
+                            "sectionDescription" = %s,
+                            "subscribersEnabled" = %s,
+                            "updatedAt" = CURRENT_TIMESTAMP
+                        WHERE "id" = %s
+                        ''',
+                        (section_order, is_visible, section_desc, subscribers_enabled, section_id)
+                    )
+                else:
+                    # INSERT new section
+                    print(f"  INSERT: '{section_name}'")
+                    
+                    cursor.execute(
+                        '''
+                        INSERT INTO "venuesMenu" 
+                        ("sectionName", "sectionOrder", "venueId", "isVisible", 
+                         "sectionDescription", "subscribersEnabled")
+                        VALUES (%s, %s, %s, %s, %s, %s)
+                        RETURNING "id"
+                        ''',
+                        (section_name, section_order, venueID, is_visible, section_desc, subscribers_enabled)
+                    )
+                    section_id = cursor.fetchone()['id']
                 
-                # Create mapping from old database ID to new database ID (for existing sections)
-                if section.get('id') is not None:
-                    section_id_mapping[section['id']] = new_section_id
-                    print(f"  Mapped old ID {section['id']} → new ID {new_section_id}")
-                
-                print(f"  Mapped sectionOrder {section['sectionOrder']} → new ID {new_section_id}")
-
-            # Second pass: Insert all subsections (those with parentSectionId)
-            subsections = [section for section in updatedMenu if section.get('isSubSection', False)]
-            print(f"Subsections found: {len(subsections)}")
+                # Track this section
+                kept_section_ids.append(section_id)
+                section_id_mapping[section_order] = section_id
             
+            # ===== STEP 2: UPSERT Subsections =====
+            print("\n--- Step 2: Upserting Subsections ---")
             for subsection in subsections:
+                section_name = subsection['sectionName']
+                section_order = subsection['sectionOrder']
+                is_visible = subsection.get('isVisible', True)
+                section_desc = subsection.get('sectionDescription', '')
+                subscribers_enabled = subsection.get('subscribersEnabled', False)
                 parent_section_id = subsection.get('parentSectionId')
-                print(f"  Processing subsection: {subsection.get('sectionName')} with parentSectionId: {parent_section_id} (type: {type(parent_section_id)})")
-                print(f"  Available mappings: {list(section_id_mapping.keys())}")
                 
-                # Look up parent's new database ID using the mapping
-                # Handle both string and integer keys in mapping
+                # Resolve parent's database ID
                 parent_db_id = section_id_mapping.get(parent_section_id)
-                if parent_db_id is None and isinstance(parent_section_id, str) and parent_section_id.isdigit():
-                    parent_db_id = section_id_mapping.get(int(parent_section_id))
-                if parent_db_id is None and isinstance(parent_section_id, int):
-                    parent_db_id = section_id_mapping.get(str(parent_section_id))
-                
-                print(f"  Resolved parent DB ID: {parent_db_id}")
+                if parent_db_id is None:
+                    # Try as integer
+                    if isinstance(parent_section_id, str) and parent_section_id.isdigit():
+                        parent_db_id = section_id_mapping.get(int(parent_section_id))
+                    elif isinstance(parent_section_id, int):
+                        parent_db_id = section_id_mapping.get(str(parent_section_id))
                 
                 if parent_db_id is None:
-                    print(f"ERROR: Subsection '{subsection['sectionName']}' has invalid parent section ID {parent_section_id}")
-                    print(f"Available section mappings: {section_id_mapping}")
+                    print(f"  ERROR: Subsection '{section_name}' has invalid parent ID {parent_section_id}")
                     continue
-                    
-                print(f"  Inserting subsection: {subsection.get('sectionName')} with parent DB ID {parent_db_id}")
                 
-                # Prepare subscription fields for subsections
-                section_description = subsection.get('sectionDescription', '')
-                subscribers_enabled = subsection.get('subscribersEnabled', False)
-                
+                # Try to find existing subsection by natural key
                 cursor.execute(
                     '''
-                    INSERT INTO "venuesMenu" ("sectionName", "sectionOrder", "venueId", "parentSectionId", "isVisible", "sectionDescription", "subscribersEnabled")
-                    VALUES (%s, %s, %s, %s, %s, %s, %s)
-                    RETURNING id
+                    SELECT "id", "subscribers" 
+                    FROM "venuesMenu" 
+                    WHERE "venueId" = %s 
+                    AND "sectionName" = %s 
+                    AND "parentSectionId" = %s
                     ''',
-                    (subsection['sectionName'], subsection['sectionOrder'], venueID, parent_db_id, subsection.get('isVisible', True), section_description, subscribers_enabled)
+                    (venueID, section_name, parent_db_id)
                 )
-                new_subsection_id = cursor.fetchone()['id']
+                existing = cursor.fetchone()
                 
-                # Create mapping for this subsection as well
-                section_id_mapping[subsection['sectionOrder']] = new_subsection_id
-                if subsection.get('id') is not None:
-                    section_id_mapping[subsection['id']] = new_subsection_id
-                    print(f"  Mapped old subsection ID {subsection['id']} → new ID {new_subsection_id}")
+                if existing:
+                    # UPDATE existing subsection
+                    subsection_id = existing['id']
+                    print(f"  UPDATE: '{section_name}' (ID: {subsection_id}, parent: {parent_db_id})")
+                    
+                    cursor.execute(
+                        '''
+                        UPDATE "venuesMenu" 
+                        SET "sectionOrder" = %s,
+                            "isVisible" = %s,
+                            "sectionDescription" = %s,
+                            "subscribersEnabled" = %s,
+                            "updatedAt" = CURRENT_TIMESTAMP
+                        WHERE "id" = %s
+                        ''',
+                        (section_order, is_visible, section_desc, subscribers_enabled, subsection_id)
+                    )
+                else:
+                    # INSERT new subsection
+                    print(f"  INSERT: '{section_name}' (parent: {parent_db_id})")
+                    
+                    cursor.execute(
+                        '''
+                        INSERT INTO "venuesMenu" 
+                        ("sectionName", "sectionOrder", "venueId", "parentSectionId", 
+                         "isVisible", "sectionDescription", "subscribersEnabled")
+                        VALUES (%s, %s, %s, %s, %s, %s, %s)
+                        RETURNING "id"
+                        ''',
+                        (section_name, section_order, venueID, parent_db_id, 
+                         is_visible, section_desc, subscribers_enabled)
+                    )
+                    subsection_id = cursor.fetchone()['id']
                 
-                print(f"  Successfully created subsection with ID {new_subsection_id}")
-
-            print(f"Final section_id_mapping: {section_id_mapping}")
-            print("=== END DEBUG ===")
-
-            # Third pass: Insert menu items for all sections and subsections
+                # Track this subsection
+                kept_section_ids.append(subsection_id)
+                section_id_mapping[section_order] = subsection_id
+            
+            # ===== STEP 3: UPSERT Menu Items =====
+            print("\n--- Step 3: Upserting Menu Items ---")
+            kept_item_ids = []
+            
             for section in updatedMenu:
                 section_db_id = section_id_mapping.get(section['sectionOrder'])
                 if section_db_id is None:
-                    print(f"Warning: Section '{section['sectionName']}' not found in mapping")
+                    print(f"  WARNING: Section '{section['sectionName']}' not in mapping, skipping items")
                     continue
-                    
-                # Insert items for each section/subsection
+                
                 for item in section.get('sectionMenu', []):
-                    # Dynamically add vintage
-                    columns = ["itemOrder", "itemPrice", "itemAvailability", "itemID", "itemServingType", "sectionId"]
-                    values = [item.get('itemOrder'), item.get('itemPrice'), item.get('itemAvailability'), item.get('itemID'), item.get('itemServingType'), section_db_id]
-
-                    # Only add when you find vintage maintained by user
-                    itemVintage = item.get('itemVintage')
-                    if itemVintage and str(itemVintage).strip():
-                        itemVintage = int(itemVintage)
-                    else:
-                        itemVintage = None
-
-                    if itemVintage is not None:
-                        columns.append("variant")
-                        values.append(itemVintage)
-
-                    # Add 'new' field if provided
-                    itemNew = item.get('new')
-                    if itemNew is not None:
-                        columns.append("new")
-                        values.append(bool(itemNew))
+                    item_id = item.get('itemID')
+                    item_order = item.get('itemOrder')
+                    item_price = item.get('itemPrice')
+                    item_availability = item.get('itemAvailability')
+                    item_serving_type = item.get('itemServingType')
+                    item_new = item.get('new')
+                    item_staff_pick = item.get('staffPick')
+                    item_currency = item.get('itemPriceCurrency')
                     
-                    # Add 'staffPick' field if provided
-                    itemStaffPick = item.get('staffPick')
-                    if itemStaffPick is not None:
-                        columns.append("staffPick")
-                        values.append(bool(itemStaffPick))
-
-                    # Add 'itemPriceCurrency' field if provided
-                    itemPriceCurrency = item.get('itemPriceCurrency')
-                    if itemPriceCurrency is not None:
-                        columns.append("itemPriceCurrency")
-                        values.append(itemPriceCurrency)
-
-                    # Append it back as string to be passed for execution
-                    column_names = ", ".join(f'"{col}"' for col in columns)
-                    placeholders = ", ".join(["%s"] * len(values))
-
+                    # Handle vintage
+                    item_vintage = item.get('itemVintage')
+                    if item_vintage and str(item_vintage).strip():
+                        item_vintage = int(item_vintage)
+                    else:
+                        item_vintage = None
+                    
+                    # Try to find existing item by natural key
                     cursor.execute(
-                        f'INSERT INTO "menuItems" ({column_names}) VALUES ({placeholders})',
-                        values
+                        '''
+                        SELECT "id" 
+                        FROM "menuItems" 
+                        WHERE "sectionId" = %s 
+                        AND "itemID" = %s 
+                        AND COALESCE("variant", -1) = COALESCE(%s, -1)
+                        ''',
+                        (section_db_id, item_id, item_vintage)
                     )
-
-            # Update showRating if provided in the request
+                    existing_item = cursor.fetchone()
+                    
+                    if existing_item:
+                        # UPDATE existing item
+                        menu_item_id = existing_item['id']
+                        
+                        cursor.execute(
+                            '''
+                            UPDATE "menuItems" 
+                            SET "itemOrder" = %s,
+                                "itemPrice" = %s,
+                                "itemAvailability" = %s,
+                                "itemServingType" = %s,
+                                "variant" = %s,
+                                "new" = %s,
+                                "staffPick" = %s,
+                                "itemPriceCurrency" = %s,
+                                "updatedAt" = CURRENT_TIMESTAMP
+                            WHERE "id" = %s
+                            ''',
+                            (item_order, item_price, item_availability, item_serving_type, 
+                             item_vintage, item_new, item_staff_pick, item_currency, menu_item_id)
+                        )
+                    else:
+                        # INSERT new item
+                        cursor.execute(
+                            '''
+                            INSERT INTO "menuItems" 
+                            ("itemOrder", "itemPrice", "itemAvailability", "itemID", 
+                             "itemServingType", "sectionId", "variant", "new", 
+                             "staffPick", "itemPriceCurrency")
+                            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                            RETURNING "id"
+                            ''',
+                            (item_order, item_price, item_availability, item_id, 
+                             item_serving_type, section_db_id, item_vintage, item_new, 
+                             item_staff_pick, item_currency)
+                        )
+                        menu_item_id = cursor.fetchone()['id']
+                    
+                    kept_item_ids.append(menu_item_id)
+            
+            print(f"Kept {len(kept_item_ids)} items across all sections")
+            
+            # ===== STEP 4: DELETE Orphaned Records =====
+            print("\n--- Step 4: Deleting Orphaned Records ---")
+            
+            # Delete orphaned menu items
+            if kept_item_ids:
+                cursor.execute(
+                    '''
+                    DELETE FROM "menuItems" 
+                    WHERE "sectionId" IN (
+                        SELECT "id" FROM "venuesMenu" WHERE "venueId" = %s
+                    )
+                    AND "id" NOT IN %s
+                    ''',
+                    (venueID, tuple(kept_item_ids))
+                )
+                deleted_items = cursor.rowcount
+                print(f"  Deleted {deleted_items} orphaned items")
+            else:
+                # Delete all items for this venue
+                cursor.execute(
+                    '''
+                    DELETE FROM "menuItems" 
+                    WHERE "sectionId" IN (
+                        SELECT "id" FROM "venuesMenu" WHERE "venueId" = %s
+                    )
+                    ''',
+                    (venueID,)
+                )
+                deleted_items = cursor.rowcount
+                print(f"  Deleted {deleted_items} items (no items in updated menu)")
+            
+            # Delete orphaned sections
+            if kept_section_ids:
+                cursor.execute(
+                    '''
+                    DELETE FROM "venuesMenu" 
+                    WHERE "venueId" = %s 
+                    AND "id" NOT IN %s
+                    ''',
+                    (venueID, tuple(kept_section_ids))
+                )
+                deleted_sections = cursor.rowcount
+                print(f"  Deleted {deleted_sections} orphaned sections")
+            else:
+                # Delete all sections for this venue
+                cursor.execute(
+                    'DELETE FROM "venuesMenu" WHERE "venueId" = %s',
+                    (venueID,)
+                )
+                deleted_sections = cursor.rowcount
+                print(f"  Deleted {deleted_sections} sections (no sections in updated menu)")
+            
+            # ===== STEP 5: Update Venue Settings =====
             if 'showRating' in data:
-                show_rating_value = bool(data['showRating'])  # Ensure it's a boolean
-                print(f"Updating showRating to: {show_rating_value} for venue ID: {venueID}")
+                show_rating_value = bool(data['showRating'])
                 cursor.execute(
                     'UPDATE "venues" SET "showRating" = %s WHERE "id" = %s',
                     (show_rating_value, venueID)
                 )
-
-            # Calculate statistics for response
+                print(f"\nUpdated showRating to: {show_rating_value}")
+            
+            # Calculate statistics
             total_sections = len(main_sections)
             total_subsections = len(subsections)
-            total_items = sum(len(section.get('sectionMenu', [])) for section in updatedMenu)
+            total_items = len(kept_item_ids)
             
-            return jsonify(
-                {
-                    "code": 201,
-                    "message": "Hierarchical menu updated successfully!",
-                    "statistics": {
-                        "totalSections": total_sections,
-                        "totalSubsections": total_subsections,
-                        "totalItems": total_items
-                    }
+            print(f"\n=== UPSERT Menu Update Complete ===")
+            print(f"Final: {total_sections} sections, {total_subsections} subsections, {total_items} items")
+            print(f"Deleted: {deleted_sections} sections, {deleted_items} items\n")
+            
+            return jsonify({
+                "code": 201,
+                "message": "Menu updated successfully with UPSERT logic!",
+                "statistics": {
+                    "totalSections": total_sections,
+                    "totalSubsections": total_subsections,
+                    "totalItems": total_items,
+                    "deletedSections": deleted_sections,
+                    "deletedItems": deleted_items
                 }
-            ), 201
+            }), 201
     
     except Exception as e:
-        print("Error in editMenuHierarchical:", str(e))
-        return jsonify(
-            {
-                "code": 500,
-                "message": f"An error occurred editing the hierarchical menu: {str(e)}"
-            }
-        ), 500
+        import traceback
+        print("=== ERROR in editMenuHierarchical ===")
+        print(f"Error: {str(e)}")
+        traceback.print_exc()
+        return jsonify({
+            "code": 500,
+            "message": f"An error occurred updating the menu: {str(e)}"
+        }), 500
 
     
 # -----------------------------------------------------------------------------------------

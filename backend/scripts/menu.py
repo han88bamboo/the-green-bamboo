@@ -48,7 +48,9 @@ def getMenuSections(venue_id: int):
                     'isVisible', vm."isVisible",
                     'sectionDescription', vm."sectionDescription",
                     'subscribersEnabled', COALESCE(vm."subscribersEnabled", false),
-                    'subscribers', COALESCE(vm."subscribers", '{}')
+                    'subscribers', COALESCE(vm."subscribers", '{}'),
+                    'createdAt', vm."createdAt",
+                    'updatedAt', vm."updatedAt"
                 ) ORDER BY vm."sectionOrder")
                 FROM "venuesMenu" vm
                 WHERE vm."venueId" = %s
@@ -370,6 +372,7 @@ def getMenuItems(section_id):
                 p."producerName",
                 mi."itemPrice", mi."itemPriceCurrency", mi."itemAvailability", mi."new", mi."staffPick", mi."itemServingType", 
                 srvTyp."servingType", mi."variant",
+                mi."createdAt", mi."updatedAt",
                 (SELECT AVG(r."rating") 
                 FROM "reviews" r 
                 WHERE r."reviewTarget" = lst."id") as "avgRating",
@@ -425,7 +428,9 @@ def getMenuItems(section_id):
                         "servingTypeText": row['servingType'],
                         "itemPrice": float(row['itemPrice']) if row['itemPrice'] is not None else None,
                         "itemPriceCurrency": row['itemPriceCurrency'],
-                        "topFlavorTags": row['topFlavorTags']
+                        "topFlavorTags": row['topFlavorTags'],
+                        "createdAt": row['createdAt'].isoformat() if row['createdAt'] else None,
+                        "updatedAt": row['updatedAt'].isoformat() if row['updatedAt'] else None
                     }
                     for row in rows
                 ]
