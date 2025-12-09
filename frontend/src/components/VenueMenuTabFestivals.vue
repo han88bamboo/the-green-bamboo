@@ -18,8 +18,40 @@
             <div class="col-4 mobile-col-2"></div>
         </div>
 
-        <!-- ------- END Menu Lock Message (Venue Unclaimed) / START Menu Header + Option Buttons ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
-
+        <!-- ------- END Menu Lock Message (Venue Unclaimed) / START New Items Section - ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
+        
+        <!-- New Items This Week Section (Only shown when not editing and there are new items) -->
+        <div v-if="!editMenuMode && hasNewItems && targetVenue['claimStatus']" 
+             class="col-12 mb-4">
+            <div class="new-items-card">
+                <div class="new-items-header">
+                    <h5 class="mb-0 fw-bold">✨ Added Since Last Week!</h5>
+                    <p class=" small mb-0 text-white fw-bold">{{ newItemsFromLastWeek.length }} item{{ newItemsFromLastWeek.length !== 1 ? 's' : '' }} added</p>
+                </div>
+                
+                <div class="new-items-content">
+                    <!-- Group items by section -->
+                    <div v-for="(items, sectionKey) in newItemsGroupedBySection" :key="sectionKey" 
+                         class="section-group mb-3">
+                        <div class="section-group-header">
+                            <span class="section-name fw-bold">{{ sectionKey }}</span>
+                            <span class="item-count badge bg-success fw-bold text-white">{{ items.length }}</span>
+                        </div>
+                        
+                        <!-- List items in this section -->
+                        <ul class="item-list">
+                            <li v-for="item in items" :key="item.id" class="item-entry">
+                                <span class="item-name">{{ item.itemDetails?.itemName || 'Unknown Item' }}</span>
+                                <span v-if="item.itemDetails?.itemProducer" class="item-producer text-muted">by {{ item.itemDetails.itemProducer }}</span>
+                                <span v-if="item.itemVintage || item.variant" class="item-vintage text-muted">{{ item.itemVintage || item.variant }}</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- ------- END New Items Section / START Menu Header + Option Buttons ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
         <!-- Menu Header + Option Buttons -->
         <div v-if="!editMenuMode && targetVenue['claimStatus']"
             class="col-12 d-flex flex-wrap align-items-center justify-content-start gap-1 mb-2">
@@ -4521,6 +4553,102 @@ export default {
         // Count selected import items
         selectedImportItemsCount() {
             return this.friendBookmarks.filter(item => item.selected).length;
+        },
+        
+        // Get the start date of the most recent completed calendar week (Monday-Sunday)
+        // This will be used to show all items added from last Monday onwards
+        lastCalendarWeekStartDate() {
+            const today = new Date();
+            const dayOfWeek = today.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+            
+            // Calculate days to subtract to get to last Monday
+            // If today is Sunday (0), go back 6 days to get last Monday
+            // If today is Monday (1), go back 7 days to get last Monday
+            // If today is Tuesday (2), go back 8 days to get last Monday, etc.
+            const daysToLastMonday = dayOfWeek === 0 ? 6 : dayOfWeek + 6;
+            
+            const lastMonday = new Date(today);
+            lastMonday.setDate(today.getDate() - daysToLastMonday);
+            lastMonday.setHours(0, 0, 0, 0);
+            
+            return lastMonday;
+        },
+        
+        // Get all items added since the start of last calendar week (includes last week + this week so far)
+        newItemsFromLastWeek() {
+            const startDate = this.lastCalendarWeekStartDate;
+            const newItems = [];
+            
+            // Helper to process items and add section info
+            const processItems = (items, sectionName, subsectionName = null) => {
+                if (!items || !Array.isArray(items)) return;
+                
+                items.forEach(item => {
+                    // Check if item has createdAt timestamp
+                    if (item.createdAt) {
+                        const createdDate = new Date(item.createdAt);
+                        
+                        // Check if item was created since last Monday (includes last week + this week)
+                        if (createdDate >= startDate) {
+                            newItems.push({
+                                ...item,
+                                sectionName: sectionName,
+                                subsectionName: subsectionName,
+                                createdDate: createdDate
+                            });
+                        }
+                    }
+                });
+            };
+            
+            // Process all sections and subsections - ONLY if they are visible
+            if (this.searchMenuResults && Array.isArray(this.searchMenuResults)) {
+                this.searchMenuResults.forEach(section => {
+                    // Skip hidden sections
+                    if (section.isVisible === false) return;
+                    
+                    // Process direct items in main section
+                    processItems(section.sectionMenu, section.sectionName);
+                    
+                    // Process subsections - only visible ones
+                    if (section.subsections && Array.isArray(section.subsections)) {
+                        section.subsections.forEach(subsection => {
+                            // Skip hidden subsections
+                            if (subsection.isVisible === false) return;
+                            
+                            processItems(subsection.sectionMenu, section.sectionName, subsection.sectionName);
+                        });
+                    }
+                });
+            }
+            
+            // Sort by creation date (newest first)
+            return newItems.sort((a, b) => b.createdDate - a.createdDate);
+        },
+        
+        // Group new items by section for display
+        newItemsGroupedBySection() {
+            const items = this.newItemsFromLastWeek;
+            const grouped = {};
+            
+            items.forEach(item => {
+                const key = item.subsectionName 
+                    ? `${item.sectionName} > ${item.subsectionName}`
+                    : item.sectionName;
+                
+                if (!grouped[key]) {
+                    grouped[key] = [];
+                }
+                
+                grouped[key].push(item);
+            });
+            
+            return grouped;
+        },
+        
+        // Check if there are any new items to display
+        hasNewItems() {
+            return this.newItemsFromLastWeek.length > 0;
         }
     },
     data() {
@@ -14224,6 +14352,127 @@ input[type="range"].form-range::-webkit-slider-thumb {
 }
 
 /* ------- END Jump to Section Feature Styles ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ */
+
+/* ------- START New Items Card Styling ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ */
+
+.new-items-card {
+  background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+  border: 2px solid #e9ecef;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.new-items-header {
+  background: linear-gradient(135deg, #439a71 0%, #198754 100%);
+  color: white;
+  padding: 16px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.new-items-header h5 {
+  font-size: 1.25rem;
+  margin: 0;
+}
+
+.new-items-header .small {
+  font-size: 0.9rem;
+  opacity: 0.95;
+}
+
+.new-items-content {
+  padding: 20px;
+}
+
+.section-group {
+  border-left: 3px solid #83a9e8;
+  padding-left: 16px;
+  margin-bottom: 20px;
+}
+
+.section-group:last-child {
+  margin-bottom: 0;
+}
+
+.section-group-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.section-group-header .section-name {
+  font-size: 1.05rem;
+  color: #2c3e50;
+}
+
+.section-group-header .item-count {
+  font-size: 0.85rem;
+  padding: 4px 10px;
+}
+
+.item-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.item-entry {
+  padding: 8px 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: baseline;
+  border-bottom: 1px solid #f8f9fa;
+}
+
+.item-entry:last-child {
+  border-bottom: none;
+}
+
+.item-entry .item-name {
+  font-weight: 500;
+  color: #2c3e50;
+}
+
+.item-entry .item-producer {
+  font-size: 0.9rem;
+  font-style: italic;
+}
+
+.item-entry .item-vintage {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #6c757d;
+}
+
+/* Mobile responsive adjustments */
+@media (max-width: 768px) {
+  .new-items-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  
+  .section-group-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  
+  .item-entry {
+    flex-direction: column;
+    gap: 4px;
+  }
+}
+
+/* ------- END New Items Card Styling ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ */
+
+
 
 /* ===== SUBSCRIPTION FEATURE STYLES ===== */
 
