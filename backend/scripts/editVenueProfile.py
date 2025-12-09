@@ -1425,6 +1425,7 @@ def editMenuHierarchical():
             # ===== STEP 3: UPSERT Menu Items =====
             print("\n--- Step 3: Upserting Menu Items ---")
             kept_item_ids = []
+            newly_added_items = []  # Track items that were INSERTed (not UPDATEd)
             
             for section in updatedMenu:
                 section_db_id = section_id_mapping.get(section['sectionOrder'])
@@ -1499,6 +1500,9 @@ def editMenuHierarchical():
                              item_staff_pick, item_currency)
                         )
                         menu_item_id = cursor.fetchone()['id']
+                        
+                        # Track this as newly added for notifications
+                        newly_added_items.append(item_id)
                     
                     kept_item_ids.append(menu_item_id)
             
@@ -1565,6 +1569,80 @@ def editMenuHierarchical():
                 )
                 print(f"\nUpdated showRating to: {show_rating_value}")
             
+            # ===== STEP 6: Send Notifications for Newly Added Items =====
+            notifications_sent = 0
+            print(f"\n--- Step 6: Notification Check ---")
+            print(f"  newly_added_items: {newly_added_items}")
+            if newly_added_items:
+                # Get unique listing IDs (in case same item was added to multiple sections)
+                unique_new_items = list(set(newly_added_items))
+                print(f"  Sending notifications for {len(unique_new_items)} new items: {unique_new_items}")
+                
+                # Get venue name for notification message and link
+                cursor.execute('SELECT "venueName" FROM "venues" WHERE "id" = %s', (venueID,))
+                venue_result = cursor.fetchone()
+                if venue_result:
+                    venue_name = venue_result['venueName']
+                    
+                    # Build venue link (URL-safe slug)
+                    venue_slug = re.sub(r'[^a-z0-9]+', '', venue_name.lower())
+                    venue_link = f"/profile/venue/{venueID}/{venue_slug}"
+                    
+                    current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                    
+                    # Debug: Check for followers
+                    cursor.execute(
+                        '''
+                        SELECT ufl."userId", followed_listing_id
+                        FROM "usersFollowLists" ufl
+                        CROSS JOIN UNNEST(ufl."listings") AS followed_listing_id
+                        WHERE followed_listing_id::integer = ANY(%s)
+                        ''',
+                        (unique_new_items,)
+                    )
+                    debug_followers = cursor.fetchall()
+                    print(f"  Debug: Found {len(debug_followers)} follower records: {debug_followers}")
+                    
+                    # Single query to find followers and create notifications
+                    # This query:
+                    # 1. Finds all users following the newly added listings
+                    # 2. Checks if notification was already sent (within 5 minutes to handle rapid updates)
+                    # 3. Bulk inserts notifications only for new listing-venue-user combinations
+                    cursor.execute(
+                        '''
+                        INSERT INTO "notifications" 
+                        ("userId", "userType", "notiTabs", "notiType", "image", "link", "message", "createdAt", "read")
+                        SELECT 
+                            ufl."userId",
+                            'user',
+                            'venues & producers',
+                            'followed_listing_added_to_venue',
+                            l."photo",
+                            %s,
+                            l."listingName" || ' is now available at ' || %s || '!',
+                            %s,
+                            false
+                        FROM "usersFollowLists" ufl
+                        CROSS JOIN UNNEST(ufl."listings") AS followed_listing_id
+                        INNER JOIN "listings" l ON l."id" = followed_listing_id::integer
+                        WHERE l."id" = ANY(%s)
+                        AND NOT EXISTS (
+                            SELECT 1 FROM "notifications" n
+                            WHERE n."userId" = ufl."userId"
+                            AND n."notiType" = 'followed_listing_added_to_venue'
+                            AND n."link" = %s
+                            AND n."message" LIKE '%' || l."listingName" || '%'
+                            AND n."createdAt" > (CURRENT_TIMESTAMP - INTERVAL '5 minutes')
+                        )
+                        ''',
+                        (venue_link, venue_name, current_time, unique_new_items, venue_link)
+                    )
+                    
+                    notifications_sent = cursor.rowcount
+                    print(f"  Sent {notifications_sent} notifications to followers")
+                else:
+                    print("  WARNING: Could not fetch venue name for notifications")
+            
             # Calculate statistics
             total_sections = len(main_sections)
             total_subsections = len(subsections)
@@ -1572,7 +1650,8 @@ def editMenuHierarchical():
             
             print(f"\n=== UPSERT Menu Update Complete ===")
             print(f"Final: {total_sections} sections, {total_subsections} subsections, {total_items} items")
-            print(f"Deleted: {deleted_sections} sections, {deleted_items} items\n")
+            print(f"Deleted: {deleted_sections} sections, {deleted_items} items")
+            print(f"Notifications sent: {notifications_sent}\n")
             
             return jsonify({
                 "code": 201,
@@ -1582,7 +1661,8 @@ def editMenuHierarchical():
                     "totalSubsections": total_subsections,
                     "totalItems": total_items,
                     "deletedSections": deleted_sections,
-                    "deletedItems": deleted_items
+                    "deletedItems": deleted_items,
+                    "notificationsSent": notifications_sent
                 }
             }), 201
     
