@@ -199,10 +199,10 @@
                             
                             <!-- List items in this section -->
                             <ul class="item-list">
-                                <li v-for="item in items" :key="item.id" class="item-entry">
+                                <li v-for="item in items" :key="item.id" class="item-entry text-start">
                                     <span class="item-name">{{ item.itemDetails?.itemName || 'Unknown Item' }}</span>
-                                    <span v-if="item.itemDetails?.itemProducer" class="item-producer text-muted">by {{ item.itemDetails.itemProducer }}</span>
-                                    <span v-if="item.itemVintage || item.variant" class="item-vintage text-muted">{{ item.itemVintage || item.variant }}</span>
+                                    <span v-if="item.itemVintage || item.variant" class="item-vintage text-muted">&nbsp;({{ item.itemVintage || item.variant }})</span>
+                                    <span v-if="item.itemDetails?.itemProducer" class="item-producer text-muted">&nbsp;by {{ item.itemDetails.itemProducer }}</span>
                                 </li>
                             </ul>
                         </div>
@@ -14444,11 +14444,8 @@ input[type="range"].form-range::-webkit-slider-thumb {
 
 .item-entry {
   padding: 8px 0;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  align-items: baseline;
   border-bottom: 1px solid #f8f9fa;
+  line-height: 1.5;
 }
 
 .item-entry:last-child {
@@ -14488,11 +14485,6 @@ input[type="range"].form-range::-webkit-slider-thumb {
   .section-group-header .item-count {
     font-size: 0.75rem;
     padding: 3px 8px;
-  }
-  
-  .item-entry {
-    flex-direction: column;
-    gap: 4px;
   }
 }
 
