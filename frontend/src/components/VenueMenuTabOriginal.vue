@@ -183,10 +183,9 @@
                             data-bs-toggle="collapse" 
                             data-bs-target="#collapseNewItems"
                             aria-expanded="false" 
-                            aria-controls="collapseNewItems"
-                            style="cursor: pointer;display: flex; align-items: center; justify-content: space-between;">
-                            <h5 class="mb-0 fw-bold" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">✨ {{ newItemsFromLastWeek.length }} Added Since Last Week!</h5>
-                            <i class="bi bi-chevron-down collapse-indicator" style="flex-shrink: 0; transition: transform 0.3s ease; font-size: 1.25rem;"></i>
+                            aria-controls="collapseNewItems">
+                            <h5 class="mb-0 fw-bold">✨ {{ newItemsFromLastWeek.length }} Added Since Last Week!</h5>
+                            <i class="bi bi-chevron-down collapse-indicator"></i>
                         </div>
                         
                         <div class="collapse" id="collapseNewItems">
@@ -195,7 +194,7 @@
                             <div v-for="(items, sectionKey) in newItemsGroupedBySection" :key="sectionKey" 
                                 class="section-group mb-3">
                                 <div class="section-group-header">
-                                    <span class="section-name fw-bold">{{ sectionKey }}</span>
+                                    <span class="section-name fw-bold text-start">{{ sectionKey }}</span>
                                     <span class="item-count badge bg-success fw-bold text-white">{{ items.length }}</span>
                                 </div>
                                 
@@ -9037,6 +9036,7 @@ button[aria-expanded="true"] .collapse-indicator {
   align-items: center;
   cursor: pointer;
   user-select: none;
+  flex-wrap: nowrap;
 }
 
 .new-items-header:hover {
@@ -9054,6 +9054,8 @@ button[aria-expanded="true"] .collapse-indicator {
 .new-items-header h5 {
   font-size: 1.25rem;
   margin: 0;
+  white-space: nowrap;
+  flex-shrink: 1;
 }
 
 .new-items-header .small {
@@ -9078,20 +9080,25 @@ button[aria-expanded="true"] .collapse-indicator {
 .section-group-header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
   margin-bottom: 8px;
   padding-bottom: 0px;
   border-bottom: 1px solid #e9ecef;
+  flex-wrap: nowrap;
 }
 
 .section-group-header .section-name {
-  font-size: 1.05rem;
+  font-size: 1.4rem;
   color: #2c3e50;
+  flex: 1;
+  word-wrap: break-word;
 }
 
 .section-group-header .item-count {
   font-size: 0.85rem;
   padding: 4px 10px;
+  flex-shrink: 0;
+  margin-left: 8px;
 }
 
 .item-list {
@@ -9132,15 +9139,20 @@ button[aria-expanded="true"] .collapse-indicator {
 /* Mobile responsive adjustments */
 @media (max-width: 768px) {
   .new-items-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 8px;
+    padding: 12px 16px;
   }
   
-  .section-group-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 8px;
+  .new-items-header h5 {
+    font-size: 1rem;
+  }
+  
+  .section-group-header .section-name {
+    font-size: 1.1rem;
+  }
+  
+  .section-group-header .item-count {
+    font-size: 0.75rem;
+    padding: 3px 8px;
   }
   
   .item-entry {
