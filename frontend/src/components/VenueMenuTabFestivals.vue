@@ -9224,8 +9224,8 @@ export default {
             }
 
             // let successCount = 0;
-            let errors = [];
-            let promises = [];
+            // let errors = [];
+            // let promises = [];
 
             for (let i = 0; i < validItems.length; i++) {
                 const item = validItems[i];
@@ -9254,42 +9254,44 @@ export default {
                     }
                 });
 
-                // Instead of awaiting each call, store the promise
-                const promise = this.$axios.post(
-                    `${process.env.VUE_APP_API_URL}/editVenueProfile/addListingToMenu`,
-                    {
-                        venueID: this.targetVenue['id'],
-                        menuOrder: this.globalMenuItemTargetSection.sectionMenu.length - 1,
-                        listingID: item.newMenuItemTarget['id'],
-                        itemVintage: item.newMenuItemVintage,
-                        itemPrice: item.newMenuItemPrice || -1,
-                        itemPriceCurrency: item.newMenuItemCurrency || '$', // Include selected currency
-                        servingType: item.newMenuItemServingType,
-                        sectionName: this.globalMenuItemTargetSection.sectionName,
-                        sectionOrder: this.globalMenuItemTargetSection.sectionOrder,
-                        isSubSection: this.globalMenuItemTargetSection.isSubSection || false,
-                        parentSectionId: this.globalMenuItemTargetSection.parentSectionId || null
-                    }
-                )
-                .then(response => {
-                    // if (response.status === 201) {
-                    //     successCount++;
-                    // }
-                    return { success: response.status === 201, item: item.newMenuItemTarget.listingName };
-                })
-                .catch(error => {
-                    errors.push({
-                        item: item.newMenuItemTarget.listingName,
-                        error: error.response?.data?.message || "Unknown error"
-                    });
-                    return { success: false, item: item.newMenuItemTarget.listingName };
-                });
+                // COMMENTED OUT: Immediate database insertion via /addListingToMenu
+                // This caused issues with notification detection because items were already in DB
+                // when /editMenuHierarchical ran later. Now items are only persisted when "Save" is clicked.
+            //     const promise = this.$axios.post(
+            //         `${process.env.VUE_APP_API_URL}/editVenueProfile/addListingToMenu`,
+            //         {
+            //             venueID: this.targetVenue['id'],
+            //             menuOrder: this.globalMenuItemTargetSection.sectionMenu.length - 1,
+            //             listingID: item.newMenuItemTarget['id'],
+            //             itemVintage: item.newMenuItemVintage,
+            //             itemPrice: item.newMenuItemPrice || -1,
+            //             itemPriceCurrency: item.newMenuItemCurrency || '$', // Include selected currency
+            //             servingType: item.newMenuItemServingType,
+            //             sectionName: this.globalMenuItemTargetSection.sectionName,
+            //             sectionOrder: this.globalMenuItemTargetSection.sectionOrder,
+            //             isSubSection: this.globalMenuItemTargetSection.isSubSection || false,
+            //             parentSectionId: this.globalMenuItemTargetSection.parentSectionId || null
+            //         }
+            //     )
+            //     .then(response => {
+            //         // if (response.status === 201) {
+            //         //     successCount++;
+            //         // }
+            //         return { success: response.status === 201, item: item.newMenuItemTarget.listingName };
+            //     })
+            //     .catch(error => {
+            //         errors.push({
+            //             item: item.newMenuItemTarget.listingName,
+            //             error: error.response?.data?.message || "Unknown error"
+            //         });
+            //         return { success: false, item: item.newMenuItemTarget.listingName };
+            //     });
 
-                promises.push(promise);
+            //     promises.push(promise);
             }
 
-            // Wait for ALL promises to complete before proceeding
-            await Promise.all(promises);
+            // // COMMENTED OUT: No longer waiting for API calls since we're not making them // Wait for ALL promises to complete before proceeding
+            // await Promise.all(promises);
 
             // // Show results - commented out because not working properly
             // successCount = results.filter(result => result.success).length;
@@ -9307,9 +9309,10 @@ export default {
             //     alert("Failed to add any items. Please try again! You may have tried to add items to a new Menu Section that has not been saved yet. Please save the new Menu Section first, then try again.");
             // }
             
-            // Show a generic success message
+            // Show a generic success message  - items are now only added to local state
+            // They will be persisted to the database when "Save" button is clicked
             const toast = useToast();
-            toast.success(`Items added to menu.`);
+            toast.success(`${validItems.length} item(s) added to menu. Click "Save" to persist changes.`);
             // this.editMenuMode = false;
             this.resetMultipleMenuItems();
         },
