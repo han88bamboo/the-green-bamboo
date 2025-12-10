@@ -1606,6 +1606,14 @@
                 
                 <!-- Menu form -->
                 <div v-else>
+                  <!-- Notification Notice -->
+                  <div class="alert alert-info mb-3" style="border-left: 4px solid #0d6efd;">
+                    <small>
+                      <i class="fas fa-info-circle me-1"></i>
+                      <strong>Note:</strong> Items added via this quick-add feature won't trigger notifications to users following these listings. Use the 'Edit Menu' feature on your venue profile to notify followers.
+                    </small>
+                  </div>
+                  
                   <form @submit.prevent="addToVenueMenu">
                     
                     <!-- Target Menu Section -->
