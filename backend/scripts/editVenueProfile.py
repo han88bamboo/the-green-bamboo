@@ -1624,8 +1624,63 @@ def editMenuHierarchical():
                     query_params = (venue_link, venue_name, current_time, *unique_new_items, venue_link)
                     cursor.execute(insert_query, query_params)
                     notifications_sent = cursor.rowcount
+                    
+                    # ===== STEP 6B: Notify Venue Followers of Menu Update =====
+                    # Check if notification already sent recently (avoid spam during multiple saves)
+                    cursor.execute(
+                        '''
+                        SELECT 1 FROM "notifications"
+                        WHERE "link" = %s
+                        AND "notiType" = 'venue_menu_update'
+                        AND "createdAt" > (CURRENT_TIMESTAMP - INTERVAL '1 hour')
+                        LIMIT 1
+                        ''',
+                        (venue_link,)
+                    )
+                    recent_notification = cursor.fetchone()
+                    
+                    if not recent_notification:
+                        # Single bulk insert for all venue followers
+                        cursor.execute(
+                            '''
+                            INSERT INTO "notifications" 
+                            ("userId", "userType", "notiTabs", "notiType", "image", "link", "message", "createdAt", "read")
+                            SELECT 
+                                ufl."userId",
+                                'user',
+                                'venues & producers',
+                                'venue_menu_update',
+                                v."photo",
+                                %s,
+                                %s,
+                                %s,
+                                false
+                            FROM "usersFollowLists" ufl
+                            CROSS JOIN UNNEST(ufl."venues") AS followed_venue_id
+                            INNER JOIN "venues" v ON v."id" = followed_venue_id::integer
+                            WHERE v."id" = %s
+                            AND NOT EXISTS (
+                                SELECT 1 FROM "notifications" n
+                                WHERE n."userId" = ufl."userId"
+                                AND n."notiType" = 'venue_menu_update'
+                                AND n."link" = %s
+                                AND n."createdAt" > (CURRENT_TIMESTAMP - INTERVAL '1 hour')
+                            )
+                            ''',
+                            (venue_link, f"{venue_name} has added to its menu!", current_time, venueID, venue_link)
+                        )
+                        venue_notifications_sent = cursor.rowcount
+                        logger.info(f"Sent {venue_notifications_sent} venue menu update notifications")
+                    else:
+                        venue_notifications_sent = 0
+                        logger.info("Skipped venue menu notification - already sent within 1 hour")
                 else:
                     logger.warning("Could not fetch venue name for notifications")
+                    venue_notifications_sent = 0
+            else:
+                # No new items added, so no notifications
+                notifications_sent = 0
+                venue_notifications_sent = 0
             
             # Calculate statistics
             total_sections = len(main_sections)
@@ -1641,7 +1696,8 @@ def editMenuHierarchical():
                     "totalItems": total_items,
                     "deletedSections": deleted_sections,
                     "deletedItems": deleted_items,
-                    "notificationsSent": notifications_sent
+                    "notificationsSent": notifications_sent,
+                    "venueFollowerNotifications": venue_notifications_sent
                 }
             }), 201
     
