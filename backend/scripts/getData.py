@@ -29,7 +29,7 @@
 #           [Venues]
 #           /getVenuesWithSpecificListing/<listingID> (GET), /getVenuesBySearch (GET), /getVenues (GET), /getVenuesByIds
 #           /getVenue/<id> (GET), /getVenuesAPI (GET), /getVenuesProfileViewsByVenue/<id> (GET),
-#           /getWhatsOnMenu/<venue_id> (GET), /getVenueMenuItemsCount/<venue_id> (GET),
+#           /getWhatsOnMenu/<venue_id> (GET), /getVenueMenuItemsCount/<venue_id> (GET), /getVenueNewItems/<venue_id> (GET),
 #           /getUpcomingEventsByLocation/<user_id> (GET),
 
 #           [Users]
@@ -5396,6 +5396,103 @@ def getVenueMenuItemsCount(venue_id):
         return jsonify({
             "code": 500,
             "message": f"Error retrieving menu items count: {str(e)}"
+        }), 500
+
+# [GET] Get new menu items added since last calendar week (Monday)
+@blueprint.route("/getVenueNewItems/<int:venue_id>", methods=['GET'])
+def getVenueNewItems(venue_id):
+    """
+    Get all menu items added to a venue's menu since the start of the last calendar week (Monday)
+    Returns items grouped by section with full item details including listing information
+    """
+    try:
+        with db_manager.get_cursor() as cursor:
+            # Calculate the start of last calendar week (most recent Monday at 00:00:00)
+            cursor.execute("""
+                SELECT DATE_TRUNC('week', CURRENT_DATE) - INTERVAL '7 days' as last_monday
+            """)
+            last_monday = cursor.fetchone()['last_monday']
+            
+            # Get all menu items added since last Monday, with section and listing details
+            cursor.execute("""
+                SELECT 
+                    mi."id",
+                    mi."itemID" as "itemId",
+                    mi."createdAt",
+                    mi."variant",
+                    vm."id" as "sectionId",
+                    vm."sectionName",
+                    vm."isSubSection",
+                    vm."parentSectionId",
+                    parent_vm."sectionName" as "parentSectionName",
+                    l."id" as "listingId",
+                    l."listingName",
+                    p."producerName",
+                    l."drinkType",
+                    l."abv"
+                FROM "menuItems" mi
+                JOIN "venuesMenu" vm ON mi."sectionId" = vm."id"
+                LEFT JOIN "venuesMenu" parent_vm ON vm."parentSectionId" = parent_vm."id"
+                LEFT JOIN "listings" l ON mi."itemID" = l."id"
+                LEFT JOIN "producers" p ON l."producerID" = p."id"
+                WHERE vm."venueId" = %s
+                    AND mi."createdAt" >= %s
+                    AND vm."isVisible" != false
+                ORDER BY mi."createdAt" DESC, vm."sectionOrder", vm."sectionName"
+            """, (venue_id, last_monday))
+            
+            items = cursor.fetchall()
+            
+            if not items:
+                return jsonify({
+                    "code": 200,
+                    "data": {
+                        "venueId": venue_id,
+                        "cutoffDate": last_monday.isoformat(),
+                        "totalNewItems": 0,
+                        "items": []
+                    }
+                })
+            
+            # Format items with nested structure
+            formatted_items = []
+            for item in items:
+                section_name = item['sectionName']
+                # If it's a subsection, create hierarchical name
+                if item['isSubSection'] and item['parentSectionName']:
+                    section_name = f"{item['parentSectionName']} > {item['sectionName']}"
+                
+                formatted_items.append({
+                    "id": item['id'],
+                    "itemId": item['itemId'],
+                    "createdAt": item['createdAt'].isoformat() if item['createdAt'] else None,
+                    "variant": item['variant'],
+                    "sectionId": item['sectionId'],
+                    "sectionName": section_name,
+                    "isSubSection": item['isSubSection'],
+                    "itemDetails": {
+                        "itemName": item['listingName'],
+                        "itemProducer": item['producerName'],
+                        "itemType": item['drinkType'],
+                        "itemAbv": item['abv']
+                    } if item['listingId'] else None
+                })
+            
+            return jsonify({
+                "code": 200,
+                "data": {
+                    "venueId": venue_id,
+                    "cutoffDate": last_monday.isoformat(),
+                    "totalNewItems": len(formatted_items),
+                    "items": formatted_items
+                }
+            })
+            
+    except Exception as e:
+        print(f"Error in getVenueNewItems: {str(e)}")
+        return jsonify({
+            "code": 500,
+            "message": f"Error retrieving new menu items: {str(e)}"
         }), 500
 
 # [GET] Specific Venue
