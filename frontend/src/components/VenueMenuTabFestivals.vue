@@ -32,43 +32,7 @@
                         class="fw-bold fst-italic">{{ displayMenuItemsCount }}</span> Drinks On The Festival Line Up
                 </p>
             </div>
-            <!-- New Items This Week Section (Only shown when not editing and there are new items) -->
-            <div v-if="!editMenuMode && hasNewItems && targetVenue['claimStatus']" 
-                class="col-12 mb-1">
-                <div class="new-items-card">
-                    <div class="new-items-header"
-                        data-bs-toggle="collapse" 
-                        data-bs-target="#collapseNewItems"
-                        aria-expanded="true" 
-                        aria-controls="collapseNewItems"
-                        style="cursor: pointer;">
-                        <h5 class="mb-0 fw-bold">✨ {{ newItemsFromLastWeek.length }} Added Since Last Week!</h5>
-                        <i class="bi bi-chevron-down collapse-indicator" style="flex-shrink: 0; transition: transform 0.3s ease; font-size: 1.25rem;"></i>
-                    </div>
-                    
-                    <div class="collapse show" id="collapseNewItems">
-                        <div class="new-items-content">
-                        <!-- Group items by section -->
-                        <div v-for="(items, sectionKey) in newItemsGroupedBySection" :key="sectionKey" 
-                            class="section-group mb-3">
-                            <div class="section-group-header">
-                                <span class="section-name fw-bold">{{ sectionKey }}</span>
-                                <span class="item-count badge bg-success fw-bold text-white">{{ items.length }}</span>
-                            </div>
-                            
-                            <!-- List items in this section -->
-                            <ul class="item-list">
-                                <li v-for="item in items" :key="item.id" class="item-entry">
-                                    <span class="item-name">{{ item.itemDetails?.itemName || 'Unknown Item' }}</span>
-                                    <span v-if="item.itemDetails?.itemProducer" class="item-producer text-muted">by {{ item.itemDetails.itemProducer }}</span>
-                                    <span v-if="item.itemVintage || item.variant" class="item-vintage text-muted">{{ item.itemVintage || item.variant }}</span>
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
-                    </div>
-                </div>
-            </div>
+
             <!-- Option Buttons -->
             <div class="d-flex ms-auto">
                 <div v-if="selfView" class="d-flex ms-auto">
@@ -210,6 +174,43 @@
                 </div>
             </div>
 
+            <!-- New Items This Week Section (Only shown when not editing and there are new items) -->
+            <div v-if="!editMenuMode && hasNewItems && targetVenue['claimStatus']" 
+                class="col-12 mb-1">
+                <div class="new-items-card">
+                    <div class="new-items-header"
+                        data-bs-toggle="collapse" 
+                        data-bs-target="#collapseNewItems"
+                        aria-expanded="false" 
+                        aria-controls="collapseNewItems"
+                        style="cursor: pointer; display: flex; align-items: center; justify-content: space-between;">
+                        <h5 class="mb-0 fw-bold" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">✨ {{ newItemsFromLastWeek.length }} Added Since Last Week!</h5>
+                        <i class="bi bi-chevron-down collapse-indicator" style="flex-shrink: 0; transition: transform 0.3s ease; font-size: 1.25rem;"></i>
+                    </div>
+                    
+                    <div class="collapse" id="collapseNewItems">
+                        <div class="new-items-content">
+                        <!-- Group items by section -->
+                        <div v-for="(items, sectionKey) in newItemsGroupedBySection" :key="sectionKey" 
+                            class="section-group mb-3">
+                            <div class="section-group-header">
+                                <span class="section-name fw-bold">{{ sectionKey }}</span>
+                                <span class="item-count badge bg-success fw-bold text-white">{{ items.length }}</span>
+                            </div>
+                            
+                            <!-- List items in this section -->
+                            <ul class="item-list">
+                                <li v-for="item in items" :key="item.id" class="item-entry">
+                                    <span class="item-name">{{ item.itemDetails?.itemName || 'Unknown Item' }}</span>
+                                    <span v-if="item.itemDetails?.itemProducer" class="item-producer text-muted">by {{ item.itemDetails.itemProducer }}</span>
+                                    <span v-if="item.itemVintage || item.variant" class="item-vintage text-muted">{{ item.itemVintage || item.variant }}</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- ------- END Menu Header + Option Buttons / START Search + Edit Menu Options + Sort ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
