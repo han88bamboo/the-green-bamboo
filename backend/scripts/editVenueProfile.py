@@ -12,6 +12,8 @@ from flask import Blueprint, g, request, jsonify
 from datetime import datetime
 from scripts import pointsHelperFunc, badge_helpers, notifications
 import re
+import traceback
+import logging
 from typing import Dict, Any, Optional, Tuple
 
 # Import the database manager for connection pooling
@@ -19,6 +21,9 @@ from app import db_manager
 
 file_name = os.path.basename(__file__)
 blueprint = Blueprint(file_name[:-3], __name__)
+
+# Initialize logger
+logger = logging.getLogger(__name__)
 
 # TODO: Create function using BOTO Library to upload images to the S3 bucket
 # TODO: Create function using BOTO Library to delete images from the S3 bucket
@@ -1270,9 +1275,9 @@ def editMenuHierarchical():
         return response
     
     data = request.get_json()
-    print("=== UPSERT Menu Update Started ===")
-    print(f"Venue ID: {data.get('venueID')}")
-    print(f"Total sections received: {len(data.get('updatedMenu', []))}")
+    logger.info("charsiucharlie_followed_item_notif_debug === UPSERT Menu Update Started ===")
+    logger.info(f"charsiucharlie_followed_item_notif_debug Venue ID: {data.get('venueID')}")
+    logger.info(f"charsiucharlie_followed_item_notif_debug Total sections received: {len(data.get('updatedMenu', []))}")
 
     venueID = int(data['venueID'])
     updatedMenu = data['updatedMenu']
@@ -1283,14 +1288,14 @@ def editMenuHierarchical():
             main_sections = [s for s in updatedMenu if not s.get('isSubSection', False)]
             subsections = [s for s in updatedMenu if s.get('isSubSection', False)]
             
-            print(f"Main sections: {len(main_sections)}, Subsections: {len(subsections)}")
+            logger.info(f"charsiucharlie_followed_item_notif_debug Main sections: {len(main_sections)}, Subsections: {len(subsections)}")
             
             # Track IDs to keep (for orphan deletion later)
             kept_section_ids = []
             section_id_mapping = {}  # Map sectionOrder to database ID
             
             # ===== STEP 1: UPSERT Main Sections =====
-            print("\n--- Step 1: Upserting Main Sections ---")
+            logger.info("charsiucharlie_followed_item_notif_debug \n--- Step 1: Upserting Main Sections ---")
             for section in main_sections:
                 section_name = section['sectionName']
                 section_order = section['sectionOrder']
@@ -1314,7 +1319,7 @@ def editMenuHierarchical():
                 if existing:
                     # UPDATE existing section (preserves ID and subscribers!)
                     section_id = existing['id']
-                    print(f"  UPDATE: '{section_name}' (ID: {section_id})")
+                    logger.info(f"charsiucharlie_followed_item_notif_debug   UPDATE: '{section_name}' (ID: {section_id})")
                     
                     cursor.execute(
                         '''
@@ -1330,7 +1335,7 @@ def editMenuHierarchical():
                     )
                 else:
                     # INSERT new section
-                    print(f"  INSERT: '{section_name}'")
+                    logger.info(f"charsiucharlie_followed_item_notif_debug   INSERT: '{section_name}'")
                     
                     cursor.execute(
                         '''
@@ -1349,7 +1354,7 @@ def editMenuHierarchical():
                 section_id_mapping[section_order] = section_id
             
             # ===== STEP 2: UPSERT Subsections =====
-            print("\n--- Step 2: Upserting Subsections ---")
+            logger.info("charsiucharlie_followed_item_notif_debug \n--- Step 2: Upserting Subsections ---")
             for subsection in subsections:
                 section_name = subsection['sectionName']
                 section_order = subsection['sectionOrder']
@@ -1368,7 +1373,7 @@ def editMenuHierarchical():
                         parent_db_id = section_id_mapping.get(str(parent_section_id))
                 
                 if parent_db_id is None:
-                    print(f"  ERROR: Subsection '{section_name}' has invalid parent ID {parent_section_id}")
+                    logger.error(f"charsiucharlie_followed_item_notif_debug   ERROR: Subsection '{section_name}' has invalid parent ID {parent_section_id}")
                     continue
                 
                 # Try to find existing subsection by natural key
@@ -1387,7 +1392,7 @@ def editMenuHierarchical():
                 if existing:
                     # UPDATE existing subsection
                     subsection_id = existing['id']
-                    print(f"  UPDATE: '{section_name}' (ID: {subsection_id}, parent: {parent_db_id})")
+                    logger.info(f"charsiucharlie_followed_item_notif_debug   UPDATE: '{section_name}' (ID: {subsection_id}, parent: {parent_db_id})")
                     
                     cursor.execute(
                         '''
@@ -1403,7 +1408,7 @@ def editMenuHierarchical():
                     )
                 else:
                     # INSERT new subsection
-                    print(f"  INSERT: '{section_name}' (parent: {parent_db_id})")
+                    logger.info(f"charsiucharlie_followed_item_notif_debug   INSERT: '{section_name}' (parent: {parent_db_id})")
                     
                     cursor.execute(
                         '''
@@ -1423,14 +1428,36 @@ def editMenuHierarchical():
                 section_id_mapping[section_order] = subsection_id
             
             # ===== STEP 3: UPSERT Menu Items =====
-            print("\n--- Step 3: Upserting Menu Items ---")
+            logger.info("charsiucharlie_followed_item_notif_debug \n--- Step 3: Upserting Menu Items ---")
             kept_item_ids = []
             newly_added_items = []  # Track items that were INSERTed (not UPDATEd)
+            
+            # Get all existing listing IDs in this venue's menu (before any updates)
+            cursor.execute(
+                '''
+                SELECT DISTINCT "itemID"
+                FROM "menuItems"
+                WHERE "sectionId" IN (
+                    SELECT "id" FROM "venuesMenu" WHERE "venueId" = %s
+                )
+                ''',
+                (venueID,)
+            )
+            existing_listing_ids = {row['itemID'] for row in cursor.fetchall()}
+            logger.info(f"charsiucharlie_followed_item_notif_debug   Existing listing IDs in venue menu: {existing_listing_ids}")
+            
+            # Log what items we're about to process from the incoming request
+            incoming_item_ids = []
+            for section in updatedMenu:
+                for item in section.get('sectionMenu', []):
+                    incoming_item_ids.append(item.get('itemID'))
+            logger.info(f"charsiucharlie_followed_item_notif_debug   Incoming item IDs from request: {set(incoming_item_ids)}")
+            logger.info(f"charsiucharlie_followed_item_notif_debug   Items that SHOULD be new (in incoming but not in existing): {set(incoming_item_ids) - existing_listing_ids}")
             
             for section in updatedMenu:
                 section_db_id = section_id_mapping.get(section['sectionOrder'])
                 if section_db_id is None:
-                    print(f"  WARNING: Section '{section['sectionName']}' not in mapping, skipping items")
+                    logger.warning(f"charsiucharlie_followed_item_notif_debug   WARNING: Section '{section['sectionName']}' not in mapping, skipping items")
                     continue
                 
                 for item in section.get('sectionMenu', []):
@@ -1451,6 +1478,7 @@ def editMenuHierarchical():
                         item_vintage = None
                     
                     # Try to find existing item by natural key
+                    logger.info(f"charsiucharlie_followed_item_notif_debug   Checking item: itemID={item_id}, vintage={item_vintage}, sectionId={section_db_id}")
                     cursor.execute(
                         '''
                         SELECT "id" 
@@ -1462,6 +1490,7 @@ def editMenuHierarchical():
                         (section_db_id, item_id, item_vintage)
                     )
                     existing_item = cursor.fetchone()
+                    logger.info(f"charsiucharlie_followed_item_notif_debug   existing_item result: {existing_item}")
                     
                     if existing_item:
                         # UPDATE existing item
@@ -1501,15 +1530,19 @@ def editMenuHierarchical():
                         )
                         menu_item_id = cursor.fetchone()['id']
                         
-                        # Track this as newly added for notifications
-                        newly_added_items.append(item_id)
+                        # Track this as newly added ONLY if it wasn't in the venue menu before
+                        if item_id not in existing_listing_ids:
+                            logger.info(f"charsiucharlie_followed_item_notif_debug   NEW LISTING DETECTED: itemID={item_id} not in existing_listing_ids")
+                            newly_added_items.append(item_id)
+                        else:
+                            logger.info(f"charsiucharlie_followed_item_notif_debug   Item {item_id} was inserted but already exists elsewhere in venue menu")
                     
                     kept_item_ids.append(menu_item_id)
             
-            print(f"Kept {len(kept_item_ids)} items across all sections")
+            logger.info(f"charsiucharlie_followed_item_notif_debug Kept {len(kept_item_ids)} items across all sections")
             
             # ===== STEP 4: DELETE Orphaned Records =====
-            print("\n--- Step 4: Deleting Orphaned Records ---")
+            logger.info("charsiucharlie_followed_item_notif_debug \n--- Step 4: Deleting Orphaned Records ---")
             
             # Delete orphaned menu items
             if kept_item_ids:
@@ -1524,7 +1557,7 @@ def editMenuHierarchical():
                     (venueID, tuple(kept_item_ids))
                 )
                 deleted_items = cursor.rowcount
-                print(f"  Deleted {deleted_items} orphaned items")
+                logger.info(f"charsiucharlie_followed_item_notif_debug   Deleted {deleted_items} orphaned items")
             else:
                 # Delete all items for this venue
                 cursor.execute(
@@ -1537,7 +1570,7 @@ def editMenuHierarchical():
                     (venueID,)
                 )
                 deleted_items = cursor.rowcount
-                print(f"  Deleted {deleted_items} items (no items in updated menu)")
+                logger.info(f"charsiucharlie_followed_item_notif_debug   Deleted {deleted_items} items (no items in updated menu)")
             
             # Delete orphaned sections
             if kept_section_ids:
@@ -1550,7 +1583,7 @@ def editMenuHierarchical():
                     (venueID, tuple(kept_section_ids))
                 )
                 deleted_sections = cursor.rowcount
-                print(f"  Deleted {deleted_sections} orphaned sections")
+                logger.info(f"charsiucharlie_followed_item_notif_debug   Deleted {deleted_sections} orphaned sections")
             else:
                 # Delete all sections for this venue
                 cursor.execute(
@@ -1558,7 +1591,7 @@ def editMenuHierarchical():
                     (venueID,)
                 )
                 deleted_sections = cursor.rowcount
-                print(f"  Deleted {deleted_sections} sections (no sections in updated menu)")
+                logger.info(f"charsiucharlie_followed_item_notif_debug   Deleted {deleted_sections} sections (no sections in updated menu)")
             
             # ===== STEP 5: Update Venue Settings =====
             if 'showRating' in data:
@@ -1567,16 +1600,16 @@ def editMenuHierarchical():
                     'UPDATE "venues" SET "showRating" = %s WHERE "id" = %s',
                     (show_rating_value, venueID)
                 )
-                print(f"\nUpdated showRating to: {show_rating_value}")
+                logger.info(f"charsiucharlie_followed_item_notif_debug \nUpdated showRating to: {show_rating_value}")
             
             # ===== STEP 6: Send Notifications for Newly Added Items =====
             notifications_sent = 0
-            print(f"\n--- Step 6: Notification Check ---")
-            print(f"  newly_added_items: {newly_added_items}")
+            logger.info(f"charsiucharlie_followed_item_notif_debug \n--- Step 6: Notification Check ---")
+            logger.info(f"charsiucharlie_followed_item_notif_debug   newly_added_items: {newly_added_items}")
             if newly_added_items:
                 # Get unique listing IDs (in case same item was added to multiple sections)
                 unique_new_items = list(set(newly_added_items))
-                print(f"  Sending notifications for {len(unique_new_items)} new items: {unique_new_items}")
+                logger.info(f"charsiucharlie_followed_item_notif_debug   Sending notifications for {len(unique_new_items)} new items: {unique_new_items}")
                 
                 # Get venue name for notification message and link
                 cursor.execute('SELECT "venueName" FROM "venues" WHERE "id" = %s', (venueID,))
@@ -1601,7 +1634,7 @@ def editMenuHierarchical():
                         (unique_new_items,)
                     )
                     debug_followers = cursor.fetchall()
-                    print(f"  Debug: Found {len(debug_followers)} follower records: {debug_followers}")
+                    logger.info(f"charsiucharlie_followed_item_notif_debug   Debug: Found {len(debug_followers)} follower records: {debug_followers}")
                     
                     # Single query to find followers and create notifications
                     # This query:
@@ -1639,19 +1672,19 @@ def editMenuHierarchical():
                     )
                     
                     notifications_sent = cursor.rowcount
-                    print(f"  Sent {notifications_sent} notifications to followers")
+                    logger.info(f"charsiucharlie_followed_item_notif_debug   Sent {notifications_sent} notifications to followers")
                 else:
-                    print("  WARNING: Could not fetch venue name for notifications")
+                    logger.warning("charsiucharlie_followed_item_notif_debug   WARNING: Could not fetch venue name for notifications")
             
             # Calculate statistics
             total_sections = len(main_sections)
             total_subsections = len(subsections)
             total_items = len(kept_item_ids)
             
-            print(f"\n=== UPSERT Menu Update Complete ===")
-            print(f"Final: {total_sections} sections, {total_subsections} subsections, {total_items} items")
-            print(f"Deleted: {deleted_sections} sections, {deleted_items} items")
-            print(f"Notifications sent: {notifications_sent}\n")
+            logger.info(f"charsiucharlie_followed_item_notif_debug \n=== UPSERT Menu Update Complete ===")
+            logger.info(f"charsiucharlie_followed_item_notif_debug Final: {total_sections} sections, {total_subsections} subsections, {total_items} items")
+            logger.info(f"charsiucharlie_followed_item_notif_debug Deleted: {deleted_sections} sections, {deleted_items} items")
+            logger.info(f"charsiucharlie_followed_item_notif_debug Notifications sent: {notifications_sent}\n")
             
             return jsonify({
                 "code": 201,
@@ -1667,10 +1700,9 @@ def editMenuHierarchical():
             }), 201
     
     except Exception as e:
-        import traceback
-        print("=== ERROR in editMenuHierarchical ===")
-        print(f"Error: {str(e)}")
-        traceback.print_exc()
+        logger.error("charsiucharlie_followed_item_notif_debug === ERROR in editMenuHierarchical ===")
+        logger.error(f"charsiucharlie_followed_item_notif_debug Error: {str(e)}")
+        logger.error(f"charsiucharlie_followed_item_notif_debug {traceback.format_exc()}")
         return jsonify({
             "code": 500,
             "message": f"An error occurred updating the menu: {str(e)}"
