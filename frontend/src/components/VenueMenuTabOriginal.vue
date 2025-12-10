@@ -18,40 +18,10 @@
             <div class="col-4 mobile-col-2"></div>
         </div>
 
-        <!-- ------- END Menu Lock Message (Venue Unclaimed) / START New Items Section ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
+        <!-- ------- END Menu Lock Message (Venue Unclaimed) / START Menu Header ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
         
-        <!-- New Items This Week Section (Only shown when not editing and there are new items) -->
-        <div v-if="!editMenuMode && hasNewItems && targetVenue['claimStatus']" 
-             class="col-12 mb-4">
-            <div class="new-items-card">
-                <div class="new-items-header">
-                    <h5 class="mb-0 fw-bold">✨ Added Since Last Week!</h5>
-                    <p class=" small mb-0 text-white fw-bold">{{ newItemsFromLastWeek.length }} item{{ newItemsFromLastWeek.length !== 1 ? 's' : '' }} added</p>
-                </div>
-                
-                <div class="new-items-content">
-                    <!-- Group items by section -->
-                    <div v-for="(items, sectionKey) in newItemsGroupedBySection" :key="sectionKey" 
-                         class="section-group mb-3">
-                        <div class="section-group-header">
-                            <span class="section-name fw-bold">{{ sectionKey }}</span>
-                            <span class="item-count badge bg-success fw-bold text-white">{{ items.length }}</span>
-                        </div>
-                        
-                        <!-- List items in this section -->
-                        <ul class="item-list">
-                            <li v-for="item in items" :key="item.id" class="item-entry">
-                                <span class="item-name">{{ item.itemDetails?.itemName || 'Unknown Item' }}</span>
-                                <span v-if="item.itemDetails?.itemProducer" class="item-producer text-muted">by {{ item.itemDetails.itemProducer }}</span>
-                                <span v-if="item.itemVintage || item.variant" class="item-vintage text-muted">{{ item.itemVintage || item.variant }}</span>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- ------- END New Items Section / START Menu Header + Option Buttons ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
+
+        <!-- ------- START Menu Header + Option Buttons  ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
         
         <!-- Menu Header + Option Buttons -->
         <div v-if="!editMenuMode && targetVenue['claimStatus']"
@@ -63,6 +33,45 @@
                         class="fw-bold fst-italic">{{ displayMenuItemsCount }}</span> Drinks On The Menu
                 </p>
             </div>
+
+            <!-- New Items This Week Section (Only shown when not editing and there are new items) -->
+            <div v-if="!editMenuMode && hasNewItems && targetVenue['claimStatus']" 
+                class="col-12 mb-1">
+                    <div class="new-items-card">
+                        <div class="new-items-header"
+                            data-bs-toggle="collapse" 
+                            data-bs-target="#collapseNewItems"
+                            aria-expanded="true" 
+                            aria-controls="collapseNewItems"
+                            style="cursor: pointer;">
+                            <h5 class="mb-0 fw-bold">✨ {{ newItemsFromLastWeek.length }} Added Since Last Week!</h5>
+                            <i class="bi bi-chevron-down collapse-indicator" style="flex-shrink: 0; transition: transform 0.3s ease; font-size: 1.25rem;"></i>
+                        </div>
+                        
+                        <div class="collapse show" id="collapseNewItems">
+                            <div class="new-items-content">
+                            <!-- Group items by section -->
+                            <div v-for="(items, sectionKey) in newItemsGroupedBySection" :key="sectionKey" 
+                                class="section-group mb-3">
+                                <div class="section-group-header">
+                                    <span class="section-name fw-bold">{{ sectionKey }}</span>
+                                    <span class="item-count badge bg-success fw-bold text-white">{{ items.length }}</span>
+                                </div>
+                                
+                                <!-- List items in this section -->
+                                <ul class="item-list">
+                                    <li v-for="item in items" :key="item.id" class="item-entry">
+                                        <span class="item-name">{{ item.itemDetails?.itemName || 'Unknown Item' }}</span>
+                                        <span v-if="item.itemDetails?.itemProducer" class="item-producer text-muted">by {{ item.itemDetails.itemProducer }}</span>
+                                        <span v-if="item.itemVintage || item.variant" class="item-vintage text-muted">{{ item.itemVintage || item.variant }}</span>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                        </div>
+                    </div>
+            </div>
+            
 
             <!-- Option Buttons -->
             <div class="d-flex ms-auto">
@@ -2723,56 +2732,10 @@ export default {
             return lastMonday;
         },
         
-        // Get all items added since the start of last calendar week (includes last week + this week so far)
+        // Get all items added since the start of last calendar week (loaded from API)
         newItemsFromLastWeek() {
-            const startDate = this.lastCalendarWeekStartDate;
-            const newItems = [];
-            
-            // Helper to process items and add section info
-            const processItems = (items, sectionName, subsectionName = null) => {
-                if (!items || !Array.isArray(items)) return;
-                
-                items.forEach(item => {
-                    // Check if item has createdAt timestamp
-                    if (item.createdAt) {
-                        const createdDate = new Date(item.createdAt);
-                        
-                        // Check if item was created since last Monday (includes last week + this week)
-                        if (createdDate >= startDate) {
-                            newItems.push({
-                                ...item,
-                                sectionName: sectionName,
-                                subsectionName: subsectionName,
-                                createdDate: createdDate
-                            });
-                        }
-                    }
-                });
-            };
-            
-            // Process all sections and subsections - ONLY if they are visible
-            if (this.searchMenuResults && Array.isArray(this.searchMenuResults)) {
-                this.searchMenuResults.forEach(section => {
-                    // Skip hidden sections
-                    if (section.isVisible === false) return;
-                    
-                    // Process direct items in main section
-                    processItems(section.sectionMenu, section.sectionName);
-                    
-                    // Process subsections - only visible ones
-                    if (section.subsections && Array.isArray(section.subsections)) {
-                        section.subsections.forEach(subsection => {
-                            // Skip hidden subsections
-                            if (subsection.isVisible === false) return;
-                            
-                            processItems(subsection.sectionMenu, section.sectionName, subsection.sectionName);
-                        });
-                    }
-                });
-            }
-            
-            // Sort by creation date (newest first)
-            return newItems.sort((a, b) => b.createdDate - a.createdDate);
+            // Return items directly from API - already filtered by date on backend
+            return this.newItemsFromAPI;
         },
         
         // Group new items by section for display
@@ -2780,11 +2743,9 @@ export default {
             const items = this.newItemsFromLastWeek;
             const grouped = {};
             
-            items.forEach(item => {
-                const key = item.subsectionName 
-                    ? `${item.sectionName} > ${item.subsectionName}`
-                    : item.sectionName;
-                
+            items.forEach(item => {                
+                const key = item.sectionName; // Backend already formats subsection names as "Parent > Sub"
+
                 if (!grouped[key]) {
                     grouped[key] = [];
                 }
@@ -3023,7 +2984,10 @@ export default {
             noItemsMessageDelay: 500, // 0.5 seconds delay
             sectionExpandTimestamps: new Map(), // Track when sections were expanded
             currentTime: Date.now(), // Reactive time tracker for computed methods
-            delayMessageTimer: null, // Timer for updating currentTime
+
+            // New Items from API (loaded directly from backend)
+            newItemsFromAPI: [], // New items loaded from /getVenueNewItems endpoint
+            loadingNewItems: false, // Track loading state for new items
 
         }
     },
@@ -3839,10 +3803,13 @@ export default {
             console.log('🍽️ Processing provided detailedMenu prop');
             
             try {
-                // Load menu items count if venue ID is available
+                // Load menu items count and new items if venue ID is available
                 const venueId = this.targetVenue?.id || this.$route.params?.venueID;
                 if (venueId) {
-                    await this.loadMenuItemsCount(venueId);
+                    await Promise.all([
+                        this.loadMenuItemsCount(venueId),
+                        this.loadNewItems(venueId)
+                    ]);
                 }
                 
                 // Check if the provided data already has hierarchical structure (subsections)
@@ -4222,8 +4189,11 @@ export default {
 
                 console.log('🍽️ Loading menu for venue ID:', venueId);
 
-                // Load menu items count alongside the menu data
-                await this.loadMenuItemsCount(venueId);
+                // Load menu items count and new items alongside the menu data
+                await Promise.all([
+                    this.loadMenuItemsCount(venueId),
+                    this.loadNewItems(venueId)
+                ]);
 
                 // Load complete hierarchical menu structure from new endpoint
                 const hierarchicalMenuData = await this.loadHierarchicalMenu(venueId);
@@ -4418,6 +4388,34 @@ export default {
                 console.error('🍽️ Error loading menu items count:', error);
                 this.totalMenuItemsCount = 0;
                 return 0;
+            }
+        },
+
+        // Fetch new items added since last calendar week for the venue
+        async loadNewItems(venueId) {
+            console.log('✨ Loading new items for venue:', venueId);
+            
+            this.loadingNewItems = true;
+            
+            try {
+                const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getVenueNewItems/${venueId}`);
+                
+                if (response.status === 200 && response.data?.data?.items) {
+                    this.newItemsFromAPI = response.data.data.items;
+                    console.log('✨ New items loaded:', this.newItemsFromAPI.length, 'items');
+                    console.log('✨ Cutoff date:', response.data.data.cutoffDate);
+                    return this.newItemsFromAPI;
+                } else {
+                    console.warn('✨ No new items found for venue:', venueId);
+                    this.newItemsFromAPI = [];
+                    return [];
+                }
+            } catch (error) {
+                console.error('✨ Error loading new items:', error);
+                this.newItemsFromAPI = [];
+                return [];
+            } finally {
+                this.loadingNewItems = false;
             }
         },
 
@@ -9039,6 +9037,20 @@ button[aria-expanded="true"] .collapse-indicator {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  cursor: pointer;
+  user-select: none;
+}
+
+.new-items-header:hover {
+  background: linear-gradient(135deg, #4ab07d 0%, #1fa05e 100%);
+}
+
+.new-items-header[aria-expanded="true"] .collapse-indicator {
+  transform: rotate(0deg);
+}
+
+.new-items-header[aria-expanded="false"] .collapse-indicator {
+  transform: rotate(-90deg);
 }
 
 .new-items-header h5 {
@@ -9069,8 +9081,8 @@ button[aria-expanded="true"] .collapse-indicator {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 12px;
-  padding-bottom: 8px;
+  margin-bottom: 8px;
+  padding-bottom: 0px;
   border-bottom: 1px solid #e9ecef;
 }
 
