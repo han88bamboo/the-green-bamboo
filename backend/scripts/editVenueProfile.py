@@ -1629,7 +1629,7 @@ def editMenuHierarchical():
                         SELECT ufl."userId", followed_listing_id
                         FROM "usersFollowLists" ufl
                         CROSS JOIN UNNEST(ufl."listings") AS followed_listing_id
-                        WHERE followed_listing_id::integer = ANY(%s)
+                        WHERE followed_listing_id::integer = ANY(%s::integer[])
                         ''',
                         (unique_new_items,)
                     )
@@ -1641,8 +1641,10 @@ def editMenuHierarchical():
                     # 1. Finds all users following the newly added listings
                     # 2. Checks if notification was already sent (within 5 minutes to handle rapid updates)
                     # 3. Bulk inserts notifications only for new listing-venue-user combinations
-                    cursor.execute(
-                        '''
+                    
+                    # Use tuple expansion with IN clause instead of ANY with array
+                    placeholders = ','.join(['%s'] * len(unique_new_items))
+                    insert_query = f'''
                         INSERT INTO "notifications" 
                         ("userId", "userType", "notiTabs", "notiType", "image", "link", "message", "createdAt", "read")
                         SELECT 
@@ -1658,18 +1660,22 @@ def editMenuHierarchical():
                         FROM "usersFollowLists" ufl
                         CROSS JOIN UNNEST(ufl."listings") AS followed_listing_id
                         INNER JOIN "listings" l ON l."id" = followed_listing_id::integer
-                        WHERE l."id" = ANY(%s)
+                        WHERE l."id" IN ({placeholders})
                         AND NOT EXISTS (
                             SELECT 1 FROM "notifications" n
                             WHERE n."userId" = ufl."userId"
                             AND n."notiType" = 'followed_listing_added_to_venue'
                             AND n."link" = %s
-                            AND n."message" LIKE '%' || l."listingName" || '%'
+                            AND n."message" LIKE '%%' || l."listingName" || '%%'
                             AND n."createdAt" > (CURRENT_TIMESTAMP - INTERVAL '5 minutes')
                         )
-                        ''',
-                        (venue_link, venue_name, current_time, unique_new_items, venue_link)
-                    )
+                    '''
+                    
+                    query_params = (venue_link, venue_name, current_time, *unique_new_items, venue_link)
+                    logger.info(f"charsiucharlie_followed_item_notif_debug   Query has {insert_query.count('%s')} placeholders")
+                    logger.info(f"charsiucharlie_followed_item_notif_debug   Params tuple has {len(query_params)} values: {query_params}")
+                    
+                    cursor.execute(insert_query, query_params)
                     
                     notifications_sent = cursor.rowcount
                     logger.info(f"charsiucharlie_followed_item_notif_debug   Sent {notifications_sent} notifications to followers")
