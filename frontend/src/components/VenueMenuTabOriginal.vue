@@ -1212,7 +1212,7 @@
                                                         <label class="form-check-label fst-italic"
                                                             :class="menuItem.new ? 'text-primary' : 'text-muted'"
                                                             :for="'NewCheck' + menuSection.sectionOrder + menuItem.itemOrder + menuItem.itemDetails.itemName">
-                                                            {{ menuItem.new ? 'New Item' : 'Not New' }}
+                                                            <span :class="{ 'text-decoration-line-through': !menuItem.new }">New Item</span>
                                                         </label>
                                                     </div>
 
@@ -1224,7 +1224,7 @@
                                                         <label class="form-check-label fst-italic"
                                                             :class="menuItem.staffPick ? 'text-warning' : 'text-muted'"
                                                             :for="'StaffPickCheck' + menuSection.sectionOrder + menuItem.itemOrder + menuItem.itemDetails.itemName">
-                                                            {{ menuItem.staffPick ? 'Staff Pick' : 'Not Staff Pick' }}
+                                                            <span :class="{ 'text-decoration-line-through': !menuItem.staffPick }">Staff Pick</span>
                                                         </label>
                                                     </div>
                                                 </div>
@@ -1314,7 +1314,7 @@
                                                                 <label class="form-check-label fst-italic"
                                                                     :class="menuItem.new ? 'text-primary' : 'text-muted'"
                                                                     :for="'NewCheck' + menuSection.sectionOrder + menuItem.itemOrder + menuItem.itemDetails.itemName + 'Desktop'">
-                                                                    {{ menuItem.new ? 'New Item' : 'Not New' }}
+                                                                    <span :class="{ 'text-decoration-line-through': !menuItem.new }">New Item</span>
                                                                 </label>
                                                             </div>
 
@@ -1326,7 +1326,7 @@
                                                                 <label class="form-check-label fst-italic"
                                                                     :class="menuItem.staffPick ? 'text-warning' : 'text-muted'"
                                                                     :for="'StaffPickCheck' + menuSection.sectionOrder + menuItem.itemOrder + menuItem.itemDetails.itemName + 'Desktop'">
-                                                                    {{ menuItem.staffPick ? 'Staff Pick' : 'Not Staff Pick' }}
+                                                                    <span :class="{ 'text-decoration-line-through': !menuItem.staffPick }">Staff Pick</span>
                                                                 </label>
                                                             </div>
 
@@ -1646,7 +1646,7 @@
                                                             <label class="form-check-label fst-italic"
                                                                 :class="menuItem.new ? 'text-primary' : 'text-muted'"
                                                                 :for="'NewCheck' + menuSection.sectionOrder + subsection.subsectionOrder + menuItem.itemOrder + menuItem.itemDetails.itemName">
-                                                                {{ menuItem.new ? 'New Item' : 'Not New' }}
+                                                                <span :class="{ 'text-decoration-line-through': !menuItem.new }">New Item</span>
                                                             </label>
                                                         </div>
 
@@ -1660,7 +1660,7 @@
                                                             <label class="form-check-label fst-italic"
                                                                 :class="menuItem.staffPick ? 'text-warning' : 'text-muted'"
                                                                 :for="'StaffPickCheck' + menuSection.sectionOrder + subsection.subsectionOrder + menuItem.itemOrder + menuItem.itemDetails.itemName">
-                                                                {{ menuItem.staffPick ? 'Staff Pick' : 'Not Staff Pick' }}
+                                                                <span :class="{ 'text-decoration-line-through': !menuItem.staffPick }">Staff Pick</span>
                                                             </label>
                                                         </div>
 
@@ -1828,7 +1828,7 @@
                                                                     <label class="form-check-label fst-italic"
                                                                         :class="menuItem.new ? 'text-primary' : 'text-muted'"
                                                                         :for="'NewCheck' + menuSection.sectionOrder + subsection.subsectionOrder + menuItem.itemOrder + menuItem.itemDetails.itemName">
-                                                                        {{ menuItem.new ? 'New Item' : 'Not New' }}
+                                                                        <span :class="{ 'text-decoration-line-through': !menuItem.new }">New Item</span>
                                                                     </label>
                                                                 </div>
 
@@ -1842,7 +1842,7 @@
                                                                     <label class="form-check-label fst-italic"
                                                                         :class="menuItem.staffPick ? 'text-warning' : 'text-muted'"
                                                                         :for="'StaffPickCheck' + menuSection.sectionOrder + subsection.subsectionOrder + menuItem.itemOrder + menuItem.itemDetails.itemName">
-                                                                        {{ menuItem.staffPick ? 'Staff Pick' : 'Not Staff Pick' }}
+                                                                        <span :class="{ 'text-decoration-line-through': !menuItem.staffPick }">Staff Pick</span>
                                                                     </label>
                                                                 </div>
                                                             </div>
