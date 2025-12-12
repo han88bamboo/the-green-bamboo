@@ -214,6 +214,7 @@ html {
   background-color: #FF3E31;
   border-radius: 10px;
   transition: transform 0.4s ease;
+  min-width: 195.89px;
 }
 
 .primary-btn-less-round-blue:hover {
@@ -235,6 +236,7 @@ html {
   font-weight: bold;
   border-radius: 10px;
   transition: transform 0.4s ease;
+  min-width: 195.89px;
 }
 
 .cellar-btn-blue:hover {

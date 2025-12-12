@@ -898,7 +898,7 @@
 
             <!-- Bookmark icon -->
             <div v-if="userType !== 'venue'" class="d-flex align-items-center ms-2 mobile-view-hide">
-              <button class="btn primary-btn-less-round-blue btn-lg" style="background-color:#f2994a;">
+              <button class="btn btn-lg" style="background-color:#f2994a;">
                 <BookmarkIcon :user="user" :listing="specified_listing" :overlay="false" size="24"
                   @icon-clicked="handleIconClick" />
               </button>
