@@ -306,7 +306,7 @@
                       <button 
                         v-if="userID !== 'defaultUser'"
                         class="btn btn-sm"
-                        :style="{ backgroundColor: isFollowingListing(specified_listing.id) ? '#FF3E31' : '#FF3E31', color: 'white', borderRadius: '0px', height: '38px', minWidth: '40px' }"
+                        :style="{ backgroundColor: isFollowingListing(specified_listing.id) ? '#28a745' : '#FF3E31', color: 'white', borderRadius: '0px', height: '38px', minWidth: '40px' }"
                         :aria-pressed="isFollowingListing(specified_listing.id)"
                         :aria-label="isFollowingListing(specified_listing.id) ? 'Unfollow this listing' : 'Follow this listing'"
                         @click="toggleListingFollow(specified_listing.id)"
@@ -934,7 +934,7 @@
               <!-- Follow Listing Button -->
               <button 
                 class="btn btn-lg"
-                :style="{ backgroundColor: isFollowingListing(specified_listing.id) ? '#FF3E31' : '#FF3E31', color: 'white', borderRadius: '8px' }"
+                :style="{ backgroundColor: isFollowingListing(specified_listing.id) ? '#28a745' : '#FF3E31', color: 'white', borderRadius: '8px' }"
                 :aria-pressed="isFollowingListing(specified_listing.id)"
                 :aria-label="isFollowingListing(specified_listing.id) ? 'Unfollow this listing' : 'Follow this listing'"
                 @click="toggleListingFollow(specified_listing.id)"
