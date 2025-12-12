@@ -50,6 +50,9 @@
                 Select a CSV file containing your cellar inventory. The file can have any column structure - 
                 you'll map the columns in the next step.
               </p>
+              <p class="text-primary">
+                <strong>*Maximum 500 CSV rows allowed per upload.</strong>
+              </p>
               
               <div class="upload-area mt-4 mb-3">
                 <input 
