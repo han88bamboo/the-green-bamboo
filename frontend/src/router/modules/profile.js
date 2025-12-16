@@ -4,33 +4,31 @@ const routes = [
     path: "/profile/user/:userID/:username",
     name: "profileUser",
     component: () => import(/* webpackChunkName: "profile" */ "@/views/Users/UserProfileRefactor.vue"),
-    children: [
-      {
-        path: ":listName?",
-        name: "userProfileList",
-        component: () => import(/* webpackChunkName: "profile" */ "@/views/Users/UserProfileRefactor.vue"),
-      },
-      {
-        path: "producer_list/:listName",
-        name: "userProducerList",
-        component: () => import(/* webpackChunkName: "profile" */ "@/views/Users/UserProfileRefactor.vue"),
-      },
-      {
-        path: "venue_list/:listName",
-        name: "userVenueList",
-        component: () => import(/* webpackChunkName: "profile" */ "@/views/Users/UserProfileRefactor.vue"),
-      },
-    ]
   },
   {
-    path: "/profile/user/allreviews/:userID/:username",
+    path: "/profile/user/:userID/:username/allreviews",
     name: "allReviews",
     component: () => import(/* webpackChunkName: "profile" */ "@/views/Users/AllReviews.vue"),
   },
   {
-    path: "/profile/user/allfollowingfollowers/:userID/:username",
+    path: "/profile/user/:userID/:username/allfollowingfollowers",
     name: "allFollowingFollowers",
     component: () => import(/* webpackChunkName: "profile" */ "@/views/Users/AllFollowingFollowers.vue"),
+  },
+  {
+    path: "/profile/user/:userID/:username/producer_list/:listName",
+    name: "userProducerList",
+    component: () => import(/* webpackChunkName: "profile" */ "@/views/Users/UserProfileRefactor.vue"),
+  },
+  {
+    path: "/profile/user/:userID/:username/venue_list/:listName",
+    name: "userVenueList",
+    component: () => import(/* webpackChunkName: "profile" */ "@/views/Users/UserProfileRefactor.vue"),
+  },
+  {
+    path: "/profile/user/:userID/:username/:listName?",
+    name: "userProfileList",
+    component: () => import(/* webpackChunkName: "profile" */ "@/views/Users/UserProfileRefactor.vue"),
   },
   {
     path: "/profile/producer/:producerID/:username",
