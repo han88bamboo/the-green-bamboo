@@ -9,6 +9,19 @@
         <!-- <ErrorDisplay v-if="dataLoaded === null" @go-back="this.$router.go(-1)" @go-home="this.$router.push('/')" /> -->
 
         <!-- Main Content v-if="user && dataLoaded" -->
+
+        <!-- User Profile Header and Navigation (always visible) -->
+  <div v-if="displayUserID && displayUser.username" class="userprofile mt-5 mobile-mt-3">
+    <div class="container text-start">
+      <UserProfileHeader />
+    </div>
+    
+    <!-- User Profile Navigation -->
+    <div class="container text-start">
+      <UserProfileNavbar :userID="displayUserID" :username="displayUser.username" />
+    </div>
+  </div>
+
         <div class="user-dashboard-page">
             <div class="container text-start py-5">
                 <div class="row">
@@ -208,10 +221,13 @@
 import NavBar from '@/components/NavBar.vue';
 // import LoadingWithFunFact from '@/components/LoadingWithFunFact.vue';
 // import ErrorDisplay from '@/components/user_dashboard/ErrorDisplay.vue';
-import UserProfileHeader from '@/components/user_dashboard/UserProfileHeader.vue';
+// import UserProfileHeader from '@/components/user_dashboard/UserProfileHeader.vue';
 import ActivityFeed from '@/components/user_dashboard/ActivityFeed.vue';
 import LeaderboardSection from '@/components/user_dashboard/LeaderboardSection.vue';
 import LeaderboardEditModal from '@/components/user_dashboard/LeaderboardEditModal.vue';
+import UserProfileHeader from '@/components/UserProfileHeader.vue';
+import UserProfileNavbar from '@/components/UserProfileNavbar.vue';
+
 
 import { useToast } from "vue-toastification";
 import { Bar } from 'vue-chartjs'
@@ -244,6 +260,7 @@ export default {
         LeaderboardSection,
         LeaderboardEditModal,
         Bar,
+        UserProfileNavbar,
     },
     data() {
         return {
@@ -253,7 +270,7 @@ export default {
             userType: null,
             displayUserID: null,
             ownProfile: false,
-
+            routeUsername: null,
             // --- User Data ---
             user: null, // The logged-in user object
             displayUser: {}, // The user object for the profile being viewed
@@ -473,6 +490,7 @@ export default {
 
         this.displayUserID = this.$route.params.userID;
         this.ownProfile = this.displayUserID === this.userID;
+        this.routeUsername = this.$route.params.username;
 
         await this.loadData();
     },
@@ -490,12 +508,26 @@ export default {
                     this.fetchDisplayUserRecentActivity(),
                     this.fetchRawReviewsForCharts(),
                 ]);
+                // Load user profile
+                await this.getDisplayUserProfile();
                 // this.dataLoaded = true;
             } catch (error) {
                 console.error("Failed to load dashboard data:", error);
                 // this.dataLoaded = true;
             }
         },
+        async getDisplayUserProfile() {
+            try {
+                const response = await this.$axios.get(
+                `${process.env.VUE_APP_API_URL}/getData/getUser/${this.displayUserID}`
+                );
+                this.displayUser = response.data;
+            } catch (error) {
+                console.error("Error loading user profile:", error);
+                throw error;
+            }
+            },
+
         async fetchDisplayUserDetails() {
             if (!this.ownProfile) {
                 return

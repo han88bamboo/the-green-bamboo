@@ -43,6 +43,14 @@
       >
         Lists
       </router-link>
+
+      <router-link
+        :to="`/dashboard/user/${userID}`" 
+        class="profile-nav-link"
+        exact
+      >
+        Drink Stats
+      </router-link>
     </nav>
   </div>
 </template>
