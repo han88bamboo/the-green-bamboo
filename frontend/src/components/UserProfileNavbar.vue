@@ -9,6 +9,13 @@
         Profile
       </router-link>
       <router-link
+        :to="`/profile/user/${userID}/${username}/stories`"
+        class="profile-nav-link"
+        exact
+      >
+        Stories
+      </router-link>
+      <router-link
         :to="`/profile/user/${userID}/${username}/allreviews`"
         class="profile-nav-link"
         exact
@@ -41,11 +48,12 @@ export default {
   },
   computed: {
     isProfileActive() {
-      // Match profileUser route exactly, excluding allreviews and allfollowingfollowers
+      // Match profileUser route exactly, excluding stories, allreviews and allfollowingfollowers
       const path = this.$route.path;
       const basePath = `/profile/user/${this.userID}/${this.username}`;
       return path === basePath || 
              (path.startsWith(basePath) && 
+              !path.includes('/stories') &&
               !path.includes('/allreviews') && 
               !path.includes('/allfollowingfollowers'));
     }
