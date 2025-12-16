@@ -1,6 +1,22 @@
 <template>
   <NavBar />
 
+  <!-- User Profile Header and Navigation (always visible) -->
+  <div v-if="displayUserID && routeUsername" class="userprofile mt-5 mobile-mt-3">
+    <div class="container text-start">
+      <div class="row">
+        <div class="userprofile mt-5 mobile-mt-3">
+          <UserProfileHeader />
+        </div>
+      </div>
+    </div>
+    
+    <!-- User Profile Navigation -->
+     <div class="container text-start">
+    <UserProfileNavbar :userID="displayUserID" :username="routeUsername" />
+    </div>
+  </div>
+
   <!-- Display when data is still loading -->
   <LoadingWithFunFact v-if="dataLoaded === false" />
 
@@ -28,11 +44,7 @@
   >
     <div class="container text-start">
       <div class="row">
-        <!-- user profile sidebar -->
         <div class="col-12 col-md-4 mb-0 pb-2">
-          <!-- user profile header component -->
-          <UserProfileHeader />
-
             <!-- badges -->
             <div class="mt-4 mobile-view-hide">
               <h5 class="mobile-view-hide" style="font-weight:bold">Badges Unlocked</h5>
@@ -2804,6 +2816,7 @@
 import NavBar from "@/components/NavBar.vue";
 // import PWStrengthChecker from "@/components/PWStrengthChecker.vue";
 import UserProfileHeader from "@/components/UserProfileHeader.vue";
+import UserProfileNavbar from "@/components/UserProfileNavbar.vue";
 import { useToast } from "vue-toastification";
 // import EventBox from "@/components/EventBox.vue";
 import BookmarkModal from "@/components/BookmarkModal.vue";
@@ -2818,6 +2831,7 @@ export default {
     NavBar,
     // PWStrengthChecker,
     UserProfileHeader,
+    UserProfileNavbar,
     // EventBox,
     BookmarkModal,
     ListingRowDisplayUserProfile,

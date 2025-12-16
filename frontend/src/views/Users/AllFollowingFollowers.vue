@@ -1,6 +1,18 @@
 <template>
   <NavBar />
 
+  <!-- User Profile Header and Navigation (always visible) -->
+  <div v-if="displayUserID && routeUsername" class="userprofile mt-5 mobile-mt-3">
+    <div class="container text-start">
+      <UserProfileHeader />
+    </div>
+    
+    <!-- User Profile Navigation -->
+     <div class="container text-start">
+    <UserProfileNavbar :userID="displayUserID" :username="routeUsername" />
+    </div>
+  </div>
+
   <!-- Display when data is still loading -->
   <LoadingWithFunFact v-if="dataLoaded === false" />
 
@@ -26,10 +38,8 @@
     v-if="dataLoaded"
     class="userprofile mt-5 mobile-mt-3"
   >
-    <div class="container text-start">
-      <!-- User Profile Header -->
-      <UserProfileHeader />
 
+    <div class="container text-start">
       <div class="row mobile-px-3">
         <div class="col-12 col-md-10 mx-auto px-2">
           <!-- Header Section -->
@@ -390,6 +400,7 @@
 import NavBar from "@/components/NavBar.vue";
 import LoadingWithFunFact from '@/components/LoadingWithFunFact.vue';
 import UserProfileHeader from '@/components/UserProfileHeader.vue';
+import UserProfileNavbar from '@/components/UserProfileNavbar.vue';
 
 export default {
   name: "AllFollowingFollowers",
@@ -397,6 +408,7 @@ export default {
     NavBar,
     LoadingWithFunFact,
     UserProfileHeader,
+    UserProfileNavbar,
   },
   data() {
     return {

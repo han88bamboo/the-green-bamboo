@@ -1,6 +1,18 @@
 <template>
   <NavBar />
 
+  <!-- User Profile Header and Navigation (always visible) -->
+  <div v-if="displayUserID && routeUsername" class="userprofile mt-5 mobile-mt-3">
+    <div class="container text-start">
+      <UserProfileHeader />
+    </div>
+    
+    <!-- User Profile Navigation -->
+     <div class="container text-start">
+    <UserProfileNavbar :userID="displayUserID" :username="routeUsername" />
+      </div>
+  </div>
+
   <!-- Loading -->
   <LoadingWithFunFact v-if="dataLoaded === false" />
 
@@ -20,10 +32,8 @@
 
   <!-- Main Content -->
   <div v-if="dataLoaded" class="userprofile mt-5 mobile-mt-3">
-    <div class="container text-start">
-      <!-- User Profile Header -->
-      <UserProfileHeader />
 
+    <div class="container text-start">
       <div class="row mobile-px-3">
         <div class="col-12 col-md-10 mx-auto mobile-px-3">
           <!-- Header -->
@@ -523,10 +533,11 @@
 import NavBar from "@/components/NavBar.vue";
 import LoadingWithFunFact from '@/components/LoadingWithFunFact.vue';
 import UserProfileHeader from '@/components/UserProfileHeader.vue';
+import UserProfileNavbar from '@/components/UserProfileNavbar.vue';
 
 export default {
   name: "AllReviews",
-  components: { NavBar, LoadingWithFunFact, UserProfileHeader },
+  components: { NavBar, LoadingWithFunFact, UserProfileHeader, UserProfileNavbar },
   data() {
     return {
       dataLoaded: false,
