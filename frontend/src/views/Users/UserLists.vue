@@ -60,7 +60,7 @@ import UserProfileHeader from '@/components/UserProfileHeader.vue';
 import UserProfileNavbar from '@/components/UserProfileNavbar.vue';
 
 export default {
-  name: "UserStories",
+  name: "UserLists",
   components: {
     NavBar,
     LoadingWithFunFact,

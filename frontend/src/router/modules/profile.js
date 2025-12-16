@@ -31,6 +31,12 @@ const routes = [
     component: () => import(/* webpackChunkName: "profile" */ "@/views/Users/AllFollowingFollowers.vue"),
   },
   {
+    path: "/profile/user/:userID/:username/badges",
+    name: "userBadges",
+    component: () => import(/* webpackChunkName: "profile" */ "@/views/Users/UserBadges.vue"),
+  },
+
+  {
     path: "/profile/user/:userID/:username/producer_list/:listName",
     name: "userProducerList",
     component: () => import(/* webpackChunkName: "profile" */ "@/views/Users/UserProfileRefactor.vue"),

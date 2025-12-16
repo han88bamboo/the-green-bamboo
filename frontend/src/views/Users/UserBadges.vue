@@ -1,4 +1,5 @@
-@ -0,0 +1,118 @@
+@ -0,0 +1,119 @@
+
 <template>
   <NavBar />
 
@@ -44,8 +45,8 @@
         <div class="col-12 col-md-10 mx-auto px-2">
           <!-- Placeholder Content -->
           <div class="text-center py-5">
-            <h3 class="mb-3">{{ displayUser.displayName || displayUser.username }}'s Activity</h3>
-            <p class="text-muted">Activity content coming soon...</p>
+            <h3 class="mb-3">{{ displayUser.displayName || displayUser.username }}'s Badges</h3>
+            <p class="text-muted">Badges content coming soon...</p>
           </div>
         </div>
       </div>
@@ -60,7 +61,7 @@ import UserProfileHeader from '@/components/UserProfileHeader.vue';
 import UserProfileNavbar from '@/components/UserProfileNavbar.vue';
 
 export default {
-  name: "UserActivity",
+  name: "UserBadges",
   components: {
     NavBar,
     LoadingWithFunFact,

@@ -51,6 +51,15 @@
       >
         Drink Stats
       </router-link>
+
+      <router-link
+        :to="`/profile/user/${userID}/${username}/badges`" 
+        class="profile-nav-link"
+        exact
+      >
+        Badges
+      </router-link>
+      
     </nav>
   </div>
 </template>
@@ -79,6 +88,7 @@ export default {
               !path.includes('/allreviews') && 
               !path.includes('/activity') && 
               !path.includes('/lists') && 
+              !path.includes('/badges') && 
               !path.includes('/allfollowingfollowers'));
     }
   }
