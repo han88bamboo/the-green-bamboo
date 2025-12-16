@@ -12,10 +12,14 @@ const routes = [
   },
   {
     path: "/profile/user/:userID/:username/activity",
-    name: "userStories",
+    name: "userActivity",
     component: () => import(/* webpackChunkName: "profile" */ "@/views/Users/UserActivity.vue"),
   },
-  
+  {
+    path: "/profile/user/:userID/:username/lists",
+    name: "userLists",
+    component: () => import(/* webpackChunkName: "profile" */ "@/views/Users/UserLists.vue"),
+  },
   {
     path: "/profile/user/:userID/:username/allreviews",
     name: "allReviews",

@@ -29,13 +29,19 @@
       >
         Activity
       </router-link>
-      
       <router-link
         :to="`/profile/user/${userID}/${username}/allfollowingfollowers`"
         class="profile-nav-link"
         exact
       >
         Friends
+      </router-link>
+        <router-link
+        :to="`/profile/user/${userID}/${username}/lists`"
+        class="profile-nav-link"
+        exact
+      >
+        Lists
       </router-link>
     </nav>
   </div>
@@ -64,6 +70,7 @@ export default {
               !path.includes('/stories') &&
               !path.includes('/allreviews') && 
               !path.includes('/activity') && 
+              !path.includes('/lists') && 
               !path.includes('/allfollowingfollowers'));
     }
   }
