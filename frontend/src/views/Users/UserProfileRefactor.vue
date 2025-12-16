@@ -132,7 +132,7 @@
               </div>
 
              <router-link
-                :to="`/profile/user/allreviews/${displayUserID}/${displayUser.username}`"
+                :to="`/profile/user/${displayUserID}/${displayUser.username}/allreviews`"
                 class="text-dark text-decoration-underline"
               >
                 View all reviewed drinks
@@ -232,7 +232,7 @@
             <!-- View All Friends Link -->
             <div class="mt-4 mobile-view-hide">
                 <router-link
-                  :to="`/profile/user/allfollowingfollowers/${displayUserID}/${displayUser.username}`"
+                  :to="`/profile/user/${displayUserID}/${displayUser.username}/allfollowingfollowers`"
                   class="text-dark text-decoration-underline"
                 >
                   View all friends

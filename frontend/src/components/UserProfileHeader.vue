@@ -1,8 +1,8 @@
-<template>
+<template >
   
         <!-- user profile -->
 
-          <div class="container">
+          <div  class="container">
             <!-- basic information -->
             <div class="row">
               <!-- profile picture -->
@@ -1462,17 +1462,25 @@ export default {
     }
   },
   async mounted() {
-    // Get user data from localStorage
-    this.user = JSON.parse(localStorage.getItem("user"));
-    this.userID = this.user ? this.user.id : null;
-    this.username = this.user ? this.user.username : null;
+    // Get user data from localStorage (matching UserProfileRefactor)
+    const accID = localStorage.getItem("88B_accID");
+    if (accID !== null) {
+      this.userID = accID;
+    }
+
+    const accUsername = localStorage.getItem("88B_accUsername");
+    if (accUsername !== null) {
+      this.username = accUsername;
+    }
 
     // Get display user ID from route params
     this.displayUserID = this.$route.params.userID;
     this.routeUsername = this.$route.params.username;
 
     // Check if viewing own profile
-    this.ownProfile = this.userID === parseInt(this.displayUserID);
+    if (this.displayUserID === this.userID) {
+      this.ownProfile = true;
+    }
 
     // Fetch display user data
     await this.fetchDisplayUserData();
@@ -1484,86 +1492,160 @@ export default {
     // ------------------- Fetch Data -------------------
     async fetchDisplayUserData() {
       try {
+        // Use same API as UserProfileRefactor
         const response = await this.$axios.get(
-          `${process.env.VUE_APP_API_URL}/getData/getUserByID`,
-          {
-            params: {
-              userID: this.displayUserID,
-            }
-          }
+          `${process.env.VUE_APP_API_URL}/getData/getUser/${this.displayUserID}`
         );
 
-        if (response.data && response.data.data) {
-          this.displayUser = response.data.data;
-          this.totalReviewsCount = response.data.totalReviewsCount || 0;
-          this.followersCount = response.data.followersCount || 0;
-          this.followingCount = response.data.followingCount || 0;
-          this.proofPoints = this.displayUser.proofPoints || 0;
-          this.joinDate = this.displayUser.joinDate || null;
+        this.displayUser = response.data;
 
-          // Check if current user is following this profile
-          if (this.user && this.user.following && Array.isArray(this.user.following)) {
-            this.following = this.user.following.some(
-              follow => follow.id === parseInt(this.displayUserID)
-            );
+        console.log("Display User Data:", this.displayUser);
+        console.log("Choice Drinks:", this.displayUser.choiceDrinks);
+        console.log("Choice Flavours:", this.displayUser.choiceFlavours);
+
+        // Get display user drink choice
+        if (this.displayUser.choiceDrinks && Array.isArray(this.displayUser.choiceDrinks) && this.displayUser.choiceDrinks.length > 0) {
+          this.displayUserDrinkChoice = this.displayUser.choiceDrinks.join(", ");
+        } else {
+          this.displayUserDrinkChoice = "";
+        }
+
+        // Set selected values for editing
+        this.selectedDrinks = Array.isArray(this.displayUser.choiceDrinks) 
+          ? [...this.displayUser.choiceDrinks]
+          : [];
+        this.selectedFlavours = Array.isArray(this.displayUser.choiceFlavours) 
+          ? [...this.displayUser.choiceFlavours]
+          : [];
+        this.selectedObservationTags = Array.isArray(this.displayUser.preferences) 
+          ? [...this.displayUser.preferences]
+          : [];
+
+        console.log("Selected Drinks:", this.selectedDrinks);
+        console.log("Selected Flavours:", this.selectedFlavours);
+        console.log("Display User Drink Choice:", this.displayUserDrinkChoice);
+
+        // Get display user producer bookmarks
+        if (this.displayUser.producerLists) {
+          this.displayUserProducerBookmarks = this.displayUser.producerLists;
+        }
+
+        // Format join date
+        const dateString = this.displayUser.joinDate;
+        const date = new Date(dateString);
+        const month = date.toLocaleString('default', { month: 'short' });
+        const year = date.getFullYear();
+        this.joinDate = `${month} ${year}`;
+
+        // Get current user data if logged in
+        if (this.userID) {
+          if (this.ownProfile) {
+            this.user = this.displayUser;
+          } else {
+            try {
+              const userResponse = await this.$axios.get(
+                `${process.env.VUE_APP_API_URL}/getData/getUser/${this.userID}`
+              );
+              this.user = userResponse.data;
+            } catch (error) {
+              console.error(error);
+            }
           }
 
-          // Set selected values for editing
-          this.selectedDrinks = Array.isArray(this.displayUser.choiceDrinks) 
-            ? [...this.displayUser.choiceDrinks] 
-            : [];
-          this.selectedFlavours = Array.isArray(this.displayUser.choiceFlavours) 
-            ? [...this.displayUser.choiceFlavours] 
-            : [];
-          this.selectedObservationTags = Array.isArray(this.displayUser.preferences) 
-            ? [...this.displayUser.preferences] 
-            : [];
+          // Check if current user is following the user being viewed
+          if (this.user && this.user.followLists && this.user.followLists.users) {
+            this.following = this.user.followLists.users.includes(this.displayUserID);
+          }
         }
+
+        // Get total reviews count, followers, following
+        await this.getStatistics();
+
       } catch (error) {
         console.error("Error fetching user data:", error);
       }
     },
 
+    async getStatistics() {
+      try {
+        // Get total reviews count - use same endpoint as UserProfileRefactor
+        const reviewsResponse = await this.$axios.get(
+          `${process.env.VUE_APP_API_URL}/getData/getReviews/${this.displayUserID}`
+        );
+        this.totalReviewsCount = reviewsResponse.data.total_reviews || 0;
+
+        // Get followers count - use same endpoint as UserProfileRefactor
+        const followersResponse = await this.$axios.get(
+          `${process.env.VUE_APP_API_URL}/getData/getAllUserFollowers/${this.displayUserID}`
+        );
+        this.followersCount = followersResponse.data?.followers?.length || 0;
+
+        // Get following count - use same endpoint as UserProfileRefactor
+        const followingResponse = await this.$axios.get(
+          `${process.env.VUE_APP_API_URL}/getData/getUserDashBoardData/${this.displayUserID}`
+        );
+        this.followingCount = followingResponse.data?.data?.totalFollowing || 0;
+
+        // Get proof points - use same endpoint as UserProfileRefactor
+        const proofPointsResponse = await this.$axios.get(
+          `${process.env.VUE_APP_API_URL}/proofPoints/getPointsForUser/${this.displayUserID}/user`
+        );
+        this.proofPoints = proofPointsResponse.data.totalPoints || 0;
+
+        // Get user badges
+        const userBadgesResponse = await this.$axios.get(
+          `${process.env.VUE_APP_API_URL}/getData/getUserBadges/${this.displayUserID}`
+        );
+        this.userBadges = userBadgesResponse.data || [];
+
+      } catch (error) {
+        console.error("Error fetching statistics:", error);
+      }
+    },
+
     async fetchFormData() {
       try {
-        // Fetch drink types
+        // Fetch drink types - use same endpoint as UserProfileRefactor
         const drinkTypesResponse = await this.$axios.get(
-          `${process.env.VUE_APP_API_URL}/getData/getDrinkType`
+          `${process.env.VUE_APP_API_URL}/getData/getDrinkTypes`
         );
-        if (drinkTypesResponse.data && drinkTypesResponse.data.data) {
-          this.drinkTypes = drinkTypesResponse.data.data;
-          this.drinkType = drinkTypesResponse.data.data;
+        this.drinkTypes = drinkTypesResponse.data || [];
+        
+        // Extract drink type strings for the modal
+        this.drinkType = this.drinkTypes.map((category) => category.drinkType);
 
-          // Set up moderator drink types
-          if (this.displayUser && this.displayUser.modType) {
-            let currentMod = this.displayUser.modType;
-            this.removableDrinkType = this.drinkTypes.filter((drinkType) => {
-              return currentMod.includes(drinkType.drinkType);
-            });
-            this.addableDrinkType = this.drinkTypes.filter((drinkType) => {
-              return !currentMod.includes(drinkType.drinkType);
-            });
-            this.filteredDrinkType = this.drinkTypes
-              .filter((drinkType) => !currentMod.includes(drinkType.drinkType))
-              .map((drinkType) => drinkType.drinkType);
-          }
+        console.log("Drink Types:", this.drinkTypes);
+        console.log("Drink Type Strings:", this.drinkType);
+
+        // Set up moderator drink types
+        if (this.displayUser && this.displayUser.modType) {
+          let currentMod = this.displayUser.modType;
+          this.removableDrinkType = this.drinkTypes.filter((drinkType) => {
+            return currentMod.includes(drinkType.drinkType);
+          });
+          this.addableDrinkType = this.drinkTypes.filter((drinkType) => {
+            return !currentMod.includes(drinkType.drinkType);
+          });
+          this.filteredDrinkType = this.drinkTypes
+            .filter((drinkType) => !currentMod.includes(drinkType.drinkType))
+            .map((drinkType) => drinkType.drinkType);
         }
 
-        // Fetch flavour tags
+        // Fetch flavour tags - use same response structure as UserProfileRefactor
         const flavoursResponse = await this.$axios.get(
           `${process.env.VUE_APP_API_URL}/getData/getFlavourTags`
         );
-        if (flavoursResponse.data && flavoursResponse.data.data) {
-          this.flavourTag = flavoursResponse.data.data;
-        }
+        this.flavourTag = flavoursResponse.data || [];
 
-        // Fetch observation tags
+        console.log("Flavour Tags:", this.flavourTag);
+
+        // Fetch observation tags - use same response structure as UserProfileRefactor
         const observationTagsResponse = await this.$axios.get(
           `${process.env.VUE_APP_API_URL}/getData/getObservationTags`
         );
-        if (observationTagsResponse.data && observationTagsResponse.data.data) {
-          this.observationTags = observationTagsResponse.data.data;
-        }
+        this.observationTags = observationTagsResponse.data || [];
+
+        console.log("Observation Tags:", this.observationTags);
       } catch (error) {
         console.error("Error fetching form data:", error);
       }
@@ -2053,6 +2135,13 @@ export default {
       } else {
         this.passwordError = true;
       }
+    },
+
+    // ------------------- Helper Methods -------------------
+    getProducerFromID() {
+      // Stub method to prevent template errors
+      // This would need to be implemented if producer bookmarks are needed in the header
+      return { photo: this.defaultDrinkImage };
     },
   }
 };
