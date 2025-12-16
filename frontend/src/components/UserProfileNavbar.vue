@@ -23,6 +23,14 @@
         Reviews
       </router-link>
       <router-link
+        :to="`/profile/user/${userID}/${username}/activity`"
+        class="profile-nav-link"
+        exact
+      >
+        Activity
+      </router-link>
+      
+      <router-link
         :to="`/profile/user/${userID}/${username}/allfollowingfollowers`"
         class="profile-nav-link"
         exact
@@ -55,6 +63,7 @@ export default {
              (path.startsWith(basePath) && 
               !path.includes('/stories') &&
               !path.includes('/allreviews') && 
+              !path.includes('/activity') && 
               !path.includes('/allfollowingfollowers'));
     }
   }

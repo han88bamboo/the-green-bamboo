@@ -11,6 +11,12 @@ const routes = [
     component: () => import(/* webpackChunkName: "profile" */ "@/views/Users/UserStories.vue"),
   },
   {
+    path: "/profile/user/:userID/:username/activity",
+    name: "userStories",
+    component: () => import(/* webpackChunkName: "profile" */ "@/views/Users/UserActivity.vue"),
+  },
+  
+  {
     path: "/profile/user/:userID/:username/allreviews",
     name: "allReviews",
     component: () => import(/* webpackChunkName: "profile" */ "@/views/Users/AllReviews.vue"),
