@@ -27,6 +27,9 @@
     class="userprofile mt-5 mobile-mt-3"
   >
     <div class="container text-start">
+      <!-- User Profile Header -->
+      <UserProfileHeader />
+
       <div class="row mobile-px-3">
         <div class="col-12 col-md-10 mx-auto px-2">
           <!-- Header Section -->
@@ -386,12 +389,14 @@
 <script>
 import NavBar from "@/components/NavBar.vue";
 import LoadingWithFunFact from '@/components/LoadingWithFunFact.vue';
+import UserProfileHeader from '@/components/UserProfileHeader.vue';
 
 export default {
   name: "AllFollowingFollowers",
   components: {
     NavBar,
     LoadingWithFunFact,
+    UserProfileHeader,
   },
   data() {
     return {

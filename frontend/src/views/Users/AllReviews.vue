@@ -21,6 +21,9 @@
   <!-- Main Content -->
   <div v-if="dataLoaded" class="userprofile mt-5 mobile-mt-3">
     <div class="container text-start">
+      <!-- User Profile Header -->
+      <UserProfileHeader />
+
       <div class="row mobile-px-3">
         <div class="col-12 col-md-10 mx-auto mobile-px-3">
           <!-- Header -->
@@ -519,10 +522,11 @@
 <script>
 import NavBar from "@/components/NavBar.vue";
 import LoadingWithFunFact from '@/components/LoadingWithFunFact.vue';
+import UserProfileHeader from '@/components/UserProfileHeader.vue';
 
 export default {
   name: "AllReviews",
-  components: { NavBar, LoadingWithFunFact },
+  components: { NavBar, LoadingWithFunFact, UserProfileHeader },
   data() {
     return {
       dataLoaded: false,
