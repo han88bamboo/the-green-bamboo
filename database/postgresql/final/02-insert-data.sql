@@ -5047,3 +5047,41 @@ INSERT INTO "currencySymbols" ("symbol") VALUES
 UPDATE "venues" SET "eventID" = 11 WHERE "id" = 99;  -- Whisky Live Singapore 2025 -> Event ID 11
 UPDATE "venues" SET "eventID" = 12 WHERE "id" = 100; -- Whisky Live Paris 2026 -> Event ID 12
 UPDATE "venues" SET "eventID" = 13 WHERE "id" = 101; -- Tokyo Whisky & Spirits Festival 2026 -> Event ID 13
+
+INSERT INTO "userBadges" ("userId", "badgeId", "currentLevel", "currentProgress")
+VALUES (5, 131, 1, 0);
+
+INSERT INTO "userBadges" ("userId", "badgeId", "currentLevel", "currentProgress")
+VALUES (5, 228, 1, 0);
+
+INSERT INTO "userBadges" ("userId", "badgeId", "currentLevel", "currentProgress")
+VALUES (5, 36, 1, 0);
+
+INSERT INTO "userBadges" ("userId", "badgeId", "currentLevel", "currentProgress")
+VALUES (5, 37, 1, 0);
+
+
+INSERT INTO "userBadges" ("userId", "badgeId", "currentLevel", "currentProgress")
+VALUES (5, 38, 1, 0);
+
+
+INSERT INTO "userBadges" ("userId", "badgeId", "currentLevel", "currentProgress")
+VALUES (5, 39, 1, 0);
+
+INSERT INTO "userBadges" ("userId", "badgeId", "currentLevel", "currentProgress")
+VALUES (5, 40, 1, 0);
+
+INSERT INTO "userBadges" ("userId", "badgeId", "currentLevel", "currentProgress")
+VALUES (5, 41, 1, 0);
+
+INSERT INTO "userBadges" ("userId", "badgeId", "currentLevel", "currentProgress")
+VALUES (5, 42, 1, 0);
+
+INSERT INTO "userBadges" ("userId", "badgeId", "currentLevel", "currentProgress")
+VALUES (5, 43, 1, 0);
+
+INSERT INTO "userBadges" ("userId", "badgeId", "currentLevel", "currentProgress")
+VALUES (5, 44, 1, 0);
+
+INSERT INTO "userBadges" ("userId", "badgeId", "currentLevel", "currentProgress")
+VALUES (5, 45, 1, 0);
