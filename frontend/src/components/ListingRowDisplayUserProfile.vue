@@ -1,119 +1,147 @@
 <!-- Updated ListingRowDisplayUserProfile.vue to handle both listings and top rated reviews -->
 
 <template>
-    <h5 class="text-body-secondary text-start pt-1"> 
-        <b> {{ displayName }} </b> 
-    </h5>
+    <div class="d-flex justify-content-between pt-1 mobile-spacer ">
+      <div class="text-start"><h5 class="text-body-secondary fw-bold"> {{ displayName }}</h5></div>
+      <router-link
+        :to="`/profile/user/${userID}/${username}/allreviews`"
+        class="text-end text-muted text-decoration-none"
+        >
+          VIEW ALL →
+      </router-link>
+    </div>
+    <hr class="mobile-col-11 mobile-spacer">
     <div class="">
         <!-- Top Rated Reviews Display (when topRatedReviews prop is provided) -->
-        <div v-if="topRatedReviews && topRatedReviews.length > 0">
-            <div v-for="(review, index) in topRatedReviews" :key="review.id" class="review-card mb-4 p-3 mobile-rating-smaller-text-2 position-relative" style="border: 1px solid #e0e0e0; border-radius: 8px; background: #fff;">
-                
-                <!-- Privacy notch overlay for private reviews (only visible to owner) -->
+      <div v-if="topRatedReviews && topRatedReviews.length > 0" class="row g-3 top-rated-row trending-reviews-container">
+        <div
+          v-for="(review, index) in topRatedReviews"
+          :key="review.id"
+          class="col-6 col-lg-4 top-rated-col"
+        >
+          <div class="card h-100 review-card border-light">
+
+            <!-- IMAGE TOP -->
+            <div class="card-img-top-wrapper">
+              <div
+                style="position: relative; border-radius: 10px; overflow: hidden; width: 100%;"
+              >
+                <!-- Notch Overlay for Private Review (only visible to owner) -->
                 <div v-if="!review.isPublic && ownProfile" class="item-notch item-notch-private">
                   <div class="notch-content">
                     <span class="notch-icon"><i class="bi bi-eye-slash"></i></span>
                     <span class="notch-text">Private</span>
                   </div>
                 </div>
-                
-                <!-- Rating and Listing Name (centered, full width) -->
-                <div class="review-header text-center mb-3" style="margin-right: 140px;">
-                    <div class="rating-text mb-2" style="word-wrap: break-word; overflow-wrap: break-word;">
-                        <template v-if="!isNaN(parseFloat(review.rating))">
-                            <span style="color: #333; font-size: 1.1em;">Rated ⭐</span>
-                            <span class="fw-bold" style="color: #333; font-size: 1.1em;">{{ parseFloat(review.rating).toFixed(1) }}</span>
-                            <span style="color: #333; font-size: 1.1em;"> Stars</span>
-                        </template>
-                        <template v-else>
-                            <span style="color: #333; font-size: 1.1em;">Tasted</span>
-                        </template>
-                        <span v-if="review.venueName" style="color: #333; font-size: 1.1em; font-weight: 600;"> at {{ review.venueName }}</span>
-                    </div>
-                    
-                    <!-- Listing Name (prominent, below rating) -->
-                    <div class="listing-name">
-                        <router-link 
-                            :to="{ path: '/listing/view/' + review.reviewTarget + '/' + slugify(review.listingName || 'unknown-listing') }" 
-                            class="text-decoration-none"
-                        >
-                            <h6 class="fw-bold mb-0" style="color: #2a6959;">
-                                {{ review.listingName || 'Unknown Listing' }}
-                            </h6>
-                        </router-link>
-                    </div>
-                </div>
 
-                <!-- Content Area with Image and Review Text -->
-                <div class="content-area position-relative mb-3">
-                    <!-- Image positioned on the right -->
-                    <div class="image-container" style="float: right; margin-left: 15px; margin-bottom: 10px; margin-top: -60px;">
-                        <router-link :to="{ path: '/listing/view/' + review.reviewTarget + '/' + slugify(review.listingName || 'unknown-listing') }">
-                            <img 
-                                v-if="review.photo && review.photo !== ''" 
-                                :src="review.photo" 
-                                class="review-image rounded"
-                                style="width: 120px; height: 120px; object-fit: cover; display: block;"
-                            />
-                            <img 
-                                v-else-if="review.listingPhoto && review.listingPhoto !== ''"
-                                :src="review.listingPhoto" 
-                                class="review-image rounded"
-                                style="width: 120px; height: 120px; object-fit: cover; display: block;"
-                            />
-                            <img 
-                                v-else 
-                                src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultDrinkImage.png?v=1750084739" 
-                                class="review-image rounded"
-                                style="width: 120px; height: 120px; object-fit: cover; display: block;"
-                            />
-                        </router-link>
-                    </div>
-
-                    <!-- Review Content that wraps around the image -->
-                    <div class="review-content" style="text-align: justify;">
-                        <p v-if="!expandedReviews[index]" class="mb-2" style="color: #333; line-height: 1.6; font-size: 0.95em;">
-                            {{ getPreviewText(review) }}
-                            <span v-if="shouldShowReadMore(review)" @click="expandReview(index)" class="read-more-link" style="color: #027562; cursor: pointer; font-weight: bold; text-decoration: underline;">
-                                (Read More)
-                            </span>
-                        </p>
-                        <p v-else class="mb-2" style="color: #333; line-height: 1.6; font-size: 0.95em;">
-                            {{ getFullReviewText(review) }}
-                            <span @click="collapseReview(index)" class="read-less-link" style="color: #027562; cursor: pointer; font-weight: bold; text-decoration: underline;">
-                                (Read Less)
-                            </span>
-                        </p>
-                    </div>
-                    
-                    <!-- Clear float to ensure proper layout -->
-                    <div style="clear: both;"></div>
-                </div>
-
-                <!-- Tags Section -->
-                <div class="tags-section mb-3 pt-2">
-                    <!-- Flavor Tags -->
-                    <span 
-                        v-for="(tag, tagIndex) in review.flavourTag" 
-                        :key="'flavor-' + tagIndex"
-                        class="badge rounded-pill me-2 mb-2"
-                        :style="{ backgroundColor: getTagColor(parseInt(tag)) }"
-                    >
-                        {{ getTagName(parseInt(tag)) }}
-                    </span>
-                    
-                    <!-- Observation Tags -->
-                    <span 
-                        v-for="(tag, tagIndex) in review.observationTag" 
-                        :key="'obs-' + tagIndex"
-                        class="badge rounded-pill me-2 mb-2"
-                        :style="{ backgroundColor: getActionTagColor(tag), color: 'black' }"
-                    >
-                        {{ getActionTagDisplayText(tag) }}
-                    </span>
-                </div>
+                <router-link
+                  :to="{ path: '/listing/view/' + review.reviewTarget + '/' + slugify(review.listingName || 'unknown-listing') }"
+                >
+                  <img
+                    v-if="review.photo && review.photo !== ''"
+                    :src="review.photo"
+                    alt=""
+                    class="card-img-top review-card-img"
+                  />
+                  <img
+                    v-else-if="review.listingPhoto && review.listingPhoto !== ''"
+                    :src="review.listingPhoto"
+                    alt=""
+                    class="card-img-top review-card-img"
+                  />
+                  <img
+                    v-else
+                    src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultDrinkImage.png?v=1750084739"
+                    alt=""
+                    class="card-img-top review-card-img"
+                  />
+                </router-link>
+              </div>
             </div>
+
+            <!-- BODY -->
+            <div class="card-body d-flex flex-column">
+
+              <!-- Title -->
+              <router-link
+                :to="{ path: '/listing/view/' + review.reviewTarget + '/' + slugify(review.listingName || 'unknown-listing') }"
+                class="text-decoration-none"
+                style="color: #223957"
+              >
+                <h6 class="card-title mb-1 fw-bold">
+                  {{ review.listingName || 'Unknown Listing' }}
+                </h6>
+              </router-link>
+
+              <!-- Rating / tasted line (keep your logic) -->
+              <p class="text-muted mb-2">
+                <template v-if="!isNaN(parseFloat(review.rating))">
+                  Rated <span class="fw-bold rating-text ">{{ parseFloat(review.rating).toFixed(1) }}★</span>
+                </template>
+                <template v-else>
+                  Tasted
+                </template>
+                <span v-if="review.venueName"> at <span class="fw-bold rating-text ">{{ review.venueName }}</span></span>
+              </p>
+
+            
+              <!-- Review text w/ read more (uses your existing expandedReviews + methods) -->
+              <div v-if="review.reviewDesc || review.reviewText" class="mb-2">
+                <p v-if="!expandedReviews[index]" class="mb-0 small" style="color:#333; line-height:1.5;">
+                  {{ getPreviewText(review) }}
+                  <span
+                    v-if="shouldShowReadMore(review)"
+                    @click="expandReview(index)"
+                    class="read-more-link"
+                    style="color:#027562; cursor:pointer; font-weight:700; text-decoration:underline;"
+                  >
+                    (Read More)
+                  </span>
+                </p>
+
+                <p v-else class="mb-0 small" style="color:#333; line-height:1.5;">
+                  {{ getFullReviewText(review) }}
+                  <span
+                    @click="collapseReview(index)"
+                    class="read-less-link"
+                    style="color:#027562; cursor:pointer; font-weight:700; text-decoration:underline;"
+                  >
+                    (Read Less)
+                  </span>
+                </p>
+              </div>
+
+              <!-- TAGS (same data, just inside the body) -->
+              <div class="mt-auto pt-2">
+                <div class="tags-section mb-2">
+                  <span
+                    v-for="(tag, tagIndex) in review.flavourTag"
+                    :key="'flavor-' + tagIndex"
+                    class="badge mobile-rating-smaller-text-2 me-2 mb-2"
+                    :style="{ backgroundColor: getTagColor(parseInt(tag)) }"
+                  >
+                    {{ getTagName(parseInt(tag)) }}
+                  </span>
+
+                  <span
+                    v-for="(tag, tagIndex) in review.observationTag"
+                    :key="'obs-' + tagIndex"
+                    class="badge mobile-rating-smaller-text-2 me-2 mb-2 tag-badge"
+                    :style="{ backgroundColor: getActionTagColor(tag), color: 'black' }"
+                  >
+                    {{ getActionTagDisplayText(tag) }}
+                  </span>
+
+                </div>
+
+                
+              </div>
+
+            </div>
+          </div>
         </div>
+      </div>
+
 
         <!-- Original Listings Display (when listingArr prop is provided) -->
         <div v-else-if="listingArr && listingArr.length > 0">
@@ -184,6 +212,15 @@ export default {
     flavourTags: {
       type: Array,
       default: () => []
+    },
+    // User identity so profile links work correctly
+    userID: {
+      type: [String, Number],
+      default: null
+    },
+    username: {
+      type: String,
+      default: ''
     },
     // Add ownProfile prop for privacy handling
     ownProfile: {
@@ -354,103 +391,6 @@ export default {
 };
 </script>
 
-<style scoped>
-/* Notch overlay styles for private reviews - matches UserProfileRefactor exactly */
-.item-notch {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 0;
-  height: 0;
-  border-style: solid;
-  border-width: 62px 62px 0 0;
-  z-index: 10;
-  overflow: visible;
-  border-top-left-radius: 10px;
-}
-
-/* Private review notch - Dark grey theme */
-.item-notch-private {
-  border-color: #596269 transparent transparent transparent;
-}
-
-/* Notch content container - rotated text and icon */
-.notch-content {
-  position: absolute;
-  top: -55px;
-  left: -5px;
-  transform: rotate(-45deg);
-  transform-origin: center center;
-  white-space: nowrap;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2px;
-}
-
-/* Private review text styling */
-.item-notch-private .notch-content {
-  color: white;
-}
-
-/* Icon placeholder */
-.notch-icon {
-  font-size: 14px;
-  font-weight: bold;
-  line-height: 1;
-}
-
-/* Text label */
-.notch-text {
-  font-size: 9px;
-  font-weight: bold;
-  text-transform: uppercase;
-  letter-spacing: 0.3px;
-  line-height: 1;
-}
-
-/* Responsive sizing for mobile devices */
-@media (max-width: 768px) {
-  .item-notch {
-    border-width: 65px 65px 0 0;
-  }
-  
-  .notch-content {
-    top: -56px;
-    left: -3px;
-  }
-  
-  .notch-icon {
-    font-size: 12px;
-  }
-  
-  .notch-text {
-    font-size: 9px;
-    letter-spacing: 0.2px;
-  }
-}
-
-/* Extra small screens */
-@media (max-width: 375px) {
-  .item-notch {
-    border-width: 55px 55px 0 0;
-  }
-  
-  .notch-content {
-    top: -50px;
-    left: 2px;
-  }
-  
-  .notch-icon {
-    font-size: 10px;
-  }
-  
-  .notch-text {
-    font-size: 6px;
-    letter-spacing: 0.1px;
-  }
-}
-</style>
 
 <style scoped>
 .read-more-link:hover,
@@ -458,7 +398,104 @@ export default {
   text-decoration: underline;
 }
 
+.review-card-img{
+  width: 100%;
+  height: 190px;       /* tweak */
+  object-fit: cover;
+  display: block;
+}
+
+/* Grid view styles */
+.review-card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  cursor: pointer;
+}
+
+.review-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
 .review-content {
   line-height: 1.4;
 }
+
+.reviews-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.5rem;
+}
+
+/* Mobile: single column */
+@media (max-width: 768px) {
+  .reviews-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Ensure normal Bootstrap wrapping + no horizontal scroll */
+.top-rated-row {
+  flex-wrap: wrap !important;
+  overflow-x: visible !important;
+}
+
+
+
+/* ✅ Mobile: horizontal scroller, cards keep a readable size */
+@media (max-width: 767.98px) {
+  .top-rated-row {
+    flex-wrap: nowrap !important;   /* override Bootstrap row wrap */
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 0.5rem;
+  }
+}
+
+.tags-section {
+  display: flex;
+  flex-wrap: wrap;
+  max-width: 100%;
+}
+
+.tag-badge {
+  max-width: 100%;            /* never exceed card width */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;        /* keep it on one line */
+}
+
+/* Scrollbar styling for trending reviews */
+/* Default (desktop / tablet) */
+.trending-reviews-container {
+  margin: 0;
+}
+
+/* Mobile only */
+@media (max-width: 767.98px) {
+  .trending-reviews-container {
+    margin: 0 12px;
+  }
+}
+
+
+.trending-reviews-container::-webkit-scrollbar {
+    height: 8px;
+}
+
+.trending-reviews-container::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+.trending-reviews-container::-webkit-scrollbar-thumb {
+    background: #f0b358;
+    border-radius: 4px;
+}
+
+.trending-reviews-container::-webkit-scrollbar-thumb:hover {
+    background: #025a4a;
+}
+
+
 </style>

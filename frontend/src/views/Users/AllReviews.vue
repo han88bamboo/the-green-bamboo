@@ -6,6 +6,8 @@
     <div class="container text-start">
       <UserProfileHeader />
     </div>
+
+    <br>
     
     <!-- User Profile Navigation -->
      <div class="container text-start">
@@ -36,29 +38,6 @@
     <div class="container text-start">
       <div class="row mobile-px-3">
         <div class="col-12 col-md-10 mx-auto mobile-px-3">
-          <!-- Header -->
-          <div class="d-flex justify-content-between align-items-center mb-3">
-            <div>
-              <h3 class="mb-1 mobile-mt-3 mobile-fs-5"><b>Drinks Reviewed by {{ displayUser.displayName || displayUser.username }}</b></h3>
-              <p class="text-muted mb-0 mobile-rating-smaller-text-2"><span class="fw-bold">
-                {{ totalReviews }} drink{{ totalReviews !== 1 ? 's' : '' }} reviewed </span>
-                <span v-if="!ownProfile">(private reviews are hidden)</span>
-                <span v-if="ownProfile">(your private reviews will be hidden from the public)</span>
-              </p>
-            </div>
-            <button
-              class="mobile-view-hide btn primary-btn"
-              @click="$router.push(`/profile/user/${displayUserID}/${routeUsername}`)"
-            >
-              Back to Profile
-            </button>
-            <button
-              class="mobile-view-show btn primary-btn btn-sm fw-bold"
-              @click="$router.push(`/profile/user/${displayUserID}/${routeUsername}`)"
-            >
-              <i class="bi bi-arrow-return-left"></i>
-            </button>
-          </div>
 
           <!-- Actions row (mobile-first): View toggle + Sort + Filters -->
           <div class="d-flex align-items-center justify-content-between mb-3 d-md-none">
@@ -272,11 +251,11 @@
 
           <!-- Reviews List (List View) -->
           <div v-else-if="filteredReviews && filteredReviews.length > 0 && viewMode === 'list'">
-            <div v-for="review in paginatedReviews" :key="review.id" class="mb-4">
-              <div style="display: flex" class="row mb-2 border rounded p-3">
+            <div v-for="review in paginatedReviews" :key="review.id" class="mb-4" style="border-bottom: 1px solid grey;">
+              <div style="display: flex" class="row mb-2">
                 <div class="col-3 mobile-col-3 mobile-pe-0">
                   <!-- Image wrapper with notch overlay for private reviews -->
-                  <div style="position: relative; display: inline-block; border-radius: 10px; overflow: hidden;">
+                  <div style="position: relative; display: inline-block; border-radius: 5px; overflow: hidden;">
                     <!-- Notch Overlay for Private Review -->
                     <div v-if="!review.isPublic" class="item-notch item-notch-private">
                       <div class="notch-content">
@@ -288,7 +267,7 @@
                     <img :src="review.photo || defaultDrinkImage" alt="" class="rounded bottle-img" />
                   </div>
                 </div>
-                <div class="col-9 mobile-col-9 mobile-ps-2">
+                <div class="col-9 mobile-col-9 mobile-ps-3">
                   <a
                     :href="'/listing/view/' + review.reviewTarget + '/' + slugify(getListingName(review.reviewTarget) || 'unknown-listing')"
                     style="text-decoration: none; color: #223957"
@@ -298,15 +277,14 @@
                     </p>
                   </a>
 
-                  <p class="text-muted small mb-2" v-if="getListingProducerName(review.reviewTarget)">
+                  <p class="fw-bold small mb-2" style="color:#f0b358" v-if="getListingProducerName(review.reviewTarget)">
                     by {{ getListingProducerName(review.reviewTarget) }}
-                  </p>
-
-                  <p class="mb-2 small" style="color: #f0b358;" v-if="getListingDrinkType(review.reviewTarget) || getListingCountry(review.reviewTarget)">
+                    <span v-if="getListingDrinkType(review.reviewTarget)"> | </span>
                     <span v-if="getListingDrinkType(review.reviewTarget)">{{ getListingDrinkType(review.reviewTarget) }}</span>
-                    <span v-if="getListingDrinkType(review.reviewTarget) && getListingCountry(review.reviewTarget)"> / </span>
+                    <span v-if="getListingDrinkType(review.reviewTarget) && getListingCountry(review.reviewTarget)"> | </span>
                     <span v-if="getListingCountry(review.reviewTarget)">{{ getListingCountry(review.reviewTarget) }}</span>
                   </p>
+
 
                   <div class="d-flex justify-content-between align-items-center">
                     <p v-if="!isNaN(parseFloat(review.rating))" class="fs-4 mobile-fs-5 fw-bold rating-text mobile-mb-1 mb-0">
@@ -318,15 +296,10 @@
                     <p class="mobile-fs-7 mb-1" v-if="review.reviewTitle"><b>{{ review.reviewTitle }}</b></p>
                     <p class="mobile-fs-7 mb-2" v-if="review.reviewDesc">
                       {{ getReviewExcerptList(review.reviewDesc) }}
-                      <a
-                        :href="'/listing/view/' + review.reviewTarget + '/' + slugify(getListingName(review.reviewTarget) || 'unknown-listing')"
-                        class="btn btn-sm primary-btn-less-round-blue text-decoration-none ms-2 fw-bold"
-                      >
-                        See Full Review
-                      </a>
                     </p>
                   </div>
                   <div class="mb-2">
+                    
                     <span
                       v-for="(tag, index) in review.flavorTag"
                       :key="index"
@@ -401,7 +374,7 @@
 
           <!-- Reviews Grid (Grid View) -->
           <div v-else-if="filteredReviews && filteredReviews.length > 0 && viewMode === 'grid'" class="row">
-            <div v-for="review in paginatedReviews" :key="review.id" class="col-12 col-sm-6 col-md-4 col-lg-3 mb-4">
+            <div v-for="review in paginatedReviews" :key="review.id" class="col-6 col-md-4 col-lg-3 mb-4">
               <div class="card h-100 review-card border-light">
                 <div class="card-img-top-wrapper">
                   <!-- Image wrapper with notch overlay for private reviews -->
@@ -424,35 +397,39 @@
                     style="text-decoration: none; color: #223957"
                     class="text-decoration-none"
                   >
-                    <h6 class="card-title mb-2 default-clickable-text fw-bold">
+                    <h6 class="card-title mb-1 default-clickable-text fw-bold">
                       {{ getListingName(review.reviewTarget) }}
                     </h6>
                   </a>
 
-                  <p class="text-muted small mb-2" v-if="getListingProducerName(review.reviewTarget)">
+                  <p class="text-muted small mb-1" v-if="getListingProducerName(review.reviewTarget)">
                     by {{ getListingProducerName(review.reviewTarget) }}
                   </p>
 
-                  <p class="mb-2 small" style="color: #f0b358;" v-if="getListingDrinkType(review.reviewTarget) || getListingCountry(review.reviewTarget)">
+                  <p class="mb-1 small" style="color: #f0b358;" v-if="getListingDrinkType(review.reviewTarget) || getListingCountry(review.reviewTarget)">
                     <span v-if="getListingDrinkType(review.reviewTarget)">{{ getListingDrinkType(review.reviewTarget) }}</span>
                     <span v-if="getListingDrinkType(review.reviewTarget) && getListingCountry(review.reviewTarget)"> / </span>
                     <span v-if="getListingCountry(review.reviewTarget)">{{ getListingCountry(review.reviewTarget) }}</span>
                   </p>
 
-                  <p class="card-text mb-1 flex-grow-1 mobile-rating-smaller-text-2" v-if="review.reviewDesc">
-                    {{ getReviewExcerpt(review.reviewDesc) }}
-                    <a
-                      :href="'/listing/view/' + review.reviewTarget + '/' + slugify(getListingName(review.reviewTarget) || 'unknown-listing')"
-                      class="btn btn-sm primary-btn-less-round-blue text-decoration-none mt-2 fw-bold"
-                      
-                    >
-                      See Full Review
-                    </a>
-                  </p>
+                  <h4 v-if="!isNaN(parseFloat(review.rating))" class="fw-bold rating-text">{{ parseFloat(review.rating).toFixed(1) }}★</h4>
 
-                  <div class="d-flex justify-content-between align-items-center mt-auto">
+                  <p class="mb-1 small" v-if="review.reviewDesc">
+                    {{ getReviewExcerpt(review.reviewDesc) }}
+                  </p>
+                  <div class="tags-section mb-3 pt-2">
+                  <!-- Flavor Tags -->
+                    <span 
+                        v-for="(tag, tagIndex) in review.flavourTag" 
+                        :key="'flavor-' + tagIndex"
+                        class="badge mobile-rating-smaller-text-2 me-2 mb-2"
+                        :style="{ backgroundColor: getTagColor(parseInt(tag)) }"
+                    >
+                        {{ getTagName(parseInt(tag)) }}
+                    </span>
+                  </div>
+                  <div class="d-flex justify-content-between align-items-center mobile-rating-smaller-text-2">
                     <small class="text-muted">Drank on {{ formatDateGrid(review.createdDate) }}</small>
-                    <span v-if="!isNaN(parseFloat(review.rating))" class="fw-bold rating-text">{{ parseFloat(review.rating).toFixed(1) }}★</span>
                   </div>
                                     <!-- Privacy Toggle (only visible to review owner) -->
                   <div v-if="ownProfile && parseInt(userID) === review.userID" class="mb-1 mt-1">
@@ -1115,101 +1092,7 @@ export default {
   color: #000;
 }
 
-/* Notch overlay styles for private reviews */
-.item-notch {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 0;
-  height: 0;
-  border-style: solid;
-  border-width: 62px 62px 0 0;
-  z-index: 10;
-  overflow: visible;
-  border-top-left-radius: 10px;
-}
 
-/* Private review notch - Dark grey theme */
-.item-notch-private {
-  border-color: #596269 transparent transparent transparent;
-}
-
-/* Notch content container - rotated text and icon */
-.notch-content {
-  position: absolute;
-  top: -55px;
-  left: -5px;
-  transform: rotate(-45deg);
-  transform-origin: center center;
-  white-space: nowrap;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2px;
-}
-
-/* Private review text styling */
-.item-notch-private .notch-content {
-  color: white;
-}
-
-/* Icon placeholder */
-.notch-icon {
-  font-size: 14px;
-  font-weight: bold;
-  line-height: 1;
-}
-
-/* Text label */
-.notch-text {
-  font-size: 9px;
-  font-weight: bold;
-  text-transform: uppercase;
-  letter-spacing: 0.3px;
-  line-height: 1;
-}
-
-/* Responsive sizing for mobile devices */
-@media (max-width: 768px) {
-  .item-notch {
-    border-width: 65px 65px 0 0;
-  }
-  
-  .notch-content {
-    top: -56px;
-    left: -3px;
-  }
-  
-  .notch-icon {
-    font-size: 12px;
-  }
-  
-  .notch-text {
-    font-size: 9px;
-    letter-spacing: 0.2px;
-  }
-}
-
-/* Extra small screens */
-@media (max-width: 375px) {
-  .item-notch {
-    border-width: 55px 55px 0 0;
-  }
-  
-  .notch-content {
-    top: -50px;
-    left: 2px;
-  }
-  
-  .notch-icon {
-    font-size: 10px;
-  }
-  
-  .notch-text {
-    font-size: 6px;
-    letter-spacing: 0.1px;
-  }
-}
 
 /* Privacy toggle styling */
 .privacy-toggle-container {
@@ -1239,8 +1122,8 @@ export default {
 }
 
 .privacy-toggle-switch:checked {
-  background-color: #859cdd;
-  border-color: #859cdd;
+  background-color: #83a9e8 ;
+  border-color: #83a9e8;
 }
 
 .privacy-toggle-switch:focus {

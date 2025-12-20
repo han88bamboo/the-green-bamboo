@@ -3,10 +3,11 @@
         <!-- user profile -->
 
           <div  class="container">
-            <!-- basic information -->
-            <div class="row">
-              <!-- profile picture -->
-              <div class="col-4 text-start pe-0">
+            
+            <!-- USER INFORMATION -->
+            <div class="row mt-0 pt-0">
+              <!-- 1. PROFILE PICTURE -->
+              <div class="col-auto text-start">
                 <!-- <img :src=" 'data:image/jpeg;base64,' + (displayUser.photo || defaultProfilePhoto)" alt="" class="rounded-circle-no-bg border border-dark profile-img" style="height:auto; width:100%; "> -->
                 <img
                   :src="
@@ -17,105 +18,136 @@
                   style="height: auto; width: 100%"
                 />
               </div>
-              <!-- user name -->
-              <div class="col-8">
-                <h3 class="mb-0">{{ displayUser.displayName }}</h3>
-                <b>@{{ displayUser.username }}</b>
-                <button
-                v-if="ownProfile && user"
-                type="button"
-                class="btn p-0 m-0 ms-2"
-                style="color:grey"
-                data-bs-toggle="modal"
-                data-bs-target="#editProfileModal"
-              >
-                <i class="bi bi-pencil"></i>
-                </button>
-                <button
-                v-if="ownProfile && user"
-                type="button"
-                class="btn p-0 m-0 ms-2"
-                style="color:grey"
-                data-bs-toggle="modal"
-                data-bs-target="#changePasswordModal"
-                >
-                  <i class="bi bi-shield-lock-fill"></i>
-                </button>
-                <div class="container ps-0 mt-2 text-center">
-                  <div class="row">
-                    <div class="col-4 px-0">
+              <!-- 2. and 3. USER BIO AND STATS -->
+              <div class="col">
+                <div class="row">
+                <!-- 2. USER BIO -->
+                <div class="col-12 col-md-8">
+                  <div class="d-flex align-items-center gap-2 flex-wrap">
+                    <h3 class="fw-bold mb-0">{{ displayUser.displayName }}</h3>
+
+                    <!-- edit profile -->
+                    <button
+                      v-if="ownProfile && user"
+                      type="button"
+                      class="btn btn-sm p-0 text-secondary"
+                      data-bs-toggle="modal"
+                      data-bs-target="#editProfileModal"
+                    >
+                      <i class="bi bi-pencil"></i>
+                    </button>
+
+                    <!-- edit password -->
+                    <button
+                      v-if="ownProfile && user"
+                      type="button"
+                      class="btn btn-sm p-0 text-secondary"
+                      data-bs-toggle="modal"
+                      data-bs-target="#changePasswordModal"
+                    >
+                      <i class="bi bi-shield-lock-fill"></i>
+                    </button>
+
+                    <!-- following -->
+                    <button
+                      v-else-if="following && user"
+                      type="button"
+                      class="btn btn-sm primary-btn-outline-less-round"
+                      @click="editFollow('unfollow')"
+                    >
+                      Following
+                    </button>
+
+                    <!-- follow -->
+                    <button
+                      v-else-if="user"
+                      type="button"
+                      class="btn btn-sm primary-btn-less-round-blue fw-bold"
+                      @click="editFollow('follow')"
+                    >
+                      + Follow
+                    </button>
+                  </div>
+
+                  <p class="mobile-view-hide mobile-rating-smaller-text-2 mt-2">
+                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi sodales enim in elementum tincidunt.  Sed vel pulvinar velit.
+                  </p>
+                </div>
+
+                <!-- 3. USER STATS -->
+                <div class="col-11 col-md-4 mt-3 mt-md-0 mobile-px-0">
+                  <div class="row text-center">
+                    <div class="col-4">
                       <router-link
-                          :to="`/profile/user/${displayUserID}/${displayUser.username}/allreviews`"
-                          class="text-decoration-none text-dark"
-                        >
-                      <div>
-                        <h3 class="mb-0"><b>{{ totalReviewsCount }}</b></h3>
-                        <b>reviews</b>
-                      </div>
-                    </router-link>
-                    </div>
-                    <div class="col-4 ps-1">
-                       <router-link
-                          :to="`/profile/user/${displayUserID}/${displayUser.username}/allfollowingfollowers`"
-                          class="text-decoration-none text-dark"
-                        >
-                        <div>
-                          <h3 class="mb-0"><b>{{ followersCount }}</b></h3>
-                          <b>followers </b>
-                        </div>
+                        :to="`/profile/user/${displayUserID}/${displayUser.username}/allreviews`"
+                        class="text-decoration-none text-dark"
+                      >
+                        <h3 class="mb-1 fw-bold">{{ totalReviewsCount }}</h3>
+                        <small>reviews</small>
                       </router-link>
                     </div>
                     <div class="col-4">
                       <router-link
-                          :to="`/profile/user/${displayUserID}/${displayUser.username}/allfollowingfollowers`"
-                          class="text-decoration-none text-dark"
-                        >
-                      <div>
-                        <h3 class="mb-0"><b>{{ followingCount }}</b></h3>
-                        <b>following</b>
-                      </div>
-                    </router-link>
+                        :to="`/profile/user/${displayUserID}/${displayUser.username}/allfollowingfollowers`"
+                        class="text-decoration-none text-dark"
+                      >
+                        <h3 class="mb-1 fw-bold">{{ followersCount }}</h3>
+                        <small>followers</small>
+                      </router-link>
+                    </div>
+                    <div class="col-4">
+                      <router-link
+                        :to="`/profile/user/${displayUserID}/${displayUser.username}/allfollowingfollowers`"
+                        class="text-decoration-none text-dark"
+                      >
+                        <h3 class="mb-1 fw-bold">{{ followingCount }}</h3>
+                        <small>following</small>
+                      </router-link>
                     </div>
                   </div>
                 </div>
+
+                
               </div>
-
             </div>
 
-            <div>
-                <!-- User Title: Moderator Badges -->
-                <button
-                  v-if="displayUser && displayUser.modType && displayUser.modType.length > 0"
-                  data-bs-toggle="modal"
-                  data-bs-target="#moderatormodal"
-                  class="btn btn-warning hover-button mt-1 px-3 me-3"
-                  style="border-radius: 20px; font-size: 0.8rem"
-                >
-                  ★ Moderator
-                </button>
-                <!-- User Title (ambassador) -->
-                <span 
-                  v-if="displayUser && displayUser.ambassador === true" 
-                  class="badge rounded-pill ms-2"
-                  style="background-color: #ff3e31; color: white">
-                  Ambassador
-                </span>
-                <!-- User Title (category expert) -->
-                <span 
-                  v-if="displayUser && displayUser.categoryExpert" 
-                  class="badge rounded-pill ms-2"
-                  style="background-color: #5D83D9; color: white">
-                  {{ displayUser.categoryExpert }}
-                </span>
-                <!-- Add this temporarily to debug -->
-                <div style="display: none;">
-                  {{ displayUser && typeof displayUser.ambassador }} - 
-                  {{ displayUser && JSON.stringify(displayUser.ambassador) }}
-                </div>
             </div>
-
-            <!-- additional information -->
-            <div class="mt-3">
+            
+            <!-- USER BIO - MOBILE  -->
+            <p class="mobile-view-show mt-3 mb-2">
+              Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi sodales enim in elementum tincidunt.  Sed vel pulvinar velit. 
+            </p>
+            <!-- USER BIO AND MODERATOR / AMBASSADOR -->
+            <div class="d-flex flex-wrap gap-2">
+              <!-- User Title: Moderator Badge -->
+              <button
+                v-if="displayUser && displayUser.modType && displayUser.modType.length > 0"
+                data-bs-toggle="modal"
+                data-bs-target="#moderatormodal"
+                class="badge rounded-pill"
+                style="background-color: #f0b358; color: black; border: 0px;"
+              >
+                ★ Moderator
+              </button>
+              <!-- Ambassador -->
+              <span
+                v-if="displayUser && displayUser.ambassador === true"
+                class="badge rounded-pill"
+                style="background-color: #ff3e31; color: white"
+              >
+                Ambassador
+              </span>
+              <!-- Category Expert -->
+              <span
+                v-if="displayUser && displayUser.categoryExpert"
+                class="badge rounded-pill"
+                style="background-color: #5D83D9; color: white"
+              >
+                {{ displayUser.categoryExpert }}
+              </span>
+            </div>
+            <!-- Additional Information: RANK, POINTS, DRINK OF CHOICE -->
+            <div class="mt-2">
               <div class="row">
                 <div class="col-5">
                   <b>Rank</b>
@@ -134,6 +166,7 @@
                   <span> {{ proofPoints }} pts </span>
                 </div>
               </div>
+              <!--
               <div class="row mobile-view-hide">
                 <div class="col-5 ">
                   <b>Member Since</b>
@@ -142,6 +175,7 @@
                   {{ joinDate }}
                 </div>
               </div>
+              -->
               <div class="row">
                 <div class="col-5">
                   <b>Drink of Choice</b>
@@ -151,7 +185,7 @@
                   <span v-else>{{ displayUserDrinkChoice }}</span>
                 </div>
               </div>
-              <!-- Display Chosen Flavour Tags Start  (NOT ON MOBILE)-->
+              <!-- Display Chosen Flavour Tags Start  (NOT ON MOBILE)
               <div class="row mobile-view-hide">
                 <div class="col-5">
                   <b>Flavour Choice</b>
@@ -161,45 +195,14 @@
                   <span v-else>{{ Array.isArray(selectedFlavours) ? selectedFlavours.join(", ") : selectedFlavours }}</span>
                 </div>
               </div>
-              
+              -->
               
 
             </div>
 
 
-            <!-- Top row -->
-            <div class="row mt-0 gx-2"> <!-- use gx-2 to match bottom if you like -->
-              <div class="col-12">
-                <router-link
-                  v-if="ownProfile && user"
-                  :to="{ path: '/dashboard/user/' + userID }"
-                  class="btn primary-btn-less-round-blue btn-md mt-3 w-100 mobile-view-hide"
-                  style="font-weight: bold"
-                >
-                  View My Stats
-                </router-link>
-
-                <button
-                  v-else-if="following && user"
-                  type="button"
-                  class="mt-3 btn primary-btn-outline-less-round w-100"
-                  @click="editFollow('unfollow')"
-                >
-                  Following
-                </button>
-
-                <button
-                  v-else-if="user"
-                  type="button"
-                  class="mt-3 btn primary-btn-less-round-blue w-100"
-                  @click="editFollow('follow')"
-                  style="font-weight: bold"
-                >
-                  + Follow User
-                </button>
-              </div>
-            </div>
-            <!-- buttons for MOBILE -->
+            
+            <!-- buttons for MOBILE 
             <div class="row mobile-view-show">
               <div class="col-6" v-if="ownProfile && user">
                 <router-link
@@ -245,6 +248,9 @@
                 
               </div>
             </div>
+            -->
+
+
             <!-- buttons (DESKTOP ONLY) -->
             <div class="row mt-0">
               <span

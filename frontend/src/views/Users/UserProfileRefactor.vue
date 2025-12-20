@@ -4,15 +4,19 @@
   <!-- User Profile Header and Navigation (always visible) -->
   <div v-if="displayUserID && routeUsername" class="userprofile mt-5 mobile-mt-3">
     <div class="container text-start">
-      <div class="row">
-        <div class="userprofile mt-5 mobile-mt-3">
           <UserProfileHeader />
-        </div>
       </div>
-    </div>
     
+    <br>
+    <div v-if="totalReviewsCount > 0" class="container mobile-view-show" style="background-color:wheat">
+      <p class="text-start fw-bold mobile-spacer pt-2">Ratings Spread</p>
+      <div class="mobile-spacer pb-1" style="max-height: 100px;">
+        <Bar :data="ratingsData" :options="ratingsChartOptions" />
+      </div>
+      
+    </div>
     <!-- User Profile Navigation -->
-     <div class="container text-start">
+     <div class="container text-start" style="background-color: #83a9e8">
     <UserProfileNavbar :userID="displayUserID" :username="routeUsername" />
     </div>
   </div>
@@ -44,358 +48,37 @@
   >
     <div class="container text-start">
       <div class="row">
-        <div class="col-12 col-md-4 mb-0 pb-2">
-            <!-- badges -->
-            <div class="mt-4 mobile-view-hide">
-              <h5 class="mobile-view-hide" style="font-weight:bold">Badges Unlocked</h5>
-              <hr />
-              <div v-if="!userBadges || userBadges.length === 0">
-                No badges unlocked yet. 
-                <router-link to="/badges-and-points" style="color: inherit; text-decoration: underline;">
-                  Click here to find out how badges are earned on Drink-X.
-                </router-link>
-              </div>
-
-              <div v-else class="container text-center mb-3">
-                <div class="row">
-                  <div 
-                    class="mobile-col-3 col-4 p-2 mobile-pt-0 mobile-pb-0 mobile-pe-2 mobile-mb-2"
-                    v-for="(badge, index) in userBadges.slice(0, 9)" 
-                    :key="badge.id"
-                  >
-                    <!-- Badge image with hover effect -->
-                    <div class="position-relative badge-container" :key="index">
-                      <img
-                        :src="badge.badgePhoto || defaultProfilePhoto"
-                        alt="badge image"
-                        class="rounded-circle-white-bg border border-dark badge-img"
-                        style="width: 100%; max-width: 80px; height: auto;"
-                      />
-                      <div class="badge-hover-text">
-                        {{ badge.badgeName }} (Level {{ badge.currentLevel }})
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div v-if="userBadges && userBadges.length > 0">
-                <button 
-                  v-if="userBadges && userBadges.length > 0"
-                  @click="switchTab('badges')" 
-                  class="btn btn-link p-0 text-dark "
-                >
-                  View all badges
-                </button>
-              </div>
-            </div>
-
-            <!-- Drink I've Reviewed -->
-            <div class="mt-4 mobile-view-hide">
-              
-             <h5 class="mobile-view-hide" style="font-weight:bold">{{ totalReviewsCount }} Drinks Reviewed</h5>
-              <p class="mobile-view-show"><strong>{{ totalReviewsCount }} Drinks Reviewed</strong></p>
-              <hr />
-              <div v-if="!publicRecentReviews || publicRecentReviews.length === 0">
-                <span v-if="ownProfile">You have no drink reviews added yet. Get started by searching for a drink and adding your review!</span>
-                <span v-else-if="!recentReviews || recentReviews.length === 0">No drink reviews logged yet.</span>
-                <span v-else>No recent public drink reviews</span>
-              </div>
-
-              <div v-else class="container text-center mb-3">
-                <div class="row">
-                  <div 
-                    class="mobile-col-3 col-4 p-2 mobile-pt-0 mobile-pb-0 mobile-pe-2 mobile-mb-2"
-                    v-for="(review, index) in publicRecentReviews.slice(0, 3)" 
-                    :key="review.id"
-                  >
-                    <!-- Review image with squared border -->
-                    <div class="position-relative review-container" :key="index">
-                      <a
-                        :href="'/listing/view/' + review.reviewTarget + '/' + encodeURIComponent(getListingName(review.reviewTarget) || 'unknown-listing')"
-                        style="text-decoration: none; color: inherit;"
-                      >
-                        <!-- Image wrapper with notch overlay for private reviews -->
-                        <div style="position: relative; display: inline-block; border-radius: 10px; overflow: hidden;">
-                          <!-- Notch Overlay for Private Review -->
-                          <div v-if="!review.isPublic" class="item-notch item-notch-private">
-                            <div class="notch-content">
-                              <span class="notch-icon"><i class="bi bi-eye-slash"></i></span>
-                              <span class="notch-text">Private</span>
-                            </div>
-                          </div>
-                          
-                          <img
-                            :src="review.photo || defaultDrinkImage"
-                            alt="review image"
-                            class="rounded review-img"
-                            style="width: 100%; max-width: 80px; height: 80px; object-fit: cover;"
-                          />
-                        </div>
-                        <div class="review-text mt-2" style="font-size: 0.8rem; text-align: center;">
-                          <div style="font-weight: bold; margin-bottom: 2px;">{{ getListingName(review.reviewTarget) || 'Unknown Drink' }}</div>
-                          <div style="color: #666; margin-bottom: 2px;">{{ getListingDrinkType(review.reviewTarget) || 'Unknown Type' }}</div>
-                          <div style="color: #888; font-size: 0.75rem;">{{ getListingProducerName(review.reviewTarget) || 'Unknown Producer' }}</div>
-                        </div>
-                      </a>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-             <router-link
-                :to="`/profile/user/${displayUserID}/${displayUser.username}/allreviews`"
-                class="text-dark text-decoration-underline"
-              >
-                View all reviewed drinks
-              </router-link>
-            </div>
-
-
-            <!-- Recently Followed Users -->
-            <div class="mt-4 mobile-view-hide">
-              <h5 class="mobile-view-hide" style="font-weight:bold">{{ followingCount }} Following</h5>
-              <p class="mobile-view-show"><strong>{{ followingCount }} Following</strong></p>
-              <hr />
-              <div v-if="loadingFollowingUsers" class="text-center">
-                Loading following users...
-              </div>
-              <div v-else-if="errorFollowingUsers" class="text-danger">
-                {{ errorFollowingUsers }}
-              </div>
-              <div v-else-if="!followingUsers || followingUsers.length === 0">
-                {{ ownProfile ? 'You have not followed anyone yet. Invite your friends to Drink-X to see what they are drinking lately!' : 'User is not following anyone yet.' }}
-              </div>
-
-              <div v-else class="container text-center mb-3">
-                <div class="row">
-                  <div 
-                    class="mobile-col-3 col-4 p-2 mobile-pt-0 mobile-pb-0 mobile-pe-2 mobile-mb-2"
-                    v-for="(user, index) in followingUsers.slice(0, 3)" 
-                    :key="`following-${user.id || index}`"
-                  >
-                    <!-- User profile with circular border -->
-                    <div class="position-relative user-container" :key="index">
-                      <a
-                        :href="`/profile/user/${user.id}/${user.username}`"
-                        style="text-decoration: none; color: inherit;"
-                      >
-                        <img
-                          :src="user.photo || defaultProfilePhoto"
-                          alt="user profile photo"
-                          class="rounded-circle user-img"
-                          style="width: 100%; max-width: 80px; height: 80px; object-fit: cover;"
-                        />
-                        <div class="user-text mt-2" style="font-size: 0.8rem; text-align: center;">
-                          <div style="font-weight: bold; margin-bottom: 2px;">@{{ user.username }}</div>
-                        </div>
-                      </a>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Recent Followers -->
-            <div class="mt-4 mobile-view-hide">
-              <h5 class="mobile-view-hide" style="font-weight:bold">{{ followersCount }} Followers</h5>
-              <p class="mobile-view-show"><strong>{{ followersCount }} Followers</strong></p>
-              <hr />
-              <div v-if="loadingFollowersUsers" class="text-center">
-                Loading followers...
-              </div>
-              <div v-else-if="errorFollowersUsers" class="text-danger">
-                {{ errorFollowersUsers }}
-              </div>
-              <div v-else-if="!followersUsers || followersUsers.length === 0">
-                {{ ownProfile ? `Don't drink alone! Invite your friends on Drink-X to share what you're drinking lately!` : "No followers yet." }}
-
-              </div>
-
-              <div v-else class="container text-center mb-3">
-                <div class="row">
-                  <div 
-                    class="mobile-col-3 col-4 p-2 mobile-pt-0 mobile-pb-0 mobile-pe-2 mobile-mb-2"
-                    v-for="(user, index) in followersUsers.slice(0, 3)" 
-                    :key="`follower-${user.id || index}`"
-                  >
-                    <!-- User profile with circular border -->
-                    <div class="position-relative user-container" :key="index">
-                      <a
-                        :href="`/profile/user/${user.id}/${user.username}`"
-                        style="text-decoration: none; color: inherit;"
-                      >
-                        <img
-                          :src="user.photo || defaultProfilePhoto"
-                          alt="user profile photo"
-                          class="rounded-circle user-img"
-                          style="width: 100%; max-width: 80px; height: 80px; object-fit: cover;"
-                        />
-                        <div class="user-text mt-2" style="font-size: 0.8rem; text-align: center;">
-                          <div style="font-weight: bold; margin-bottom: 2px;">@{{ user.username }}</div>
-                        </div>
-                      </a>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- View All Friends Link -->
-            <div class="mt-4 mobile-view-hide">
-                <router-link
-                  :to="`/profile/user/${displayUserID}/${displayUser.username}/allfollowingfollowers`"
-                  class="text-dark text-decoration-underline"
-                >
-                  View all friends
-                </router-link>
-            </div>
-
-
-            <!-- My Recent ACtivity -->
-            <div v-if="ownProfile" class="mt-4 mobile-mt-0">
-              <h5 class="mobile-view-hide" style="font-weight:bold">Recent Activity</h5>
-              <div class="mb-4 collapse d-lg-block" id="recentactivityCollapse">
-                <div>
-                    <div class="square-inline">
-                        <p class="fw-bold text-start my-2">Your Recent Activity</p>
-                    </div>
-                    <div class="feed-body mobile-rating-smaller-text-2 pb-2">
-                        <!-- Loading State -->
-                        <div v-if="loadingRecentUserActivity" class="text-center pb-1">
-                            <div class="spinner-border spinner-border-sm text-dark me-2" role="status">
-                                <span class="visually-hidden">Loading...</span>
-                            </div>
-                            <span class="text-muted">Loading recent activity...</span>
-                        </div>
-
-                        <!-- Error State -->
-                        <div v-else-if="errorRecentUserActivity" class="text-center pb-1">
-                            <div class="text-danger">
-                                <i class="fas fa-exclamation-triangle me-2"></i>
-                                {{ errorRecentUserActivity }}
-                            </div>
-                        </div>
-
-                        <!-- Empty State -->
-                        <div v-else-if="!recentUserActivity || recentUserActivity.length === 0" class="pb-1">
-                            No recent activity.
-                        </div>
-
-                        <!-- Activity List -->
-                        <div v-else class="overflow-auto" style="max-height: 100%;">
-                            <div v-for="activity in recentUserActivity" :key="activity.id || activity.date" class="pb-1">
-                                <!-- Your Activity -->
-                                <div v-if="activity.type === 'review'">
-                                    You rated <b><router-link :to="listingUrl(activity)" class="primary-clickable-text" style="color: rgb(2, 117, 98)"><u>{{ activity.listingName }}</u></router-link> <span style="color: rgb(2, 117, 98)">{{ activity.rating }} stars</span></b> {{ getTimeDifference(activity.date) }}
-                                </div>
-                                <div v-else-if="activity.type === 'list_add'">
-                                    You added <b><router-link :to="listingUrl(activity)" class="primary-clickable-text" style="color: rgb(2, 117, 98)"><u>{{ activity.listingName }}</u></router-link></b> to your list: <b><router-link :to="listUrl(activity)" class="primary-clickable-text"><u><span style="color: rgb(2, 117, 98);">{{ activity.listName }}</span></u></router-link></b><br />{{ getTimeDifference(activity.date) }}
-                                </div>
-                                <div v-if="activity.type === 'follow'">
-                                    You started following
-                                    <router-link :to="profileUrl(activity)" class="reverse-clickable-text" style="color: rgb(2, 117, 98)">
-                                      @<b>{{ activity.username }}</b>
-                                    </router-link>
-                                    {{ getTimeDifference(activity.date) }}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div>
-                    <div class="square-inline">
-                        <p class="fw-bold text-start">Recent Activity on Your Reviews</p>
-                    </div>
-                    <div class="feed-body mobile-rating-smaller-text-2 pb-2">
-                        <!-- Loading State -->
-                        <div v-if="loadingRecentReviewsActivity" class="text-center pb-1">
-                            <div class="spinner-border spinner-border-sm text-dark me-2" role="status">
-                                <span class="visually-hidden">Loading...</span>
-                            </div>
-                            <span class="text-muted fst-italic">Loading recent activity...</span>
-                        </div>
-
-                        <!-- Error State -->
-                        <div v-else-if="errorRecentReviewsActivity" class="text-center pb-1">
-                            <div class="text-danger">
-                                <i class="fas fa-exclamation-triangle me-2"></i>
-                                {{ errorRecentReviewsActivity }}
-                            </div>
-                        </div>
-
-                        <!-- Empty State -->
-                        <div v-else-if="!recentReviewsActivity || recentReviewsActivity.length === 0" class="pb-1">
-                            No recent activity.
-                        </div>
-
-                        <!-- Activity List -->
-                        <div v-else class="overflow-auto" style="max-height: 100%;">
-                            <div v-for="activity in recentReviewsActivity" :key="activity.id || activity.date" class="pb-2">
-                                <!-- Activity on Your Reviews -->
-                                <div v-if="activity.type === 'upvote' || activity.type === 'downvote'">
-                                    <router-link :to="profileUrl(activity)" class="primary-clickable-text" style="color: rgb(2, 117, 98)">@<b>{{ activity.username }}</b></router-link> <span :style="{ color: activity.type === 'upvote' ? '#90ee90' : 'black' }">{{ activity.type }}d</span> your review of <router-link :to="listingUrl(activity, activity.reviewTarget)" class="clickable-text" style="color: rgb(2, 117, 98)"><u>{{ activity.listingName }}</u></router-link> {{ getTimeDifference(activity.date) }}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div>
-                    <div class="square-inline pb-2">
-                        <p class="fw-bold text-start">Recent Activity from Your Followers</p>
-                    </div>
-                    <div class="feed-body mobile-rating-smaller-text-2">
-                        <!-- Loading State -->
-                        <div v-if="loadingRecentFollowersActivity" class="text-center pb-1">
-                            <div class="spinner-border spinner-border-sm text-dark me-2" role="status">
-                                <span class="visually-hidden">Loading...</span>
-                            </div>
-                            <span class="text-muted">Loading recent activity...</span>
-                        </div>
-
-                        <!-- Error State -->
-                        <div v-else-if="errorRecentFollowersActivity" class="text-center pb-1">
-                            <div class="text-danger">
-                                <i class="fas fa-exclamation-triangle me-2"></i>
-                                {{ errorRecentFollowersActivity }}
-                            </div>
-                        </div>
-
-                        <!-- Empty State -->
-                        <div v-else-if="!recentFollowersActivity || recentFollowersActivity.length === 0" class="pb-1">
-                            No recent activity.
-                        </div>
-
-                        <!-- Activity List -->
-                        <div v-else class="overflow-auto" style="max-height: 100%;">
-                            <div v-for="activity in recentFollowersActivity" :key="activity.id || activity.date" class="pb-2">
-                                <!-- Follower Activity -->
-                                <div v-if="activity.type === 'follow'">
-                                    <router-link :to="profileUrl(activity)" class="primary-clickable-text" style="color: rgb(2, 117, 98)">@<b>{{ activity.username }}</b></router-link> started following you {{ getTimeDifference(activity.date) }}
-                                </div>
-                                <div v-else-if="activity.type === 'tag'">
-                                    <router-link :to="profileUrl(activity)" class="primary-clickable-text" style="color: rgb(2, 117, 98)">@<b>{{ activity.username }}</b></router-link> tagged you in a review of <router-link :to="listingUrl(activity)" class="primary-clickable-text" style="color: rgb(2, 117, 98)"><u>{{ activity.listingName }}</u></router-link> {{ getTimeDifference(activity.date) }}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>   
-              </div> 
-            </div>
-            <!-- Events
-            <div class="mt-3 mobile-view-hide">
-              <EventBox
-                :selfView="ownProfile"
-                :targetUserID="displayUserID"
-                targetUserType="user"
-              />
-            </div>-->
+        <div class="col-12 col-md-8 mb-0 pb-2">
+            
           
-          
+                <ListingRowDisplayUserProfile
+                  :topRatedReviews="publicFormattedRecentReviews.slice(0, 6)"
+                  :producers="producers"
+                  :subTags="subTags"
+                  :flavourTags="flavourTags"
+                  :ownProfile="ownProfile"
+                  :userID="displayUserID"
+                  :username="routeUsername"
+                  displayName="Recently Tasted Drinks"
+                  columnWidth="165px"
+                />
+                <br>
+
+                <ListingRowDisplayUserProfile
+                  :topRatedReviews="publicTopRatedReviews.slice(0, 6)"
+                  :producers="producers"
+                  :subTags="subTags"
+                  :flavourTags="flavourTags"
+                  :ownProfile="ownProfile"
+                  :userID="displayUserID"
+                  :username="routeUsername"
+                  displayName="Highest Rated Drinks"
+                  columnWidth="80px"
+                />          
         </div>
         
         <!-- Mobile Toggle Button (only visible below 992px) -->
-        <div v-if="ownProfile" class="row d-lg-none">
+        <div v-if="ownProfile" class="row d-lg-none mobile-view-hide">
           <div class="col-12">
             <button 
               class="ms-3 btn primary-btn-outline-less-round w-100 text-start d-flex justify-content-between align-items-center welcome-toggle mobile-mt-1"
@@ -412,7 +95,7 @@
         </div>
 
         <!-- Welcome section and Reviews/Lists -->
-        <div class="col-12 col-md-8 mobile-mt-3">
+        <div class="col-12 col-md-4 mobile-mt-3 ">
           <!-- Welcome Section -->
           <div v-if="ownProfile"
             style="
@@ -421,12 +104,12 @@
               padding: 16px;
               background-color: #ffffff;
             "
-            class="mb-4 Xmobile-view-hide collapse d-lg-block" 
+            class="mb-4 Xmobile-view-hide collapse d-lg-block mobile-view-show" 
             id="welcomeCollapse"
             >
 
             <!-- Welcome section -->
-            <div style="margin-bottom: 24px" class="mobile-view-hide" >
+            <div style="margin-bottom: 24px" class="mobile-view-show" >
               <div
                 style="
                   position: relative;
@@ -833,169 +516,60 @@
             </div>
             
           </div>
+          <!-- RATINGS SKEW -->
 
-          <!--Events Nearby Section--> 
-          <section v-if="ownProfile && user && upcomingEvents.length > 0" class="dx-events card">
-            <header class="dx-events__header w-100">
-              <h3 class="dx-events__title">📍 Check Out Events Near You</h3>
-            </header>
-
-            <div class="dx-events__body w-100">
-              <article v-for="event in upcomingEvents" :key="event.eventId" class="dx-event">
-                <a 
-                  class="dx-event__media" 
-                  :href="getVenueProfileUrl(event.venueId, event.venueName)" 
-                  :aria-label="event.eventName"
+          <div class="mobile-spacer mobile-view-hide">
+                <div class="d-flex justify-content-between pt-1">
+                <div class="text-start"><h5 class="text-body-secondary fw-bold">Ratings Spread</h5></div>
+                <router-link
+                  v-if="ownProfile"
+                  :to="`/dashboard/user/${userID}`"
+                  class="text-end text-muted text-decoration-none"
                 >
-                  <img
-                    class="dx-event__img"
-                    :src="event.venuePhoto || defaultVenueImage"
-                    :alt="event.eventName + ' poster'"
-                    loading="lazy"
-                  />
-                </a>
-
-                <div class="dx-event__content">
-                  <h3 class="dx-event__name">
-                    <a :href="getVenueProfileUrl(event.venueId, event.venueName)">
-                      {{ event.eventName }}
-                    </a>
-                  </h3>
-                  <p class="dx-event__meta">
-                    <em>{{ formatEventDates(event.eventStartDate, event.eventEndDate) }}</em>
-                    <span v-if="event.originLocation"> • {{ event.originLocation }}</span>
-                  </p>
-                  <p v-if="event.eventDesc" class="dx-event__desc">{{ event.eventDesc.length > 95 ? event.eventDesc.substring(0, 95) + '...' : event.eventDesc }}</p>
-                </div>
-              </article>
-            </div>
-          </section>
-
-
-          <!-- reviews and lists -->
-          <div :class="{ 'mt-2': ownProfile }">
-            <!-- reviews button -->
-            <button
-              class="btn fw-bold no-hover"
-              :class="{
-                'mobile-toggle-button-producer-profile active-toggle-button':
-                  activeTab === 'reviews',
-                'mobile-toggle-button-producer-profile inactive-toggle-button':
-                  activeTab !== 'reviews',
-              }"
-              @click="switchTab('reviews')"
-            >
-              Reviews
-            </button>
-
-            <!-- cellar button -->
-            <button
-              class="btn fw-bold no-hover"
-              :class="{
-                'mobile-toggle-button-producer-profile active-toggle-button':
-                  activeTab === 'cellar',
-                'mobile-toggle-button-producer-profile inactive-toggle-button':
-                  activeTab !== 'cellar',
-              }"
-              @click="switchTab('cellar')"
-            >
-              Cellar
-            </button>
-
-            <!-- drink list button -->
-            <button
-              class="btn  fw-bold no-hover"
-              :class="{
-                'mobile-toggle-button-producer-profile active-toggle-button':
-                  activeTab === 'lists' || activeTab === 'list' || activeTab === 'producer_lists' || activeTab === 'producer_list' || activeTab === 'venue_lists' || activeTab === 'venue_list',
-                'mobile-toggle-button-producer-profile inactive-toggle-button':
-                  activeTab !== 'lists' && activeTab !== 'list' && activeTab !== 'producer_lists' && activeTab !== 'producer_list' && activeTab !== 'venue_lists' && activeTab !== 'venue_list',
-              }"
-              @click="switchTab('lists')"
-            >
-              <span v-if="ownProfile">My Lists</span>
-              <span v-if="!ownProfile">Lists</span>
-            </button>
-
-            <!-- My Badges button -->
-            <button
-              class="btn  fw-bold no-hover"
-              :class="{
-                'mobile-toggle-button-producer-profile active-toggle-button':
-                  activeTab === 'badges',
-                'mobile-toggle-button-producer-profile inactive-toggle-button':
-                  activeTab !== 'badges',
-              }"
-              @click="switchTab('badges')"
-            >
-              <span>My Badges</span>
-            </button>
-
-            <!-- Tab Section -->
-            <div class="tab-content container mt-2 mobile-py-2">
-              <!-- reviews tab -->
-              <div v-if="activeTab == 'reviews'" id="reviews">
-                <!-- View All Reviews Button -->
-                <div v-if="recentReviews && recentReviews.length > 0" class="mb-4 mobile-view-hide">
-                  <router-link 
-                    :to="`/profile/user/${displayUserID}/${routeUsername}/allreviews`"
-                    class="btn fw-bold primary-btn-less-round-blue xprimary-btn-outline-less-round"
-                  >
-                    View All Reviews
-                  </router-link>
-                </div>
-                <ListingRowDisplayUserProfile
-                  :topRatedReviews="publicFormattedRecentReviews"
-                  :producers="producers"
-                  :subTags="subTags"
-                  :flavourTags="flavourTags"
-                  :ownProfile="ownProfile"
-                  displayName="Latest Reviewed Drinks"
-                  columnWidth="165px"
-                />
-                <br>
-
-                <ListingRowDisplayUserProfile
-                  :topRatedReviews="publicTopRatedReviews"
-                  :producers="producers"
-                  :subTags="subTags"
-                  :flavourTags="flavourTags"
-                  :ownProfile="ownProfile"
-                  displayName="Highest Rated Drinks"
-                  columnWidth="165px"
-                />
-                
-                
-                
-                <br>
+                  VIEW STATS →
+                </router-link>
               </div>
-
-              <!-- cellar tab -->
-              <div v-if="activeTab == 'cellar'" id="cellar">
-                <!-- Collection Overview -->
-                <div v-if="!viewingCellarCollection">
-                  <!-- Create New Collection Button -->
-                  <router-link
+            <hr />
+                <div class="chart-container">
+                  <Bar :data="ratingsData" :options="ratingsChartOptions" />
+                </div>
+          </div>
+          <br>
+          <!-- DIGITAL CELLAR -->
+          <div class="mobile-spacer">
+            <div class="d-flex justify-content-between pt-1">
+                <div class="text-start"><h5 class="text-body-secondary fw-bold">Digital Cellar</h5></div>
+                <router-link
                     v-if="ownProfile"
                     :to="`/my-cellar/user/${displayUserID}/${routeUsername}`"
-                    class="btn fw-bold primary-btn-less-round-blue xprimary-btn-outline-less-round mb-3"
-                  >
+                    class="fw-bold primary-btn-less-round-blue px-2 py-1 text-decoration-none"
+                >
                     Manage Cellar
                   </router-link>
-                
+                  <router-link
+                    v-else
+                    :to="`/profile/user/${displayUserID || userID}/${routeUsername || username}/stories`"
+                    class="text-end text-muted text-decoration-none"
+                  >
+                    VIEW ALL →
+                  </router-link>
+            </div>
+            <hr />
+            <!-- Collection Overview -->
+            <div>
                 <!-- Display all cellar collections -->
                 <div v-if="Object.keys(displayUserCellarCollections).length > 0" class="row g-3">
                   <div
                     v-for="(cellarCollection, name) in displayUserCellarCollections"
                     :key="name"
-                    class="col-12 col-md-6"
+                    class="col-12"
                   >
-                    <div
-                      class="pin-card h-100"
-                      @click="viewCellarCollection(name)"
-                      role="button"
-                      tabindex="0"
-                    >
+                   <div
+                    class="pin-card h-100"
+                    @click="$router.push(`/profile/user/${displayUserID || userID}/${routeUsername || username}/stories`)"
+                    role="button"
+                    tabindex="0"
+                  >
                       <!-- 3-image grid -->
                       <div class="pin-grid">
                         <!-- Main (first item) -->
@@ -1037,7 +611,15 @@
                       <div class="pin-body">
                         <!-- Meta -->
                         <div class="pin-meta">
-                          <h5 class="pin-title">{{ name }}</h5>
+                          <router-link
+                            :to="`/profile/user/${displayUserID || userID}/${routeUsername || username}/stories`"
+                            class="text-decoration-underline"
+                            style="color:black"
+                          >
+                            <h5 class="pin-title">
+                              {{ name }}
+                            </h5>
+                          </router-link>
                           <div class="pin-count">
                             {{ getTotalCellarItemCount(cellarCollection) }}
                             {{ getTotalCellarItemCount(cellarCollection) === 1 ? 'Bottle' : 'Bottles' }}
@@ -1054,23 +636,15 @@
                             <small>{{ cellarCollection.isPublic ? 'Public' : 'Private' }} collection</small>
                           </div>
                         </div>
-                        <div class="pin-actions">
-                          <b>
-                            <a
-                              class="me-2 my-3"
-                              @click="viewCellarCollection(name)"
-                              href="#"
-                              style="color: #027562"
-                            >View</a>
-                          </b>
-                        </div>
+                        
+
                       </div>
                     </div>
                   </div>
                 </div>
                 
                 <!-- Empty state for no collections -->
-                <div v-else-if="cellarDataLoaded" class="text-center py-4">
+                <div v-else-if="cellarDataLoaded" class="text-center py-2">
                   <div class="text-muted">
                     <i class="bi bi-archive" style="font-size: 3rem;"></i>
                     <h5 class="mt-3">No Cellar Collections</h5>
@@ -1084,241 +658,69 @@
                   <div class="spinner-border spinner-border-sm me-2"></div>
                   Loading cellar data...
                 </div>
-                </div>
+            </div>
 
-                <!-- Collection Detail View -->
-                <div v-else>
-                  <!-- Back button and collection header -->
-                  <div class="d-flex align-items-center justify-content-between mb-4">
-                    <div class="d-flex align-items-center">
-                      <button 
-                        class="btn btn-outline-secondary me-3"
-                        @click="backToCellarCollections()"
-                      >
-                        <i class="bi bi-arrow-left"></i> Back to Collections
-                      </button>
-                      <div>
-                        <h4 class="mb-0">{{ selectedCellarCollection }}</h4>
-                        <small class="text-muted">
-                          {{ groupedCellarItems.length }} 
-                          {{ groupedCellarItems.length === 1 ? 'variant' : 'variants' }}
-                          ({{ selectedCellarCollectionItems.length }} total {{ selectedCellarCollectionItems.length === 1 ? 'item' : 'items' }})
-                        </small>
-                      </div>
-                    </div>
-                    
-                    <!-- Share Button -->
-                    <button 
-                      v-if="selectedCellarCollectionData && selectedCellarCollectionData.isPublic"
-                      class="btn btn-outline-primary"
-                      @click="shareCellarCollection()"
-                      title="Share this collection"
-                    >
-                      <i class="bi bi-reply share-icon"></i> Share
-                    </button>
-                  </div>
-
-                  <!-- Items Grid -->
-                  <div class="row" v-if="groupedCellarItems.length > 0">
-                    <div 
-                      v-for="group in groupedCellarItems" 
-                      :key="group.representative.cellarItemId"
-                      class="col-12 col-md-6 col-lg-4 mb-3"
-                    >
-                      <div class="card cellar-item-card h-100">
-                        <!-- Image Area -->
-                        <div class="card-img-container" style="width:100%;">
-                          <img 
-                            :src="getItemImageUrl(group.representative)"
-                            :alt="group.representative.listingName"
-                            class="card-img-top"
-                          >
-                          <!-- Quantity and Volume Badge -->
-                          <div class="quantity-volume-badge">
-                            {{ group.itemCount }} {{ getContainerType(group.representative.drinkFormat, group.itemCount).toLowerCase() }}{{ getVolumeText(group.representative) }}
-                          </div>
-                        </div>
-
-                        <!-- Info Band -->
-                        <div class="card-body text-center">
-                          <div class="card-content">
-                            <!-- Primary Line -->
-                            <h6 class="card-title" :title="group.representative.listingName">
-                              {{ group.representative.listingName }}
-                              <span v-if="group.representative.variant" class="text-muted ms-1">
-                                ({{ group.representative.variant }})
-                              </span>
-                            </h6>
-                            
-                            <!-- Secondary Line -->
-                            <p class="card-subtitle text-muted mb-2">
-                              <span v-if="group.representative.producerName">{{ group.representative.producerName }} | </span>{{ group.representative.drinkType }}<span v-if="group.representative.typeCategory"> | {{ group.representative.typeCategory }}</span>
-                              <span> | 
-                                <span style="color: #f0b358; font-weight: bold;" v-if="group.representative.averageRating">
-                                  {{ group.representative.averageRating }}&nbsp;★
-                                </span>
-                                <span style="color: #f0b358; font-weight: normal;" v-else>
-                                  -&nbsp;★
-                                </span>
-                              </span>
-                            </p>
-
-                            <!-- Status Info -->
-                            <div class="status-info mt-2">
-                              <!-- Status Breakdown -->
-                              <div class="status-breakdown">
-                                <span 
-                                  v-for="(count, status) in getGroupStatusBreakdown(group.items)"
-                                  :key="status"
-                                  class="status-badge badge me-1 mb-2"
-                                  :class="getStatusBadgeClass(status)"
-                                  :title="`${count} bottle${count !== 1 ? 's' : ''} ${status.toLowerCase()}`"
-                                >
-                                  {{ count }}x {{ status }}
-                                </span>
-                              </div>
-                              
-                              <!-- Drink dates -->
-                              <div class="drink-dates mt-1" v-if="group.representative.drinkByDate || group.representative.drinkOnwardsDate">
-                                <small class="text-muted">
-                                  <span v-if="group.representative.drinkOnwardsDate">
-                                    Drink from: {{ formatDate(group.representative.drinkOnwardsDate) }}
-                                  </span>
-                                  <span v-if="group.representative.drinkByDate">
-                                    <br>Drink by: {{ formatDate(group.representative.drinkByDate) }}
-                                  </span>
-                                </small>
-                              </div>
-                              
-                              <!-- Notes -->
-                              <div 
-                                class="card-notes text-muted small mt-2 border rounded p-2 position-relative" 
-                                v-if="group.representative.noteToSelf"
-                                :title="group.representative.noteToSelf"
-                              >
-                                <!-- Note icon -->
-                                <svg class="position-absolute" style="top: 2px; right: 3px; width: 12px; height: 12px; opacity: 0.8;" viewBox="0 0 16 16" fill="#dc3545">
-                                  <path d="M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.777.416L8 13.101l-5.223 2.815A.5.5 0 0 1 2 15.5V2z"/>
-                                </svg>
-                                {{ group.representative.noteToSelf }}
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- Empty state for collection -->
-                  <div v-else class="text-center py-4">
-                    <div class="text-muted">
-                      <i class="bi bi-archive" style="font-size: 3rem;"></i>
-                      <h5 class="mt-3">No Items in Collection</h5>
-                      <p>This collection is currently empty.</p>
-                    </div>
-                  </div>
-                </div>
+          </div>  
+          <br>
+          <!--MY LISTS  -->
+          <div class="mobile-spacer">
+            <div class="d-flex justify-content-between pt-1">
+                <div class="text-start"><h5 class="text-body-secondary fw-bold">My Lists</h5></div>
+                <router-link
+                  :to="`/profile/user/${displayUserID || userID}/${routeUsername || username}/lists`"
+                  class="text-end text-muted text-decoration-none"
+                >
+                  VIEW ALL →
+                </router-link>
               </div>
-
-              <!-- consolidated lists tab -->
-              <div v-if="activeTab == 'lists' || activeTab == 'list' || activeTab == 'producer_lists' || activeTab == 'producer_list' || activeTab == 'venue_lists' || activeTab == 'venue_list'" id="lists">
-                
-                <!-- Sub-navigation for list types -->
-                <div class="mb-3">
-                  <button
-                    class="btn btn-sm mx-1 mb-1 fw-bold"
-                    :class="{
-                      'primary-btn-green': currentListType === 'drinks',
-                      'primary-btn-green-thin-outline': currentListType !== 'drinks'
-                    }"
-                    @click="switchListType('drinks')"
+            <hr />
+            <template
+               v-for="(bookmarkList) in recentBookmarkLists"
+               :key="bookmarkList.name"
+               >
+                <div
+                  v-if="bookmarkList.isPublic || ownProfile"
+                  class="col-12 mb-3"
+               >
+                  <div
+                    class="pin-card h-100"
+                    @click="$router.push(`/profile/user/${displayUserID || userID}/${routeUsername || username}/lists`)"
+                    role="button"
+                    tabindex="0"
                   >
-                    Drinks
-                  </button>
-                  <button
-                    class="btn btn-sm mx-1 mb-1 fw-bold"
-                    :class="{
-                      'primary-btn-green': currentListType === 'producers',
-                      'primary-btn-green-thin-outline': currentListType !== 'producers'
-                    }"
-                    @click="switchListType('producers')"
-                  >
-                    Brands
-                  </button>
-                  <button
-                    class="btn btn-sm mx-1 mb-1 fw-bold"
-                    :class="{
-                      'primary-btn-green': currentListType === 'venues',
-                      'primary-btn-green-thin-outline': currentListType !== 'venues'
-                    }"
-                    @click="switchListType('venues')"
-                  >
-                    Venues
-                  </button>
-                </div>
+                    <!-- 3-image grid -->
+                    <div class="pin-grid mb-2">
+                      <!-- Main (first item) -->
+                      <div class="pin-cell pin-main">
+                      <template v-if="bookmarkList.listItems[0]">
+                        <img
+                          class="pin-img"
+                          :src="getListingPhoto(bookmarkList.listItems[0])"
+                          :alt="`${bookmarkList.name} preview 1`"
+                        />
+                      </template>
+                      <div v-else class="pin-placeholder"></div>
+                      </div>
 
-                <!-- Drinks Lists Content -->
-                <div v-if="currentListType === 'drinks' && (activeTab === 'lists' || activeTab === 'list')">
-                  <!-- Show list overview when activeTab is 'lists' -->
-                  <div v-if="activeTab === 'lists'">
-                    <button
-                        v-if="ownProfile"
-                        type="button"
-                        class="btn fw-bold primary-btn-less-round-blue xprimary-btn-outline-less-round mb-3"
-                        data-bs-toggle="modal"
-                        data-bs-target="#createNewListModal"
-                      >
-                        Create New Drinks List
-                    </button>
-                    <!-- display all drinks lists -->
-                    <div class="row g-3">
-                      <template
-                        v-for="(bookmarkList, name, index) in displayUserBookmarks"
-                        :key="name"
-                      >
-                        <div
-                          v-if="bookmarkList.isPublic || ownProfile"
-                          class="col-12 col-md-6"
-                        >
-                          <div
-                            class="pin-card h-100"
-                            @click="viewList(name)"
-                            role="button"
-                            tabindex="0"
-                          >
-                            <!-- 3-image grid -->
-                            <div class="pin-grid">
-                              <!-- Main (first item) -->
-                              <div class="pin-cell pin-main">
-                                <template v-if="bookmarkList.listItems[0]">
-                                  <img
-                                    class="pin-img"
-                                    :src="getListingPhoto(bookmarkList.listItems[0])"
-                                    :alt="`${name} preview 1`"
-                                  />
-                                </template>
-                                <div v-else class="pin-placeholder"></div>
-                              </div>
-
-                              <!-- Right-top (second item) -->
-                              <div class="pin-cell pin-side1">
+                      <!-- Right-top (second item) -->
+                      <div class="pin-cell pin-side1">
                                 <template v-if="bookmarkList.listItems[1]">
                                   <img
                                     class="pin-img"
                                     :src="getListingPhoto(bookmarkList.listItems[1])"
-                                    :alt="`${name} preview 2`"
+                                    :alt="`${bookmarkList.name} preview 2`"
                                   />
                                 </template>
                                 <div v-else class="pin-placeholder"></div>
                               </div>
 
-                              <!-- Right-bottom (third item) -->
+                      <!-- Right-bottom (third item) -->
                               <div class="pin-cell pin-side2">
                                 <template v-if="bookmarkList.listItems[2]">
                                   <img
                                     class="pin-img"
                                     :src="getListingPhoto(bookmarkList.listItems[2])"
-                                    :alt="`${name} preview 3`"
+                                    :alt="`${bookmarkList.name} preview 3`"
                                   />
                                 </template>
                                 <div v-else class="pin-placeholder"></div>
@@ -1327,7 +729,15 @@
                             <div class="pin-body">
                               <!-- Meta -->
                               <div class="pin-meta">
-                                <h5 class="pin-title">{{ name }}</h5>
+                                <h5 class="pin-title">
+                                  <router-link
+                                    :to="`/profile/user/${displayUserID || userID}/${routeUsername || username}/lists`"
+                                    class="text-decoration-underline"
+                                    style="color:black;"
+                                  >
+                                    {{ bookmarkList.name }}
+                                  </router-link>
+                                </h5>
                                 <div class="pin-count">
                                   {{ bookmarkList.listItems.length }}
                                   {{ bookmarkList.listItems.length === 1 ? 'Drink' : 'Drinks' }}
@@ -1338,1459 +748,263 @@
                                   {{ bookmarkList.listDesc }}
                                 </div>
                               </div>
-                              <div class="pin-actions">
-                                  <b>
-                                    <a
-                                      class="me-2 my-3"
-                                      @click="viewList(name)"
-                                      href="#"
-                                      style="color: #027562"
-                                      >View</a>
-                                  </b>
-                                  <b>
-                                    <a
-                                      v-if="ownProfile"
-                                      class=" me-2 my-3"
-                                      style="color: #027562"
-                                      href="#"
-                                      data-bs-toggle="modal"
-                                      :data-bs-target="`#editListModal${index}`"
-                                      @click="resetEditList(name, bookmarkList.listDesc)"
-                                      >Edit</a>
-                                  </b>
-                                  <b>
-                                    <a
-                                      v-if="ownProfile"
-                                      class=" my-3"
-                                      href="#"
-                                      style="color: #027562"
-                                      data-bs-toggle="modal"
-                                      :data-bs-target="`#deleteListModal${index}`"
-                                      >Delete</a>
-                                  </b>
-                              </div>
+                              
                             </div>
-                            <!-- edit list modal start -->
-                            <div
-                              class="modal fade"
-                              :id="`editListModal${index}`"
-                              tabindex="-1"
-                              aria-labelledby="exampleModalLabel"
-                              aria-hidden="true"
-                            >
-                              <div class="modal-dialog modal-dialog-centered">
-                                <div class="modal-content">
-                                  <div class="modal-header">
-                                    <h1 class="modal-title fs-5" id="exampleModalLabel">
-                                      Edit List
-                                    </h1>
-                                    <button
-                                      type="button"
-                                      class="btn-close"
-                                      data-bs-dismiss="modal"
-                                      aria-label="Close"
-                                    ></button>
-                                  </div>
-                                  <div class="modal-body">
-                                    <div class="mb-3">
-                                      <label for="basic-url" class="form-label"
-                                        >List Name</label
-                                      >
-                                      <div class="input-group mb-3">
-                                        <input
-                                          v-model="editListName"
-                                          type="text"
-                                          class="form-control"
-                                          :placeholder="name"
-                                          aria-label="Username"
-                                          aria-describedby="basic-addon1"
-                                        />
-                                      </div>
-                                      <div
-                                        v-if="editListNameError"
-                                        class="text-danger text-sm"
-                                      >
-                                        *{{ editListNameError }}
-                                      </div>
-                                    </div>
-
-                                    <div class="mb-3">
-                                      <label for="basic-url" class="form-label"
-                                        >List Description</label
-                                      >
-                                      <div class="input-group mb-3">
-                                        <textarea
-                                          v-model="editListDesc"
-                                          type="text"
-                                          class="form-control"
-                                          :placeholder="bookmarkList.listDesc"
-                                          aria-label="Username"
-                                          aria-describedby="basic-addon1"
-                                          rows="5"
-                                        ></textarea>
-                                      </div>
-                                    </div>
-                                  </div>
-                                  <div class="modal-footer">
-                                    <button
-                                      type="button"
-                                      class="btn btn-secondary"
-                                      data-bs-dismiss="modal"
-                                    >
-                                      Close
-                                    </button>
-                                    <button
-                                      type="button"
-                                      class="btn btn-primary"
-                                      @click="editList(name)"
-                                    >
-                                      Save changes
-                                    </button>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <!-- modal end -->
-                            <!-- delete list modal start -->
-                            <div
-                              class="modal fade"
-                              :id="`deleteListModal${index}`"
-                              tabindex="-1"
-                              aria-labelledby="exampleModalLabel"
-                              aria-hidden="true"
-                            >
-                              <div class="modal-dialog modal-dialog-centered">
-                                <div class="modal-content">
-                                  <div class="text-end mt-2 me-2">
-                                    <button
-                                      type="button"
-                                      class="btn-close"
-                                      data-bs-dismiss="modal"
-                                      aria-label="Close"
-                                    ></button>
-                                  </div>
-
-                                  <div class="text-center px-3">
-                                    <h3><i class="bi bi-trash-fill"></i></h3>
-                                    <h3>Delete this list?</h3>
-                                    <br />
-                                    <p>
-                                      This list will be permanently deleted. Are you sure you want to delete
-                                      <b
-                                        ><i>{{ name }}</i></b
-                                      >?
-                                    </p>
-                                  </div>
-                                  <div style="display: inline" class="text-center mb-4">
-                                    <button
-                                      type="button"
-                                      class="btn btn-secondary me-3"
-                                      data-bs-dismiss="modal"
-                                    >
-                                      Cancel
-                                    </button>
-                                    <button
-                                      type="button"
-                                      class="btn btn-danger"
-                                      data-bs-dismiss="modal"
-                                      @click="deleteList(name)"
-                                    >
-                                      Delete
-                                    </button>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <!-- modal end -->
-                          </div>
-                        </div>
-                      </template>
-                    </div>
-                    <!-- create new drink list modal -->
-                    <div
-                        class="modal fade"
-                        id="createNewListModal"
-                        tabindex="-1"
-                        aria-labelledby="exampleModalLabel"
-                        aria-hidden="true"
-                      >
-                        <div class="modal-dialog modal-dialog-centered">
-                          <div class="modal-content">
-                            <div class="modal-header">
-                              <h1 class="modal-title fs-5" id="exampleModalLabel">
-                                Create New Drinks List
-                              </h1>
-                              <button
-                                type="button"
-                                class="btn-close"
-                                data-bs-dismiss="modal"
-                                aria-label="Close"              
-                              ></button>
-                            </div>
-                            <div class="modal-body">
-                              <div class="mb-3">
-                                <label for="basic-url" class="form-label"
-                                  >List Name</label
-                                >
-                                <div class="input-group mb-3">
-                                  <input
-                                    v-model="newListName"
-                                    type="text"
-                                    class="form-control"
-                                    placeholder="List Name"
-                                    aria-label="Username"
-                                    aria-describedby="basic-addon1"
-                                  />
-                                </div>
-                                <div
-                                  v-if="newListNameError"
-                                  class="text-danger text-sm"
-                                >
-                                  *{{ newListNameError }}
-                                </div>
-                              </div>
-
-                              <div class="mb-3">
-                                <label for="basic-url" class="form-label"
-                                  >List Description</label
-                                >
-                                <div class="input-group mb-3">
-                                  <textarea
-                                    v-model="newListDesc"
-                                    type="text"
-                                    class="form-control"
-                                    placeholder="List Description (Optional)"
-                                    aria-label="Username"
-                                    aria-describedby="basic-addon1"
-                                    rows="5"
-                                  ></textarea>
-                                </div>
-                              </div>
-                            </div>
-                            <div class="modal-footer">
-                              <button
-                                type="button"
-                                class="btn btn-secondary"
-                                data-bs-dismiss="modal"
-                              >
-                                Close
-                              </button>
-                              <button
-                                type="button"
-                                class="btn btn-primary"
-                                @click="addNewList"
-                              >
-                                Save changes
-                              </button>
-                            </div>
-                          </div>
-                        </div>
-                    </div>
-                  </div>
-                  
-                  <!-- Individual Drinks List View -->
-                  <div v-if="activeTab === 'list' && displayUserBookmarks[currentList]" id="list">
-                    <!-- Header Row -->
-                    <div class="row align-items-center mobile-mt-2 mb-2">
-                      <div class="col-12 col-md-6">
-                        <h5 class="mobile-fs-5 mb-0">
-                          <b>Drink List: {{ currentList }}</b>
-                        </h5>
-                        <p class="mobile-rating-smaller-text-2 my-1">
-                          {{ displayUserBookmarks[currentList].listDesc }}
-                        </p>
-                      </div>
-
-                      <!-- View controls (right aligned) -->
-                      <div class="col-12 col-md-6 text-md-end mt-2 mt-md-0">
-                        <div class="d-flex flex-wrap justify-content-md-end gap-2">
-                          <button @click="viewList('lists')" type="button" class="btn btn-sm tertiary-btn-blue drinklist">
-                            <i class="bi bi-arrow-left-circle me-2"></i>
-                            <span class="mobile-view-hide">Back to See All Lists</span>
-                          </button>
-                          
-                          <div class="btn-group" role="group">
-                            <button type="button" class="btn btn-sm"
-                              :class="listViewType === 'grid' ? 'btn-primary' : 'btn-outline-secondary'"
-                              @click="listViewType = 'grid'" title="Grid View">
-                              <i class="bi bi-grid-3x3-gap"></i>
-                            </button>
-                            <button type="button" class="btn btn-sm"
-                              :class="listViewType === 'column' ? 'btn-primary' : 'btn-outline-secondary'"
-                              @click="listViewType = 'column'" title="Column View">
-                              <i class="bi bi-view-stacked"></i>
-                            </button>
-                            <button type="button" class="btn btn-sm"
-                              :class="listViewType === 'list' ? 'btn-primary' : 'btn-outline-secondary'"
-                              @click="listViewType = 'list'" title="List View">
-                              <i class="bi bi-list"></i>
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <!-- Actions Row -->
-                    <div class="row mb-3">
-                      <div class="col-12 d-flex flex-wrap gap-2">
-                        <button v-if="ownProfile" type="button" class="btn btn-sm btn-primary fw-bold"
-                          style="background-color: #f04444; border-color: #f04444; color: white;"
-                          data-bs-toggle="modal" data-bs-target="#exampleModal">
-                          <i class="bi bi-plus-circle me-2"></i>
-                          <span>Add Drink</span>
-                        </button>
-
-                        <button v-if="displayUserBookmarks[currentList].isPublic" type="button" class="btn btn-sm tertiary-btn-blue"
-                          @click="shareCurrentList()">
-                          <i class="bi bi-reply me-2"></i>
-                          <span class="mobile-view-hide">Share</span>
-                        </button>
-
-                        <!-- Privacy toggle -->
-                        <div v-if="ownProfile" class="d-flex align-items-center ms-auto">
-                          <label class="form-check-label me-2 small">
-                            {{ displayUserBookmarks[currentList].isPublic ? 'Public' : 'Private' }}
-                          </label>
-                          <div class="form-check form-switch m-0">
-                            <input 
-                              class="form-check-input" 
-                              type="checkbox" 
-                              :checked="displayUserBookmarks[currentList].isPublic"
-                              @change="toggleListVisibility(currentList)"
-                            >
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <!-- Grid View -->
-                    <div v-if="listViewType === 'grid'" class="row">
-                      <div class="col-6 col-md-4 col-lg-3 mb-4"
-                        v-for="(listing, index) in displayUserBookmarks[currentList].listItems"
-                        :key="index">
-                        <div class="card h-100 review-card border shadow-sm position-relative">
-                          
-                          <!-- Delete button at top right -->
-                          <button v-if="ownProfile"
-                            class="btn btn-danger btn-sm position-absolute"
-                            style="top: 8px; right: 8px; width: 28px; height: 28px; padding: 0; z-index: 10;"
-                            data-bs-toggle="modal"
-                            :data-bs-target="`#deleteFromListModal${index}`"
-                            title="Delete from list">
-                            ×
-                          </button>
-
-                          <!-- Image -->
-                          <div class="card-img-top-wrapper">
-                            <img :src="bookedMarkedListings[listing?.drinkId]?.photo || defaultDrinkImage"
-                                :alt="bookedMarkedListings[listing?.drinkId]?.listingName || 'Drink image'"
-                                class="card-img-top review-card-img" />
-                          </div>
-
-                          <!-- Body -->
-                          <div class="card-body d-flex flex-column">
-                            <!-- Title -->
-                            <a :href="'/listing/view/' + listing?.drinkId + '/' + encodeURIComponent(bookedMarkedListings[listing?.drinkId]?.listingName || 'unknown-listing')"
-                              class="text-decoration-none" style="color: #223957">
-                              <h6 class="card-title mb-2 fw-bold">
-                                {{ bookedMarkedListings[listing?.drinkId]?.listingName || 'Loading...' }}
-                              </h6>
-                            </a>
-
-                            <!-- Type / Country -->
-                            <p class="mb-2 small fw-bold" style="color: #f0b358;">
-                              {{ bookedMarkedListings[listing?.drinkId]?.drinkType }} / 
-                              {{ bookedMarkedListings[listing?.drinkId]?.originCountry || '' }}
-                            </p>
-
-                            <!-- Rating -->
-                            <h4 class="fw-bold mb-3" style="color:#f0b358">
-                              {{
-                                bookedMarkedListings[listing?.drinkId]?.avgRating !== null &&
-                                bookedMarkedListings[listing?.drinkId]?.avgRating !== undefined
-                                  ? parseFloat(bookedMarkedListings[listing?.drinkId]?.avgRating).toFixed(1)
-                                  : "-"
-                              }}★
-                            </h4>
-
-                            <!-- Note button -->
-                            <div class="mt-auto">
-                              <button v-if="ownProfile || listing.note"
-                                class="btn btn-sm w-100"
-                                :class="listing.note ? 'text-white' : 'btn-warning'"
-                                :style="listing.note ? 'background-color: #ff3e31; border-color: #ff3e31;' : ''"
-                                data-bs-toggle="modal"
-                                :data-bs-target="`#noteModal${index}`"
-                                @click="prepareNoteModal(listing, index)">
-                                {{ listing.note ? 'View Note' : 'Add Note' }}
-                              </button>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <!-- List View -->
-                    <div v-else-if="listViewType === 'list'">
-                      <div v-for="(listing, index) in displayUserBookmarks[currentList].listItems"
-                          :key="index"
-                          class="border-bottom py-3">
-
-                        <!-- Row 1: Index + Name + Delete -->
-                        <div class="d-flex justify-content-between align-items-center mb-1">
-                          <div class="d-flex align-items-center">
-                            <!-- Index number -->
-                            <span class="fw-bold me-2" style="min-width: 30px; color: #666;">
-                              {{ index + 1 }}.
-                            </span>
-                            <!-- Name -->
-                            <a :href="'/listing/view/' + listing?.drinkId + '/' + encodeURIComponent(bookedMarkedListings[listing?.drinkId]?.listingName || 'unknown-listing')"
-                              class="fw-bold text-decoration-none"
-                              style="color:#223957; font-size:16px;">
-                              {{ bookedMarkedListings[listing?.drinkId]?.listingName || 'Loading...' }}
-                            </a>
-                          </div>
-                          
-                          <!-- Delete -->
-                          <button v-if="ownProfile"
-                            class="btn btn-danger btn-sm"
-                            style="width: 28px; height: 28px; padding: 0;"
-                            data-bs-toggle="modal"
-                            :data-bs-target="`#deleteFromListModal${index}`"
-                            title="Delete from list">
-                            ×
-                          </button>
-                        </div>
-
-                        <!-- Row 2: Rating + Type + Note -->
-                        <div class="d-flex justify-content-between align-items-center">
-                          <!-- Wrap in flex and add left padding equal to index width -->
-                          <div style="padding-left: 32px;">
-                            <span class="fw-bold me-3" style="color:#f0b358; font-size:16px;">
-                              {{ bookedMarkedListings[listing?.drinkId]?.avgRating !== null ? parseFloat(bookedMarkedListings[listing?.drinkId]?.avgRating).toFixed(1) : "-" }}★
-                            </span>
-                            <span class="small fw-bold" style="color:#f0b358;">
-                              {{ bookedMarkedListings[listing?.drinkId]?.drinkType }} / {{ bookedMarkedListings[listing?.drinkId]?.originCountry || '' }}
-                            </span>
-                          </div>
-
-                          <div>
-                            <button v-if="ownProfile || listing.note"
-                              class="btn btn-sm"
-                              style="margin-top: 0.5rem;"
-                              :class="listing.note ? 'text-white' : 'btn-warning'"
-                              :style="listing.note ? 'background-color: #ff3e31; border-color: #ff3e31;' : ''"
-                              data-bs-toggle="modal"
-                              :data-bs-target="`#noteModal${index}`"
-                              @click="prepareNoteModal(listing, index)">
-                              {{ listing.note ? 'View Note' : 'Add Note' }}
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <!-- Column View -->
-                    <div v-else-if="listViewType === 'column'">
-                      <div v-for="(listing, index) in displayUserBookmarks[currentList].listItems"
-                          :key="index"
-                          class="border-bottom py-3">
-                        <div class="row">
-                          <!-- Image -->
-                          <div class="col-2">
-                            <img :src="bookedMarkedListings[listing?.drinkId]?.photo || defaultDrinkImage"
-                                :alt="bookedMarkedListings[listing?.drinkId]?.listingName || 'Drink image'"
-                                class="img-fluid rounded"
-                                style="max-height: 100px; width: 100%; object-fit: cover;" />
-                          </div>
-
-                          <!-- Content -->
-                          <div class="col-10">
-                            
-                            <!-- Row 1: Name + Delete -->
-                            <div class="d-flex justify-content-between align-items-center mb-1">
-                              <a :href="'/listing/view/' + listing?.drinkId + '/' + encodeURIComponent(bookedMarkedListings[listing?.drinkId]?.listingName || 'unknown-listing')"
-                                class="text-decoration-none" style="color:#223957">
-                                <h5 class="fw-bold mb-0" style="color:#223957">
-                                  {{ bookedMarkedListings[listing?.drinkId]?.listingName || 'Loading...' }}
-                                </h5>
-                              </a>
-                              <button v-if="ownProfile"
-                                class="btn btn-danger btn-sm"
-                                style="width: 28px; height: 28px; padding: 0;"
-                                data-bs-toggle="modal"
-                                :data-bs-target="`#deleteFromListModal${index}`"
-                                title="Delete from list">
-                                ×
-                              </button>
-                            </div>
-
-                            <!-- Row 2: Type + Rating -->
-                            <div class="d-flex justify-content-between align-items-center mb-1">
-                              <p class="mb-0 fw-bold small" style="color:#f0b358;">
-                                {{ bookedMarkedListings[listing?.drinkId]?.drinkType }} /
-                                {{ bookedMarkedListings[listing?.drinkId]?.originCountry || '' }}
-                              </p>
-                              <span class="fw-bold" style="color:#f0b358; font-size:16px;">
-                                {{ bookedMarkedListings[listing?.drinkId]?.avgRating !== null ? parseFloat(bookedMarkedListings[listing?.drinkId]?.avgRating).toFixed(1) : "-" }}★
-                              </span>
-                            </div>
-
-                            <!-- Row 3: Description -->
-                            <div class="mb-2">
-                              <p class="mb-0 small text-muted">
-                                {{ bookedMarkedListings[listing?.drinkId]?.officialDesc || 'No description available.' }}
-                              </p>
-                            </div>
-
-                            <!-- Row 4: Note -->
-                            <div class="text-end">
-                              <button v-if="ownProfile || listing.note"
-                                class="btn btn-sm"
-                                style="margin-top: 0.5rem;"
-                                :class="listing.note ? 'text-white' : 'btn-warning'"
-                                :style="listing.note ? 'background-color: #ff3e31; border-color: #ff3e31;' : ''"
-                                data-bs-toggle="modal"
-                                :data-bs-target="`#noteModal${index}`"
-                                @click="prepareNoteModal(listing, index)">
-                                {{ listing.note ? 'View Note' : 'Add Note' }}
-                              </button>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <!-- Note Modals (one for each listing) -->
-                    <div v-for="(listing, index) in displayUserBookmarks[currentList].listItems" :key="`note-modal-${index}`">
-                      <div class="modal fade" :id="`noteModal${index}`" tabindex="-1" aria-labelledby="`noteModalLabel${index}`" aria-hidden="true">
-                        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
-                          <div class="modal-content">
-                            <div class="modal-header">
-                              <h5 class="modal-title" :id="`noteModalLabel${index}`">
-                                {{ listing.note ? 'Edit Note' : 'Add Note' }} - {{ bookedMarkedListings[listing?.drinkId]?.listingName || 'Loading...' }}
-                              </h5>
-                              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                            </div>
-                            <div class="modal-body">
-                              <div class="mb-3">
-                                <label :for="`noteText${index}`" class="form-label">Your Note:</label>
-                                <textarea 
-                                  class="form-control" 
-                                  :id="`noteText${index}`" 
-                                  rows="4" 
-                                  v-model="currentNote"
-                                  :readonly="!ownProfile"
-                                  placeholder="Add your personal note about this drink..."></textarea>
-                              </div>
-                            </div>
-                            <div class="modal-footer">
-                              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                                {{ ownProfile ? 'Cancel' : 'Close' }}
-                              </button>
-                              <button v-if="ownProfile" type="button" class="btn btn-primary" @click="saveNote(index)" data-bs-dismiss="modal">
-                                Save Note
-                              </button>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <!-- Delete Confirmation Modals (one for each listing) -->
-                    <div v-for="(listing, index) in displayUserBookmarks[currentList].listItems" :key="`delete-modal-${index}`">
-                      <div
-                        class="modal fade"
-                        :id="`deleteFromListModal${index}`"
-                        tabindex="-1"
-                        aria-labelledby="deleteFromListLabel"
-                        aria-hidden="true"
-                      >
-                        <div class="modal-dialog modal-dialog-centered">
-                          <div class="modal-content">
-                            <div class="text-end mt-2 me-2">
-                              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                            </div>
-
-                            <div class="text-center mx-2">
-                              <img
-                                src="../../../Images/Others/cancel.png"
-                                alt=""
-                                class="rounded-circle border border-dark text-center"
-                                style="width: 100px; height: 100px"
-                              />
-                              <h3>Are you sure?</h3>
-                              <br />
-                              <p>
-                                Do you really want to delete
-                                <b><i>{{ bookedMarkedListings[listing?.drinkId]?.listingName || 'this item' }}</i></b>
-                                from <b><i>{{ currentList }}</i></b>?
-                              </p>
-                            </div>
-                            <div class="text-center mb-4">
-                              <button type="button" class="btn btn-secondary me-3" data-bs-dismiss="modal">Cancel</button>
-                              <button
-                                type="button"
-                                class="btn btn-danger"
-                                data-bs-dismiss="modal"
-                                @click="deleteFromList(currentList, listing?.drinkId)"
-                              >
-                                Delete
-                              </button>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <!-- add drink modal -->
-                    <div
-                      class="modal fade"
-                      id="exampleModal"
-                      tabindex="-1"
-                      aria-labelledby="exampleModalLabel"
-                      aria-hidden="true"
-                    >
-                      <div
-                        class="modal-dialog modal-dialog-centered modal-dialog-scrollable"
-                      >
-                        <div class="modal-content">
-                          <div class="modal-header">
-                            <h5>Add Drink to List: {{ currentList }}</h5>
-                            <button
-                              type="button"
-                              class="btn-close"
-                              data-bs-dismiss="modal"
-                              aria-label="Close"
-                            ></button>
-                          </div>
-                          <div class="modal-body" style="height: 400px">
-                            <!-- search -->
-                            <div>
-                              <!-- search bar  -->
-                              <div class="input-group mb-3">
-                                <input
-                                  type="text"
-                                  class="form-control"
-                                  placeholder="Search for drink"
-                                  aria-label="Recipient's username"
-                                  aria-describedby="button-addon2"
-                                  v-model="drinkSearch"
-                                  @input="searchResult"
-                                />
-                              </div>
-                              <!-- search results -->
-                              <div
-                                class="overflow-auto"
-                                :style="{
-                                  height:
-                                    drinksToAdd.length > 0 ? '200px' : '300px',
-                                }"
-                              >
-                                <div
-                                  class="form-check"
-                                  v-for="(drinkName, index) in drinkSearchResults"
-                                  :key="index"
-                                >
-                                  <input
-                                    class="form-check-input"
-                                    type="checkbox"
-                                    :value="drinkName"
-                                    :id="'drinkCheckbox' + index"
-                                    v-model="drinksToAdd"
-                                  />
-                                  <label
-                                    class="form-check-label"
-                                    :for="'drinkCheckbox' + index"
-                                  >
-                                    {{ drinkName }}
-                                  </label>
-                                </div>
-                              </div>
-                            </div>
-                            <!-- selected results -->
-                            <div v-if="drinksToAdd.length > 0" class="mt-2">
-                              <hr />
-                              <div class="overflow-auto" style="height: 75px">
-                                <b>Selected Drinks: </b>
-                                {{ drinksToAdd.join(", ") }}
-                              </div>
-                            </div>
-                          </div>
-                          <div class="modal-footer">
-                            <button
-                              type="button"
-                              class="btn btn-primary"
-                              @click="addDrinkToList(currentList)"
-                            >
-                              Add to List
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  
-                </div>
-
-                <!-- Producers Lists Content -->
-                <div v-if="currentListType === 'producers' && (activeTab === 'lists' || activeTab === 'producer_lists' || activeTab === 'producer_list')">
-                  <!-- Show list overview when activeTab is 'lists' or 'producer_lists' -->
-                  <div v-if="activeTab === 'lists' || activeTab === 'producer_lists'">
-                    <button
-                      v-if="ownProfile"
-                      type="button"
-                      class="btn fw-bold primary-btn-less-round-blue xprimary-btn-outline-less-round mb-3"
-                      data-bs-toggle="modal"
-                      data-bs-target="#createNewProducerListModal"
-                    >
-                      Create New Brands List
-                    </button>
-                    <!-- display all producer lists -->
-                    <div
-                      v-for="(producerList, name, index) in displayUserProducerBookmarks"
-                      :key="name"
-                      style="display: flex"
-                      class="row mb-3"
-                    >
-                      <div class="col-3 mobile-col-4 mobile-pe-2">
-                        <img 
-                          :src="producers && producers.length > 0 && producerList.listItems && producerList.listItems.length > 0 && getProducerFromID(producerList.listItems[0].producerId) ? getProducerFromID(producerList.listItems[0].producerId).photo || defaultProfilePhoto : defaultProfilePhoto"
-                          alt="Producer List" 
-                          class="img-fluid rounded"
-                          style="width: 100%; height: 100px; object-fit: cover;" 
-                        />
-                      </div>
-                      <div class="col-9 mobile-col-8 mobile-ps-1">
-                        <h5 class="mb-1 fw-bold">{{ name }}</h5>
-                        <p class="mb-1">{{ producerList.listDesc }}</p>
-                        <p class="mb-0">
-                          <small>{{ producerList.listItems ? producerList.listItems.length : 0 }} Brands</small>
-                        </p>
-                        <div class="mt-2">
-                          <button 
-                            class="btn primary-btn-green-thin-outline btn-sm me-1" 
-                            @click="viewProducerList(name)"
-                          >
-                            View Details
-                          </button>
-                          <button 
-                            v-if="ownProfile" 
-                            class="btn primary-btn-green-thin-outline btn-sm me-1"
-                            data-bs-toggle="modal" 
-                            :data-bs-target="'#editProducerList' + index"
-                          >
-                            Edit
-                          </button>
-                          <button 
-                            v-if="ownProfile" 
-                            class="btn btn-danger btn-sm"
-                            data-bs-toggle="modal" 
-                            :data-bs-target="'#deleteProducerList' + index"
-                          >
-                            Delete
-                          </button>
-                        </div>
-                      </div>
-                      
-                      <!-- edit producer list modal -->
-                      <div
-                        v-if="ownProfile"
-                        class="modal fade"
-                        :id="'editProducerList' + index"
-                        tabindex="-1"
-                        aria-labelledby="editProducerListLabel"
-                        aria-hidden="true"
-                      >
-                        <div class="modal-dialog">
-                          <div class="modal-content">
-                            <div class="modal-header">
-                              <h5 class="modal-title" id="editProducerListLabel">Edit Brand List</h5>
-                              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                            </div>
-                            <div class="modal-body">
-                              <div class="mb-3">
-                                <label for="editProducerListName" class="form-label">List Name</label>
-                                <input type="text" class="form-control" id="editProducerListName" v-model="editListName" @focus="resetEditList(name, producerList.listDesc)">
-                                <div class="text-danger" v-if="editListNameError">{{ editListNameError }}</div>
-                              </div>
-                              <div class="mb-3">
-                                <label for="editProducerListDesc" class="form-label">List Description</label>
-                                <textarea class="form-control" id="editProducerListDesc" rows="3" v-model="editListDesc"></textarea>
-                              </div>
-                            </div>
-                            <div class="modal-footer">
-                              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                              <button type="button" class="btn primary-btn-green" @click="editProducerList(name)">Save changes</button>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                      
-                      <!-- delete producer list modal -->
-                      <div
-                        v-if="ownProfile"
-                        class="modal fade"
-                        :id="'deleteProducerList' + index"
-                        tabindex="-1"
-                        aria-labelledby="deleteProducerListLabel"
-                        aria-hidden="true"
-                      >
-                        <div class="modal-dialog">
-                          <div class="modal-content">
-                            <div class="modal-header">
-                              <h5 class="modal-title" id="deleteProducerListLabel">Delete Brand List</h5>
-                              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                            </div>
-                            <div class="modal-body">
-                              <p>Are you sure you want to delete this producer list: <strong>{{ name }}</strong>?</p>
-                              <p>This action cannot be undone.</p>
-                            </div>
-                            <div class="modal-footer">
-                              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                              <button type="button" class="btn btn-danger" @click="deleteProducerList(name)" data-bs-dismiss="modal">Delete</button>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>              
-                    <!-- create new producer list modal -->
-                    <div
-                      class="modal fade"
-                      id="createNewProducerListModal"
-                      tabindex="-1"
-                      aria-labelledby="exampleModalLabel"
-                      aria-hidden="true"
-                    >
-                      <div class="modal-dialog modal-dialog-centered">
-                        <div class="modal-content">
-                          <div class="modal-header">
-                            <h1 class="modal-title fs-5" id="exampleModalLabel">
-                              Create New Brands List
-                            </h1>
-                            <button
-                              type="button"
-                              class="btn-close"
-                              data-bs-dismiss="modal"
-                              aria-label="Close"              
-                            ></button>
-                          </div>
-                          <div class="modal-body">
-                            <div class="mb-3">
-                              <label for="basic-url" class="form-label"
-                                >List Name</label
-                              >
-                              <div class="input-group mb-3">
-                                <input
-                                  v-model="newProducerListName"
-                                  type="text"
-                                  class="form-control"
-                                  placeholder="List Name"
-                                  aria-label="Username"
-                                  aria-describedby="basic-addon1"
-                                />
-                              </div>
-                              <div
-                                v-if="newProducerListNameError"
-                                class="text-danger text-sm"
-                              >
-                                *{{ newProducerListNameError }}
-                              </div>
-                            </div>
-
-                            <div class="mb-3">
-                              <label for="basic-url" class="form-label"
-                                >List Description</label
-                              >
-                              <div class="input-group mb-3">
-                                <textarea
-                                  v-model="newProducerListDesc"
-                                  type="text"
-                                  class="form-control"
-                                  placeholder="List Description (Optional)"
-                                  aria-label="Username"
-                                  aria-describedby="basic-addon1"
-                                  rows="5"
-                                ></textarea>
-                              </div>
-                            </div>
-                          </div>
-                          <div class="modal-footer">
-                            <button
-                              type="button"
-                              class="btn btn-secondary"
-                              data-bs-dismiss="modal"
-                            >
-                              Close
-                            </button>
-                            <button
-                              type="button"
-                              class="btn btn-primary"
-                              @click="addNewProducerList"
-                            >
-                              Save changes
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- Individual Producer List View -->
-                  <div v-if="activeTab === 'producer_list' && displayUser.producerLists" id="producer_list">
-                    <!-- list name, back to lists & add producer to list & share button -->
-                    <div class="row mb-4 mobile-mt-2">
-                      <div class="col-12 col-md-6">
-                        <h4 class="fw-bold mb-1">{{ currentProducerList }}</h4>
-                        <p class="mb-1">
-                          {{ displayUserProducerBookmarks[currentProducerList].listDesc }}
-                        </p>
-                        <button
-                          class="btn primary-btn-green-thin-outline mb-2"
-                          @click="switchListType('producers')"
-                        >
-                          <i class="bi bi-arrow-left"></i> Back to Brand Lists
-                        </button>
-                      </div>
-                      <div class="col-12 col-md-6 text-end">
-                        <button
-                          v-if="ownProfile"
-                          class="btn primary-btn-green-thin-outline mx-1"
-                          data-bs-toggle="modal"
-                          data-bs-target="#addProducerModal"
-                        >
-                          <i class="bi bi-plus"></i> Add Brand
-                        </button>
-                        <button
-                          class="btn primary-btn-green-thin-outline mx-1"
-                          @click="updateCurrentURL(); copyToClipboard(currentURL)"
-                        >
-                          <i class="bi bi-reply share-icon"></i> Share
-                        </button>
-                      </div>
-                    </div>
-                  
-                    <!-- list details -->
-                    <div
-                      v-for="(producerItem, index) in displayUserProducerBookmarks[currentProducerList].listItems"
-                      :key="index"
-                      class="row mb-3 border-bottom pb-3"
-                    >
-                      <div class="col-3 text-center">
-                        <router-link
-                          v-if="getProducerFromID(producerItem.producerId)"
-                          :to="`/profile/producer/${producerItem.producerId}/${getProducerFromID(producerItem.producerId).username}`"
-                        >
-                          <img
-                            :src="getProducerFromID(producerItem.producerId).photo || defaultProfilePhoto"
-                            alt="Producer"
-                            class="img-fluid rounded"
-                            style="max-height: 100px; object-fit: cover"
-                          />
-                        </router-link>
-                      </div>
-                      <div class="col-7">
-                        <h5 class="mb-1">
-                          <router-link
-                            v-if="getProducerFromID(producerItem.producerId)"
-                            :to="`/profile/producer/${producerItem.producerId}/${getProducerFromID(producerItem.producerId).username}`"
-                            class="text-decoration-none text-dark"
-                          >
-                            {{ getProducerFromID(producerItem.producerId).producerName }}
-                          </router-link>
-                        </h5>
-                        <p class="text-muted mb-1">
-                          {{ getProducerFromID(producerItem.producerId)?.originCountry || 'Unknown country' }}
-                        </p>
-                        <p class="mb-0">
-                          <small>Added on: {{ new Date(producerItem.addedDate).toLocaleDateString() }}</small>
-                        </p>
-                      </div>
-                      <div v-if="ownProfile" class="col-2 text-end">
-                        <button
-                          class="btn btn-danger btn-sm"
-                          @click="deleteProducerFromList(currentProducerList, producerItem.producerId)"
-                        >
-                          <i class="bi bi-trash"></i>
-                        </button>
-                      </div>
-                    </div>
-                  
-                    <!-- add producer modal -->
-                    <div 
-                      class="modal fade" 
-                      id="addProducerModal" 
-                      tabindex="-1" 
-                      aria-labelledby="addProducerModalLabel" 
-                      aria-hidden="true"
-                    >
-                      <div class="modal-dialog modal-dialog-centered modal-lg">
-                        <div class="modal-content">
-                          <div class="modal-header">
-                            <h5 class="modal-title" id="addProducerModalLabel">Add Brand to List</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                          </div>
-                          <div class="modal-body">
-                            <div class="mb-3">
-                              <label for="producerSearch" class="form-label">Search for brand</label>
-                              <input type="text" class="form-control" id="producerSearch" v-model="producerSearch" 
-                                    @input="searchProducerResult" placeholder="Enter producer name">
-                            </div>
-                            <div class="search-results mt-2">
-                              <div v-if="producerSearchResults.length === 0 && producerSearch.length > 0" class="text-muted">
-                                No brands found.
-                              </div>
-                              <div v-for="(producer, index) in producerSearchResults" :key="index" class="mb-2">
-                                <div class="d-flex justify-content-between align-items-center">
-                                  <span>{{ producer.producerName }}</span>
-                                  <button @click="selectProducer(producer.producerName)" class="btn btn-sm primary-btn-green">
-                                    Add
-                                  </button>
-                                </div>
-                              </div>
-                            </div>
-                            <hr />
-                            <h6 class="mb-3">Selected Brands:</h6>
-                            <div v-if="producersToAdd.length === 0" class="text-muted">
-                              No brands selected.
-                            </div>
-                            <div v-for="(producer, index) in producersToAdd" :key="index" class="mb-2">
-                              <div class="d-flex justify-content-between align-items-center">
-                                <span>{{ producer }}</span>
-                                <button @click="removeSelectedProducer(producer)" class="btn btn-sm btn-danger">
-                                  Remove
-                                </button>
-                              </div>
-                            </div>
-                          </div>
-                          <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                            <button type="button" class="btn primary-btn-green" @click="addProducerToList(currentProducerList)">
-                              Add to List
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
+                           
+                           
                   </div>
                 </div>
-
-                <!-- Venues Lists Content -->
-                <div v-if="currentListType === 'venues' && (activeTab === 'lists' || activeTab === 'venue_lists' || activeTab === 'venue_list')">
-                  <!-- Show list overview when activeTab is 'lists' or 'venue_lists' -->
-                  <div v-if="activeTab === 'lists' || activeTab === 'venue_lists'">
-                    <button
-                      v-if="ownProfile"
-                      type="button"
-                      class="btn fw-bold primary-btn-less-round-blue xprimary-btn-outline-less-round mb-3"
-                      data-bs-toggle="modal"
-                      data-bs-target="#createNewVenueListModal"
-                    >
-                      Create New Venues List
-                    </button>
-
-                    <!-- display all venue lists -->
-                    <div
-                      v-for="(venueList, name, index) in displayUserVenueBookmarks"
-                      :key="name"
-                      style="display: flex"
-                      class="row mb-3"
-                    >
-                      <div class="col-3 mobile-col-4 mobile-pe-2">
-                        <img 
-                          :src="venues && venues.length > 0 && venueList.listItems && venueList.listItems.length > 0 && getVenueFromID(venueList.listItems[0].venueId) ? getVenueFromID(venueList.listItems[0].venueId).photo || defaultProfilePhoto : defaultProfilePhoto"
-                          alt="Venue List" 
-                          class="img-fluid rounded"
-                          style="width: 100%; height: 100px; object-fit: cover;" 
-                        />
-                      </div>
-                      <div class="col-9 mobile-col-8 mobile-ps-1">
-                        <h5 class="mb-1 fw-bold">{{ name }}</h5>
-                        <p class="mb-1">{{ venueList.listDesc }}</p>
-                        <p class="mb-0">
-                          <small>{{ venueList.listItems ? venueList.listItems.length : 0 }} Venues</small>
-                        </p>
-                        <div class="mt-2">
-                          <button 
-                            class="btn primary-btn-green-thin-outline btn-sm me-1" 
-                            @click="viewVenueList(name)"
-                          >
-                            View Details
-                          </button>
-                          <button 
-                            v-if="ownProfile" 
-                            class="btn primary-btn-green-thin-outline btn-sm me-1"
-                            data-bs-toggle="modal" 
-                            :data-bs-target="'#editVenueList' + index"
-                          >
-                            Edit
-                          </button>
-                          <button 
-                            v-if="ownProfile" 
-                            class="btn btn-danger btn-sm"
-                            data-bs-toggle="modal" 
-                            :data-bs-target="'#deleteVenueList' + index"
-                          >
-                            Delete
-                          </button>
-                        </div>
-                      </div>
-                      
-                      <!-- edit venue list modal -->
-                      <div
-                        v-if="ownProfile"
-                        class="modal fade"
-                        :id="'editVenueList' + index"
-                        tabindex="-1"
-                        aria-labelledby="editVenueListLabel"
-                        aria-hidden="true"
-                      >
-                        <div class="modal-dialog">
-                          <div class="modal-content">
-                            <div class="modal-header">
-                              <h5 class="modal-title" id="editVenueListLabel">Edit Venue List</h5>
-                              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                            </div>
-                            <div class="modal-body">
-                              <div class="mb-3">
-                                <label for="editVenueListName" class="form-label">List Name</label>
-                                <input type="text" class="form-control" id="editVenueListName" v-model="editListName" @focus="resetEditList(name, venueList.listDesc)">
-                                <div class="text-danger" v-if="editListNameError">{{ editListNameError }}</div>
-                              </div>
-                              <div class="mb-3">
-                                <label for="editVenueListDesc" class="form-label">List Description</label>
-                                <textarea class="form-control" id="editVenueListDesc" rows="3" v-model="editListDesc"></textarea>
-                              </div>
-                            </div>
-                            <div class="modal-footer">
-                              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                              <button type="button" class="btn primary-btn-green" @click="editVenueList(name)">Save changes</button>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                      
-                      <!-- delete venue list modal -->
-                      <div
-                        v-if="ownProfile"
-                        class="modal fade"
-                        :id="'deleteVenueList' + index"
-                        tabindex="-1"
-                        aria-labelledby="deleteVenueListLabel"
-                        aria-hidden="true"
-                      >
-                        <div class="modal-dialog">
-                          <div class="modal-content">
-                            <div class="modal-header">
-                              <h5 class="modal-title" id="deleteVenueListLabel">Delete Venue List</h5>
-                              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                            </div>
-                            <div class="modal-body">
-                              <p>Are you sure you want to delete this venue list: <strong>{{ name }}</strong>?</p>
-                              <p>This action cannot be undone.</p>
-                            </div>
-                            <div class="modal-footer">
-                              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                              <button type="button" class="btn btn-danger" @click="deleteVenueList(name)" data-bs-dismiss="modal">Delete</button>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <!-- create new venue list modal -->
-                    <div
-                      class="modal fade"
-                      id="createNewVenueListModal"
-                      tabindex="-1"
-                      aria-labelledby="exampleModalLabel"
-                      aria-hidden="true"
-                    >
-                      <div class="modal-dialog modal-dialog-centered">
-                        <div class="modal-content">
-                          <div class="modal-header">
-                            <h1 class="modal-title fs-5" id="exampleModalLabel">
-                              Create New Venues List
-                            </h1>
-                            <button
-                              type="button"
-                              class="btn-close"
-                              data-bs-dismiss="modal"
-                              aria-label="Close"              
-                            ></button>
-                          </div>
-                          <div class="modal-body">
-                            <div class="mb-3">
-                              <label for="basic-url" class="form-label">List Name</label>
-                              <div class="input-group mb-3">
-                                <input
-                                  v-model="newVenueListName"
-                                  type="text"
-                                  class="form-control"
-                                  placeholder="List Name"
-                                  aria-label="Username"
-                                  aria-describedby="basic-addon1"
-                                />
-                              </div>
-                              <div
-                                v-if="newVenueListNameError"
-                                class="text-danger text-sm"
-                              >
-                                *{{ newVenueListNameError }}
-                              </div>
-                            </div>
-
-                            <div class="mb-3">
-                              <label for="basic-url" class="form-label">List Description</label>
-                              <div class="input-group mb-3">
-                                <textarea
-                                  v-model="newVenueListDesc"
-                                  type="text"
-                                  class="form-control"
-                                  placeholder="List Description (Optional)"
-                                  aria-label="Username"
-                                  aria-describedby="basic-addon1"
-                                  rows="5"
-                                ></textarea>
-                              </div>
-                            </div>
-                          </div>
-                          <div class="modal-footer">
-                            <button
-                              type="button"
-                              class="btn btn-secondary"
-                              data-bs-dismiss="modal"
-                            >
-                              Close
-                            </button>
-                            <button
-                              type="button"
-                              class="btn btn-primary"
-                              @click="addNewVenueList"
-                            >
-                              Save changes
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- Individual Venues List View -->
-                  <div v-if="activeTab === 'venue_list' && displayUser.venueLists" id="venue_list">
-                    <!-- list name, back to lists & add venue to list & share button -->
-                    <div class="row mb-4 mobile-mt-2">
-                      <div class="col-12 col-md-6">
-                        <h4 class="fw-bold mb-1">{{ currentVenueList }}</h4>
-                        <p class="mb-1">
-                          {{ displayUserVenueBookmarks[currentVenueList].listDesc }}
-                        </p>
-                        <button
-                          class="btn primary-btn-green-thin-outline mb-2"
-                          @click="switchListType('venues')"
-                        >
-                          <i class="bi bi-arrow-left"></i> Back to Venue Lists
-                        </button>
-                      </div>
-                      <div class="col-12 col-md-6 text-end">
-                        <button
-                          v-if="ownProfile"
-                          class="btn primary-btn-green-thin-outline mx-1"
-                          data-bs-toggle="modal"
-                          data-bs-target="#addVenueModal"
-                        >
-                          <i class="bi bi-plus"></i> Add Venue
-                        </button>
-                        <button
-                          class="btn primary-btn-green-thin-outline mx-1"
-                          @click="updateCurrentURL(); copyToClipboard(currentURL)"
-                        >
-                          <i class="bi bi-reply share-icon"></i> Share
-                        </button>
-                      </div>
-                    </div>
-                  
-                    <!-- list details -->
-                    <div
-                      v-for="(venueItem, index) in displayUserVenueBookmarks[currentVenueList].listItems"
-                      :key="index"
-                      class="row mb-3 border-bottom pb-3"
-                    >
-                      <div class="col-3 text-center">
-                        <router-link
-                          v-if="getVenueFromID(venueItem.venueId)"
-                          :to="`/profile/venue/${venueItem.venueId}/${getVenueFromID(venueItem.venueId).username}`"
-                        >
-                          <img
-                            :src="getVenueFromID(venueItem.venueId).photo || defaultProfilePhoto"
-                            alt="Venue"
-                            class="img-fluid rounded"
-                            style="max-height: 100px; object-fit: cover"
-                          />
-                        </router-link>
-                      </div>
-                      <div class="col-7">
-                        <h5 class="mb-1">
-                          <router-link
-                            v-if="getVenueFromID(venueItem.venueId)"
-                            :to="`/profile/venue/${venueItem.venueId}/${getVenueFromID(venueItem.venueId).username}`"
-                            class="text-decoration-none text-dark"
-                          >
-                            {{ getVenueFromID(venueItem.venueId).venueName }}
-                          </router-link>
-                        </h5>
-                        <p class="text-muted mb-1">
-                          {{ getVenueFromID(venueItem.venueId)?.location || 'Unknown location' }}
-                        </p>
-                        <p class="mb-0">
-                          <small>Added on: {{ new Date(venueItem.addedDate).toLocaleDateString() }}</small>
-                        </p>
-                      </div>
-                      <div v-if="ownProfile" class="col-2 text-end">
-                        <button
-                          class="btn btn-danger btn-sm"
-                          @click="deleteVenueFromList(currentVenueList, venueItem.venueId)"
-                        >
-                          <i class="bi bi-trash"></i>
-                        </button>
-                      </div>
-                    </div>
-                  
-                    <!-- add venue modal -->
-                    <div 
-                      class="modal fade" 
-                      id="addVenueModal" 
-                      tabindex="-1" 
-                      aria-labelledby="addVenueModalLabel" 
-                      aria-hidden="true"
-                    >
-                      <div class="modal-dialog modal-dialog-centered modal-lg">
-                        <div class="modal-content">
-                          <div class="modal-header">
-                            <h5 class="modal-title" id="addVenueModalLabel">Add Venue to List</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                          </div>
-                          <div class="modal-body">
-                            <div class="mb-3">
-                              <label for="venueSearch" class="form-label">Search for venues</label>
-                              <input type="text" class="form-control" id="venueSearch" v-model="venueSearch" 
-                                    @input="searchVenueResult" placeholder="Enter venue name">
-                            </div>
-                            <div class="search-results mt-2">
-                              <div v-if="venueSearchResults.length === 0 && venueSearch.length > 0" class="text-muted">
-                                No venues found.
-                              </div>
-                              <div v-for="(venue, index) in venueSearchResults" :key="index" class="mb-2">
-                                <div class="d-flex justify-content-between align-items-center">
-                                  <span>{{ venue.venueName }}</span>
-                                  <button @click="selectVenue(venue.venueName)" class="btn btn-sm primary-btn-green">
-                                    Add
-                                  </button>
-                                </div>
-                              </div>
-                            </div>
-                            <hr />
-                            <h6 class="mb-3">Selected Venues:</h6>
-                            <div v-if="venuesToAdd.length === 0" class="text-muted">
-                              No venues selected.
-                            </div>
-                            <div v-for="(venue, index) in venuesToAdd" :key="index" class="mb-2">
-                              <div class="d-flex justify-content-between align-items-center">
-                                <span>{{ venue }}</span>
-                                <button @click="removeSelectedVenue(venue)" class="btn btn-sm btn-danger">
-                                  Remove
-                                </button>
-                              </div>
-                            </div>
-                          </div>
-                          <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                            <button type="button" class="btn primary-btn-green" @click="addVenueToList(currentVenueList)">
-                              Add to List
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
+            </template>
+            <!-- Empty state for no collections -->
+            <div v-if="recentBookmarkLists.length === 0" class="text-center py-2">
+                  <div class="text-muted">
+                    <i class="bi bi-card-checklist" style="font-size: 3rem;"></i>
+                    <h5 class="mt-3">No Lists Created Yet</h5>
+                    <p v-if="ownProfile">Bucket list wines 🍷, bar cart holy grails 👑, beers for the bottle share🍻... Start creating your first list.</p>
+                    <p v-else>This user hasn't created any public lists yet.</p>
                   </div>
                 </div>
-                <br>
+          </div>
+          <br>
+          <!-- BADGES -->
+          <div class="mobile-spacer">
+              
+              <div class="d-flex justify-content-between pt-1">
+                <div class="text-start"><h5 class="text-body-secondary fw-bold"> Badges Unlocked</h5></div>
+                <router-link
+                  :to="`/profile/user/${displayUserID || userID}/${routeUsername || username}/badges`"
+                  class="text-end text-muted text-decoration-none"
+                >
+                  VIEW ALL →
+                </router-link>
               </div>
-
-              <!-- badges tab -->
-              <div v-if="activeTab == 'badges'" id="badges">
-                <h5 class="text-body-secondary text-start py-2">
-                  <b>My Badges</b>
-                </h5>
-                
-                <div v-if="!userBadges || userBadges.length === 0" class="container">
-                  No badges unlocked yet. 
+              <hr />
+              <div v-if="!userBadges || userBadges.length === 0" class="text-center text-muted py-2">
+                <i class="bi bi-trophy" style="font-size: 3rem;"></i>
+                <h5 class="mt-3">No Badges Unlocked Yet</h5>
                 <router-link to="/badges-and-points" style="color: inherit; text-decoration: underline;">
                   Click here to find out how badges are earned on Drink-X.
                 </router-link>
-                </div>
-                
-                <div v-else class="container">
-                  <div class="row">
-                    <!-- Display 4 badges per row -->
-                    <div class="col-6 col-sm-4 col-md-3 mb-4" v-for="badge in userBadges" :key="badge.id">
-                      <div class="badge-card text-center">
-                        <!-- Badge image -->
-                        <img 
-                          :src="badge.badgePhoto || defaultProfilePhoto"
-                          alt=""
-                          class="rounded-circle-white-bg  badge-img mb-2"
-                          style="width: 100px; height: 100px;"
-                        />
-                        
-                        <!-- Badge name -->
-                        <p class="badge-name mb-1 text-center">
-                          <strong>{{ badge.badgeName }} <span style="white-space: nowrap;">(Lvl {{ badge.currentLevel }})</span></strong>
-                        </p>
-                        
-                        <!-- Date acquired -->
-                        <p class="badge-date text-muted small mb-2">{{ new Date(badge.dateEarned).toLocaleDateString() }}</p>
-                        
-                        <!-- Progress bar -->
-                        <div v-if="badge.nextLevelRequirement" class="progress mb-1" style="height: 8px;">
-                          <div 
-                            class="progress-bar"
-                            style="background-color: #3498db;" 
-                            role="progressbar"
-                            :style="{
-                              width: badge.currentProgress >= badge.nextLevelRequirement 
-                                ? '0%' 
-                                : (badge.currentProgress / badge.nextLevelRequirement * 100) + '%'
-                            }"
-                            :aria-valuenow="badge.currentProgress"
-                            aria-valuemin="0"
-                            :aria-valuemax="badge.nextLevelRequirement"
-                          ></div>
-                        </div>
-                        
-                        <!-- Progress text -->
-                        <p class="progress-text small mb-0" v-if="badge.nextLevelRequirement">
-                          <span v-if="badge.currentProgress < badge.nextLevelRequirement">
-                            <span v-if="badge.badgeType === 'Action'">
-                              {{ badge.nextLevelRequirement - badge.currentProgress }} More Actions To<br>Reach The Next Level!
-                            </span>
-                            <span v-else>
-                              {{ badge.nextLevelRequirement - badge.currentProgress }} More Reviews To<br>Reach The Next Level!
-                            </span>
-                          </span>
-                          <span v-else>
-                            Ready to Level Up!
-                          </span>
-                        </p>
+              </div>
+             
 
-                        <p class="progress-text small mb-0" v-else>Maximum level reached!</p>
+              <div v-else class="container text-center mb-3">
+                <div class="row">
+                  <div 
+      
+                    class="mobile-col-3 col-4 p-2 mobile-pt-0 mobile-pb-0 mobile-pe-2 mobile-mb-2"
+                    v-for="(badge, index) in userBadges.slice(0, 9)" 
+                    :key="badge.id"
+                  >
+                    <!-- Badge image with hover effect -->
+                    <div class="position-relative badge-container" :key="index">
+                      <img
+                        :src="badge.badgePhoto || defaultProfilePhoto"
+                        alt="badge image"
+                        class="rounded-circle-white-bg border border-dark badge-img"
+                        style="width: 100%; max-width: 80px; height: auto;"
+                      />
+                      <div class="badge-hover-text">
+                        {{ badge.badgeName }} (Level {{ badge.currentLevel }})
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
+
+              <div v-if="userBadges && userBadges.length > 0">
+                <button 
+                  v-if="userBadges && userBadges.length > 0"
+                  @click="switchTab('badges')" 
+                  class="btn btn-link p-0 text-dark "
+                >
+                  View all badges
+                </button>
+              </div>
+          </div>
+          <br>
+          <!-- RECENT ACTIVITY -->
+          <div class="mobile-spacer">
+            <div class="d-flex justify-content-between pt-1">
+                  <div class="text-start"><h5 class="text-body-secondary fw-bold">Recent Activity</h5></div>
+                  <router-link
+                    :to="`/profile/user/${displayUserID || userID}/${routeUsername || username}/activity`"
+                    class="text-end text-muted text-decoration-none"
+                  >
+                    VIEW ALL →
+                  </router-link>
+            </div>
+            <hr />
+            <div class="col-11 text-start mobile-mt-0">
+                <div class="mb-4 d-lg-block">
+                  <div>
+                      <div class="square-inline">
+                          <p class="fw-bold text-start my-2">Your Recent Activity</p>
+                      </div>
+                      <div class="feed-body mobile-rating-smaller-text-2 pb-2">
+                          <!-- Loading State -->
+                          <div v-if="loadingRecentUserActivity" class="text-center pb-2">
+                              <div class="spinner-border spinner-border-sm text-dark me-2" role="status">
+                                  <span class="visually-hidden">Loading...</span>
+                              </div>
+                              <span class="text-muted">Loading recent activity...</span>
+                          </div>
+
+                          <!-- Error State -->
+                          <div v-else-if="errorRecentUserActivity" class="text-center pb-1">
+                              <div class="text-danger">
+                                  <i class="fas fa-exclamation-triangle me-2"></i>
+                                  {{ errorRecentUserActivity }}
+                              </div>
+                          </div>
+
+                          <!-- Empty State -->
+                          <div v-else-if="!recentUserActivity || recentUserActivity.length === 0" class="pb-1">
+                              No recent activity.
+                          </div>
+
+                          <!-- Activity List -->
+                          <div v-else class="overflow-auto" style="max-height: 100%;">
+                              <div v-for="activity in recentUserActivity" :key="activity.id || activity.date" class="pb-2">
+                                  <!-- Your Activity -->
+                                  <div v-if="activity.type === 'review'">
+                                      You rated <b><router-link :to="listingUrl(activity)" class="primary-clickable-text" style="color: rgb(2, 117, 98)"><u>{{ activity.listingName }}</u></router-link> <span style="color: rgb(2, 117, 98)">{{ activity.rating }} stars</span></b> {{ getTimeDifference(activity.date) }}
+                                  </div>
+                                  <div v-else-if="activity.type === 'list_add'">
+                                      You added <b><router-link :to="listingUrl(activity)" class="primary-clickable-text" style="color: rgb(2, 117, 98)"><u>{{ activity.listingName }}</u></router-link></b> to your list: <b><router-link :to="listUrl(activity)" class="primary-clickable-text"><u><span style="color: rgb(2, 117, 98);">{{ activity.listName }}</span></u></router-link></b><br />{{ getTimeDifference(activity.date) }}
+                                  </div>
+                                  <div v-if="activity.type === 'follow'">
+                                      You started following
+                                      <router-link :to="profileUrl(activity)" class="reverse-clickable-text" style="color: rgb(2, 117, 98)">
+                                        @<b>{{ activity.username }}</b>
+                                      </router-link>
+                                      {{ getTimeDifference(activity.date) }}
+                                  </div>
+                              </div>
+                          </div>
+                      </div>
+                  </div>
+                  <div>
+                      <div class="square-inline">
+                          <p class="fw-bold text-start">Recent Activity on Your Reviews</p>
+                      </div>
+                      <div class="feed-body mobile-rating-smaller-text-2 pb-2">
+                          <!-- Loading State -->
+                          <div v-if="loadingRecentReviewsActivity" class="text-center pb-1">
+                              <div class="spinner-border spinner-border-sm text-dark me-2" role="status">
+                                  <span class="visually-hidden">Loading...</span>
+                              </div>
+                              <span class="text-muted fst-italic">Loading recent activity...</span>
+                          </div>
+
+                          <!-- Error State -->
+                          <div v-else-if="errorRecentReviewsActivity" class="text-center pb-1">
+                              <div class="text-danger">
+                                  <i class="fas fa-exclamation-triangle me-2"></i>
+                                  {{ errorRecentReviewsActivity }}
+                              </div>
+                          </div>
+
+                          <!-- Empty State -->
+                          <div v-else-if="!recentReviewsActivity || recentReviewsActivity.length === 0" class="pb-1">
+                              No recent activity.
+                          </div>
+
+                          <!-- Activity List -->
+                          <div v-else class="overflow-auto" style="max-height: 100%;">
+                              <div v-for="activity in recentReviewsActivity" :key="activity.id || activity.date" class="pb-2">
+                                  <!-- Activity on Your Reviews -->
+                                  <div v-if="activity.type === 'upvote' || activity.type === 'downvote'">
+                                      <router-link :to="profileUrl(activity)" class="primary-clickable-text" style="color: rgb(2, 117, 98)">@<b>{{ activity.username }}</b></router-link> <span :style="{ color: activity.type === 'upvote' ? '#90ee90' : 'black' }">{{ activity.type }}d</span> your review of <router-link :to="listingUrl(activity, activity.reviewTarget)" class="clickable-text" style="color: rgb(2, 117, 98)"><u>{{ activity.listingName }}</u></router-link> {{ getTimeDifference(activity.date) }}
+                                  </div>
+                              </div>
+                          </div>
+                      </div>
+                  </div>
+                  <div>
+                      <div class="square-inline pb-2">
+                          <p class="fw-bold text-start">Recent Activity from Your Followers</p>
+                      </div>
+                      <div class="feed-body mobile-rating-smaller-text-2">
+                          <!-- Loading State -->
+                          <div v-if="loadingRecentFollowersActivity" class="text-center pb-1">
+                              <div class="spinner-border spinner-border-sm text-dark me-2" role="status">
+                                  <span class="visually-hidden">Loading...</span>
+                              </div>
+                              <span class="text-muted">Loading recent activity...</span>
+                          </div>
+
+                          <!-- Error State -->
+                          <div v-else-if="errorRecentFollowersActivity" class="text-center pb-1">
+                              <div class="text-danger">
+                                  <i class="fas fa-exclamation-triangle me-2"></i>
+                                  {{ errorRecentFollowersActivity }}
+                              </div>
+                          </div>
+
+                          <!-- Empty State -->
+                          <div v-else-if="!recentFollowersActivity || recentFollowersActivity.length === 0" class="pb-1">
+                              No recent activity.
+                          </div>
+
+                          <!-- Activity List -->
+                          <div v-else class="overflow-auto" style="max-height: 100%;">
+                              <div v-for="activity in recentFollowersActivity" :key="activity.id || activity.date" class="pb-2">
+                                  <!-- Follower Activity -->
+                                  <div v-if="activity.type === 'follow'">
+                                      <router-link :to="profileUrl(activity)" class="primary-clickable-text" style="color: rgb(2, 117, 98)">@<b>{{ activity.username }}</b></router-link> started following you {{ getTimeDifference(activity.date) }}
+                                  </div>
+                                  <div v-else-if="activity.type === 'tag'">
+                                      <router-link :to="profileUrl(activity)" class="primary-clickable-text" style="color: rgb(2, 117, 98)">@<b>{{ activity.username }}</b></router-link> tagged you in a review of <router-link :to="listingUrl(activity)" class="primary-clickable-text" style="color: rgb(2, 117, 98)"><u>{{ activity.listingName }}</u></router-link> {{ getTimeDifference(activity.date) }}
+                                  </div>
+                              </div>
+                          </div>
+                      </div>
+                  </div>   
+                </div> 
             </div>
           </div>
+
+          <!--EVENTS NEARBY--> 
+          <section v-if="ownProfile && user && upcomingEvents.length > 0" class="dx-events card">
+            <header class="dx-events__header w-100">
+              <h3 class="dx-events__title">📍 Check Out Events Near You</h3>
+            </header>
+
+            <div class="dx-events__body w-100">
+              <article v-for="event in upcomingEvents" :key="event.eventId" class="dx-event">
+                <a 
+                  class="dx-event__media" 
+                  :href="getVenueProfileUrl(event.venueId, event.venueName)" 
+                  :aria-label="event.eventName"
+                >
+                  <img
+                    class="dx-event__img"
+                    :src="event.venuePhoto || defaultVenueImage"
+                    :alt="event.eventName + ' poster'"
+                    loading="lazy"
+                  />
+                </a>
+
+                <div class="dx-event__content">
+                  <h3 class="dx-event__name">
+                    <a :href="getVenueProfileUrl(event.venueId, event.venueName)">
+                      {{ event.eventName }}
+                    </a>
+                  </h3>
+                  <p class="dx-event__meta">
+                    <em>{{ formatEventDates(event.eventStartDate, event.eventEndDate) }}</em>
+                    <span v-if="event.originLocation"> • {{ event.originLocation }}</span>
+                  </p>
+                  <p v-if="event.eventDesc" class="dx-event__desc">{{ event.eventDesc.length > 95 ? event.eventDesc.substring(0, 95) + '...' : event.eventDesc }}</p>
+                </div>
+              </article>
+            </div>
+          </section>
+
+
+          
+ 
         </div>
         
         <!-- Bookmark Modal -->
@@ -2824,6 +1038,27 @@ import ListingRowDisplayUserProfile from "@/components/ListingRowDisplayUserProf
 import LoadingWithFunFact from '@/components/LoadingWithFunFact.vue';
 import BadgePopup from "@/components/BadgePopup.vue";
 
+// Charts (copied from UserDashboard)
+import { Bar } from 'vue-chartjs'
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend
+} from 'chart.js'
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend
+)
+
 
 export default {
   name: "UserProfileRefactor",
@@ -2836,7 +1071,8 @@ export default {
     BookmarkModal,
     ListingRowDisplayUserProfile,
     LoadingWithFunFact,
-    BadgePopup
+    BadgePopup,
+    Bar
   },
   data() {
     return {
@@ -2919,6 +1155,55 @@ export default {
       recentReviews: [],
       top5Listings: [], // only contains top 5 listings IDs
       top5ListingsData: [], // contains top 5 listings data
+
+      // Charting: ratings and monthly distributions (initialized to zeros)
+      reviews: {
+        total_reviews: 0,
+        monthly_distribution: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        rating_distribution: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+      },
+
+      // Base chart options - common settings (copied from UserDashboard)
+      baseChartOptions: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            display: false
+          },
+          tooltip: {
+            enabled: true,
+            callbacks: {
+              label: function (context) {
+                return `${context.parsed.y} review${context.parsed.y !== 1 ? 's' : ''}`
+              }
+            }
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            display: false
+          },
+          x: {
+            grid: {
+              display: false
+            },
+            ticks: {
+              color: '#6c757d',
+              font: {
+                size: 12
+              }
+            }
+          }
+        },
+        layout: {
+          padding: {
+            top: 5,
+            bottom: 5
+          }
+        }
+      },
 
       // Recent Activity information
       recentUserActivity: [],
@@ -3136,14 +1421,71 @@ export default {
       : this.topRatedReviews.filter(r => r.isPublic !== false); // Hide private if not owner
   },
 
+  // Two most recently updated bookmark lists (public or owned)
+  recentBookmarkLists() {
+    const listsObj = this.displayUserBookmarks || {};
+    const listsArr = Object.keys(listsObj).map(name => ({ name, ...listsObj[name] }));
+
+    // Only include lists visible to the current viewer
+    const visible = listsArr.filter(l => l.isPublic || this.ownProfile);
+
+    visible.sort((a, b) => {
+      const aTime = new Date(a.updatedAt || a.createdAt || 0).getTime();
+      const bTime = new Date(b.updatedAt || b.createdAt || 0).getTime();
+      return bTime - aTime;
+    });
+
+    return visible.slice(0, 2);
+  },
+
   // Group cellar items by variantGroupID for display
   groupedCellarItems() {
     if (!this.selectedCellarCollectionItems || this.selectedCellarCollectionItems.length === 0) {
       return [];
     }
     return this.groupCellarItems(this.selectedCellarCollectionItems);
+  },
+
+  // Chart computed properties
+  ratingsData() {
+    return {
+      labels: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10'],
+      datasets: [{
+        data: this.reviews.rating_distribution,
+        backgroundColor: [
+            '#f0b258', // 1 – muted grey (rare / weak)
+            '#f0b258', // 2 – cool light grey-blue
+            '#f0b258', // 3 – soft sky blue
+            '#f0b258', // 4 – denim blue
+            '#f0b258', // 5 – cream neutral (midpoint)
+            '#f0b258', // 6 – soft honey
+            '#f0b258', // 7 – warm mustard (brand-adjacent)
+            '#f0b258', // 8 – golden amber
+            '#f0b258', // 9 – soft teal
+            '#f0b258'  // 10 – deep Drink-X green (best)
+        ],
+        borderColor: Array(10).fill('#ffb300'),
+        borderRadius: 0,
+        barThickness: 35
+      }]
+    }
+  },
+
+  ratingsChartOptions() {
+    const maxRatingValue = Math.max(...this.reviews.rating_distribution);
+    const dynamicMax = maxRatingValue > 0 ? Math.ceil(maxRatingValue * 1.1) : 10;
+
+    return {
+      ...this.baseChartOptions,
+      scales: {
+        ...this.baseChartOptions.scales,
+        y: {
+          ...this.baseChartOptions.scales.y,
+          max: dynamicMax
+        }
+      }
+    }
   }
-  
   },
   watch: {
     // Watch for route changes to reload data when navigating between different user profiles
@@ -3347,6 +1689,7 @@ export default {
           this.getFollowingCount(),
           this.getCellarData(), // Add cellar data loading
           this.getTotalReviewsCount(), // Get total reviews count
+          this.getReviewStats(), // Get rating and monthly distribution for charts
           this.getUpcomingEvents(), // Get upcoming events based on user location
         ]);
 
@@ -3530,6 +1873,22 @@ export default {
         console.error('Error fetching total reviews count:', error);
         // Fall back to 0 on error
         this.totalReviewsCount = 0;
+      }
+    },
+
+    // Get full review stats for charts (monthly and rating distribution)
+    async getReviewStats() {
+      try {
+        const response = await this.$axios.get(
+          `${process.env.VUE_APP_API_URL}/getData/getReviews/${this.displayUserID}`
+        );
+        const data = response.data || {};
+        // Defensive assignment: ensure arrays exist
+        this.reviews.total_reviews = data.total_reviews || 0;
+        this.reviews.monthly_distribution = Array.isArray(data.monthly_distribution) ? data.monthly_distribution : this.reviews.monthly_distribution;
+        this.reviews.rating_distribution = Array.isArray(data.rating_distribution) ? data.rating_distribution : this.reviews.rating_distribution;
+      } catch (error) {
+        console.error('Error fetching review stats:', error);
       }
     },
 
@@ -3869,17 +2228,6 @@ export default {
     
     getTotalCellarItemCount(cellarCollection) {
       return cellarCollection.totalCount || 0;
-    },
-    
-    viewCellarCollection(collectionName) {
-      // Show detailed view of collection items on the same page
-      const collection = this.displayUserCellarCollections[collectionName];
-      if (collection) {
-        this.selectedCellarCollection = collectionName;
-        this.selectedCellarCollectionItems = this.cellarItems.filter(item => item.collectionId === collection.id);
-        this.selectedCellarCollectionData = collection;
-        this.viewingCellarCollection = true;
-      }
     },
 
     // Helper methods for upcoming events
@@ -5000,33 +3348,6 @@ export default {
       return this.producers.find(
         (producer) => producer.id === parseInt(producerID)
       );
-    },
-
-    // Changes the url to the selected list
-    viewList(name) {
-      if (name == "lists") {
-        this.activeTab = "lists";
-        this.$router.push({
-          path: "/profile/user/" +
-            this.displayUserID +
-            "/" +
-            this.displayUser.username
-        });
-      } else {
-        this.activeTab = "list";
-        this.currentList = name;
-        this.$router.push({
-          path: "/profile/user/" +
-            this.displayUserID +
-            "/" +
-            this.displayUser.username +
-            name
-        });
-
-        if (this.ownProfile) {
-          this.removeExistingListingInList();
-        }
-      }
     },
 
     // view specific producer list
@@ -6708,100 +5029,17 @@ export default {
   .dx-event__media { width: 72px; }
 }
 
-/* Notch overlay styles for private reviews */
-.item-notch {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 0;
-  height: 0;
-  border-style: solid;
-  border-width: 62px 62px 0 0;
-  z-index: 10;
-  overflow: visible;
-  border-top-left-radius: 10px;
-}
-
-/* Private review notch - Dark grey theme */
-.item-notch-private {
-  border-color: #596269 transparent transparent transparent;
-}
-
-/* Notch content container - rotated text and icon */
-.notch-content {
-  position: absolute;
-  top: -55px;
-  left: -5px;
-  transform: rotate(-45deg);
-  transform-origin: center center;
-  white-space: nowrap;
+.profile-navbar {
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2px;
-}
-
-/* Private review text styling */
-.item-notch-private .notch-content {
-  color: white;
-}
-
-/* Icon placeholder */
-.notch-icon {
-  font-size: 14px;
-  font-weight: bold;
-  line-height: 1;
-}
-
-/* Text label */
-.notch-text {
-  font-size: 9px;
-  font-weight: bold;
-  text-transform: uppercase;
-  letter-spacing: 0.3px;
-  line-height: 1;
-}
-
-/* Responsive sizing for mobile devices */
-@media (max-width: 768px) {
-  .item-notch {
-    border-width: 65px 65px 0 0;
-  }
-  
-  .notch-content {
-    top: -56px;
-    left: -3px;
-  }
-  
-  .notch-icon {
-    font-size: 12px;
-  }
-  
-  .notch-text {
-    font-size: 9px;
-    letter-spacing: 0.2px;
-  }
-}
-
-/* Extra small screens */
-@media (max-width: 375px) {
-  .item-notch {
-    border-width: 55px 55px 0 0;
-  }
-  
-  .notch-content {
-    top: -50px;
-    left: 2px;
-  }
-  
-  .notch-icon {
-    font-size: 10px;
-  }
-  
-  .notch-text {
-    font-size: 6px;
-    letter-spacing: 0.1px;
-  }
+  flex-wrap: nowrap;          /* never wrap to a second line */
+  white-space: nowrap;        /* keep text in one line */
+  overflow-x: auto;           /* enable horizontal scrolling */
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch; /* smooth iOS scrolling */
+  justify-content: center;
+  padding: 0.1rem 0.5rem;
+  margin: 0 auto;
+  gap: 0;
 }
 
 </style>

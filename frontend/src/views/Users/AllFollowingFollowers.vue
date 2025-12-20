@@ -6,7 +6,7 @@
     <div class="container text-start">
       <UserProfileHeader />
     </div>
-    
+    <br>
     <!-- User Profile Navigation -->
      <div class="container text-start">
     <UserProfileNavbar :userID="displayUserID" :username="routeUsername" />
@@ -42,30 +42,6 @@
     <div class="container text-start">
       <div class="row mobile-px-3">
         <div class="col-12 col-md-10 mx-auto px-2">
-          <!-- Header Section -->
-          <div class="d-flex justify-content-between align-items-center mb-4">
-            <div>
-              <h3 class="mb-1 mobile-fs-5">
-                <b>{{ displayUser.displayName || displayUser.username }}'s {{ currentView === 'following' ? 'Following' : 'Followers' }}</b>
-              </h3>
-              <p class="text-muted mb-0 mobile-rating-smaller-text-2">
-                {{ totalUsers }} {{ currentView === 'following' ? 'following' : 'follower' }}{{ totalUsers !== 1 ? 's' : '' }} total
-              </p>
-            </div>
-            <button
-              class="mobile-view-hide btn btn-sm primary-btn"
-              @click="$router.push(`/profile/user/${displayUserID}/${routeUsername}`)"
-            >
-              Back to Profile
-            </button>
-            <button
-              class="mobile-view-show btn primary-btn btn-sm fw-bold"
-              @click="$router.push(`/profile/user/${displayUserID}/${routeUsername}`)"
-            >
-              <i class="bi bi-arrow-return-left"></i>
-            </button>
-          </div>
-
           <!-- View Toggle -->
           <div class="d-flex justify-content-between mb-3">
             <!-- Following/Followers Toggle -->
@@ -268,7 +244,7 @@
 
           <!-- Users Grid (Grid View) -->
           <div v-if="filteredUsers && filteredUsers.length > 0 && viewMode === 'grid'" class="row">
-            <div v-for="user in paginatedUsers" :key="user.id" class="col-12 col-sm-6 col-md-4 col-lg-3 mb-4">
+            <div v-for="user in paginatedUsers" :key="user.id" class="col-6 col-md-4 col-lg-3 mb-4">
               <div class="card h-100 user-card border-light">
                 <!-- Image at top -->
                 <div class="card-img-top-wrapper">
@@ -323,20 +299,6 @@
                         +{{ user.choiceDrinks.length - 5 }} more
                       </span>
                     </div>
-                  </div>
-                  
-                  
-                  <!-- Bottom row: Join date and action -->
-                  <div class="d-flex justify-content-between align-items-center mt-auto">
-                    <small class="text-muted">
-                      {{ formatDateGrid(user.joinDate) }}
-                    </small>
-                    <button 
-                      class="btn btn-sm primary-btn"
-                      @click="visitProfile(user.id, user.username)"
-                    >
-                      View Profile
-                    </button>
                   </div>
                 </div>
               </div>

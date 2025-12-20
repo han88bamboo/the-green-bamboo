@@ -15,7 +15,7 @@
     <div class="container text-start">
       <UserProfileHeader />
     </div>
-    
+    <br>
     <!-- User Profile Navigation -->
     <div class="container text-start">
       <UserProfileNavbar :userID="displayUserID" :username="displayUser.username" />
@@ -24,29 +24,9 @@
 
         <div class="user-dashboard-page">
             <div class="container text-start py-5">
+                <div class="col-11 mx-auto">
                 <div class="row">
-
-                    <!-- Left Pane -->
-                    <div class="col-lg-4 col-12">
-                        <UserProfileHeader :user="displayUser" :stats="userStats"
-                            :default-profile-photo="defaultProfilePhoto" />
-
-                        <!-- Desktop-only Activity Feeds -->
-                        <div class="d-none d-lg-block mt-4">
-                            <ActivityFeed class="mb-3" title="Your Recent Activity" :activities="recentUserActivity" 
-                                :current-user-id="userID" :loading="userActState.loading" :error="userActState.error"
-                            />
-                            <ActivityFeed class="mb-3" title="Recent Activity on Your Reviews" :activities="recentReviewActivity" 
-                                :current-user-id="userID" :loading="reviewActState.loading" :error="reviewActState.error"
-                            />
-                            <ActivityFeed class="mb-3" title="Recent Activity from Your Followers" :activities="recentFollowerActivity" 
-                                :current-user-id="userID" :loading="followerActState.loading" :error="followerActState.error"
-                            />
-                        </div>
-                    </div>
-
-                    <!-- Right Pane -->
-                    <div class="col-lg-8 col-12 ps-lg-5 mt-4 mt-lg-0">
+       
                         <LeaderboardSection :grails="grails" :up-and-coming="upAndComing" :goats="goats"
                             @open-popup="handleOpenPopup" />
 
@@ -54,41 +34,6 @@
                         <!-- <div v-for="item in grails" :key="item.id" class="d-flex align-items-center mt-2">
                             {{ item.id + "•" + item.name + "•" + item.listingName + "•" +  item.bottler + "•" + item.originCountry}}
                         </div> -->
-
-                        <!-- Mobile-only Tabbed Activity Feeds -->
-                        <div class="d-lg-none mt-4">
-                            <ul class="nav nav-pills nav-fill" role="tablist">
-                                <li class="nav-item" role="presentation">
-                                    <button class="nav-link active" data-bs-toggle="pill"
-                                        data-bs-target="#mobile-user-activity" type="button">My Activity</button>
-                                </li>
-                                <li class="nav-item" role="presentation">
-                                    <button class="nav-link" data-bs-toggle="pill"
-                                        data-bs-target="#mobile-review-activity" type="button">My Reviews</button>
-                                </li>
-                                <li class="nav-item" role="presentation">
-                                    <button class="nav-link" data-bs-toggle="pill"
-                                        data-bs-target="#mobile-follower-activity" type="button">Following</button>
-                                </li>
-                            </ul>
-                            <div class="tab-content pt-3">
-
-                                <div class="tab-pane fade show active" id="mobile-user-activity" role="tabpanel">
-                                    <ActivityFeed class="mb-3" title="Your Recent Activity" :activities="recentUserActivity" 
-                                        :current-user-id="userID" :loading="userActState.loading" :error="userActState.error"
-                                    />
-                                </div>
-                                <div class="tab-pane fade" id="mobile-review-activity" role="tabpanel">
-                                    <ActivityFeed title="Activity on Your Reviews" :activities="recentReviewActivity"
-                                        :current-user-id="userID" :loading="reviewActState.loading" :error="reviewActState.error"/>
-                                </div>
-                                <div class="tab-pane fade" id="mobile-follower-activity" role="tabpanel">
-                                    <ActivityFeed title="Recent Activity from Your Followers" :activities="recentFollowerActivity" 
-                                        :current-user-id="userID" :loading="followerActState.loading" :error="followerActState.error"/>
-                                </div>
-
-                            </div>
-                        </div>
 
                         <!-- Analytics Section (Charts and Lists) -->
                         <div class="row mt-4">
@@ -204,7 +149,8 @@
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    
+                </div>
                 </div>
             </div>
         </div>
@@ -222,7 +168,6 @@ import NavBar from '@/components/NavBar.vue';
 // import LoadingWithFunFact from '@/components/LoadingWithFunFact.vue';
 // import ErrorDisplay from '@/components/user_dashboard/ErrorDisplay.vue';
 // import UserProfileHeader from '@/components/user_dashboard/UserProfileHeader.vue';
-import ActivityFeed from '@/components/user_dashboard/ActivityFeed.vue';
 import LeaderboardSection from '@/components/user_dashboard/LeaderboardSection.vue';
 import LeaderboardEditModal from '@/components/user_dashboard/LeaderboardEditModal.vue';
 import UserProfileHeader from '@/components/UserProfileHeader.vue';
@@ -256,7 +201,6 @@ export default {
         NavBar,
         // LoadingWithFunFact,
         UserProfileHeader,
-        ActivityFeed,
         LeaderboardSection,
         LeaderboardEditModal,
         Bar,

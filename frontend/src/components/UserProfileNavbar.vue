@@ -8,13 +8,7 @@
       >
         Profile
       </router-link>
-      <router-link
-        :to="`/profile/user/${userID}/${username}/stories`"
-        class="profile-nav-link"
-        exact
-      >
-        Stories
-      </router-link>
+     
       <router-link
         :to="`/profile/user/${userID}/${username}/allreviews`"
         class="profile-nav-link"
@@ -23,19 +17,23 @@
         Reviews
       </router-link>
       <router-link
+        v-if="ownProfile"
         :to="`/profile/user/${userID}/${username}/activity`"
         class="profile-nav-link"
         exact
       >
         Activity
       </router-link>
-      <router-link
-        :to="`/profile/user/${userID}/${username}/allfollowingfollowers`"
+
+        <router-link
+        :to="`/profile/user/${userID}/${username}/stories`"
         class="profile-nav-link"
         exact
       >
-        Friends
+        Cellar
       </router-link>
+      
+     
         <router-link
         :to="`/profile/user/${userID}/${username}/lists`"
         class="profile-nav-link"
@@ -45,6 +43,7 @@
       </router-link>
 
       <router-link
+        v-if="ownProfile"
         :to="`/dashboard/user/${userID}`" 
         class="profile-nav-link"
         exact
@@ -59,7 +58,14 @@
       >
         Badges
       </router-link>
-      
+       <router-link
+        :to="`/profile/user/${userID}/${username}/allfollowingfollowers`"
+        class="profile-nav-link"
+        exact
+      >
+        Friends
+      </router-link>
+
     </nav>
   </div>
 </template>
@@ -78,6 +84,11 @@ export default {
     }
   },
   computed: {
+    ownProfile() {
+      // Determine ownership by comparing the displayed userID with the logged-in account ID
+      const accID = localStorage.getItem('88B_accID');
+      return String(this.userID) === String(accID);
+    },
     isProfileActive() {
       // Match profileUser route exactly, excluding stories, allreviews and allfollowingfollowers
       const path = this.$route.path;
@@ -98,29 +109,37 @@ export default {
 <style scoped>
 .profile-navbar-container {
   width: 100%;
-  background-color: #6ba3d3;
-  margin-bottom: 1.5rem;
+  background-color: #83a9e8;
 }
 
 .profile-navbar {
   display: flex;
-  justify-content: flex-start;
-  padding: 0.4rem 0.7rem;
+  flex-wrap: nowrap;          /* never wrap to a second line */
+  white-space: nowrap;        /* keep text in one line */
+  overflow-x: auto;           /* enable horizontal scrolling */
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch; /* smooth iOS scrolling */
+  justify-content: center;
+  padding: 0.1rem 0.5rem;
   margin: 0 auto;
   gap: 0;
 }
 
+.profile-navbar::-webkit-scrollbar {
+  display: none;              /* Chrome/Safari */
+}
+
 .profile-nav-link {
-  padding: 0.1rem 0.7rem;
+  padding: 0.5rem 0.7rem;
   color: white;
   text-decoration: none;
-  font-weight: 500;
   transition: all 0.2s;
-  border-bottom: 3px solid transparent;
+  border-bottom: 2px solid transparent;
+  font-weight:bold;
 }
 
 .profile-nav-link:hover:not(.active):not(.router-link-active) {
-  border-bottom-color: rgba(255, 255, 255, 0.5);
+  border-bottom-color: rgba(91, 66, 66, 0.5);
 }
 
 .profile-nav-link.active,
@@ -133,8 +152,12 @@ export default {
 /* Mobile responsive */
 @media (max-width: 768px) {
   .profile-nav-link {
-    padding: 0.75rem 1rem;
+    padding: 0.5rem 1rem;
     font-size: 0.9rem;
+  }
+  
+  .profile-navbar {
+    justify-content: flex-start;
   }
 }
 </style>

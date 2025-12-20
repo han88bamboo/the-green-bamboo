@@ -179,9 +179,9 @@ html {
 .primary-btn-less-round,
 .primary-btn-outline-less-round:hover {
   color: whitesmoke;
-  background-color: #f0b358;
+  background-color: #83a9e8;
   border-radius: 10px;
-  border: 1px solid #f0b358;
+  border: 1px solid #83a9e8;
   font-weight: bold;
 }
 
@@ -212,22 +212,22 @@ html {
 .primary-btn-less-round-blue {
   color: white;
   background-color: #FF3E31;
-  border-radius: 10px;
+  border-radius: 8px;
   transition: transform 0.4s ease;
-  min-width: 195.89px;
+  
 }
 
 .primary-btn-less-round-blue:hover {
   color: white;
   background-color: #e7291c;
-  border-radius: 10px;
+  border-radius: 8px;
   transform: scale(1.05)
 }
 
 .primary-btn-less-round-green {
   color: white;
   background-color: #027562;
-  border-radius: 10px;
+  border-radius: 8px;
 }
 
 .cellar-btn-blue {
@@ -272,7 +272,7 @@ html {
 .primary-btn-outline-less-round {
   color: #83a9e8;
   background-color: whitesmoke;
-  border-radius: 10px;
+  border-radius: 8px;
   border: 2px solid #83a9e8;
   font-weight: bold;
 }
@@ -1479,9 +1479,19 @@ button.primary-square:hover {
     border-radius: 10px;
   }
 }
+
+.mobile-spacer {
+  margin-left: auto;
+  margin-right: auto;
+}
+
 @media (max-width: 991px) {
   .mobile-view-hide {
     display: none !important;
+  }
+
+  .mobile-spacer {
+    width: 91.66666667%;
   }
 }
 
@@ -2668,4 +2678,101 @@ nav a.router-link-exact-active.dropdown-item {
 
 .card{
   background-color: white !important;
+}
+
+/* Notch overlay styles for private reviews */
+.item-notch {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 62px 62px 0 0;
+  z-index: 10;
+  overflow: visible;
+  border-top-left-radius: 10px;
+}
+
+/* Private review notch - Dark grey theme */
+.item-notch-private {
+  border-color: #83a9e8 transparent transparent transparent;
+}
+
+/* Notch content container - rotated text and icon */
+.notch-content {
+  position: absolute;
+  top: -55px;
+  left: -5px;
+  transform: rotate(-45deg);
+  transform-origin: center center;
+  white-space: nowrap;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+/* Private review text styling */
+.item-notch-private .notch-content {
+  color: white;
+}
+
+
+/* Icon placeholder */
+.notch-icon {
+  font-size: 14px;
+  font-weight: bold;
+  line-height: 1;
+}
+
+/* Text label */
+.notch-text {
+  font-size: 9px;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  line-height: 1;
+}
+
+/* Responsive sizing for mobile devices */
+@media (max-width: 768px) {
+  .item-notch {
+    border-width: 65px 65px 0 0;
+  }
+  
+  .notch-content {
+    top: -56px;
+    left: -3px;
+  }
+  
+  .notch-icon {
+    font-size: 12px;
+  }
+  
+  .notch-text {
+    font-size: 9px;
+    letter-spacing: 0.2px;
+  }
+}
+
+/* Extra small screens */
+@media (max-width: 375px) {
+  .item-notch {
+    border-width: 55px 55px 0 0;
+  }
+  
+  .notch-content {
+    top: -50px;
+    left: 2px;
+  }
+  
+  .notch-icon {
+    font-size: 10px;
+  }
+  
+  .notch-text {
+    font-size: 6px;
+    letter-spacing: 0.1px;
+  }
 }

@@ -1,4 +1,4 @@
-@ -0,0 +1,119 @@
+
 
 <template>
   <NavBar />
@@ -8,6 +8,8 @@
     <div class="container text-start">
       <UserProfileHeader />
     </div>
+    
+    <br>
     
     <!-- User Profile Navigation -->
     <div class="container text-start">
@@ -42,12 +44,79 @@
   >
     <div class="container text-start">
       <div class="row mobile-px-3">
-        <div class="col-12 col-md-10 mx-auto px-2">
-          <!-- Placeholder Content -->
-          <div class="text-center py-5">
-            <h3 class="mb-3">{{ displayUser.displayName || displayUser.username }}'s Badges</h3>
-            <p class="text-muted">Badges content coming soon...</p>
-          </div>
+        <div class="col-12 col-lg-10 mx-auto mb-4 px-2">
+          <!-- badges tab -->
+                
+                <div v-if="!userBadges || userBadges.length === 0" class="container  py-4">
+                  <div class="text-muted text-center">
+                    <i class="bi bi-trophy" style="font-size: 3rem;"></i>
+                    <h5 class="mt-3">No Badges Unlocked Yet.</h5>
+                    <p><router-link to="/badges-and-points" style="color: inherit; text-decoration: underline;">
+                      Click here to find out how badges are earned on Drink-X.
+                    </router-link></p>
+                  </div>
+                </div>
+                
+                <div v-else class="container">
+                  <div class="row">
+                    <!-- Display 4 badges per row -->
+                    <div class="col-6 col-sm-4 col-md-3 mb-4" v-for="badge in userBadges" :key="badge.id">
+                      <div class="badge-card text-center">
+                        <!-- Badge image -->
+                        <img 
+                          :src="badge.badgePhoto || defaultProfilePhoto"
+                          alt=""
+                          class="rounded-circle-white-bg  badge-img mb-2"
+                          style="width: 100px; height: 100px;"
+                        />
+                        
+                        <!-- Badge name -->
+                        <p class="badge-name mb-1 text-center">
+                          <strong>{{ badge.badgeName }} <span style="white-space: nowrap;">(Lvl {{ badge.currentLevel }})</span></strong>
+                        </p>
+                        
+                        <!-- Date acquired -->
+                        <p class="badge-date text-muted small mb-2">{{ new Date(badge.dateEarned).toLocaleDateString() }}</p>
+                        
+                        <!-- Progress bar -->
+                        <div v-if="badge.nextLevelRequirement" class="progress mb-1" style="height: 8px;">
+                          <div 
+                            class="progress-bar"
+                            style="background-color: #3498db;" 
+                            role="progressbar"
+                            :style="{
+                              width: badge.currentProgress >= badge.nextLevelRequirement 
+                                ? '0%' 
+                                : (badge.currentProgress / badge.nextLevelRequirement * 100) + '%'
+                            }"
+                            :aria-valuenow="badge.currentProgress"
+                            aria-valuemin="0"
+                            :aria-valuemax="badge.nextLevelRequirement"
+                          ></div>
+                        </div>
+                        
+                        <!-- Progress text -->
+                        <p class="progress-text small mb-0" v-if="badge.nextLevelRequirement">
+                          <span v-if="badge.currentProgress < badge.nextLevelRequirement">
+                            <span v-if="badge.badgeType === 'Action'">
+                              {{ badge.nextLevelRequirement - badge.currentProgress }} More Actions To<br>Reach The Next Level!
+                            </span>
+                            <span v-else>
+                              {{ badge.nextLevelRequirement - badge.currentProgress }} More Reviews To<br>Reach The Next Level!
+                            </span>
+                          </span>
+                          <span v-else>
+                            Ready to Level Up!
+                          </span>
+                        </p>
+
+                        <p class="progress-text small mb-0" v-else>Maximum level reached!</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              
+          
         </div>
       </div>
     </div>
@@ -72,10 +141,13 @@ export default {
     return {
       dataLoaded: false,
       
-      // User data
+       // User data
       displayUserID: null,
       routeUsername: null,
       displayUser: {},
+      userBadges: [],
+      userBadgesLoaded: false,
+      defaultProfilePhoto: "https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultProfilePhoto.png?v=1748434288",
     };
   },
   async mounted() {
@@ -85,13 +157,54 @@ export default {
     
     await this.loadData();
   },
+
   methods: {
+    // Badges
+    async getBadges() {
+      // for Badges
+      try {
+        const response = await this.$axios.get(
+          `${process.env.VUE_APP_API_URL}/getData/getBadges`
+        );
+        // const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getBadges`);
+        this.badges = response.data;
+        this.badgesDataLoaded = true;
+      } catch (error) {
+        console.error(error);
+        if (error.status === 404) {
+          this.badgesDataLoaded = true;
+        } else {
+          this.badgesDataLoaded = false;
+        }
+      }
+    },
+
+    async getUserBadges() {
+      try {
+        const response = await this.$axios.get(
+          `${process.env.VUE_APP_API_URL}/getData/getUserBadges/${this.displayUserID}`
+        );
+        this.userBadges = response.data;
+        this.userBadgesLoaded = true;
+      } catch (error) {
+        console.error("Error fetching user badges:", error);
+        console.warn("getUserBadges failed for userID:", this.displayUserID, error);
+        this.userBadgesLoaded = false;
+      }
+    },
+
     async loadData() {
       try {
         this.dataLoaded = false;
         
         // Load user profile
         await this.getDisplayUserProfile();
+
+        // Ensure badges are loaded before rendering
+        await Promise.all([
+          this.getBadges(),
+          this.getUserBadges()
+        ]);
         
         this.dataLoaded = true;
       } catch (error) {

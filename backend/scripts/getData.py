@@ -2459,7 +2459,8 @@ def getAllProducers():
     
     try:
         with db_manager.get_cursor() as cursor:
-            cursor.execute('SELECT "id", "producerName" FROM "producers"')
+            # Return id, name and origin country so frontend can display producer metadata in lists
+            cursor.execute('SELECT "id", "producerName", "originCountry", "producerDesc" FROM "producers"')
             producers_data = cursor.fetchall()
 
         if not producers_data:
@@ -2496,7 +2497,7 @@ def getAllVenues():
     
     try:
         with db_manager.get_cursor() as cursor:
-            cursor.execute('SELECT "id", "venueName", "address", "venueType", "originLocation", "photo", "username" FROM "venues"')
+            cursor.execute('SELECT "id", "venueName", "address", "venueType", "originLocation", "venueDesc", "photo", "username" FROM "venues"')
             venues = cursor.fetchall()
             
         # Log success with result count
