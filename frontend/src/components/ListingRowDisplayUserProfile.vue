@@ -2,10 +2,10 @@
 
 <template>
     <div class="d-flex justify-content-between pt-1 mobile-spacer ">
-      <div class="text-start"><h5 class="text-body-secondary fw-bold"> {{ displayName }}</h5></div>
+      <div class="text-start"><h5 class="text-body-secondary fw-bold mobile-fs-6"> {{ displayName }}</h5></div>
       <router-link
         :to="`/profile/user/${userID}/${username}/allreviews`"
-        class="text-end text-muted text-decoration-none"
+        class="text-end text-muted text-decoration-none mobile-rating-smaller-text-2"
         >
           VIEW ALL →
       </router-link>
@@ -115,7 +115,7 @@
               <div class="mt-auto pt-2">
                 <div class="tags-section mb-2">
                   <span
-                    v-for="(tag, tagIndex) in review.flavourTag"
+                    v-for="(tag, tagIndex) in review.flavourTag.slice(0,3)"
                     :key="'flavor-' + tagIndex"
                     class="badge mobile-rating-smaller-text-2 me-2 mb-2"
                     :style="{ backgroundColor: getTagColor(parseInt(tag)) }"
@@ -124,7 +124,7 @@
                   </span>
 
                   <span
-                    v-for="(tag, tagIndex) in review.observationTag"
+                    v-for="(tag, tagIndex) in review.observationTag.slice(0,2)"
                     :key="'obs-' + tagIndex"
                     class="badge mobile-rating-smaller-text-2 me-2 mb-2 tag-badge"
                     :style="{ backgroundColor: getActionTagColor(tag), color: 'black' }"
@@ -260,7 +260,7 @@ export default {
     // New methods for top rated reviews
     getPreviewText(review) {
       const fullText = this.getFullReviewText(review);
-      const maxLength = 300;
+      const maxLength = 120;
       
       if (fullText.length <= maxLength) {
         return fullText;
@@ -299,7 +299,7 @@ export default {
 
     shouldShowReadMore(review) {
       const fullText = this.getFullReviewText(review);
-      return fullText.length > 300;
+      return fullText.length > 120;
     },
 
     expandReview(index) {
@@ -400,7 +400,7 @@ export default {
 
 .review-card-img{
   width: 100%;
-  height: 190px;       /* tweak */
+  height: 180px;       /* tweak */
   object-fit: cover;
   display: block;
 }
@@ -431,6 +431,13 @@ export default {
   .reviews-grid {
     grid-template-columns: 1fr;
   }
+
+  .review-card-img{
+  width: 100%;
+  height: 150px;       /* tweak */
+  object-fit: cover;
+  display: block;
+}
 }
 
 /* Ensure normal Bootstrap wrapping + no horizontal scroll */

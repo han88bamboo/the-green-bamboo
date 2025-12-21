@@ -15,7 +15,6 @@
                   "
                   alt=""
                   class="rounded-circle-no-bg profile-img"
-                  style="height: auto; width: 100%"
                 />
               </div>
               <!-- 2. and 3. USER BIO AND STATS -->
@@ -73,7 +72,7 @@
                     <!-- View mode -->
                     <div v-if="!isEditingBio" class="d-flex align-items-start gap-2">
                       <p class="mobile-rating-smaller-text-2 mb-0 xflex-grow-1">
-                        {{ displayUser.bio || (ownProfile ? 'No bio yet. Add one to tell others about yourself!' : 'This user has not added a bio yet.') }}
+                        {{ displayUser.bio || (ownProfile ? 'No bio yet. Add one to tell others about yourself!' : ' ') }}
                       </p>
                       <button
                         v-if="ownProfile && user"
@@ -160,7 +159,7 @@
             <div class="mobile-view-show mt-3 mb-2">
               <!-- View mode -->
               <div v-if="!isEditingBio" class="d-flex align-items-start gap-2">
-                <p class="mb-0 xflex-grow-1">
+                <p class="mb-0 mobile-rating-smaller-text-2">
                   {{ displayUser.bio || (ownProfile ? 'No bio yet. Add one to tell others about yourself!' : 'This user has not added a bio yet.') }}
                 </p>
                 <button
@@ -204,7 +203,9 @@
               </div>
             </div>
             <!-- USER BIO AND MODERATOR / AMBASSADOR -->
-            <div class="d-flex flex-wrap gap-2">
+            <div 
+              v-if="displayUser && (displayUser.modType?.length > 0 || displayUser.ambassador || displayUser.categoryExpert)"
+              class="d-flex flex-wrap pt-3 mobile-pt-1 gap-2">
               <!-- User Title: Moderator Badge -->
               <button
                 v-if="displayUser && displayUser.modType && displayUser.modType.length > 0"
@@ -233,7 +234,7 @@
               </span>
             </div>
             <!-- Additional Information: RANK, POINTS, DRINK OF CHOICE -->
-            <div class="mt-2">
+            <div class="mt-2 mobile-mt-0 mobile-rating-smaller-text-2">
               <div class="row">
                 <div class="col-5">
                   <b>Rank</b>

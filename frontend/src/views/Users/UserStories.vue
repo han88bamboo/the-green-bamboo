@@ -36,12 +36,12 @@
   <!-- Main Content -->
   <div
     v-if="dataLoaded"
-    class="userprofile  mobile-mt-3"
+    class="userprofile"
   >
-      <div class="row mobile-px-3">
+      <div class="row col-11 mobile-spacer my-4 mobile-my-2">
         <div class="col-12 col-md-10 mx-auto px-2">
           <!-- Placeholder Content -->
-          <div class="text-center mobile-spacer">
+          <div class="text-center">
              <!-- cellar tab -->
               
                 <!-- Collection Overview -->
@@ -57,6 +57,7 @@
                 
                 <!-- Display all cellar collections -->
                 <div v-if="Object.keys(displayUserCellarCollections).length > 0" class="row g-3">
+                  <h5 class="fw-bold mobile-fs-6"><i class="bi bi-archive"></i> Digital Cellar: Public Collections</h5>
                   <div
                     v-for="(cellarCollection, name) in displayUserCellarCollections"
                     :key="name"
@@ -160,29 +161,29 @@
 
                 <!-- Collection Detail View -->
                 <div v-else>
-                  <!-- Back button and collection header -->
-                  <div class="d-flex align-items-center justify-content-between mb-4">
-                    <div class="d-flex align-items-center">
-                      <button 
-                        class="btn btn-outline-secondary me-3"
-                        @click="backToCellarCollections()"
-                      >
-                        <i class="bi bi-arrow-left"></i> Back to Collections
-                      </button>
-                      <div>
-                        <h4 class="mb-0">{{ selectedCellarCollection }}</h4>
+                  <div>
+                        <h5 class="fw-bold mobile-fs-6"><i class="bi bi-archive"></i> Digital Cellar: {{ selectedCellarCollection }}</h5>
                         <small class="text-muted">
                           {{ groupedCellarItems.length }} 
                           {{ groupedCellarItems.length === 1 ? 'variant' : 'variants' }}
                           ({{ selectedCellarCollectionItems.length }} total {{ selectedCellarCollectionItems.length === 1 ? 'item' : 'items' }})
                         </small>
                       </div>
+                  <!-- Back button and collection header -->
+                  <div class="d-flex align-items-center justify-content-between mb-4 ">
+                    <div class="d-flex align-items-center">
+                      <button 
+                        class="btn btn-sm btn-outline-secondary me-3"
+                        @click="backToCellarCollections()"
+                      >
+                        <i class="bi bi-arrow-left"></i> Back to Cellar Collections
+                      </button>
                     </div>
                     
                     <!-- Share Button -->
                     <button 
                       v-if="selectedCellarCollectionData && selectedCellarCollectionData.isPublic"
-                      class="btn btn-outline-primary"
+                      class="btn btn-sm btn-outline-primary"
                       @click="shareCellarCollection()"
                       title="Share this collection"
                     >

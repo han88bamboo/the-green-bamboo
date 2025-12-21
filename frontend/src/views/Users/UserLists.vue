@@ -2833,4 +2833,11 @@ export default {
   background: #000;
 }
 
+.review-card-img{
+  width: 100%;
+  height: 190px;       /* tweak */
+  object-fit: cover;
+  display: block;
+}
+
 </style>

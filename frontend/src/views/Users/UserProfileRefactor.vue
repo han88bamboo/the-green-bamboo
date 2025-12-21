@@ -2,14 +2,12 @@
   <NavBar />
 
   <!-- User Profile Header and Navigation (always visible) -->
-  <div v-if="displayUserID && routeUsername" class="userprofile mt-5 mobile-mt-3">
-    <div class="container text-start">
+  <div v-if="displayUserID && routeUsername" class="userprofile mt-5 mobile-mt-3 ">
+    <div class="container text-start mb-2">
           <UserProfileHeader />
       </div>
-    
-    <br>
-    <div v-if="totalReviewsCount > 0" class="container mobile-view-show" style="background-color:wheat">
-      <p class="text-start fw-bold mobile-spacer pt-2">Ratings Spread</p>
+    <div v-if="totalReviewsCount > 0" class="pt-2 container mobile-view-show" style="background-color:wheat">
+      <p class="text-start fw-bold mobile-spacer mobile-rating-smaller-text-2 mb-0">Ratings Spread</p>
       <div class="mobile-spacer pb-1" style="max-height: 100px;">
         <Bar :data="ratingsData" :options="ratingsChartOptions" />
       </div>
@@ -538,7 +536,7 @@
           <!-- DIGITAL CELLAR -->
           <div class="mobile-spacer">
             <div class="d-flex justify-content-between pt-1">
-                <div class="text-start"><h5 class="text-body-secondary fw-bold">Digital Cellar</h5></div>
+                <div class="text-start"><h5 class="text-body-secondary fw-bold mobile-fs-6">Digital Cellar</h5></div>
                 <router-link
                     v-if="ownProfile"
                     :to="`/my-cellar/user/${displayUserID}/${routeUsername}`"
@@ -549,7 +547,7 @@
                   <router-link
                     v-else
                     :to="`/profile/user/${displayUserID || userID}/${routeUsername || username}/stories`"
-                    class="text-end text-muted text-decoration-none"
+                    class="text-end text-muted text-decoration-none mobile-rating-smaller-text-2"
                   >
                     VIEW ALL →
                   </router-link>
@@ -665,10 +663,10 @@
           <!--MY LISTS  -->
           <div class="mobile-spacer">
             <div class="d-flex justify-content-between pt-1">
-                <div class="text-start"><h5 class="text-body-secondary fw-bold">My Lists</h5></div>
+                <div class="text-start"><h5 class="text-body-secondary fw-bold mobile-fs-6">My Lists</h5></div>
                 <router-link
                   :to="`/profile/user/${displayUserID || userID}/${routeUsername || username}/lists`"
-                  class="text-end text-muted text-decoration-none"
+                  class="text-end text-muted text-decoration-none mobile-rating-smaller-text-2"
                 >
                   VIEW ALL →
                 </router-link>
@@ -770,10 +768,10 @@
           <div class="mobile-spacer">
               
               <div class="d-flex justify-content-between pt-1">
-                <div class="text-start"><h5 class="text-body-secondary fw-bold"> Badges Unlocked</h5></div>
+                <div class="text-start"><h5 class="text-body-secondary fw-bold mobile-fs-6"> Badges Unlocked</h5></div>
                 <router-link
                   :to="`/profile/user/${displayUserID || userID}/${routeUsername || username}/badges`"
-                  class="text-end text-muted text-decoration-none"
+                  class="text-end text-muted text-decoration-none mobile-rating-smaller-text-2"
                 >
                   VIEW ALL →
                 </router-link>
@@ -826,10 +824,10 @@
           <!-- RECENT ACTIVITY -->
           <div class="mobile-spacer">
             <div class="d-flex justify-content-between pt-1">
-                  <div class="text-start"><h5 class="text-body-secondary fw-bold">Recent Activity</h5></div>
+                  <div class="text-start"><h5 class="text-body-secondary fw-bold mobile-fs-6">Recent Activity</h5></div>
                   <router-link
                     :to="`/profile/user/${displayUserID || userID}/${routeUsername || username}/activity`"
-                    class="text-end text-muted text-decoration-none"
+                    class="text-end text-muted text-decoration-none mobile-rating-smaller-text-2"
                   >
                     VIEW ALL →
                   </router-link>
@@ -4818,12 +4816,6 @@ export default {
   padding-top: 0.5rem; /* ≈ py-2 top */
   padding-bottom: 0.5rem; /* ≈ py-2 bottom */
   margin: 0;
-}
-
-.card-img-top-wrapper {
-  position: relative;
-  padding-top: 100%; /* Creates a square */
-  overflow: hidden;
 }
 
 .review-card-img {

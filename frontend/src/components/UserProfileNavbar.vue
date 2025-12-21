@@ -25,8 +25,8 @@
         Activity
       </router-link>
 
-        <router-link
-        :to="`/profile/user/${userID}/${username}/stories`"
+      <router-link
+        :to="cellarRoute"
         class="profile-nav-link"
         exact
       >
@@ -101,6 +101,11 @@ export default {
               !path.includes('/lists') && 
               !path.includes('/badges') && 
               !path.includes('/allfollowingfollowers'));
+    },
+    cellarRoute() {
+    return this.ownProfile
+      ? `/my-cellar/user/${this.userID}/${this.username}`
+      : `/profile/user/${this.userID}/${this.username}/stories`
     }
   }
 };

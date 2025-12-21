@@ -1031,8 +1031,8 @@ html {
 }
 
 .rounded-circle-no-bg {
-  width: 30px;
-  height: 30px;
+  width: 100px;
+  height: 100px;
   border-radius: 50%;
   color: whitesmoke;
 }
@@ -1063,8 +1063,8 @@ html {
   }
 
   .rounded-circle-no-bg {
-    width: 25px;
-    height: 25px;
+    width: 90px;
+    height: 90px;
     border-radius: 50%;
     color: whitesmoke;
   }
@@ -2004,7 +2004,11 @@ button.primary-square:hover {
 
 .profile-img {
   max-width: 110px;
-  max-height: 110px;
+  max-height: 110px;        /* force 1:1 */
+  border-radius: 50%;  /* circle */
+  object-fit: cover;   /* crop instead of squeeze */
+  object-position: center;
+  display: block;
 }
 
 .badge-img {
@@ -2018,11 +2022,6 @@ button.primary-square:hover {
     height: auto;
   }
 }
-
-/* .profile-img {
-    width: 80px;
-    height: 80px;
-} */
 
 .bottle-img {
   width: 100%;
