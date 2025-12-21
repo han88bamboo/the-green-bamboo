@@ -29,67 +29,56 @@
 
             <div class="row mt-2">
 
-                <!-- BACK BUTTON, FORM TITLE, BROWSE TERM -->
-                <div class="col-md-4 col-12">
-
-                    <div class="row">
-                    
-                        <!-- Back Button -->
-                        <!-- Back Button -->
-                        <div class="d-grid col-1">
-                            <button class="btn btn-sm" @click="()=>{this.$router.go(-1)}">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-arrow-left-circle" viewBox="0 0 16 16">
-                                    <path fill-rule="evenodd" d="M1 8a7 7 0 1 0 14 0A7 7 0 0 0 1 8m15 0A8 8 0 1 1 0 8a8 8 0 0 1 16 0m-4.5-.5a.5.5 0 0 1 0 1H5.707l2.147 2.146a.5.5 0 0 1-.708.708l-3-3a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L5.707 7.5z"/>
-                                </svg>
-                            </button>
-                        </div>                        <!-- Form Title -->
-                        <div class="d-grid col-11" style="color:black;">
-                            <p class="fw-bold fs-5 m-0 text-start mobile-ms-2">Browse: {{ effectiveBrowseTerm }}</p>
+                     <!-- Results Header -->
+                    <div class="row mt-2">
+                        <div class="col-12">
+                        
+                            <span class="fw-bold d-inline-flex align-items-center px-3 py-1 me-2 rounded-pill" style="background: #f04444; color: white;">
+                            🔴 Now Browsing
+                            </span>
+                            <h3 class="fw-bold m-0 py-3 mobile-pb-1">
+                                {{ effectiveBrowseTerm }}
+                            </h3>
+                            <p class="fs-6 m-0 mb-3" v-if="resultListings.length > 0">
+                                Discover your next favourite {{ effectiveBrowseTerm }}.
+                            </p>
+                            <p class="fs-6 m-0 mb-3" v-else>😭 No {{ effectiveBrowseTerm }} listings found! Try selecting another filter. </p>
                         </div>
-
                     </div>
 
-                    <!-- Request / Create Listing Link (font size reduced at smaller screen width) -->
-                    <div class="row mt-2 mobile-view-hide">
-                        <div class="col-12 text-decoration-none" v-if="role == 'producer'" >
-                            <p class="fs-6 fst-italic text-start">Don't see what you're looking for? Search for it above!</p>
-                        </div>
-                        <div class="col-12 text-decoration-none" v-if="role == 'user'" >
-                            <p class="fs-6 fst-italic text-start">Don't see what you're looking for? Search for it above!</p>
-                        </div>
-                        <div class="col-12 text-decoration-none" v-if="role != 'producer' && role != 'user'" >
-                            <p class="fs-6 fst-italic text-start">Don't see what you're looking for? Search for it above!</p>
+            </div>
+            <div class="row">
+                <!-- BACK BUTTON, FORM TITLE, BROWSE TERM -->
+                <div class="col-md-4 col-11 mobile-spacer">
+
+                    <div class="row">
+                        <div class="col-12 d-flex align-items-center 
+                                    justify-content-start justify-content-md-start justify-content-center">
+                            <!-- Back Button -->
+                            <button class="btn btn-sm me-2" @click="()=>{this.$router.go(-1)}">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="currentColor" class="bi bi-arrow-left-circle" viewBox="0 0 16 16" style="color:rgb(145, 145, 145)">
+                                <path fill-rule="evenodd" d="M1 8a7 7 0 1 0 14 0A7 7 0 0 0 1 8m15 0A8 8 0 1 1 0 8a8 8 0 0 1 16 0m-4.5-.5a.5.5 0 0 1 0 1H5.707l2.147 2.146a.5.5 0 0 1-.708.708l-3-3a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L5.707 7.5z"/>
+                            </svg>
+                            </button>
+                            <!-- Text -->
+                            <p class="m-0 fw-bold mobile-rating-smaller-text-2" style="color:rgb(145, 145, 145)">Back to homepage</p>
                         </div>
                     </div>
 
                 </div>
 
-                <div class="col-md-8 col-12">
-
-                    <div class="row d-flex justify-content-center">
-
-                        <!-- Mobile View: Create/Request Link -->
-                        <div class="col-12 mobile-view-show mobile-pe-0 mt-2 mb-3">
-                            <router-link class="text-decoration-none" v-if="role == 'producer'" :to="{ path: '/Producer/Producer-Create-Listing/' }">
-                                <p class="mobile-rating-smaller-text-2 fst-italic text-center">Don't see what you're looking for? Create a new listing here!</p>
-                            </router-link>
-                            <router-link class="text-decoration-none" v-if="role == 'user'" :to="{ path: '/request/new/' }">
-                                <p class="mobile-rating-smaller-text-2 fst-italic text-center">Don't see what you're looking for? Request a new listing here!</p>
-                            </router-link>
-                            <router-link class="text-decoration-none" v-if="role != 'producer' && role != 'user'" :to="{ path: '/login' }">
-                                <p class="mobile-rating-smaller-text-2 fst-italic text-center">Don't see what you're looking for? Login to request a new listing!</p>
-                            </router-link>
-                        </div>
+                <div class="col-md-8 col-11 mobile-spacer">
+                    <div class="row d-flex justify-content-center mb-2">
 
                         <!-- Clear All Filters Button -->
-                        <div class="col-lg-2 col-md-3 col-6 mb-2">
+                        <div class="col-lg-2 col-md-3 col-4 mb-2">
                             <button class="btn btn-outline-danger w-100" @click="clearAllFilters()" v-if="hasActiveFilters()">
                                 <span>Clear</span>
                             </button>
                         </div>
 
                         <!-- Drink Type Filter -->
-                        <div class="col-lg-2 col-md-3 col-6 mb-2 dropdown">
+                        <div class="col-lg-2 col-md-3 col-4 mb-2 dropdown">
                             <button class="btn dropdown-toggle w-100" 
                                     type="button" 
                                     data-bs-toggle="dropdown" 
@@ -118,7 +107,7 @@
                         </div>
 
                         <!-- Type Category Filter -->
-                        <div class="col-lg-2 col-md-3 col-6 mb-2 dropdown">
+                        <div class="col-lg-2 col-md-3 col-4 mb-2 dropdown">
                             <button class="btn dropdown-toggle w-100" 
                                     :disabled="!browseFilters.drinkType"
                                     type="button" 
@@ -153,7 +142,7 @@
                         </div>
 
                         <!-- Country Filter -->
-                        <div class="col-lg-2 col-md-3 col-6 mb-2 dropdown">
+                        <div class="col-lg-2 col-md-3 col-4 mb-2 dropdown">
                             <button class="btn dropdown-toggle w-100" 
                                     type="button" 
                                     data-bs-toggle="dropdown" 
@@ -178,7 +167,7 @@
                         </div>
 
                         <!-- Rating Filter -->
-                        <div class="col-lg-2 col-md-3 col-6 mb-2 dropdown">
+                        <div class="col-lg-2 col-md-3 col-4 mb-2 dropdown">
                             <button class="btn dropdown-toggle w-100" 
                                     type="button" 
                                     data-bs-toggle="dropdown" 
@@ -229,7 +218,7 @@
                         </div>
 
                         <!-- Sort Options -->
-                        <div class="col-lg-2 col-md-3 col-6 mb-2 dropdown">
+                        <div class="col-lg-2 col-md-3 col-4 mb-2 dropdown">
                             <button class="btn dropdown-toggle w-100" 
                                     type="button" 
                                     data-bs-toggle="dropdown" 
@@ -249,21 +238,20 @@
                         </div>
                     
                     </div>
-
+                </div>
             </div>
-            
             <!-- Results Header -->
             <div class="row mt-3">
-                <div class="col-12">
+                <div class="col-11 mobile-spacer">
                     <p class="fw-bold fs-6 m-0 py-2 mobile-view-hide" v-if="resultListings.length > 0">
                         Viewing: {{ resultListings.length }} {{ effectiveBrowseTerm }} {{ resultListings.length === 1 ? 'Listing' : 'Listings' }}
                     </p>
-                    <p class="fw-bold fs-6 m-0 py-2" v-else>No {{ effectiveBrowseTerm }} Listings Found!</p>
+                    <p class="fst-italic fs-6 m-0 py-2" v-else>No drinks found for your chosen filters.</p>
                 </div>
             </div>
 
             <!-- Display Listings -->
-            <div class="text-start">
+            <div class="text-start col-11 mobile-spacer">
                 <div class="row" v-for="resultListing in resultListings" :key="resultListing.id">
                     
                     <!-- MOBILE VIEW-->
@@ -296,10 +284,7 @@
                     <div class="mobile-col-2 mobile-pe-0 mobile-ps-1 mobile-view-show">
                         <div class="d-flex flex-column align-items-center ps-lg-3">
                             <div class="d-flex align-items-center justify-content-center mb-1">
-                                <span class="mobile-fs-7">{{ resultListing.averageRating !== '-' ? resultListing.averageRating : '-' }}</span>
-                                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" class="bi bi-star-fill ms-1" viewBox="0 0 16 16" style="color: gold;" v-if="resultListing.averageRating !== '-'">
-                                    <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"/>
-                                </svg>
+                                 <span class="fs-4 fw-bold me-2" style="color: #f0b258">{{ resultListing.averageRating !== '-' ? resultListing.averageRating : '-' }} ★</span>
                             </div>
                             <!-- Bookmark Icon -->
                             <BookmarkIcon 
@@ -347,10 +332,7 @@
                             <!-- Rating & Bookmark -->
                             <div class="d-flex flex-column align-items-end">
                                 <div class="d-flex align-items-center mb-2">
-                                    <span class="fs-5 me-2">{{ resultListing.averageRating !== '-' ? resultListing.averageRating : '-' }}</span>
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-star-fill" viewBox="0 0 16 16" style="color: gold;" v-if="resultListing.averageRating !== '-'">
-                                        <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"/>
-                                    </svg>
+                                    <span class="fs-4 fw-bold me-2" style="color: #f0b258">{{ resultListing.averageRating !== '-' ? resultListing.averageRating : '-' }} ★</span>
                                 </div>
                                 <!-- Bookmark Icon -->
                                 <BookmarkIcon 
@@ -376,7 +358,7 @@
                 </div>
             </div>
 
-        </div>
+
             </div>
 
         <BookmarkModal 
