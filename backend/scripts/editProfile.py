@@ -1,5 +1,5 @@
 # Port: 5100
-# Routes: /editDetails (POST), /updateBookmark (POST), /updateFollowLists (POST), /updateModType (POST), /removeModType (POST)
+# Routes: /editDetails (POST), /editBio (POST), /updateBookmark (POST), /updateFollowLists (POST), /updateModType (POST), /removeModType (POST)
 # /updateListPrivacy (POST), /updateListItemNote (POST), /upvoteList (POST), /removeUpvote (POST)
 # -----------------------------------------------------------------------------------------
 
@@ -72,6 +72,39 @@ def editDetails():
                 },
                 "message": "An error occurred updating user preferences."
             }), 500
+
+# -----------------------------------------------------------------------------------------
+# [POST] Edit user bio
+# - Update user bio
+# - Possible return codes: 201 (Updated), 500 (Error during update)
+@blueprint.route('/editBio', methods=['POST'])
+def editBio():
+    data = request.get_json()
+    userID = data['userID']
+    bio = data.get('bio', '')
+    
+    try:
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("UPDATE users SET \"bio\" = %s WHERE id = %s", (bio, userID))
+        
+        return jsonify({
+            "code": 201,
+            "data": {
+                "userID": userID,
+                "bio": bio
+            },
+            "message": "Bio updated successfully."
+        }), 201
+
+    except Exception as e:
+        print(str(e))
+        return jsonify({
+            "code": 500,
+            "data": {
+                "userID": userID
+            },
+            "message": "An error occurred updating user bio."
+        }), 500
 
 # -----------------------------------------------------------------------------------------
 # [POST] Update user producer bookmark

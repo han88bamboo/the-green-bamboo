@@ -414,7 +414,8 @@ CREATE TABLE "users" (
     "blueDot" BOOLEAN DEFAULT TRUE, -- Indicates if the blue dot should be shown
     "ambassador" BOOLEAN DEFAULT FALSE,
     "categoryExpert" VARCHAR(255) DEFAULT NULL, -- Category expert designation (e.g., "Champagne Expert", "Whisky Expert", etc.)
-    "country" VARCHAR(255)
+    "country" VARCHAR(255),
+    "bio" TEXT DEFAULT NULL -- User biography/about me section
 );
 
 -- Create a GIN index on username for trigram fuzzy search

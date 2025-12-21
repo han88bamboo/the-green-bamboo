@@ -864,14 +864,14 @@
               <div v-if="Array.isArray(VARIANT_DRNK_TYP) && VARIANT_DRNK_TYP.includes(specified_listing.drinkType)">
                 <div v-if="userType === 'user' && userID !== 'defaultUser'">
                   <button class="btn primary-btn-less-round-blue btn-lg" @click="handleReviewClick"
-                    style="font-weight: bold;"> <!--v-if="!inEdit"-->
+                    style="font-weight: bold; min-width: 195.89px;"> <!--v-if="!inEdit"-->
                     Add My Review
                   </button>
                 </div>
                 <!-- Logged-out users -->
                 <div v-else>
                   <button class="btn primary-btn-less-round-blue btn-lg" @click="$router.push('/login')"
-                    style="font-weight: bold;">
+                    style="font-weight: bold; min-width: 195.89px;">
                     Add My Review
                   </button>
                 </div>
@@ -879,7 +879,7 @@
               <div v-else>
                 <div v-if="userType === 'user' && userID !== 'defaultUser'">
                   <button v-if="!inEdit" class="btn primary-btn-less-round-blue btn-lg" @click="handleReviewClick"
-                    style="font-weight: bold;">
+                    style="font-weight: bold; min-width: 195.89px;">
                     Add My Review
                   </button>
                   <button v-else class="btn primary-btn-less-round-blue btn-lg" style="font-weight: bold;">
@@ -889,7 +889,7 @@
                 <!-- Logged-out users -->
                 <div v-else>
                   <button class="btn primary-btn-less-round-blue btn-lg" @click="$router.push('/login')"
-                    style="font-weight: bold;">
+                    style="font-weight: bold; min-width: 195.89px;">
                     Add My Review
                   </button>
                 </div>

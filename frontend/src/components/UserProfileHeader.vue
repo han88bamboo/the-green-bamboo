@@ -68,10 +68,53 @@
                       + Follow
                     </button>
                   </div>
-
-                  <p class="mobile-view-hide mobile-rating-smaller-text-2 mt-2">
-                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi sodales enim in elementum tincidunt.  Sed vel pulvinar velit.
-                  </p>
+                  <!--user profile bio DESKTOP--> 
+                  <div class="mobile-view-hide mt-2">
+                    <!-- View mode -->
+                    <div v-if="!isEditingBio" class="d-flex align-items-start gap-2">
+                      <p class="mobile-rating-smaller-text-2 mb-0 xflex-grow-1">
+                        {{ displayUser.bio || (ownProfile ? 'No bio yet. Add one to tell others about yourself!' : 'This user has not added a bio yet.') }}
+                      </p>
+                      <button
+                        v-if="ownProfile && user"
+                        type="button"
+                        class="btn btn-sm p-0 text-secondary"
+                        @click="startEditingBio"
+                        style="flex-shrink: 0;"
+                      >
+                        <i class="bi bi-pencil"></i>
+                      </button>
+                    </div>
+                    <!-- Edit mode -->
+                    <div v-else>
+                      <textarea
+                        v-model="editedBio"
+                        class="form-control mb-2"
+                        rows="3"
+                        maxlength="120"
+                        placeholder="Tell others about yourself, your favorite drinks, tasting experiences..."
+                      ></textarea>
+                      <div class="d-flex justify-content-between align-items-center">
+                        <small class="text-muted">{{ editedBio.length }}/120 characters</small>
+                        <div class="d-flex gap-2">
+                          <button
+                            type="button"
+                            class="btn btn-sm btn-secondary"
+                            @click="cancelEditingBio"
+                          >
+                            Cancel
+                          </button>
+                          <button
+                            type="button"
+                            class="btn btn-sm btn-read-more"
+                            @click="saveBio"
+                          >
+                            Save
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
 
                 <!-- 3. USER STATS -->
@@ -114,9 +157,52 @@
             </div>
             
             <!-- USER BIO - MOBILE  -->
-            <p class="mobile-view-show mt-3 mb-2">
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi sodales enim in elementum tincidunt.  Sed vel pulvinar velit. 
-            </p>
+            <div class="mobile-view-show mt-3 mb-2">
+              <!-- View mode -->
+              <div v-if="!isEditingBio" class="d-flex align-items-start gap-2">
+                <p class="mb-0 xflex-grow-1">
+                  {{ displayUser.bio || (ownProfile ? 'No bio yet. Add one to tell others about yourself!' : 'This user has not added a bio yet.') }}
+                </p>
+                <button
+                  v-if="ownProfile && user"
+                  type="button"
+                  class="btn btn-sm p-0 text-secondary"
+                  @click="startEditingBio"
+                  style="flex-shrink: 0;"
+                >
+                  <i class="bi bi-pencil"></i>
+                </button>
+              </div>
+              <!-- Edit mode -->
+              <div v-else>
+                <textarea
+                  v-model="editedBio"
+                  class="form-control mb-2"
+                  rows="3"
+                  maxlength="120"
+                  placeholder="Tell others about yourself, your favorite drinks, tasting experiences..."
+                ></textarea>
+                <div class="d-flex justify-content-between align-items-center">
+                  <small class="text-muted">{{ editedBio.length }}/120 characters</small>
+                  <div class="d-flex gap-2">
+                    <button
+                      type="button"
+                      class="btn btn-sm btn-secondary"
+                      @click="cancelEditingBio"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="button"
+                      class="btn btn-sm btn-read-more"
+                      @click="saveBio"
+                    >
+                      Save
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
             <!-- USER BIO AND MODERATOR / AMBASSADOR -->
             <div class="d-flex flex-wrap gap-2">
               <!-- User Title: Moderator Badge -->
@@ -1395,6 +1481,7 @@ export default {
         displayName: '',
         username: '',
         photo: null,
+        bio: '',
       },
       displayUserID: null,
       displayUserDrinkChoice: "",
@@ -1423,6 +1510,11 @@ export default {
       drinkTypes: [],
       flavourTag: [],
       observationTags: [],
+      
+      // Bio Edit Variables
+      isEditingBio: false,
+      editedBio: '',
+      originalBio: '',
       
       // Moderator Variables
       successRemoveMod: false,
@@ -1724,6 +1816,49 @@ export default {
       this.selectedObservationTags = Array.isArray(this.displayUser.preferences) 
         ? this.displayUser.preferences 
         : [];
+    },
+
+    // ------------------- Bio Editing -------------------
+    startEditingBio() {
+      this.originalBio = this.displayUser.bio || '';
+      this.editedBio = this.originalBio;
+      this.isEditingBio = true;
+    },
+
+    cancelEditingBio() {
+      this.editedBio = this.originalBio;
+      this.isEditingBio = false;
+    },
+
+    async saveBio() {
+      try {
+        const response = await this.$axios.post(
+          `${process.env.VUE_APP_API_URL}/editProfile/editBio`,
+          {
+            userID: this.userID,
+            bio: this.editedBio,
+          },
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        const toast = useToast();
+        if (response.data.code == 201) {
+          toast.success("Bio updated successfully!");
+          // Update local data
+          this.displayUser.bio = this.editedBio;
+          this.isEditingBio = false;
+          // Reload page to ensure consistency
+          window.location.reload();
+        }
+      } catch (error) {
+        console.error(error);
+        const toast = useToast();
+        toast.error("Failed to update bio");
+      }
     },
 
     // ------------------- Follow/Unfollow -------------------
