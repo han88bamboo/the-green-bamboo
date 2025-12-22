@@ -415,10 +415,10 @@ export default {
             this.errorMessage = '';
             
             try {
-                const response = await fetch(
-                    `${import.meta.env.VITE_BE_API}/menu-history/getMenuHistory?venueId=${this.venueId}`
+                const response = await this.$axios.get(
+                    `${process.env.VUE_APP_API_URL}/menu-history/getMenuHistory?venueId=${this.venueId}`
                 );
-                const result = await response.json();
+                const result = response.data;
                 
                 if (result.code === 200) {
                     this.historyVersions = result.data.history;
@@ -441,10 +441,10 @@ export default {
             this.expandedSubsections.clear();
             
             try {
-                const response = await fetch(
-                    `${import.meta.env.VITE_BE_API}/menu-history/getSnapshotDetails?versionId=${versionId}&includeItems=true`
+                const response = await this.$axios.get(
+                    `${process.env.VUE_APP_API_URL}/menu-history/getSnapshotDetails?versionId=${versionId}&includeItems=true`
                 );
-                const result = await response.json();
+                const result = response.data;
                 
                 if (result.code === 200) {
                     this.snapshotDetails = result.data;
@@ -496,10 +496,10 @@ export default {
         async loadSectionItems(section) {
             // Lazy loading endpoint call for section items
             try {
-                const response = await fetch(
-                    `${import.meta.env.VITE_BE_API}/menu-history/getSnapshotDetails?versionId=${this.selectedVersion}&includeItems=true&sectionId=${section.originalSectionId}`
+                const response = await this.$axios.get(
+                    `${process.env.VUE_APP_API_URL}/menu-history/getSnapshotDetails?versionId=${this.selectedVersion}&includeItems=true&sectionId=${section.originalSectionId}`
                 );
-                const result = await response.json();
+                const result = response.data;
                 
                 if (result.code === 200) {
                     // Find the section in our data and update its items
@@ -582,17 +582,11 @@ export default {
                     itemIds: this.selectedItemIds
                 };
                 
-                const response = await fetch(
-                    `${import.meta.env.VITE_BE_API}/menu-history/restoreFromSnapshot`,
-                    {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify(payload)
-                    }
+                const response = await this.$axios.post(
+                    `${process.env.VUE_APP_API_URL}/menu-history/restoreFromSnapshot`,
+                    payload
                 );
-                const result = await response.json();
+                const result = response.data;
                 
                 if (result.code === 201) {
                     this.restoreResult = {

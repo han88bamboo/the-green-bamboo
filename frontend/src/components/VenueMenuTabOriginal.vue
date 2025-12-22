@@ -312,7 +312,7 @@
                 <!-- Menu History Button -->
                 <div v-if="editMenuMode" class="col-2 d-grid px-1">
                     <button type="button"
-                        class="btn btn-outline-info rounded-0 reverse-clickable-text px-0"
+                        class="btn btn-info rounded-0 px-0"
                         data-bs-toggle="modal" data-bs-target="#menuHistoryModal">
                         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" 
                              class="bi bi-clock-history me-1" viewBox="0 0 16 16">
@@ -324,15 +324,15 @@
                     </button>
                 </div>
        
-                <div v-if="editMenuMode" class="col-2 d-grid px-1">
+                <div v-if="editMenuMode" class="col-1 d-grid px-1">
                     <button type="button" class="btn btn-warning rounded-0 reverse-clickable-text px-0"
                         @click="resetEditMenu"> Reset </button>
                 </div>
-                <div v-if="editMenuMode" class="col-2 d-grid px-1">
+                <div v-if="editMenuMode" class="col-1 d-grid px-1">
                     <button type="button" class="btn btn-success rounded-0 reverse-clickable-text px-0"
                         @click="updateMenu"> Save </button>
                 </div>
-                <div v-if="editMenuMode" class="col-2 d-grid px-1">
+                <div v-if="editMenuMode" class="col-1 d-grid px-1">
                     <button type="button" class="btn btn-danger rounded-0 reverse-clickable-text px-0"
                         @click="exitEditMode"> Exit </button>
                 </div>
