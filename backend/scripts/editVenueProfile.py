@@ -11,6 +11,7 @@ import s3pdfMenu
 from flask import Blueprint, g, request, jsonify
 from datetime import datetime
 from scripts import pointsHelperFunc, badge_helpers, notifications
+from scripts.menuHistory import create_or_update_menu_snapshot
 import re
 import traceback
 import logging
@@ -1687,6 +1688,17 @@ def editMenuHierarchical():
             total_subsections = len(subsections)
             total_items = len(kept_item_ids)
             
+            # ===== STEP 7: Create Menu History Snapshot =====
+            # Capture the current menu state as a snapshot for history/rollback
+            try:
+                snapshot_result = create_or_update_menu_snapshot(cursor, venueID)
+                logger.info(f"Menu snapshot for venue {venueID}: {snapshot_result['message']}")
+            except Exception as snapshot_error:
+                # Log the error but don't fail the entire save operation
+                # Menu history is non-critical functionality
+                logger.error(f"Failed to create menu snapshot for venue {venueID}: {str(snapshot_error)}")
+                snapshot_result = {'success': False, 'message': str(snapshot_error)}
+            
             return jsonify({
                 "code": 201,
                 "message": "Menu updated successfully with UPSERT logic!",
@@ -1698,7 +1710,8 @@ def editMenuHierarchical():
                     "deletedItems": deleted_items,
                     "notificationsSent": notifications_sent,
                     "venueFollowerNotifications": venue_notifications_sent
-                }
+                },
+                "snapshot": snapshot_result if snapshot_result.get('success') else None
             }), 201
     
     except Exception as e:

@@ -1838,3 +1838,91 @@ WHERE "specialStatus" = 'EVENT_FESTIVAL';
 CREATE INDEX idx_events_upcoming_query 
 ON "events"("eventLocation", "eventStartDate", "eventEndDate", "signupOpen");
 
+-- ========= MENU HISTORY FEATURE =========
+-- Stores point-in-time snapshots of venue menus with 3-hour rolling aggregation
+
+-- Version snapshot table - one row per snapshot session
+CREATE TABLE "venueMenuVersionSnapshots" (
+    "id" SERIAL PRIMARY KEY,
+    "venueId" INTEGER NOT NULL REFERENCES "venues"("id") ON DELETE CASCADE,
+    "snapshotTimestamp" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "aggregationWindowStart" TIMESTAMP NOT NULL,  -- Start of the 3-hour rolling window
+    "createdAt" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Section snapshots - captures all section data at snapshot time
+CREATE TABLE "venueMenuSectionSnapshots" (
+    "id" SERIAL PRIMARY KEY,
+    "versionSnapshotId" INTEGER NOT NULL REFERENCES "venueMenuVersionSnapshots"("id") ON DELETE CASCADE,
+    "originalSectionId" INTEGER NOT NULL,  -- Reference to original venuesMenu.id (not FK, historical)
+    "sectionName" VARCHAR(500) NOT NULL,
+    "sectionType" VARCHAR(50),  -- 'section' or 'subsection'
+    "parentSectionId" INTEGER,  -- Original parent ID for subsections (not FK, historical)
+    "sectionOrder" INTEGER,
+    "sectionDescription" TEXT,
+    "createdAt" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Item snapshots - captures all item data at snapshot time
+CREATE TABLE "venueMenuItemSnapshots" (
+    "id" SERIAL PRIMARY KEY,
+    "versionSnapshotId" INTEGER NOT NULL REFERENCES "venueMenuVersionSnapshots"("id") ON DELETE CASCADE,
+    "sectionSnapshotId" INTEGER NOT NULL REFERENCES "venueMenuSectionSnapshots"("id") ON DELETE CASCADE,
+    "originalItemId" INTEGER NOT NULL,  -- Reference to original menuItems.id (not FK, historical)
+    "originalSectionId" INTEGER NOT NULL,  -- Reference to original venuesMenu.id the item belonged to
+    -- Item core fields
+    "listingId" INTEGER,  -- Can be NULL for custom items
+    "itemName" VARCHAR(500),
+    "itemDescription" TEXT,
+    "itemOrder" INTEGER,
+    -- Pricing fields
+    "price" DECIMAL(10, 2),
+    "currency" VARCHAR(10),
+    "happyHourPrice" DECIMAL(10, 2),
+    "glassPrice" DECIMAL(10, 2),
+    "bottlePrice" DECIMAL(10, 2),
+    -- Serving info
+    "servingSize" VARCHAR(100),
+    "servingUnit" VARCHAR(50),
+    -- Availability & status
+    "isAvailable" BOOLEAN DEFAULT TRUE,
+    "isFeatured" BOOLEAN DEFAULT FALSE,
+    "isHappyHour" BOOLEAN DEFAULT FALSE,
+    -- Dietary/allergen info
+    "allergens" TEXT[],
+    "dietaryFlags" TEXT[],
+    -- Pairing & notes
+    "pairingNotes" TEXT,
+    "tastingNotes" TEXT,
+    "specialNotes" TEXT,
+    -- Vintage & origin
+    "vintage" INTEGER,
+    "region" VARCHAR(255),
+    "producer" VARCHAR(255),
+    -- Display options
+    "displayOptions" JSONB,
+    "customFields" JSONB,
+    "createdAt" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+-- ========= INDEXES FOR MENU HISTORY FEATURE =========
+-- Index for querying snapshots by venue (most common query)
+CREATE INDEX idx_menu_version_snapshots_venue 
+ON "venueMenuVersionSnapshots"("venueId", "snapshotTimestamp" DESC);
+
+-- Index for checking aggregation window
+CREATE INDEX idx_menu_version_snapshots_window 
+ON "venueMenuVersionSnapshots"("venueId", "aggregationWindowStart");
+
+-- Index for section snapshots by version
+CREATE INDEX idx_menu_section_snapshots_version 
+ON "venueMenuSectionSnapshots"("versionSnapshotId");
+
+-- Index for item snapshots by version (for lazy loading)
+CREATE INDEX idx_menu_item_snapshots_version 
+ON "venueMenuItemSnapshots"("versionSnapshotId");
+
+-- Index for item snapshots by section (for accordion expansion)
+CREATE INDEX idx_menu_item_snapshots_section 
+ON "venueMenuItemSnapshots"("sectionSnapshotId");
+
