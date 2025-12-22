@@ -84,3 +84,7 @@
 #         /editAddress (POST), /editOpeningHours (POST), /editPublicHolidays (POST), /editReservationDetails (POST), /addListingToMenu (POST)
 #         /editSectionName (PUT), /editMenu (POST), /updateVenueStatus (POST), /editUpdate (POST), /deleteUpdate (POST), /editQA (POST)
 #         /deleteQA (POST), /addProfileCount (POST), /addNewProfileCount (POST)
+# -----------------------------------------------------------------------------------------
+# menuHistory.py
+# Port: 5306
+# Routes: /getMenuHistory (GET), /getSnapshotDetails (GET), /restoreFromSnapshot (POST)

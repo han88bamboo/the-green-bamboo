@@ -1124,6 +1124,15 @@ def addListingToMenu():
 
             notifications.add_notification_to_db(notification_data)
 
+            # ===== Create Menu History Snapshot =====
+            # Capture the current menu state as a snapshot for history/rollback
+            try:
+                snapshot_result = create_or_update_menu_snapshot(cursor, venueID)
+                logger.info(f"Menu snapshot after addListingToMenu for venue {venueID}: {snapshot_result['message']}")
+            except Exception as snapshot_error:
+                # Log the error but don't fail the entire operation
+                logger.error(f"Failed to create menu snapshot for venue {venueID}: {str(snapshot_error)}")
+
             return jsonify(
                 {
                     "code": 201,
