@@ -2570,6 +2570,7 @@
         :venue-id="targetVenue.id"
         :current-menu-sections="mainSections"
         @restored="handleMenuHistoryRestore"
+        @restore-to-staged="handleRestoreToStaged"
     />
 
 </template>
@@ -3191,6 +3192,89 @@ export default {
             
             // Also close edit mode since menu structure may have changed
             this.$emit('edit-menu-mode-changed', false);
+        },
+
+        // Handle restore-to-staged event from MenuHistoryModal
+        // This adds restored sections/items to the staged editableMainSections without saving to backend
+        handleRestoreToStaged(payload) {
+            console.log('🍽️ handleRestoreToStaged received:', payload);
+            
+            if (payload.type === 'sections') {
+                // Add restored sections to the end of editableMainSections
+                for (const section of payload.sections) {
+                    // Assign section order
+                    section.sectionOrder = this.editableMainSections.length;
+                    
+                    // Assign item orders within the section
+                    if (section.sectionMenu) {
+                        section.sectionMenu.forEach((item, index) => {
+                            item.itemOrder = index;
+                        });
+                    }
+                    
+                    // Assign subsection orders and item orders within subsections
+                    if (section.subsections) {
+                        section.subsections.forEach((sub, subIndex) => {
+                            sub.sectionOrder = subIndex;
+                            sub.parentSectionId = null; // Will be linked when saved
+                            if (sub.sectionMenu) {
+                                sub.sectionMenu.forEach((item, itemIndex) => {
+                                    item.itemOrder = itemIndex;
+                                });
+                            }
+                        });
+                    }
+                    
+                    this.editableMainSections.push(section);
+                    console.log('🍽️ Added restored section:', section.sectionName);
+                }
+            } else if (payload.type === 'items') {
+                // Add items to target section
+                const targetSection = this.findSectionById(payload.targetSectionId);
+                if (targetSection) {
+                    if (!targetSection.sectionMenu) {
+                        targetSection.sectionMenu = [];
+                    }
+                    
+                    for (const item of payload.items) {
+                        // Check for duplicates before adding
+                        const isDuplicate = targetSection.sectionMenu.some(existingItem => {
+                            const sameListingId = existingItem.itemID === item.itemID;
+                            const existingVintage = existingItem.itemVintage ?? existingItem.variant ?? -1;
+                            const newVintage = item.itemVintage ?? item.variant ?? -1;
+                            return sameListingId && existingVintage === newVintage;
+                        });
+                        
+                        if (!isDuplicate) {
+                            item.itemOrder = targetSection.sectionMenu.length;
+                            targetSection.sectionMenu.push(item);
+                            console.log('🍽️ Added restored item to section:', item.itemDetails?.itemName);
+                        } else {
+                            console.log('🍽️ Skipped duplicate item:', item.itemDetails?.itemName);
+                        }
+                    }
+                } else {
+                    console.warn('🍽️ Target section not found for item restore:', payload.targetSectionId);
+                }
+            }
+        },
+        
+        // Helper to find a section by ID (including subsections)
+        findSectionById(sectionId) {
+            for (const section of this.editableMainSections) {
+                if (section.id === sectionId) {
+                    return section;
+                }
+                // Check subsections
+                if (section.subsections) {
+                    for (const sub of section.subsections) {
+                        if (sub.id === sectionId) {
+                            return sub;
+                        }
+                    }
+                }
+            }
+            return null;
         },
 
         // Calculate total item count for main sections (direct items + subsection items)

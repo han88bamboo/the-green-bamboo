@@ -372,7 +372,7 @@ export default {
             default: () => []
         }
     },
-    emits: ['restored'],
+    emits: ['restored', 'restore-to-staged'],
     data() {
         return {
             // State
@@ -572,46 +572,287 @@ export default {
             this.restoreResult = null;
             const toast = useToast();
             
+            const RESTORE_SUFFIX = " (Restored from Menu History)";
+            
             try {
-                const payload = {
-                    versionId: this.selectedVersion,
-                    venueId: parseInt(this.venueId),
-                    restoreType: this.restoreType,
-                    targetSectionId: this.targetSectionId ? parseInt(this.targetSectionId) : null,
-                    sectionIds: this.selectedSectionIds,
-                    itemIds: this.selectedItemIds
+                const restoredSections = [];
+                const restoredItems = [];
+                const skippedItems = [];
+                
+                if (this.restoreType === 'full') {
+                    // Restore all sections with their subsections and items
+                    for (const section of this.snapshotDetails.sections) {
+                        const restoredSection = this.buildSectionForRestore(section, RESTORE_SUFFIX);
+                        restoredSections.push(restoredSection);
+                        
+                        // Track restored items for reporting
+                        if (restoredSection.sectionMenu) {
+                            restoredSection.sectionMenu.forEach(item => {
+                                restoredItems.push(item.itemDetails?.itemName || 'Unknown Item');
+                            });
+                        }
+                        if (restoredSection.subsections) {
+                            restoredSection.subsections.forEach(sub => {
+                                if (sub.sectionMenu) {
+                                    sub.sectionMenu.forEach(item => {
+                                        restoredItems.push(item.itemDetails?.itemName || 'Unknown Item');
+                                    });
+                                }
+                            });
+                        }
+                    }
+                    
+                } else if (this.restoreType === 'section') {
+                    // Restore selected sections only
+                    for (const section of this.snapshotDetails.sections) {
+                        // Check if this section or any of its subsections are selected
+                        const sectionSelected = this.selectedSectionIds.includes(section.originalSectionId);
+                        const selectedSubsections = (section.subsections || []).filter(sub => 
+                            this.selectedSectionIds.includes(sub.originalSectionId)
+                        );
+                        
+                        if (sectionSelected) {
+                            // Restore the whole section including subsections
+                            const restoredSection = this.buildSectionForRestore(section, RESTORE_SUFFIX);
+                            restoredSections.push(restoredSection);
+                            
+                            if (restoredSection.sectionMenu) {
+                                restoredSection.sectionMenu.forEach(item => {
+                                    restoredItems.push(item.itemDetails?.itemName || 'Unknown Item');
+                                });
+                            }
+                            if (restoredSection.subsections) {
+                                restoredSection.subsections.forEach(sub => {
+                                    if (sub.sectionMenu) {
+                                        sub.sectionMenu.forEach(item => {
+                                            restoredItems.push(item.itemDetails?.itemName || 'Unknown Item');
+                                        });
+                                    }
+                                });
+                            }
+                        } else if (selectedSubsections.length > 0) {
+                            // Only specific subsections selected - create a new parent section to hold them
+                            const parentSection = {
+                                id: null,
+                                sectionName: section.sectionName + RESTORE_SUFFIX,
+                                sectionOrder: null, // Will be assigned by parent
+                                isVisible: true,
+                                sectionDescription: section.sectionDescription || '',
+                                sectionMenu: [],
+                                subsections: []
+                            };
+                            
+                            for (const sub of selectedSubsections) {
+                                const restoredSub = this.buildSubsectionForRestore(sub, RESTORE_SUFFIX);
+                                parentSection.subsections.push(restoredSub);
+                                
+                                if (restoredSub.sectionMenu) {
+                                    restoredSub.sectionMenu.forEach(item => {
+                                        restoredItems.push(item.itemDetails?.itemName || 'Unknown Item');
+                                    });
+                                }
+                            }
+                            
+                            restoredSections.push(parentSection);
+                        }
+                    }
+                    
+                } else if (this.restoreType === 'item') {
+                    // Restore selected items into target section
+                    if (!this.targetSectionId) {
+                        toast.error('Please select a target section');
+                        this.isRestoring = false;
+                        return;
+                    }
+                    
+                    // Find target section in current menu
+                    const targetSection = this.findTargetSection(this.targetSectionId);
+                    if (!targetSection) {
+                        toast.error('Target section not found');
+                        this.isRestoring = false;
+                        return;
+                    }
+                    
+                    // Collect all selected items from snapshot
+                    const itemsToRestore = [];
+                    for (const section of this.snapshotDetails.sections) {
+                        for (const item of (section.items || [])) {
+                            if (this.selectedItemIds.includes(item.itemSnapshotId)) {
+                                itemsToRestore.push(item);
+                            }
+                        }
+                        for (const subsection of (section.subsections || [])) {
+                            for (const item of (subsection.items || [])) {
+                                if (this.selectedItemIds.includes(item.itemSnapshotId)) {
+                                    itemsToRestore.push(item);
+                                }
+                            }
+                        }
+                    }
+                    
+                    // Check for duplicates and build items
+                    for (const item of itemsToRestore) {
+                        const duplicate = this.checkItemDuplicate(targetSection, item);
+                        if (duplicate) {
+                            skippedItems.push({
+                                name: item.itemName || 'Unknown Item',
+                                reason: 'Item already exists in target section'
+                            });
+                        } else {
+                            const menuItem = this.buildMenuItemForRestore(item);
+                            restoredItems.push(item.itemName || 'Unknown Item');
+                            
+                            // Emit event to add this item to the target section
+                            this.$emit('restore-to-staged', {
+                                type: 'items',
+                                targetSectionId: this.targetSectionId,
+                                items: [menuItem]
+                            });
+                        }
+                    }
+                }
+                
+                // Emit restored sections if any
+                if (restoredSections.length > 0) {
+                    this.$emit('restore-to-staged', {
+                        type: 'sections',
+                        sections: restoredSections
+                    });
+                }
+                
+                // Show result
+                this.restoreResult = {
+                    success: true,
+                    restoredSections: restoredSections.map(s => s.sectionName),
+                    restoredItems: restoredItems,
+                    skippedItems: skippedItems,
+                    totalRestored: restoredSections.length + restoredItems.length,
+                    totalSkipped: skippedItems.length,
+                    message: `Successfully added ${restoredSections.length} sections and ${restoredItems.length} items to your staged menu. Close this window and then click "Save" to persist the changes.`
                 };
                 
-                const response = await this.$axios.post(
-                    `${process.env.VUE_APP_API_URL}/menuHistory/restoreFromSnapshot`,
-                    payload
-                );
-                const result = response.data;
+                toast.success(`Added to staged menu! Remember to save your changes.`);
                 
-                if (result.code === 201) {
-                    this.restoreResult = {
-                        success: true,
-                        ...result.data
-                    };
-                    toast.success(`Restored ${result.data.totalRestored} items successfully!`);
-                    this.$emit('restored');
-                } else {
-                    this.restoreResult = {
-                        success: false,
-                        message: result.message || 'Restore failed'
-                    };
-                    toast.error(result.message || 'Restore failed');
-                }
             } catch (error) {
                 console.error('Error restoring from snapshot:', error);
                 this.restoreResult = {
                     success: false,
-                    message: 'Network error: Could not complete restore'
+                    message: 'Error building restore data: ' + error.message
                 };
-                toast.error('Network error during restore');
+                toast.error('Error during restore');
             } finally {
                 this.isRestoring = false;
             }
+        },
+        
+        // Build a full section structure for restore (including subsections and items)
+        buildSectionForRestore(snapshotSection, suffix) {
+            const section = {
+                id: null, // New section, no ID yet
+                sectionName: snapshotSection.sectionName + suffix,
+                sectionOrder: null, // Will be assigned by parent
+                isVisible: true,
+                sectionDescription: snapshotSection.sectionDescription || '',
+                sectionMenu: [],
+                subsections: []
+            };
+            
+            // Add items
+            for (const item of (snapshotSection.items || [])) {
+                const menuItem = this.buildMenuItemForRestore(item);
+                section.sectionMenu.push(menuItem);
+            }
+            
+            // Add subsections
+            for (const subsection of (snapshotSection.subsections || [])) {
+                const restoredSub = this.buildSubsectionForRestore(subsection, suffix);
+                section.subsections.push(restoredSub);
+            }
+            
+            return section;
+        },
+        
+        // Build a subsection structure for restore
+        buildSubsectionForRestore(snapshotSubsection, suffix) {
+            const subsection = {
+                id: null,
+                sectionName: snapshotSubsection.sectionName + suffix,
+                sectionOrder: null,
+                isSubSection: true,
+                isVisible: true,
+                sectionDescription: snapshotSubsection.sectionDescription || '',
+                sectionMenu: [],
+                subsections: [] // Subsections can't have nested subsections
+            };
+            
+            // Add items
+            for (const item of (snapshotSubsection.items || [])) {
+                const menuItem = this.buildMenuItemForRestore(item);
+                subsection.sectionMenu.push(menuItem);
+            }
+            
+            return subsection;
+        },
+        
+        // Build a menu item structure matching the editMenu format
+        buildMenuItemForRestore(snapshotItem) {
+            return {
+                itemID: snapshotItem.listingId,
+                itemOrder: null, // Will be assigned
+                itemVintage: snapshotItem.vintage,
+                itemPrice: snapshotItem.price,
+                itemPriceCurrency: snapshotItem.currency || 'Tokens',
+                itemServingType: null,
+                itemAvailability: snapshotItem.isAvailable !== false,
+                staffPick: snapshotItem.isFeatured || false,
+                new: false,
+                itemDetails: {
+                    itemName: snapshotItem.itemName || 'Unknown Item',
+                    itemDesc: snapshotItem.itemDescription || '',
+                    // These will be populated when the menu loads from backend
+                    itemPhoto: null,
+                    itemType: null,
+                    itemTypeCategory: null,
+                    itemABV: null,
+                    itemCountry: null,
+                    itemRating: null,
+                    itemProducer: null,
+                    itemProducerID: null
+                }
+            };
+        },
+        
+        // Check if an item already exists in the target section
+        checkItemDuplicate(targetSection, snapshotItem) {
+            if (!targetSection.sectionMenu) return false;
+            
+            return targetSection.sectionMenu.some(existingItem => {
+                // Match by listingId and vintage (same logic as backend)
+                const sameListingId = existingItem.itemID === snapshotItem.listingId;
+                const existingVintage = existingItem.itemVintage ?? existingItem.variant ?? -1;
+                const snapshotVintage = snapshotItem.vintage ?? -1;
+                const sameVintage = existingVintage === snapshotVintage;
+                
+                return sameListingId && sameVintage;
+            });
+        },
+        
+        // Find target section in current menu (including subsections)
+        findTargetSection(sectionId) {
+            for (const section of this.currentMenuSections) {
+                if (section.id === sectionId) {
+                    return section;
+                }
+                // Check subsections
+                if (section.subsections) {
+                    for (const sub of section.subsections) {
+                        if (sub.id === sectionId) {
+                            return sub;
+                        }
+                    }
+                }
+            }
+            return null;
         },
         
         formatDate(isoString) {
