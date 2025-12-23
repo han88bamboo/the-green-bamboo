@@ -416,7 +416,7 @@ export default {
             
             try {
                 const response = await this.$axios.get(
-                    `${process.env.VUE_APP_API_URL}/menu-history/getMenuHistory?venueId=${this.venueId}`
+                    `${process.env.VUE_APP_API_URL}/menuHistory/getMenuHistory?venueId=${this.venueId}`
                 );
                 const result = response.data;
                 
@@ -442,7 +442,7 @@ export default {
             
             try {
                 const response = await this.$axios.get(
-                    `${process.env.VUE_APP_API_URL}/menu-history/getSnapshotDetails?versionId=${versionId}&includeItems=true`
+                    `${process.env.VUE_APP_API_URL}/menuHistory/getSnapshotDetails?versionId=${versionId}&includeItems=true`
                 );
                 const result = response.data;
                 
@@ -497,7 +497,7 @@ export default {
             // Lazy loading endpoint call for section items
             try {
                 const response = await this.$axios.get(
-                    `${process.env.VUE_APP_API_URL}/menu-history/getSnapshotDetails?versionId=${this.selectedVersion}&includeItems=true&sectionId=${section.originalSectionId}`
+                    `${process.env.VUE_APP_API_URL}/menuHistory/getSnapshotDetails?versionId=${this.selectedVersion}&includeItems=true&sectionId=${section.originalSectionId}`
                 );
                 const result = response.data;
                 
@@ -583,7 +583,7 @@ export default {
                 };
                 
                 const response = await this.$axios.post(
-                    `${process.env.VUE_APP_API_URL}/menu-history/restoreFromSnapshot`,
+                    `${process.env.VUE_APP_API_URL}/menuHistory/restoreFromSnapshot`,
                     payload
                 );
                 const result = response.data;
