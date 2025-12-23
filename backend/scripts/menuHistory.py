@@ -152,6 +152,9 @@ def create_or_update_menu_snapshot(cursor, venue_id: int) -> dict:
         sections_count = 0
         
         for section in sections:
+            # Cast sectionOrder from VARCHAR to INTEGER for snapshot table
+            section_order_int = int(section['sectionOrder']) if section['sectionOrder'] else 0
+            
             cursor.execute(
                 '''
                 INSERT INTO "venueMenuSectionSnapshots"
@@ -166,7 +169,7 @@ def create_or_update_menu_snapshot(cursor, venue_id: int) -> dict:
                     section['sectionName'],
                     section['sectionType'],
                     section['parentSectionId'],  # Store original parent ID (not FK)
-                    section['sectionOrder'],
+                    section_order_int,  # Convert VARCHAR to INTEGER
                     section['sectionDescription']
                 )
             )
@@ -190,7 +193,7 @@ def create_or_update_menu_snapshot(cursor, venue_id: int) -> dict:
                 mi."new",
                 mi."staffPick",
                 l."listingName",
-                l."listingDesc"
+                l."officialDesc"
             FROM "menuItems" mi
             LEFT JOIN "listings" l ON mi."itemID" = l."id"
             WHERE mi."sectionId" IN (
@@ -225,7 +228,7 @@ def create_or_update_menu_snapshot(cursor, venue_id: int) -> dict:
                     item['sectionId'],
                     item['itemID'],  # listingId (can be NULL for custom items)
                     item['listingName'],  # itemName from listing
-                    item['listingDesc'],  # itemDescription from listing
+                    item['officialDesc'],  # itemDescription from listing (officialDesc in listings table)
                     item['itemOrder'],
                     item['itemPrice'],
                     item['itemPriceCurrency'],

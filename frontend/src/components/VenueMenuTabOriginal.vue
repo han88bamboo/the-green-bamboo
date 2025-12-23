@@ -3162,7 +3162,7 @@ export default {
         // Enable edit button after 10 seconds
         setTimeout(() => {
             this.editButtonDisabled = false;
-        }, 10000);
+        }, 1500);
 
     },
 
