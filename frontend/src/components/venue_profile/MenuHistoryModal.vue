@@ -210,18 +210,41 @@
                                     <div class="row g-2">
                                         <div class="col-md-6">
                                             <label class="form-label small">Restore Type:</label>
-                                            <select class="form-select form-select-sm" v-model="restoreType">
+                                            <select class="form-select form-select-sm" v-model="restoreType" @change="onRestoreTypeChange">
                                                 <option value="">-- Select what to restore --</option>
                                                 <option value="full">Entire Menu (All Sections)</option>
-                                                <option value="section">Selected Sections Only</option>
+                                                <option value="section">Selected Main Sections Only</option>
+                                                <option value="subsection">Selected Subsections Only</option>
                                                 <option value="item">Selected Items Only</option>
                                             </select>
                                         </div>
-                                        <div class="col-md-6" v-if="restoreType === 'item' || restoreType === 'subsection'">
-                                            <label class="form-label small">Target Section (restore into):</label>
+                                        <!-- Target Section for Items -->
+                                        <div class="col-md-6" v-if="restoreType === 'item'">
+                                            <label class="form-label small">Target Section (restore items into):</label>
                                             <select class="form-select form-select-sm" v-model="targetSectionId">
                                                 <option value="">-- Select target section --</option>
                                                 <option v-for="section in currentMenuSections" :key="section.id" :value="section.id">
+                                                    {{ section.sectionName }}
+                                                </option>
+                                            </select>
+                                        </div>
+                                        <!-- Subsection Restore Options -->
+                                        <div class="col-md-6" v-if="restoreType === 'subsection'">
+                                            <label class="form-label small">Restore Subsections As:</label>
+                                            <select class="form-select form-select-sm" v-model="subsectionRestoreMode">
+                                                <option value="">-- Select restore mode --</option>
+                                                <option value="promote">Promote to Main Sections</option>
+                                                <option value="attach">Attach to Existing Section</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <!-- Target Parent Section (when attaching subsections) -->
+                                    <div class="row g-2 mt-2" v-if="restoreType === 'subsection' && subsectionRestoreMode === 'attach'">
+                                        <div class="col-md-6">
+                                            <label class="form-label small">Target Parent Section:</label>
+                                            <select class="form-select form-select-sm" v-model="targetParentSectionId">
+                                                <option value="">-- Select parent section --</option>
+                                                <option v-for="section in currentMainSections" :key="section.id" :value="section.id">
                                                     {{ section.sectionName }}
                                                 </option>
                                             </select>
@@ -363,11 +386,12 @@
                                                                     type="button"
                                                                     @click="toggleSubsection(subsection)">
                                                                 <div class="d-flex align-items-center w-100">
-                                                                    <input v-if="restoreType === 'section'" 
+                                                                    <!-- Subsection checkbox only shows for 'subsection' restore type -->
+                                                                    <input v-if="restoreType === 'subsection'" 
                                                                            type="checkbox" class="form-check-input me-2"
-                                                                           :checked="selectedSectionIds.includes(subsection.originalSectionId)"
+                                                                           :checked="selectedSubsectionIds.includes(subsection.originalSectionId)"
                                                                            @click.stop
-                                                                           @change="toggleSectionSelection(subsection.originalSectionId)">
+                                                                           @change="toggleSubsectionSelection(subsection.originalSectionId)">
                                                                     <span class="xme-auto">{{ subsection.sectionName }}</span>
                                                                     <span v-if="!subsection.isVisible" class="badge bg-warning text-dark ms-2" title="This subsection was hidden at snapshot time">
                                                                         <i class="bi bi-eye-slash"></i> Hidden
@@ -546,7 +570,10 @@ export default {
             restoreType: '',
             targetSectionId: '',
             selectedSectionIds: [],
+            selectedSubsectionIds: [],  // Separate tracking for subsection selections
             selectedItemIds: [],
+            subsectionRestoreMode: '',  // 'promote' or 'attach'
+            targetParentSectionId: '',  // For attaching subsections to existing section
             
             // Result
             restoreResult: null
@@ -557,8 +584,19 @@ export default {
             if (!this.restoreType) return false;
             if (this.restoreType === 'full') return true;
             if (this.restoreType === 'section') return this.selectedSectionIds.length > 0;
+            if (this.restoreType === 'subsection') {
+                if (this.selectedSubsectionIds.length === 0) return false;
+                if (!this.subsectionRestoreMode) return false;
+                if (this.subsectionRestoreMode === 'attach' && !this.targetParentSectionId) return false;
+                return true;
+            }
             if (this.restoreType === 'item') return this.selectedItemIds.length > 0 && this.targetSectionId;
             return false;
+        },
+        
+        // Get only main sections from current menu (not subsections) - for subsection parent selection
+        currentMainSections() {
+            return this.currentMenuSections.filter(section => !section.isSubSection && !section.parentSectionId);
         },
         
         // Find current menu items that don't exist in the loaded snapshot
@@ -800,6 +838,25 @@ export default {
             }
         },
         
+        toggleSubsectionSelection(subsectionId) {
+            const index = this.selectedSubsectionIds.indexOf(subsectionId);
+            if (index === -1) {
+                this.selectedSubsectionIds.push(subsectionId);
+            } else {
+                this.selectedSubsectionIds.splice(index, 1);
+            }
+        },
+        
+        onRestoreTypeChange() {
+            // Clear selections when restore type changes
+            this.selectedSectionIds = [];
+            this.selectedSubsectionIds = [];
+            this.selectedItemIds = [];
+            this.targetSectionId = '';
+            this.subsectionRestoreMode = '';
+            this.targetParentSectionId = '';
+        },
+        
         toggleItemSelection(itemId) {
             const index = this.selectedItemIds.indexOf(itemId);
             if (index === -1) {
@@ -862,16 +919,12 @@ export default {
                     }
                     
                 } else if (this.restoreType === 'section') {
-                    // Restore selected sections only
+                    // Restore selected main sections only (subsections are restored with their parent)
                     for (const section of this.snapshotDetails.sections) {
-                        // Check if this section or any of its subsections are selected
                         const sectionSelected = this.selectedSectionIds.includes(section.originalSectionId);
-                        const selectedSubsections = (section.subsections || []).filter(sub => 
-                            this.selectedSectionIds.includes(sub.originalSectionId)
-                        );
                         
                         if (sectionSelected) {
-                            // Restore the whole section including subsections
+                            // Restore the whole section including its subsections
                             const restoredSection = this.buildSectionForRestore(section, RESTORE_SUFFIX);
                             restoredSections.push(restoredSection);
                             
@@ -889,31 +942,83 @@ export default {
                                     }
                                 });
                             }
-                        } else if (selectedSubsections.length > 0) {
-                            // Only specific subsections selected - create a new parent section to hold them
-                            const parentSection = {
+                        }
+                    }
+                    
+                } else if (this.restoreType === 'subsection') {
+                    // Restore selected subsections
+                    // Collect all selected subsections from the snapshot
+                    const selectedSubsections = [];
+                    for (const section of this.snapshotDetails.sections) {
+                        for (const subsection of (section.subsections || [])) {
+                            if (this.selectedSubsectionIds.includes(subsection.originalSectionId)) {
+                                selectedSubsections.push({
+                                    subsection,
+                                    parentSectionName: section.sectionName
+                                });
+                            }
+                        }
+                    }
+                    
+                    if (this.subsectionRestoreMode === 'promote') {
+                        // Promote subsections to main sections
+                        for (const { subsection } of selectedSubsections) {
+                            const promotedSection = {
                                 id: null,
-                                sectionName: section.sectionName + RESTORE_SUFFIX,
-                                sectionOrder: null, // Will be assigned by parent
-                                isVisible: section.isVisible !== false, // Preserve parent visibility
-                                sectionDescription: section.sectionDescription || '',
+                                sectionName: subsection.sectionName + RESTORE_SUFFIX,
+                                sectionOrder: null,
+                                isVisible: subsection.isVisible !== false,
+                                isSubSection: false,
+                                parentSectionId: null,
+                                sectionDescription: subsection.sectionDescription || '',
                                 sectionMenu: [],
                                 subsections: []
                             };
                             
-                            for (const sub of selectedSubsections) {
-                                const restoredSub = this.buildSubsectionForRestore(sub, RESTORE_SUFFIX);
-                                parentSection.subsections.push(restoredSub);
-                                
-                                if (restoredSub.sectionMenu) {
-                                    restoredSub.sectionMenu.forEach(item => {
-                                        restoredItems.push(item.itemDetails?.itemName || 'Unknown Item');
-                                    });
-                                }
+                            // Add items
+                            for (const item of (subsection.items || [])) {
+                                const menuItem = this.buildMenuItemForRestore(item);
+                                promotedSection.sectionMenu.push(menuItem);
+                                restoredItems.push(item.itemName || 'Unknown Item');
                             }
                             
-                            restoredSections.push(parentSection);
+                            restoredSections.push(promotedSection);
                         }
+                    } else if (this.subsectionRestoreMode === 'attach') {
+                        // Attach subsections to target parent section
+                        if (!this.targetParentSectionId) {
+                            toast.error('Please select a target parent section');
+                            this.isRestoring = false;
+                            return;
+                        }
+                        
+                        // Find target parent section in current menu
+                        const targetParent = this.findTargetSection(this.targetParentSectionId);
+                        if (!targetParent) {
+                            toast.error('Target parent section not found');
+                            this.isRestoring = false;
+                            return;
+                        }
+                        
+                        // Build subsections to attach
+                        const subsectionsToAttach = [];
+                        for (const { subsection } of selectedSubsections) {
+                            const restoredSub = this.buildSubsectionForRestore(subsection, RESTORE_SUFFIX);
+                            subsectionsToAttach.push(restoredSub);
+                            
+                            if (restoredSub.sectionMenu) {
+                                restoredSub.sectionMenu.forEach(item => {
+                                    restoredItems.push(item.itemDetails?.itemName || 'Unknown Item');
+                                });
+                            }
+                        }
+                        
+                        // Emit event to attach subsections to target parent
+                        this.$emit('restore-to-staged', {
+                            type: 'subsections',
+                            targetParentSectionId: this.targetParentSectionId,
+                            subsections: subsectionsToAttach
+                        });
                     }
                     
                 } else if (this.restoreType === 'item') {
@@ -1227,7 +1332,10 @@ export default {
             this.restoreType = '';
             this.targetSectionId = '';
             this.selectedSectionIds = [];
+            this.selectedSubsectionIds = [];
             this.selectedItemIds = [];
+            this.subsectionRestoreMode = '';
+            this.targetParentSectionId = '';
             this.restoreResult = null;
             this.expandedSections.clear();
             this.expandedSubsections.clear();

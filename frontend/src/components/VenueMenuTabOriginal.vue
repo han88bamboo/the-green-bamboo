@@ -5777,7 +5777,9 @@ export default {
             });
 
             // 7. Check for deep nesting (subsections can't have subsections)
+            // Note: Skip null IDs to avoid false positives with newly created sections
             const nestedSubsections = subsections.filter(sub => 
+                sub.id !== null && sub.id !== undefined &&
                 subsections.some(other => other.parentSectionId === sub.id)
             );
             nestedSubsections.forEach(nested => {
@@ -5982,9 +5984,15 @@ export default {
                 // Add main section to flat array
                 flatSections.push(mainSection);
                 
-                // Add subsections to flat array
+                // Add subsections to flat array with proper parent reference
                 if (mainSection.subsections && Array.isArray(mainSection.subsections)) {
-                    flatSections.push(...mainSection.subsections);
+                    mainSection.subsections.forEach(sub => {
+                        // Set parentSectionId to parent's database ID or sectionOrder (for new sections)
+                        // The backend accepts either as a key in section_id_mapping
+                        sub.parentSectionId = mainSection.id || mainSection.sectionOrder;
+                        sub.isSubSection = true; // Ensure flag is set
+                        flatSections.push(sub);
+                    });
                 }
             });
             
