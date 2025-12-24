@@ -98,9 +98,69 @@
                                 </span>
                             </div>
 
+
+                         <div  class="accordion" >
+                            <!-- Items Not In This Snapshot Section -->
+                            <div v-if="currentItemsNotInSnapshot.length > 0" class="accordion-item mb-3">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button not-in-snapshot-header" 
+                                            :class="{ collapsed: !isNotInSnapshotExpanded }"
+                                            type="button" 
+                                            @click="isNotInSnapshotExpanded = !isNotInSnapshotExpanded">
+                                        <div class="d-flex align-items-center w-100">
+                                            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                                            <strong>Items On Current Menu Not In This Version</strong>
+                                            <span class="badge bg-light text-dark ms-2">
+                                                {{ currentItemsNotInSnapshot.length }} items
+                                            </span>
+                                        </div>
+                                    </button>
+                                </h2>
+                                <div class="accordion-collapse" 
+                                        :class="{ collapse: !isNotInSnapshotExpanded, show: isNotInSnapshotExpanded }">
+                                    <div class="accordion-body">
+                                        <p class="text-muted small mb-2">
+                                            These items are on your current menu but were not present in this historical version.
+                                        </p>
+                                        <div class="table-responsive">
+                                            <table class="table table-sm table-hover">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Name</th>
+                                                        <th>Format</th>
+                                                        <th>Price</th>
+                                                        <th>Vintage</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr v-for="(item, index) in currentItemsNotInSnapshot" :key="index">
+                                                        <td>
+                                                            {{ item.itemName }}
+                                                            <span class="text-muted">({{ item.itemProducer }})</span>
+                                                        </td>
+                                                        <td>
+                                                            <span v-if="item.itemServingTypeName">{{ item.itemServingTypeName }}</span>
+                                                            <span v-else class="text-muted">-</span>
+                                                        </td>
+                                                        <td>
+                                                            <span v-if="item.itemPrice">{{ item.itemPriceCurrency }}{{ item.itemPrice.toFixed(2) }}</span>
+                                                            <span v-else class="text-muted">-</span>
+                                                        </td>
+                                                        <td>
+                                                            <span v-if="item.variant">{{ item.variant }}</span>
+                                                            <span v-else class="text-muted">-</span>
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                                </div>                        
                             <!-- Restore Options -->
-                            <div class="card mb-3 border-warning">
-                                <div class="card-header bg-warning-subtle">
+                            <div class="xcard mb-3 border-warning mx-2">
+                                <div class="card-header xbg-warning-subtle">
                                     <strong>Restore Options</strong>
                                 </div>
                                 <div class="card-body">
@@ -144,6 +204,7 @@
 
                             <!-- Snapshot Accordion -->
                             <div v-else-if="snapshotDetails" class="accordion" id="snapshotAccordion">
+                                
                                 <!-- Main Sections -->
                                 <div v-for="(section, sIndex) in snapshotDetails.sections" :key="section.sectionSnapshotId"
                                      class="accordion-item">
@@ -431,6 +492,7 @@ export default {
             // Accordion expansion tracking
             expandedSections: new Set(),
             expandedSubsections: new Set(),
+            isNotInSnapshotExpanded: true,
             
             // Restore options
             restoreType: '',
@@ -449,6 +511,60 @@ export default {
             if (this.restoreType === 'section') return this.selectedSectionIds.length > 0;
             if (this.restoreType === 'item') return this.selectedItemIds.length > 0 && this.targetSectionId;
             return false;
+        },
+        
+        // Find current menu items that don't exist in the loaded snapshot
+        currentItemsNotInSnapshot() {
+            if (!this.snapshotDetails?.sections) return [];
+            
+            // Build a Set of all items in the snapshot
+            const snapshotItemsSet = this.buildSnapshotItemsSet();
+            const missingItems = [];
+            
+            // Check each item in current menu
+            for (const section of this.currentMenuSections) {
+                // Check items in main section
+                for (const item of (section.sectionMenu || [])) {
+                    const itemID = item.itemID;
+                    const variant = item.itemVintage ?? item.variant ?? -1;
+                    const key = `${itemID}|${variant}`;
+                    
+                    if (!snapshotItemsSet.has(key)) {
+                        missingItems.push({
+                            itemName: item.itemDetails?.itemName || 'Unknown Item',
+                            itemProducer: item.itemDetails?.itemProducer || 'Unknown Producer',
+                            itemServingTypeName: item.itemServingTypeName || null,
+                            itemPrice: item.itemPrice,
+                            itemPriceCurrency: item.itemPriceCurrency || '$',
+                            variant: item.itemVintage ?? item.variant ?? null,
+                            sectionName: section.sectionName
+                        });
+                    }
+                }
+                
+                // Check items in subsections
+                for (const subsection of (section.subsections || [])) {
+                    for (const item of (subsection.sectionMenu || [])) {
+                        const itemID = item.itemID;
+                        const variant = item.itemVintage ?? item.variant ?? -1;
+                        const key = `${itemID}|${variant}`;
+                        
+                        if (!snapshotItemsSet.has(key)) {
+                            missingItems.push({
+                                itemName: item.itemDetails?.itemName || 'Unknown Item',
+                                itemProducer: item.itemDetails?.itemProducer || 'Unknown Producer',
+                                itemServingTypeName: item.itemServingTypeName || null,
+                                itemPrice: item.itemPrice,
+                                itemPriceCurrency: item.itemPriceCurrency || '$',
+                                variant: item.itemVintage ?? item.variant ?? null,
+                                sectionName: `${section.sectionName} > ${subsection.sectionName}`
+                            });
+                        }
+                    }
+                }
+            }
+            
+            return missingItems;
         }
     },
     methods: {
@@ -869,6 +985,33 @@ export default {
             };
         },
         
+        // Build a Set of (itemID, variant) tuples from the snapshot
+        buildSnapshotItemsSet() {
+            const snapshotItems = new Set();
+            
+            if (!this.snapshotDetails?.sections) return snapshotItems;
+            
+            for (const section of this.snapshotDetails.sections) {
+                // Add items from main section
+                for (const item of (section.items || [])) {
+                    const itemID = item.itemID;
+                    const variant = item.variant ?? -1;
+                    snapshotItems.add(`${itemID}|${variant}`);
+                }
+                
+                // Add items from subsections
+                for (const subsection of (section.subsections || [])) {
+                    for (const item of (subsection.items || [])) {
+                        const itemID = item.itemID;
+                        const variant = item.variant ?? -1;
+                        snapshotItems.add(`${itemID}|${variant}`);
+                    }
+                }
+            }
+            
+            return snapshotItems;
+        },
+        
         // Build a Set of existing (itemID, variant) tuples from the entire current menu
         buildCurrentMenuItemsSet() {
             const existingItems = new Set();
@@ -989,6 +1132,7 @@ export default {
             this.restoreResult = null;
             this.expandedSections.clear();
             this.expandedSubsections.clear();
+            this.isNotInSnapshotExpanded = true;
         }
     },
     mounted() {
@@ -1015,7 +1159,11 @@ export default {
 
 .accordion-button {
     background-color: #e7f1ff;
+}
 
+.accordion-button.not-in-snapshot-header {
+    background-color: #fff3cd;
+    color: #664d03;
 }
 
 .accordion-button:focus {
