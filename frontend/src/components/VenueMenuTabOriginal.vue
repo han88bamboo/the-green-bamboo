@@ -3256,6 +3256,33 @@ export default {
                 } else {
                     console.warn('🍽️ Target section not found for item restore:', payload.targetSectionId);
                 }
+            } else if (payload.type === 'subsections') {
+                // Add subsections to target parent section
+                const targetParent = this.findSectionById(payload.targetParentSectionId);
+                if (targetParent) {
+                    if (!targetParent.subsections) {
+                        targetParent.subsections = [];
+                    }
+                    
+                    for (const subsection of payload.subsections) {
+                        // Assign subsection order within parent
+                        subsection.sectionOrder = targetParent.subsections.length;
+                        subsection.parentSectionId = targetParent.id || targetParent.sectionOrder;
+                        subsection.isSubSection = true;
+                        
+                        // Ensure item orders are set
+                        if (subsection.sectionMenu) {
+                            subsection.sectionMenu.forEach((item, index) => {
+                                item.itemOrder = index;
+                            });
+                        }
+                        
+                        targetParent.subsections.push(subsection);
+                        console.log('🍽️ Added restored subsection to parent:', subsection.sectionName, '→', targetParent.sectionName);
+                    }
+                } else {
+                    console.warn('🍽️ Target parent section not found for subsection restore:', payload.targetParentSectionId);
+                }
             }
         },
         

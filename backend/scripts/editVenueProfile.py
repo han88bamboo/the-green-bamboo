@@ -1302,6 +1302,7 @@ def editMenuHierarchical():
             for section in main_sections:
                 section_name = section['sectionName']
                 section_order = section['sectionOrder']
+                frontend_id = section.get('id')  # Track what frontend thinks the ID is
                 is_visible = section.get('isVisible', True)
                 section_desc = section.get('sectionDescription', '')
                 subscribers_enabled = section.get('subscribersEnabled', False)
@@ -1322,6 +1323,7 @@ def editMenuHierarchical():
                 if existing:
                     # UPDATE existing section (preserves ID and subscribers!)
                     section_id = existing['id']
+                    logger.info(f"[MENU DEBUG] Main section '{section_name}' (frontend_id={frontend_id}, sectionOrder={section_order}) -> FOUND in DB with id={section_id}")
                     
                     cursor.execute(
                         '''
@@ -1348,31 +1350,43 @@ def editMenuHierarchical():
                         (section_name, section_order, venueID, is_visible, section_desc, subscribers_enabled)
                     )
                     section_id = cursor.fetchone()['id']
+                    logger.info(f"[MENU DEBUG] Main section '{section_name}' (frontend_id={frontend_id}, sectionOrder={section_order}) -> INSERTED with new id={section_id}")
                 
                 # Track this section
                 kept_section_ids.append(section_id)
                 # Map by database ID (primary key for parentSectionId lookups)
                 section_id_mapping[section_id] = section_id
-                # Also map by sectionOrder (fallback for new sections where frontend uses sectionOrder as parentSectionId)
-                section_id_mapping[section_order] = section_id
+                # Also map by sectionOrder with prefix (fallback for new sections where frontend uses sectionOrder as parentSectionId)
+                # Use prefix to avoid collision between sectionOrder values and database IDs
+                section_id_mapping[f'order_{section_order}'] = section_id
+                
+                # ALSO map by frontend's id if different from database id (for item lookup)
+                if frontend_id is not None and frontend_id != section_id:
+                    logger.info(f"[MENU DEBUG] Also mapping frontend_id {frontend_id} -> db_id {section_id}")
+                    section_id_mapping[frontend_id] = section_id
             
             # ===== STEP 2: UPSERT Subsections =====
             for subsection in subsections:
                 section_name = subsection['sectionName']
                 section_order = subsection['sectionOrder']
+                frontend_id = subsection.get('id')  # Track what frontend thinks the ID is
                 is_visible = subsection.get('isVisible', True)
                 section_desc = subsection.get('sectionDescription', '')
                 subscribers_enabled = subsection.get('subscribersEnabled', False)
                 parent_section_id = subsection.get('parentSectionId')
                 
                 # Resolve parent's database ID
+                # First try direct lookup (parentSectionId is a database ID)
                 parent_db_id = section_id_mapping.get(parent_section_id)
                 if parent_db_id is None:
-                    # Try as integer
+                    # Try as integer (in case it came as string)
                     if isinstance(parent_section_id, str) and parent_section_id.isdigit():
                         parent_db_id = section_id_mapping.get(int(parent_section_id))
                     elif isinstance(parent_section_id, int):
                         parent_db_id = section_id_mapping.get(str(parent_section_id))
+                if parent_db_id is None:
+                    # Try with sectionOrder prefix (for new sections where parentSectionId is sectionOrder)
+                    parent_db_id = section_id_mapping.get(f'order_{parent_section_id}')
                 
                 if parent_db_id is None:
                     logger.warning(f"Subsection '{section_name}' has invalid parent ID {parent_section_id}, skipping")
@@ -1426,8 +1440,13 @@ def editMenuHierarchical():
                 kept_section_ids.append(subsection_id)
                 # Map by database ID (primary key)
                 section_id_mapping[subsection_id] = subsection_id
-                # Also map by sectionOrder (fallback)
-                section_id_mapping[section_order] = subsection_id
+                # Also map by sectionOrder with prefix (fallback)
+                section_id_mapping[f'order_{section_order}'] = subsection_id
+                
+                # ALSO map by frontend's id if different from database id (for item lookup)
+                if frontend_id is not None and frontend_id != subsection_id:
+                    logger.info(f"[MENU DEBUG] Subsection: Also mapping frontend_id {frontend_id} -> db_id {subsection_id}")
+                    section_id_mapping[frontend_id] = subsection_id
             
             # ===== STEP 3: UPSERT Menu Items =====
             kept_item_ids = []
@@ -1447,8 +1466,12 @@ def editMenuHierarchical():
             existing_listing_ids = {row['itemID'] for row in cursor.fetchall()}
             
             for section in updatedMenu:
-                # Look up by database ID first (for existing sections), then by sectionOrder (for new sections)
-                section_db_id = section_id_mapping.get(section.get('id')) or section_id_mapping.get(section['sectionOrder'])
+                # Look up by database ID first (for existing sections), then by sectionOrder with prefix (for new sections)
+                frontend_section_id = section.get('id')
+                section_db_id = section_id_mapping.get(frontend_section_id) or section_id_mapping.get(f"order_{section['sectionOrder']}")
+                
+                logger.info(f"[MENU DEBUG] Processing items for section '{section['sectionName']}' (frontend_id={frontend_section_id}, sectionOrder={section['sectionOrder']}) -> section_db_id={section_db_id}")
+                
                 if section_db_id is None:
                     logger.warning(f"Section '{section['sectionName']}' not in mapping, skipping items")
                     continue
