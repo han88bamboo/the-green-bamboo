@@ -179,6 +179,7 @@ def create_or_update_menu_snapshot(cursor, venue_id: int) -> dict:
             sections_count += 1
         
         # ===== Capture all menu items with their full data =====
+        # Only capture menuItems columns directly - no JOIN to listings (itemName fetched at retrieval time)
         cursor.execute(
             '''
             SELECT 
@@ -192,11 +193,8 @@ def create_or_update_menu_snapshot(cursor, venue_id: int) -> dict:
                 mi."itemServingType",
                 mi."variant",
                 mi."new",
-                mi."staffPick",
-                l."listingName",
-                l."officialDesc"
+                mi."staffPick"
             FROM "menuItems" mi
-            LEFT JOIN "listings" l ON mi."itemID" = l."id"
             WHERE mi."sectionId" IN (
                 SELECT "id" FROM "venuesMenu" WHERE "venueId" = %s
             )
@@ -218,24 +216,24 @@ def create_or_update_menu_snapshot(cursor, venue_id: int) -> dict:
                 '''
                 INSERT INTO "venueMenuItemSnapshots"
                 ("versionSnapshotId", "sectionSnapshotId", "originalItemId", "originalSectionId",
-                 "listingId", "itemName", "itemDescription", "itemOrder",
-                 "price", "currency", "vintage", "isAvailable", "isFeatured")
+                 "itemOrder", "itemPrice", "itemAvailability", "itemID", "itemServingType",
+                 "variant", "new", "staffPick", "itemPriceCurrency")
                 VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                 ''',
                 (
                     version_id,
                     section_snapshot_id,
-                    item['id'],
-                    item['sectionId'],
-                    item['itemID'],  # listingId (can be NULL for custom items)
-                    item['listingName'],  # itemName from listing
-                    item['officialDesc'],  # itemDescription from listing (officialDesc in listings table)
+                    item['id'],  # originalItemId
+                    item['sectionId'],  # originalSectionId
                     item['itemOrder'],
                     item['itemPrice'],
-                    item['itemPriceCurrency'],
-                    item['variant'],  # vintage
                     item['itemAvailability'],
-                    item['staffPick']  # Using staffPick as isFeatured
+                    item['itemID'],  # FK to listings
+                    item['itemServingType'],
+                    item['variant'],
+                    item['new'],
+                    item['staffPick'],
+                    item['itemPriceCurrency']
                 )
             )
             items_count += 1
@@ -423,10 +421,12 @@ def getSnapshotDetails():
             if include_items:
                 if section_id:
                     # Load items for specific section only (lazy loading on accordion expand)
+                    # JOIN to listings to get itemName and itemDescription for display
                     cursor.execute(
                         '''
-                        SELECT i.*
+                        SELECT i.*, l."listingName" as "itemName", l."officialDesc" as "itemDescription"
                         FROM "venueMenuItemSnapshots" i
+                        LEFT JOIN "listings" l ON i."itemID" = l."id"
                         JOIN "venueMenuSectionSnapshots" s ON i."sectionSnapshotId" = s."id"
                         WHERE s."versionSnapshotId" = %s
                         AND s."originalSectionId" = %s
@@ -436,10 +436,12 @@ def getSnapshotDetails():
                     )
                 else:
                     # Load all items
+                    # JOIN to listings to get itemName and itemDescription for display
                     cursor.execute(
                         '''
-                        SELECT i.*
+                        SELECT i.*, l."listingName" as "itemName", l."officialDesc" as "itemDescription"
                         FROM "venueMenuItemSnapshots" i
+                        LEFT JOIN "listings" l ON i."itemID" = l."id"
                         WHERE i."versionSnapshotId" = %s
                         ORDER BY i."sectionSnapshotId", i."itemOrder"
                         ''',
@@ -459,15 +461,17 @@ def getSnapshotDetails():
                         sections_map[original_section_id]['items'].append({
                             'itemSnapshotId': item['id'],
                             'originalItemId': item['originalItemId'],
-                            'listingId': item['listingId'],
-                            'itemName': item['itemName'],
-                            'itemDescription': item['itemDescription'],
+                            'itemID': item['itemID'],  # listingId for restore
+                            'itemName': item['itemName'] or 'Unknown Item',  # From JOIN to listings
+                            'itemDescription': item['itemDescription'] or '',  # From JOIN to listings
                             'itemOrder': item['itemOrder'],
-                            'price': float(item['price']) if item['price'] else None,
-                            'currency': item['currency'],
-                            'vintage': item['vintage'],
-                            'isAvailable': item['isAvailable'],
-                            'isFeatured': item['isFeatured']
+                            'itemPrice': float(item['itemPrice']) if item['itemPrice'] else None,
+                            'itemPriceCurrency': item['itemPriceCurrency'],
+                            'variant': item['variant'],
+                            'itemAvailability': item['itemAvailability'],
+                            'itemServingType': item['itemServingType'],
+                            'new': item['new'],
+                            'staffPick': item['staffPick']
                         })
             
             return jsonify({

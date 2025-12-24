@@ -204,19 +204,19 @@
                                                                 </td>
                                                                 <td>{{ item.itemName || 'Unknown Item' }}</td>
                                                                 <td>
-                                                                    <span v-if="item.price">
-                                                                        {{ item.currency || '$' }}{{ item.price.toFixed(2) }}
+                                                                    <span v-if="item.itemPrice">
+                                                                        {{ item.itemPriceCurrency || '$' }}{{ item.itemPrice.toFixed(2) }}
                                                                     </span>
                                                                     <span v-else class="text-muted">-</span>
                                                                 </td>
                                                                 <td>
-                                                                    <span v-if="item.vintage">{{ item.vintage }}</span>
+                                                                    <span v-if="item.variant">{{ item.variant }}</span>
                                                                     <span v-else class="text-muted">-</span>
                                                                 </td>
                                                                 <td>
-                                                                    <span v-if="item.isAvailable" class="badge bg-success">Available</span>
+                                                                    <span v-if="item.itemAvailability" class="badge bg-success">Available</span>
                                                                     <span v-else class="badge bg-secondary">Unavailable</span>
-                                                                    <span v-if="item.isFeatured" class="badge bg-warning ms-1">Featured</span>
+                                                                    <span v-if="item.staffPick" class="badge bg-warning ms-1">Staff Pick</span>
                                                                 </td>
                                                             </tr>
                                                         </tbody>
@@ -274,11 +274,11 @@
                                                                                 </td>
                                                                                 <td>{{ item.itemName || 'Unknown Item' }}</td>
                                                                                 <td>
-                                                                                    <span v-if="item.price">{{ item.currency || '$' }}{{ item.price.toFixed(2) }}</span>
+                                                                                    <span v-if="item.itemPrice">{{ item.itemPriceCurrency || '$' }}{{ item.itemPrice.toFixed(2) }}</span>
                                                                                     <span v-else class="text-muted">-</span>
                                                                                 </td>
                                                                                 <td>
-                                                                                    <span v-if="item.vintage">{{ item.vintage }}</span>
+                                                                                    <span v-if="item.variant">{{ item.variant }}</span>
                                                                                     <span v-else class="text-muted">-</span>
                                                                                 </td>
                                                                             </tr>
@@ -797,20 +797,21 @@ export default {
         },
         
         // Build a menu item structure matching the editMenu format
+        // Maps from snapshot response fields (aligned with menuItems table) to editMenu format
         buildMenuItemForRestore(snapshotItem) {
             return {
-                itemID: snapshotItem.listingId,
+                itemID: snapshotItem.itemID,  // FK to listings
                 itemOrder: null, // Will be assigned
-                itemVintage: snapshotItem.vintage,
-                itemPrice: snapshotItem.price,
-                itemPriceCurrency: snapshotItem.currency || 'Tokens',
-                itemServingType: null,
-                itemAvailability: snapshotItem.isAvailable !== false,
-                staffPick: snapshotItem.isFeatured || false,
-                new: false,
+                itemVintage: snapshotItem.variant,
+                itemPrice: snapshotItem.itemPrice,
+                itemPriceCurrency: snapshotItem.itemPriceCurrency || 'Tokens',
+                itemServingType: snapshotItem.itemServingType,
+                itemAvailability: snapshotItem.itemAvailability !== false,
+                staffPick: snapshotItem.staffPick || false,
+                new: snapshotItem.new || false,
                 itemDetails: {
-                    itemName: snapshotItem.itemName || 'Unknown Item',
-                    itemDesc: snapshotItem.itemDescription || '',
+                    itemName: snapshotItem.itemName || 'Unknown Item',  // From JOIN to listings
+                    itemDesc: snapshotItem.itemDescription || '',  // From JOIN to listings
                     // These will be populated when the menu loads from backend
                     itemPhoto: null,
                     itemType: null,
@@ -829,10 +830,10 @@ export default {
             if (!targetSection.sectionMenu) return false;
             
             return targetSection.sectionMenu.some(existingItem => {
-                // Match by listingId and vintage (same logic as backend)
-                const sameListingId = existingItem.itemID === snapshotItem.listingId;
+                // Match by itemID (listingId) and variant (same logic as backend)
+                const sameListingId = existingItem.itemID === snapshotItem.itemID;
                 const existingVintage = existingItem.itemVintage ?? existingItem.variant ?? -1;
-                const snapshotVintage = snapshotItem.vintage ?? -1;
+                const snapshotVintage = snapshotItem.variant ?? -1;
                 const sameVintage = existingVintage === snapshotVintage;
                 
                 return sameListingId && sameVintage;

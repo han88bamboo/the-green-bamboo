@@ -1865,45 +1865,23 @@ CREATE TABLE "venueMenuSectionSnapshots" (
     "createdAt" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
--- Item snapshots - captures all item data at snapshot time
+-- Item snapshots - captures all item data at snapshot time (mirrors menuItems table)
 CREATE TABLE "venueMenuItemSnapshots" (
     "id" SERIAL PRIMARY KEY,
     "versionSnapshotId" INTEGER NOT NULL REFERENCES "venueMenuVersionSnapshots"("id") ON DELETE CASCADE,
     "sectionSnapshotId" INTEGER NOT NULL REFERENCES "venueMenuSectionSnapshots"("id") ON DELETE CASCADE,
     "originalItemId" INTEGER NOT NULL,  -- Reference to original menuItems.id (not FK, historical)
     "originalSectionId" INTEGER NOT NULL,  -- Reference to original venuesMenu.id the item belonged to
-    -- Item core fields
-    "listingId" INTEGER,  -- Can be NULL for custom items
-    "itemName" VARCHAR(500),
-    "itemDescription" TEXT,
+    -- Direct mirrors of menuItems columns (column names match menuItems exactly)
     "itemOrder" INTEGER,
-    -- Pricing fields
-    "price" DECIMAL(10, 2),
-    "currency" VARCHAR(10),
-    "happyHourPrice" DECIMAL(10, 2),
-    "glassPrice" DECIMAL(10, 2),
-    "bottlePrice" DECIMAL(10, 2),
-    -- Serving info
-    "servingSize" VARCHAR(100),
-    "servingUnit" VARCHAR(50),
-    -- Availability & status
-    "isAvailable" BOOLEAN DEFAULT TRUE,
-    "isFeatured" BOOLEAN DEFAULT FALSE,
-    "isHappyHour" BOOLEAN DEFAULT FALSE,
-    -- Dietary/allergen info
-    "allergens" TEXT[],
-    "dietaryFlags" TEXT[],
-    -- Pairing & notes
-    "pairingNotes" TEXT,
-    "tastingNotes" TEXT,
-    "specialNotes" TEXT,
-    -- Vintage & origin
-    "vintage" INTEGER,
-    "region" VARCHAR(255),
-    "producer" VARCHAR(255),
-    -- Display options
-    "displayOptions" JSONB,
-    "customFields" JSONB,
+    "itemPrice" DECIMAL(10, 2),
+    "itemAvailability" BOOLEAN DEFAULT TRUE,
+    "itemID" INTEGER,  -- FK to listings (can be NULL for custom items) - matches menuItems.itemID
+    "itemServingType" INTEGER,  -- FK to servingTypes (historical, not enforced)
+    "variant" SMALLINT DEFAULT NULL,  -- Vintage/year - matches menuItems.variant type
+    "new" BOOLEAN DEFAULT FALSE,
+    "staffPick" BOOLEAN DEFAULT FALSE,
+    "itemPriceCurrency" VARCHAR(10) DEFAULT 'Tokens',
     "createdAt" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
