@@ -3256,7 +3256,7 @@ export default {
                 } else {
                     console.warn('🍽️ Target section not found for item restore:', payload.targetSectionId);
                 }
-            } else if (payload.type === 'subsections') {
+            } else if (payload.type === 'subsections') { 
                 // Add subsections to target parent section
                 const targetParent = this.findSectionById(payload.targetParentSectionId);
                 if (targetParent) {
