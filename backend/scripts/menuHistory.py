@@ -421,12 +421,16 @@ def getSnapshotDetails():
             if include_items:
                 if section_id:
                     # Load items for specific section only (lazy loading on accordion expand)
-                    # JOIN to listings to get itemName and itemDescription for display
+                    # JOIN to listings, producers, and servingTypes for display
                     cursor.execute(
                         '''
-                        SELECT i.*, l."listingName" as "itemName", l."officialDesc" as "itemDescription"
+                        SELECT i.*, l."listingName" as "itemName", l."officialDesc" as "itemDescription",
+                               p."producerName" as "itemProducer",
+                               st."servingType" as "itemServingTypeName"
                         FROM "venueMenuItemSnapshots" i
                         LEFT JOIN "listings" l ON i."itemID" = l."id"
+                        LEFT JOIN "producers" p ON l."producerID" = p."id"
+                        LEFT JOIN "servingTypes" st ON i."itemServingType" = st."id"
                         JOIN "venueMenuSectionSnapshots" s ON i."sectionSnapshotId" = s."id"
                         WHERE s."versionSnapshotId" = %s
                         AND s."originalSectionId" = %s
@@ -436,12 +440,16 @@ def getSnapshotDetails():
                     )
                 else:
                     # Load all items
-                    # JOIN to listings to get itemName and itemDescription for display
+                    # JOIN to listings, producers, and servingTypes for display
                     cursor.execute(
                         '''
-                        SELECT i.*, l."listingName" as "itemName", l."officialDesc" as "itemDescription"
+                        SELECT i.*, l."listingName" as "itemName", l."officialDesc" as "itemDescription",
+                               p."producerName" as "itemProducer",
+                               st."servingType" as "itemServingTypeName"
                         FROM "venueMenuItemSnapshots" i
                         LEFT JOIN "listings" l ON i."itemID" = l."id"
+                        LEFT JOIN "producers" p ON l."producerID" = p."id"
+                        LEFT JOIN "servingTypes" st ON i."itemServingType" = st."id"
                         WHERE i."versionSnapshotId" = %s
                         ORDER BY i."sectionSnapshotId", i."itemOrder"
                         ''',
@@ -464,12 +472,14 @@ def getSnapshotDetails():
                             'itemID': item['itemID'],  # listingId for restore
                             'itemName': item['itemName'] or 'Unknown Item',  # From JOIN to listings
                             'itemDescription': item['itemDescription'] or '',  # From JOIN to listings
+                            'itemProducer': item['itemProducer'],  # From JOIN to producers (can be None)
                             'itemOrder': item['itemOrder'],
                             'itemPrice': float(item['itemPrice']) if item['itemPrice'] else None,
                             'itemPriceCurrency': item['itemPriceCurrency'],
                             'variant': item['variant'],
                             'itemAvailability': item['itemAvailability'],
-                            'itemServingType': item['itemServingType'],
+                            'itemServingType': item['itemServingType'],  # Original integer ID (for restore)
+                            'itemServingTypeName': item['itemServingTypeName'],  # Display name from JOIN (for UI)
                             'new': item['new'],
                             'staffPick': item['staffPick']
                         })

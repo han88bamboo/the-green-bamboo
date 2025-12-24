@@ -160,7 +160,7 @@
                                                        @click.stop
                                                        @change="toggleSectionSelection(section.originalSectionId)">
                                                 
-                                                <strong class="me-auto">{{ section.sectionName }}</strong>
+                                                <strong class="xme-auto">{{ section.sectionName }}</strong>
                                                 <span v-if="!section.isVisible" class="badge bg-warning text-dark ms-2" title="This section was hidden at snapshot time">
                                                     <i class="bi bi-eye-slash"></i> Hidden
                                                 </span>
@@ -193,6 +193,7 @@
                                                                            @change="toggleAllItemsInSection(section)">
                                                                 </th>
                                                                 <th>Name</th>
+                                                                <th>Format</th>
                                                                 <th>Price</th>
                                                                 <th>Vintage</th>
                                                                 <th>Status</th>
@@ -205,7 +206,14 @@
                                                                            :checked="selectedItemIds.includes(item.itemSnapshotId)"
                                                                            @change="toggleItemSelection(item.itemSnapshotId)">
                                                                 </td>
-                                                                <td>{{ item.itemName || 'Unknown Item' }}</td>
+                                                                <td>
+                                                                    {{ item.itemName || 'Unknown Item' }}
+                                                                    <span class="text-muted">({{ item.itemProducer || 'Unknown Producer' }})</span>
+                                                                </td>
+                                                                <td>
+                                                                    <span v-if="item.itemServingTypeName">{{ item.itemServingTypeName }}</span>
+                                                                    <span v-else class="text-muted">-</span>
+                                                                </td>
                                                                 <td>
                                                                     <span v-if="item.itemPrice">
                                                                         {{ item.itemPriceCurrency || '$' }}{{ item.itemPrice.toFixed(2) }}
@@ -246,7 +254,7 @@
                                                                            :checked="selectedSectionIds.includes(subsection.originalSectionId)"
                                                                            @click.stop
                                                                            @change="toggleSectionSelection(subsection.originalSectionId)">
-                                                                    <span class="me-auto">{{ subsection.sectionName }}</span>
+                                                                    <span class="xme-auto">{{ subsection.sectionName }}</span>
                                                                     <span v-if="!subsection.isVisible" class="badge bg-warning text-dark ms-2" title="This subsection was hidden at snapshot time">
                                                                         <i class="bi bi-eye-slash"></i> Hidden
                                                                     </span>
@@ -267,6 +275,7 @@
                                                                                            @change="toggleAllItemsInSection(subsection)">
                                                                                 </th>
                                                                                 <th>Name</th>
+                                                                                <th>Format</th>
                                                                                 <th>Price</th>
                                                                                 <th>Vintage</th>
                                                                             </tr>
@@ -278,7 +287,14 @@
                                                                                            :checked="selectedItemIds.includes(item.itemSnapshotId)"
                                                                                            @change="toggleItemSelection(item.itemSnapshotId)">
                                                                                 </td>
-                                                                                <td>{{ item.itemName || 'Unknown Item' }}</td>
+                                                                                <td>
+                                                                                    {{ item.itemName || 'Unknown Item' }}
+                                                                                    <span class="text-muted">({{ item.itemProducer || 'Unknown Producer' }})</span>
+                                                                                </td>
+                                                                                <td>
+                                                                                    <span v-if="item.itemServingTypeName">{{ item.itemServingTypeName }}</span>
+                                                                                    <span v-else class="text-muted">-</span>
+                                                                                </td>
                                                                                 <td>
                                                                                     <span v-if="item.itemPrice">{{ item.itemPriceCurrency || '$' }}{{ item.itemPrice.toFixed(2) }}</span>
                                                                                     <span v-else class="text-muted">-</span>
@@ -866,14 +882,28 @@ export default {
         
         formatDate(isoString) {
             if (!isoString) return 'Unknown date';
-            const date = new Date(isoString);
-            return date.toLocaleString('en-US', {
+            
+            // Ensure timestamp is treated as UTC if no timezone indicator present
+            const utcString = isoString.endsWith('Z') || isoString.includes('+') || isoString.includes('-', 10) 
+                ? isoString 
+                : isoString + 'Z';
+            const date = new Date(utcString);
+            
+            // Format date and time
+            const dateTime = date.toLocaleString('en-US', {
                 year: 'numeric',
                 month: 'short',
                 day: 'numeric',
                 hour: '2-digit',
                 minute: '2-digit'
             });
+            
+            // Get timezone abbreviation (e.g., "GMT+8", "EST")
+            const timeZone = date.toLocaleString('en-US', {
+                timeZoneName: 'short'
+            }).split(' ').pop();
+            
+            return `${dateTime} (${timeZone})`;
         },
         
         resetModal() {
@@ -910,9 +940,9 @@ export default {
     background-color: #f8f9fa;
 }
 
-.accordion-button:not(.collapsed) {
+.accordion-button {
     background-color: #e7f1ff;
-    color: #0c63e4;
+
 }
 
 .accordion-button:focus {
