@@ -636,7 +636,7 @@ export default {
                                 id: null,
                                 sectionName: section.sectionName + RESTORE_SUFFIX,
                                 sectionOrder: null, // Will be assigned by parent
-                                isVisible: true,
+                                isVisible: section.isVisible !== false, // Preserve parent visibility
                                 sectionDescription: section.sectionDescription || '',
                                 sectionMenu: [],
                                 subsections: []
@@ -751,7 +751,7 @@ export default {
                 id: null, // New section, no ID yet
                 sectionName: snapshotSection.sectionName + suffix,
                 sectionOrder: null, // Will be assigned by parent
-                isVisible: true,
+                isVisible: snapshotSection.isVisible !== false, // Preserve original visibility
                 sectionDescription: snapshotSection.sectionDescription || '',
                 sectionMenu: [],
                 subsections: []
@@ -779,7 +779,7 @@ export default {
                 sectionName: snapshotSubsection.sectionName + suffix,
                 sectionOrder: null,
                 isSubSection: true,
-                isVisible: true,
+                isVisible: snapshotSubsection.isVisible !== false, // Preserve original visibility
                 sectionDescription: snapshotSubsection.sectionDescription || '',
                 sectionMenu: [],
                 subsections: [] // Subsections can't have nested subsections

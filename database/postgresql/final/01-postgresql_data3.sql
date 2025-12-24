@@ -1860,6 +1860,7 @@ CREATE TABLE "venueMenuSectionSnapshots" (
     "parentSectionId" INTEGER,  -- Original parent ID for subsections (not FK, historical)
     "sectionOrder" INTEGER,
     "sectionDescription" TEXT,
+    "isVisible" BOOLEAN DEFAULT TRUE,  -- Whether the section was visible/hidden at snapshot time
     "createdAt" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 

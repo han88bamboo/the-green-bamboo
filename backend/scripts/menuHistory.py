@@ -126,7 +126,8 @@ def create_or_update_menu_snapshot(cursor, venue_id: int) -> dict:
                 CASE WHEN "parentSectionId" IS NULL THEN 'section' ELSE 'subsection' END as "sectionType",
                 "parentSectionId",
                 "sectionOrder",
-                "sectionDescription"
+                "sectionDescription",
+                "isVisible"
             FROM "venuesMenu"
             WHERE "venueId" = %s
             ORDER BY "sectionOrder"
@@ -159,8 +160,8 @@ def create_or_update_menu_snapshot(cursor, venue_id: int) -> dict:
                 '''
                 INSERT INTO "venueMenuSectionSnapshots"
                 ("versionSnapshotId", "originalSectionId", "sectionName", "sectionType",
-                 "parentSectionId", "sectionOrder", "sectionDescription")
-                VALUES (%s, %s, %s, %s, %s, %s, %s)
+                 "parentSectionId", "sectionOrder", "sectionDescription", "isVisible")
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
                 RETURNING "id"
                 ''',
                 (
@@ -170,7 +171,8 @@ def create_or_update_menu_snapshot(cursor, venue_id: int) -> dict:
                     section['sectionType'],
                     section['parentSectionId'],  # Store original parent ID (not FK)
                     section_order_int,  # Convert VARCHAR to INTEGER
-                    section['sectionDescription']
+                    section['sectionDescription'],
+                    section['isVisible']  # Capture visibility state
                 )
             )
             section_snapshot_id = cursor.fetchone()['id']
@@ -398,6 +400,7 @@ def getSnapshotDetails():
                     'sectionType': section['sectionType'],
                     'sectionOrder': section['sectionOrder'],
                     'sectionDescription': section['sectionDescription'],
+                    'isVisible': section['isVisible'] if 'isVisible' in section else True,
                     'itemCount': section['itemCount'],
                     'subsections': [],
                     'items': []  # Will be loaded lazily if requested
