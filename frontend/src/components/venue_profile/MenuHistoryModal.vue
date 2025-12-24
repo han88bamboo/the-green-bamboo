@@ -161,6 +161,9 @@
                                                        @change="toggleSectionSelection(section.originalSectionId)">
                                                 
                                                 <strong class="me-auto">{{ section.sectionName }}</strong>
+                                                <span v-if="!section.isVisible" class="badge bg-warning text-dark ms-2" title="This section was hidden at snapshot time">
+                                                    <i class="bi bi-eye-slash"></i> Hidden
+                                                </span>
                                                 <span class="badge bg-secondary ms-2">
                                                     {{ section.itemCount }} items
                                                 </span>
@@ -244,6 +247,9 @@
                                                                            @click.stop
                                                                            @change="toggleSectionSelection(subsection.originalSectionId)">
                                                                     <span class="me-auto">{{ subsection.sectionName }}</span>
+                                                                    <span v-if="!subsection.isVisible" class="badge bg-warning text-dark ms-2" title="This subsection was hidden at snapshot time">
+                                                                        <i class="bi bi-eye-slash"></i> Hidden
+                                                                    </span>
                                                                     <span class="badge bg-secondary ms-2">{{ subsection.itemCount }} items</span>
                                                                 </div>
                                                             </button>
