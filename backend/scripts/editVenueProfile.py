@@ -1296,7 +1296,7 @@ def editMenuHierarchical():
             
             # Track IDs to keep (for orphan deletion later)
             kept_section_ids = []
-            section_id_mapping = {}  # Map sectionOrder to database ID
+            section_id_mapping = {}  # Map section database ID -> database ID (also sectionOrder as fallback for new sections)
             
             # ===== STEP 1: UPSERT Main Sections =====
             for section in main_sections:
@@ -1351,6 +1351,9 @@ def editMenuHierarchical():
                 
                 # Track this section
                 kept_section_ids.append(section_id)
+                # Map by database ID (primary key for parentSectionId lookups)
+                section_id_mapping[section_id] = section_id
+                # Also map by sectionOrder (fallback for new sections where frontend uses sectionOrder as parentSectionId)
                 section_id_mapping[section_order] = section_id
             
             # ===== STEP 2: UPSERT Subsections =====
@@ -1421,6 +1424,9 @@ def editMenuHierarchical():
                 
                 # Track this subsection
                 kept_section_ids.append(subsection_id)
+                # Map by database ID (primary key)
+                section_id_mapping[subsection_id] = subsection_id
+                # Also map by sectionOrder (fallback)
                 section_id_mapping[section_order] = subsection_id
             
             # ===== STEP 3: UPSERT Menu Items =====
@@ -1441,7 +1447,8 @@ def editMenuHierarchical():
             existing_listing_ids = {row['itemID'] for row in cursor.fetchall()}
             
             for section in updatedMenu:
-                section_db_id = section_id_mapping.get(section['sectionOrder'])
+                # Look up by database ID first (for existing sections), then by sectionOrder (for new sections)
+                section_db_id = section_id_mapping.get(section.get('id')) or section_id_mapping.get(section['sectionOrder'])
                 if section_db_id is None:
                     logger.warning(f"Section '{section['sectionName']}' not in mapping, skipping items")
                     continue
