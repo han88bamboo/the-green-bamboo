@@ -183,7 +183,7 @@
 
                                             <!-- Section Items -->
                                             <div v-if="section.items?.length" class="mb-3">
-                                                <h6 class="text-muted mb-2">Items in this section:</h6>
+                                                <!-- <h6 class="text-muted mb-2">Items in this section:</h6> -->
                                                 <div class="table-responsive">
                                                     <table class="table table-sm table-hover">
                                                         <thead>
@@ -197,10 +197,12 @@
                                                                 <th>Price</th>
                                                                 <th>Vintage</th>
                                                                 <th>Status</th>
+                                                                <th class="text-center">Current Menu</th>
                                                             </tr>
                                                         </thead>
                                                         <tbody>
-                                                            <tr v-for="item in section.items" :key="item.itemSnapshotId">
+                                                            <tr v-for="item in section.items" :key="item.itemSnapshotId"
+                                                                :class="item.existsInCurrentMenu ? 'row-exists-in-menu' : 'row-not-in-menu'">
                                                                 <td v-if="restoreType === 'item'">
                                                                     <input type="checkbox" class="form-check-input"
                                                                            :checked="selectedItemIds.includes(item.itemSnapshotId)"
@@ -228,6 +230,14 @@
                                                                     <span v-if="item.itemAvailability" class="badge bg-success">Available</span>
                                                                     <span v-else class="badge bg-secondary">Unavailable</span>
                                                                     <span v-if="item.staffPick" class="badge bg-warning ms-1">Staff Pick</span>
+                                                                </td>
+                                                                <td class="text-center">
+                                                                    <i v-if="item.existsInCurrentMenu" 
+                                                                       class="bi bi-check-circle-fill text-success"
+                                                                       aria-label="Item exists in current menu"></i>
+                                                                    <i v-else 
+                                                                       class="bi bi-x-circle-fill text-danger"
+                                                                       aria-label="Item not in current menu"></i>
                                                                 </td>
                                                             </tr>
                                                         </tbody>
@@ -278,10 +288,12 @@
                                                                                 <th>Format</th>
                                                                                 <th>Price</th>
                                                                                 <th>Vintage</th>
+                                                                                <th class="text-center">Current Menu</th>
                                                                             </tr>
                                                                         </thead>
                                                                         <tbody>
-                                                                            <tr v-for="item in subsection.items" :key="item.itemSnapshotId">
+                                                                            <tr v-for="item in subsection.items" :key="item.itemSnapshotId"
+                                                                                :class="item.existsInCurrentMenu ? 'row-exists-in-menu' : 'row-not-in-menu'">
                                                                                 <td v-if="restoreType === 'item'">
                                                                                     <input type="checkbox" class="form-check-input"
                                                                                            :checked="selectedItemIds.includes(item.itemSnapshotId)"
@@ -302,6 +314,14 @@
                                                                                 <td>
                                                                                     <span v-if="item.variant">{{ item.variant }}</span>
                                                                                     <span v-else class="text-muted">-</span>
+                                                                                </td>
+                                                                                <td class="text-center">
+                                                                                    <i v-if="item.existsInCurrentMenu" 
+                                                                                       class="bi bi-check-circle-fill text-success"
+                                                                                       aria-label="Item exists in current menu"></i>
+                                                                                    <i v-else 
+                                                                                       class="bi bi-x-circle-fill text-danger"
+                                                                                       aria-label="Item not in current menu"></i>
                                                                                 </td>
                                                                             </tr>
                                                                         </tbody>
@@ -470,6 +490,8 @@ export default {
                 
                 if (result.code === 200) {
                     this.snapshotDetails = result.data;
+                    // Mark items with existence status in current menu
+                    this.markItemsExistence(this.snapshotDetails);
                     // Auto-expand first section
                     if (this.snapshotDetails.sections?.length) {
                         this.expandedSections.add(this.snapshotDetails.sections[0].sectionSnapshotId);
@@ -847,6 +869,57 @@ export default {
             };
         },
         
+        // Build a Set of existing (itemID, variant) tuples from the entire current menu
+        buildCurrentMenuItemsSet() {
+            const existingItems = new Set();
+            
+            for (const section of this.currentMenuSections) {
+                // Add items from main section
+                for (const item of (section.sectionMenu || [])) {
+                    const itemID = item.itemID;
+                    const variant = item.itemVintage ?? item.variant ?? -1;
+                    existingItems.add(`${itemID}|${variant}`);
+                }
+                
+                // Add items from subsections
+                for (const subsection of (section.subsections || [])) {
+                    for (const item of (subsection.sectionMenu || [])) {
+                        const itemID = item.itemID;
+                        const variant = item.itemVintage ?? item.variant ?? -1;
+                        existingItems.add(`${itemID}|${variant}`);
+                    }
+                }
+            }
+            
+            return existingItems;
+        },
+        
+        // Check if a snapshot item exists in the current menu
+        isItemInCurrentMenu(snapshotItem, existingItemsSet) {
+            const itemID = snapshotItem.itemID;
+            const variant = snapshotItem.variant ?? -1;
+            return existingItemsSet.has(`${itemID}|${variant}`);
+        },
+        
+        // Mark all items in snapshot with existsInCurrentMenu property
+        markItemsExistence(snapshotData) {
+            const existingItemsSet = this.buildCurrentMenuItemsSet();
+            
+            for (const section of (snapshotData.sections || [])) {
+                // Mark items in main section
+                for (const item of (section.items || [])) {
+                    item.existsInCurrentMenu = this.isItemInCurrentMenu(item, existingItemsSet);
+                }
+                
+                // Mark items in subsections
+                for (const subsection of (section.subsections || [])) {
+                    for (const item of (subsection.items || [])) {
+                        item.existsInCurrentMenu = this.isItemInCurrentMenu(item, existingItemsSet);
+                    }
+                }
+            }
+        },
+        
         // Check if an item already exists in the target section
         checkItemDuplicate(targetSection, snapshotItem) {
             if (!targetSection.sectionMenu) return false;
@@ -965,5 +1038,14 @@ export default {
 
 .bg-warning-subtle {
     background-color: #fff3cd !important;
+}
+
+/* Row background colors for current menu existence indicator */
+.row-exists-in-menu > td {
+    background-color: #C9F7CF !important;
+}
+
+.row-not-in-menu > td {
+    background-color: #facdd4 !important;
 }
 </style>
