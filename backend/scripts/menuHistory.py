@@ -123,11 +123,12 @@ def create_or_update_menu_snapshot(cursor, venue_id: int) -> dict:
             SELECT 
                 "id",
                 "sectionName",
-                CASE WHEN "parentSectionId" IS NULL THEN 'section' ELSE 'subsection' END as "sectionType",
+                "isSubSection",
                 "parentSectionId",
                 "sectionOrder",
                 "sectionDescription",
-                "isVisible"
+                "isVisible",
+                "subscribersEnabled"
             FROM "venuesMenu"
             WHERE "venueId" = %s
             ORDER BY "sectionOrder"
@@ -153,26 +154,24 @@ def create_or_update_menu_snapshot(cursor, venue_id: int) -> dict:
         sections_count = 0
         
         for section in sections:
-            # Cast sectionOrder from VARCHAR to INTEGER for snapshot table
-            section_order_int = int(section['sectionOrder']) if section['sectionOrder'] else 0
-            
             cursor.execute(
                 '''
                 INSERT INTO "venueMenuSectionSnapshots"
-                ("versionSnapshotId", "originalSectionId", "sectionName", "sectionType",
-                 "parentSectionId", "sectionOrder", "sectionDescription", "isVisible")
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                ("versionSnapshotId", "originalSectionId", "sectionName", "isSubSection",
+                 "parentSectionId", "sectionOrder", "sectionDescription", "isVisible", "subscribersEnabled")
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
                 RETURNING "id"
                 ''',
                 (
                     version_id,
                     section['id'],
                     section['sectionName'],
-                    section['sectionType'],
+                    section['isSubSection'],  # Boolean from venuesMenu
                     section['parentSectionId'],  # Store original parent ID (not FK)
-                    section_order_int,  # Convert VARCHAR to INTEGER
+                    section['sectionOrder'],  # Keep as VARCHAR to match source table
                     section['sectionDescription'],
-                    section['isVisible']  # Capture visibility state
+                    section['isVisible'],  # Capture visibility state
+                    section['subscribersEnabled']  # Capture subscription state
                 )
             )
             section_snapshot_id = cursor.fetchone()['id']
@@ -397,10 +396,11 @@ def getSnapshotDetails():
                     'sectionSnapshotId': section['id'],
                     'originalSectionId': section['originalSectionId'],
                     'sectionName': section['sectionName'],
-                    'sectionType': section['sectionType'],
+                    'isSubSection': section['isSubSection'] if 'isSubSection' in section else False,
                     'sectionOrder': section['sectionOrder'],
                     'sectionDescription': section['sectionDescription'],
                     'isVisible': section['isVisible'] if 'isVisible' in section else True,
+                    'subscribersEnabled': section['subscribersEnabled'] if 'subscribersEnabled' in section else False,
                     'itemCount': section['itemCount'],
                     'subsections': [],
                     'items': []  # Will be loaded lazily if requested
@@ -408,12 +408,13 @@ def getSnapshotDetails():
                 
                 sections_map[section['originalSectionId']] = section_data
                 
-                if section['sectionType'] == 'section':
+                if not section_data['isSubSection']:
                     main_sections.append(section_data)
             
             # Link subsections to their parents
             for section in sections:
-                if section['sectionType'] == 'subsection' and section['parentSectionId']:
+                is_subsection = section['isSubSection'] if 'isSubSection' in section else False
+                if is_subsection and section['parentSectionId']:
                     parent = sections_map.get(section['parentSectionId'])
                     if parent:
                         parent['subsections'].append(sections_map[section['originalSectionId']])

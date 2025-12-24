@@ -1855,12 +1855,13 @@ CREATE TABLE "venueMenuSectionSnapshots" (
     "id" SERIAL PRIMARY KEY,
     "versionSnapshotId" INTEGER NOT NULL REFERENCES "venueMenuVersionSnapshots"("id") ON DELETE CASCADE,
     "originalSectionId" INTEGER NOT NULL,  -- Reference to original venuesMenu.id (not FK, historical)
-    "sectionName" VARCHAR(500) NOT NULL,
-    "sectionType" VARCHAR(50),  -- 'section' or 'subsection'
+    "sectionName" VARCHAR(255) NOT NULL,
+    "isSubSection" BOOLEAN DEFAULT FALSE,  -- Whether this is a subsection (aligned with venuesMenu)
     "parentSectionId" INTEGER,  -- Original parent ID for subsections (not FK, historical)
-    "sectionOrder" INTEGER,
+    "sectionOrder" VARCHAR(255),  -- Aligned with venuesMenu.sectionOrder type
     "sectionDescription" TEXT,
     "isVisible" BOOLEAN DEFAULT TRUE,  -- Whether the section was visible/hidden at snapshot time
+    "subscribersEnabled" BOOLEAN DEFAULT FALSE,  -- Whether venue had subscription enabled for this section
     "createdAt" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 

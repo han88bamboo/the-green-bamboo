@@ -752,6 +752,7 @@ export default {
                 sectionName: snapshotSection.sectionName + suffix,
                 sectionOrder: null, // Will be assigned by parent
                 isVisible: snapshotSection.isVisible !== false, // Preserve original visibility
+                subscribersEnabled: snapshotSection.subscribersEnabled || false, // Preserve subscription state
                 sectionDescription: snapshotSection.sectionDescription || '',
                 sectionMenu: [],
                 subsections: []
@@ -780,6 +781,7 @@ export default {
                 sectionOrder: null,
                 isSubSection: true,
                 isVisible: snapshotSubsection.isVisible !== false, // Preserve original visibility
+                subscribersEnabled: snapshotSubsection.subscribersEnabled || false, // Preserve subscription state
                 sectionDescription: snapshotSubsection.sectionDescription || '',
                 sectionMenu: [],
                 subsections: [] // Subsections can't have nested subsections
