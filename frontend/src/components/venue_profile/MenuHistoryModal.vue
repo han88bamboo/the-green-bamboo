@@ -55,30 +55,70 @@
                         <!-- History List View -->
                         <div v-else-if="!selectedVersion" class="history-list">
                             <p class="text-muted mb-3">
-                                <small>Select a version to preview and restore items from your menu history.</small>
+                                <small>Here are all the previous versions of your menu. You can quickly restore an entire menu version, a specific section, or a specific item.</small>
                             </p>
                             
                             <div class="list-group">
-                                <button v-for="version in historyVersions" :key="version.versionId"
-                                        type="button" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
-                                        @click="loadSnapshotDetails(version.versionId)">
-                                    <div>
-                                        <h6 class="mb-1">
-                                            {{ formatDate(version.snapshotTimestamp) }}
-                                        </h6>
+                                <div v-for="version in historyVersions" :key="version.versionId"
+                                     class="list-group-item d-flex justify-content-between align-items-center">
+                                    <div class="flex-grow-1">
+                                        <!-- Version Name Row with Edit -->
+                                        <div class="d-flex align-items-center mb-1">
+                                            <!-- Display Mode -->
+                                            <template v-if="editingVersionId !== version.versionId">
+                                                <h6 class="mb-0 me-2">
+                                                    {{ version.versionName || formatDate(version.snapshotTimestamp) }}
+                                                </h6>
+                                                <button type="button" 
+                                                        class="btn btn-link btn-sm p-0 text-muted"
+                                                        aria-label="Edit version name"
+                                                        @click.stop="startEditingVersionName(version)">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14"
+                                                         fill="currentColor" class="bi bi-pencil" viewBox="0 0 16 16">
+                                                        <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325"/>
+                                                    </svg>
+                                                </button>
+                                            </template>
+                                            <!-- Edit Mode -->
+                                            <template v-else>
+                                                <input type="text" 
+                                                       class="form-control form-control-sm me-2"
+                                                       style="max-width: 200px;"
+                                                       v-model="editingVersionName"
+                                                       maxlength="100"
+                                                       aria-label="Version name"
+                                                       @click.stop>
+                                                <button type="button" 
+                                                        class="btn btn-success btn-sm me-1"
+                                                        aria-label="Save version name"
+                                                        :disabled="isSavingVersionName"
+                                                        @click.stop="saveVersionName(version.versionId)">
+                                                    <span v-if="isSavingVersionName" class="spinner-border spinner-border-sm" role="status"></span>
+                                                    <span v-else>Save</span>
+                                                </button>
+                                                <button type="button" 
+                                                        class="btn btn-outline-secondary btn-sm"
+                                                        aria-label="Cancel editing"
+                                                        @click.stop="cancelEditingVersionName">
+                                                    Cancel
+                                                </button>
+                                            </template>
+                                            <!-- Timestamp Badge -->
+                                            <span class="badge bg-light text-muted ms-2" style="font-weight: normal;">
+                                                {{ formatDate(version.snapshotTimestamp) }}
+                                            </span>
+                                        </div>
                                         <small class="text-muted">
                                             {{ version.sectionsCount }} sections, {{ version.itemsCount }} items
                                         </small>
                                     </div>
-                                    <span class="badge bg-primary rounded-pill">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" 
-                                             class="bi bi-eye" viewBox="0 0 16 16">
-                                            <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8zM1.173 8a13.133 13.133 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5c2.12 0 3.879 1.168 5.168 2.457A13.133 13.133 0 0 1 14.828 8c-.058.087-.122.183-.195.288-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5c-2.12 0-3.879-1.168-5.168-2.457A13.134 13.134 0 0 1 1.172 8z"/>
-                                            <path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5zM4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0z"/>
-                                        </svg>
-                                        Preview
-                                    </span>
-                                </button>
+                                    <button type="button" 
+                                            class="btn badge bg-primary border-0" 
+                                            style="font-size: 1em;"
+                                            @click="loadSnapshotDetails(version.versionId)">
+                                        Click To View Version
+                                    </button>
+                                </div>
                             </div>
                         </div>
 
@@ -93,7 +133,10 @@
                                     </svg>
                                     Back to Versions
                                 </button>
-                                <span class="badge bg-info text-dark">
+                                <h5 class="mb-0">
+                                    {{ historyVersions.find(v => v.versionId === selectedVersion)?.versionName || formatDate(snapshotDetails?.snapshotTimestamp) }}
+                                </h5>
+                                <span style="font-size: 1em;" class="badge bg-info text-dark">
                                     {{ formatDate(snapshotDetails?.snapshotTimestamp) }}
                                 </span>
                             </div>
@@ -489,6 +532,11 @@ export default {
             selectedVersion: null,
             snapshotDetails: null,
             
+            // Version name editing
+            editingVersionId: null,
+            editingVersionName: '',
+            isSavingVersionName: false,
+            
             // Accordion expansion tracking
             expandedSections: new Set(),
             expandedSubsections: new Set(),
@@ -588,6 +636,57 @@ export default {
                 this.errorMessage = 'Network error: Could not load menu history';
             } finally {
                 this.isLoading = false;
+            }
+        },
+        
+        // Version name editing methods
+        startEditingVersionName(version) {
+            this.editingVersionId = version.versionId;
+            this.editingVersionName = version.versionName || this.formatDate(version.snapshotTimestamp);
+        },
+        
+        cancelEditingVersionName() {
+            this.editingVersionId = null;
+            this.editingVersionName = '';
+        },
+        
+        async saveVersionName(versionId) {
+            const trimmedName = this.editingVersionName.trim();
+            if (!trimmedName) {
+                const toast = useToast();
+                toast.error('Version name cannot be empty');
+                return;
+            }
+            
+            this.isSavingVersionName = true;
+            const toast = useToast();
+            
+            try {
+                const response = await this.$axios.patch(
+                    `${process.env.VUE_APP_API_URL}/menuHistory/updateSnapshotVersionName`,
+                    {
+                        versionId: versionId,
+                        versionName: trimmedName
+                    }
+                );
+                const result = response.data;
+                
+                if (result.code === 200) {
+                    // Update local data
+                    const version = this.historyVersions.find(v => v.versionId === versionId);
+                    if (version) {
+                        version.versionName = trimmedName;
+                    }
+                    toast.success('Version name updated');
+                    this.cancelEditingVersionName();
+                } else {
+                    toast.error(result.message || 'Failed to update version name');
+                }
+            } catch (error) {
+                console.error('Error updating version name:', error);
+                toast.error('Network error: Could not update version name');
+            } finally {
+                this.isSavingVersionName = false;
             }
         },
         
@@ -1133,6 +1232,8 @@ export default {
             this.expandedSections.clear();
             this.expandedSubsections.clear();
             this.isNotInSnapshotExpanded = true;
+            this.editingVersionId = null;
+            this.editingVersionName = '';
         }
     },
     mounted() {

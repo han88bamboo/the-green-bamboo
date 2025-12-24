@@ -1845,6 +1845,7 @@ ON "events"("eventLocation", "eventStartDate", "eventEndDate", "signupOpen");
 CREATE TABLE "venueMenuVersionSnapshots" (
     "id" SERIAL PRIMARY KEY,
     "venueId" INTEGER NOT NULL REFERENCES "venues"("id") ON DELETE CASCADE,
+    "versionName" VARCHAR(100) DEFAULT NULL,  -- Optional display name (auto-generated like "December Menu 1")
     "snapshotTimestamp" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "aggregationWindowStart" TIMESTAMP NOT NULL,  -- Start of the 3-hour rolling window
     "createdAt" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP

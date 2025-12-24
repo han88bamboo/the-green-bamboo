@@ -1,5 +1,5 @@
 # Port: 5306
-# Routes: /getMenuHistory (GET), /getSnapshotDetails (GET), /restoreFromSnapshot (POST)
+# Routes: /getMenuHistory (GET), /getSnapshotDetails (GET), /updateSnapshotVersionName (PATCH)
 # -----------------------------------------------------------------------------------------
 
 import os
@@ -104,18 +104,34 @@ def create_or_update_menu_snapshot(cursor, venue_id: int) -> dict:
             is_new_version = True
             original_window_start = current_time
             
+            # Generate version name like "December Menu 1", "December Menu 2", etc.
+            month_name = current_time.strftime('%B')  # Full month name (e.g., "December")
+            
+            # Count existing snapshots with this month name pattern for this venue
+            cursor.execute(
+                '''
+                SELECT COUNT(*) as count
+                FROM "venueMenuVersionSnapshots"
+                WHERE "venueId" = %s
+                AND "versionName" LIKE %s
+                ''',
+                (venue_id, f'{month_name} Menu %')
+            )
+            existing_count = cursor.fetchone()['count']
+            version_name = f"{month_name} Menu {existing_count + 1}"
+            
             cursor.execute(
                 '''
                 INSERT INTO "venueMenuVersionSnapshots" 
-                ("venueId", "snapshotTimestamp", "aggregationWindowStart")
-                VALUES (%s, %s, %s)
+                ("venueId", "versionName", "snapshotTimestamp", "aggregationWindowStart")
+                VALUES (%s, %s, %s, %s)
                 RETURNING "id"
                 ''',
-                (venue_id, current_time, current_time)
+                (venue_id, version_name, current_time, current_time)
             )
             version_id = cursor.fetchone()['id']
             
-            logger.info(f"Created new snapshot version {version_id} for venue {venue_id}")
+            logger.info(f"Created new snapshot version {version_id} '{version_name}' for venue {venue_id}")
         
         # ===== Capture all sections (main sections and subsections) =====
         cursor.execute(
@@ -289,6 +305,7 @@ def getMenuHistory():
                 '''
                 SELECT 
                     v."id",
+                    v."versionName",
                     v."snapshotTimestamp",
                     v."aggregationWindowStart",
                     v."createdAt",
@@ -307,6 +324,7 @@ def getMenuHistory():
             for snapshot in snapshots:
                 history.append({
                     'versionId': snapshot['id'],
+                    'versionName': snapshot['versionName'],
                     'snapshotTimestamp': snapshot['snapshotTimestamp'].isoformat() if snapshot['snapshotTimestamp'] else None,
                     'aggregationWindowStart': snapshot['aggregationWindowStart'].isoformat() if snapshot['aggregationWindowStart'] else None,
                     'createdAt': snapshot['createdAt'].isoformat() if snapshot['createdAt'] else None,
@@ -508,3 +526,85 @@ def getSnapshotDetails():
 # Restore functionality is now handled entirely in the frontend by adding 
 # sections/items to the staged editMenu state. The user must click "Save"
 # to persist restored items to the database.
+
+
+# -----------------------------------------------------------------------------------------
+# [PATCH] Update snapshot version name
+# - Allows renaming a snapshot version
+# - Possible return codes: 200 (Success), 400 (Invalid input), 404 (Not found), 500 (Error)
+# -----------------------------------------------------------------------------------------
+
+@blueprint.route('/updateSnapshotVersionName', methods=['PATCH'])
+def updateSnapshotVersionName():
+    data = request.get_json()
+    
+    if not data:
+        return jsonify({
+            "code": 400,
+            "message": "Request body is required"
+        }), 400
+    
+    version_id = data.get('versionId')
+    version_name = data.get('versionName', '').strip()
+    
+    if not version_id:
+        return jsonify({
+            "code": 400,
+            "message": "versionId is required"
+        }), 400
+    
+    if not version_name:
+        return jsonify({
+            "code": 400,
+            "message": "versionName is required and cannot be empty"
+        }), 400
+    
+    if len(version_name) > 100:
+        return jsonify({
+            "code": 400,
+            "message": "versionName must be 100 characters or less"
+        }), 400
+    
+    try:
+        with db_manager.get_cursor() as cursor:
+            # Check if snapshot exists
+            cursor.execute(
+                'SELECT "id", "venueId" FROM "venueMenuVersionSnapshots" WHERE "id" = %s',
+                (version_id,)
+            )
+            snapshot = cursor.fetchone()
+            
+            if not snapshot:
+                return jsonify({
+                    "code": 404,
+                    "message": "Snapshot version not found"
+                }), 404
+            
+            # Update the version name
+            cursor.execute(
+                '''
+                UPDATE "venueMenuVersionSnapshots"
+                SET "versionName" = %s
+                WHERE "id" = %s
+                ''',
+                (version_name, version_id)
+            )
+            
+            logger.info(f"Updated snapshot {version_id} version name to '{version_name}'")
+            
+            return jsonify({
+                "code": 200,
+                "message": "Version name updated successfully",
+                "data": {
+                    "versionId": version_id,
+                    "versionName": version_name
+                }
+            }), 200
+            
+    except Exception as e:
+        logger.error(f"Error updating snapshot version name for {version_id}: {str(e)}")
+        logger.error(traceback.format_exc())
+        return jsonify({
+            "code": 500,
+            "message": f"An error occurred: {str(e)}"
+        }), 500
