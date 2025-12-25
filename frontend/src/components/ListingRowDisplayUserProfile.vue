@@ -13,7 +13,7 @@
     <hr class="mobile-col-11 mobile-spacer">
     <div class="">
         <!-- Top Rated Reviews Display (when topRatedReviews prop is provided) -->
-      <div v-if="topRatedReviews && topRatedReviews.length > 0" class="row g-3 top-rated-row trending-reviews-container">
+      <div v-if="topRatedReviews && topRatedReviews.length > 0" class="row g-3 top-rated-row trending-reviews-container align-items-start">
         <div
           v-for="(review, index) in topRatedReviews"
           :key="review.id"
