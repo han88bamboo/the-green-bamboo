@@ -238,7 +238,47 @@
                         :data-bs-target="userID !== 'defaultUser' ? '#cellarModal' : undefined"
                         @click="userID !== 'defaultUser' ? onCellarModalOpen() : $router.push('/my-cellar')"
                       >
-                          <i class="bi bi-archive-fill"></i>
+                          <svg xmlns="http://www.w3.org/2000/svg"
+     width="16" height="16"
+     viewBox="0 0 16 16"
+     fill="currentColor"
+     class="bi bi-archive-fill">
+
+  <mask id="archivePlusCutout">
+    <rect width="16" height="16" fill="white"/>
+
+    <!-- horizontal void: thick and lowered -->
+    <rect x="5.3" y="7.9"
+          width="5.4" height="1.4"
+          rx="0.7"
+          fill="black"/>
+
+    <!-- vertical void: thicker and noticeably longer -->
+    <rect x="7.3" y="6.2"
+          width="1.4" height="5.2"
+          rx="0.7"
+          fill="black"/>
+  </mask>
+
+  <!-- archive body -->
+  <path mask="url(#archivePlusCutout)" d="
+    M12.643 15
+    C13.979 15 15 13.845 15 12.5
+    V5H1v7.5
+    C1 13.845 2.021 15 3.357 15
+    z
+
+    M.8 1
+    a.8.8 0 0 0-.8.8
+    V3
+    a.8.8 0 0 0 .8.8
+    h14.4
+    A.8.8 0 0 0 16 3
+    V1.8
+    a.8.8 0 0 0-.8-.8
+    z
+  "/>
+</svg>
                       </button>
 
                       <!-- Black External Link Icon -->
