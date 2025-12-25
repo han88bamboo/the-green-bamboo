@@ -862,7 +862,7 @@
                   <div class="col-4 justify-content-center d-flex p-0">
                     <button 
                         v-if="showTastingNotesButton"
-                        @click="showMobileBlueBox = false; isLoggedIn ? handleReviewClick() : $router.push('/login')" 
+                        @click="showMobileBlueBox = false; isLoggedIn ? (supportsSpecialVariants ? prepareNewReview() : null, handleReviewClick()) : $router.push('/login')" 
                         class="redbox-link py-2"
                       >
                       <h2><i class="bi bi-cup-straw dx-icon"></i></h2>
@@ -932,7 +932,7 @@
                 <div v-if="userType !== 'venue'" class="row justify-content-between m-0 p-0 pb-1 text-white" style="background: linear-gradient(135deg,#007bff,#0056b3); border-bottom: 0.5px solid white;">
                   <button 
                     v-if="showRateButton"
-                    @click="showMobileBlueBox = false; isLoggedIn ? handleReviewClick() : $router.push('/login')" 
+                    @click="showMobileBlueBox = false; isLoggedIn ? (supportsSpecialVariants ? prepareNewReview() : null, handleReviewClick()) : $router.push('/login')" 
                     class="redbox-link pt-2 pb-0"
                   >
                     {{ rateButtonText }}
@@ -982,7 +982,7 @@
                   <div v-else-if="userType !== 'venue'">
                     <button 
                       v-if="showTastingNotesButton"
-                      @click="showMobileBlueBox = false; isLoggedIn ? handleReviewClick() : $router.push('/login')" 
+                      @click="showMobileBlueBox = false; isLoggedIn ? (supportsSpecialVariants ? prepareNewReview() : null, handleReviewClick()) : $router.push('/login')" 
                       class="redbox-link py-2"
                     >
                       {{ tastingNotesButtonText }}
@@ -1894,13 +1894,17 @@
                 </button>
               </div>
               <div v-if="duplicateEntry">
-                <span v-if="!inEdit">You've already submitted a review for this bottle
-                  listing!</span>
+                <span v-if="!inEdit && supportsSpecialVariants">
+                  You've already submitted a review for this vintage! Try a different vintage year.
+                </span>
+                <span v-else-if="!inEdit">
+                  You've already submitted a review for this bottle listing!
+                </span>
                 <span v-else>There is no review for this bottle listing!</span>
               </div>
               <br />
               <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" @click="reset">
                   Close
                 </button>
               </div>
@@ -4733,10 +4737,15 @@ export default {
         return this.inEdit;
       }
       
-      // For variant drinks, check if user has a review for the selected vintage
+      // For variant drinks with "Show All" selected - always allow new submissions
+      if (this.selectedVintage === 'Show All') {
+        return false;
+      }
+      
+      // For variant drinks with specific vintage selected, check if already reviewed
       const userReview = this.reviews.find(review => 
         review.userID === parseInt(this.userID) && 
-        (this.selectedVintage === 'Show All' || review.variant === parseInt(this.selectedVintage))
+        review.variant === parseInt(this.selectedVintage)
       );
       
       return !!userReview;
@@ -4938,9 +4947,68 @@ export default {
 
     // Combined method to set rating and open modal
     setRatingAndOpenModal(star) {
+      // For variant drinks, prepare a fresh form before opening
+      if (this.supportsSpecialVariants) {
+        this.prepareNewReview();
+      }
       this.rating = star;
       this.hasInteractedWithStars = true;
       this.handleReviewClick();
+    },
+
+    /**
+     * Prepares the form for creating a NEW review (not editing).
+     * Resets form fields and sets inEdit = false.
+     * Used for variant drinks where users can submit multiple reviews.
+     */
+    prepareNewReview() {
+      this.inEdit = false;
+      this.specificReview = [];
+      this.updateID = null;
+      
+      // Reset form fields to defaults (matching data() initial values)
+      this.selectedLanguage = 'English';
+      this.nullSelectedLanguage = false;
+      this.reviewDesc = '';
+      this.rating = 5;
+      this.selectedColour = '';
+      this.image64 = null;
+      this.selectedImage = '';
+      this.photo = null;
+      this.selectedObservations = [];
+      this.selectedFlavourTags = [];
+      this.finalSelectedFlavourTags = [];
+      this.variant = '';
+      this.aroma = '';
+      this.taste = '';
+      this.finish = '';
+      this.wouldRecommend = '';
+      this.wouldBuyAgain = '';
+      this.isPublic = true;
+      
+      // Reset location fields
+      this.locationSearchTerm = '';
+      this.tagLocation = '';
+      this.selectedLocationType = '';
+      this.selectedLocation = '';
+      this.selectedLocationAddress = '';
+      this.selectedLocationId = '';
+      this.showHomeOption = false;
+      this.locationInputValue = '';
+      
+      // Reset friend tagging
+      this.friendTag = '';
+      this.selectedFriendTag = null;
+      this.friendTagList = [];
+      this.showFriendTagList = [];
+      
+      // Reset submission state
+      this.reviewDescError = '';
+      this.hoverRating = null;
+      this.hasInteractedWithStars = false;
+      
+      // Clear cache for fresh start
+      this.clearReviewCache();
     },
     
     // fetch specific listing data
