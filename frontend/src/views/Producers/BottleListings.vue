@@ -5410,8 +5410,9 @@ export default {
         // };
         this.getObservationTagCounts(); // to get the observation tag counts
 
-        // remove caching for wine type due to variants 
-        if (this.specified_listing.drinkType !== 'Wine') {
+        // remove caching for variant drink types (Wine, Sake, Beer) due to multiple vintage support
+        const variantDrinkTypes = ['Wine', 'Sake', 'Beer'];
+        if (!variantDrinkTypes.includes(this.specified_listing.drinkType)) {
           this.specificReview = this.getLoggedUserReview();
         }
 
