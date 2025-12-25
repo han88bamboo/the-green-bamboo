@@ -1300,7 +1300,7 @@
                         </h6>
 
                         <!-- Row 1: Vintage -->
-                        <div class="row g-3 mb-3" v-if="specified_listing && ['Wine', 'Sake'].includes(specified_listing.drinkType)">
+                        <div class="row g-3 mb-3" v-if="specified_listing && ['Wine', 'Sake', 'Beer'].includes(specified_listing.drinkType)">
                           <div class="col-md-12">
                             <label class="form-label text-start">Vintage</label>
                             <input 
@@ -2020,7 +2020,7 @@
                           <span
                             v-if="Array.isArray(VARIANT_DRNK_TYP) && VARIANT_DRNK_TYP.includes(specified_listing.drinkType)"
                             class="text-start mb-0 fw-bold" style="font-size: 0.85em; color: #6c757d;">
-                            For wine and sake, you can review specific vintage years.
+                            For wine, sake and certain beers, you can review specific vintage years.
                           </span>
                         </p>
                       </div>
