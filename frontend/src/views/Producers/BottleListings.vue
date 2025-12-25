@@ -530,21 +530,21 @@
                               " :href="specified_listing['reviewLink']"
                                 class="text-left default-text-no-background row">
                                 <div class="row">
-                                  <div class="col-lg-4 col-md-6 col-sm-12">
+                                  <!-- <div class="col-lg-4 col-md-6 col-sm-12">
                                     {{
                                       getOGImage(
                                         specified_listing["reviewLink"]
                                       )
                                     }}
-                                    <!-- [if] there is a cover image for the post-->
+                                    -- [if] there is a cover image for the post--
                                     <img v-if="ogImage != null" :src="ogImage[specified_listing.reviewLink]
                                       " alt="OG Image" style="width: 80px; height: 80px" loading="lazy" />
-                                    <!-- [else] there is no cover image for the post (put 88 bamboo's logo) -->
+                                    -- [else] there is no cover image for the post (put 88 bamboo's logo) --
                                     <img v-else
                                       src="https://88bamboo.co/cdn/shop/files/88B_New_Logo_-_white_face_transparent_background_180x.png?v=1655894111"
                                       style="width: 80px; height: 80px" loading="lazy" />
-                                  </div>
-                                  <div class="col-lg-8 col-md-12">
+                                  </div> -->
+                                  <div class="col-12">
                                     {{ deepDiveLinkFormatted }}
                                     {{ ogTitle[specified_listing.reviewLink] || deepDiveLinkFormatted }}
                                   </div>
@@ -3663,21 +3663,21 @@
                                                       " :href="specified_listing['reviewLink']"
                                 class="text-left default-text-no-background row">
                                 <div class="row">
-                                  <div class="col-lg-4 col-md-6 col-sm-12">
+                                  <!-- <div class="col-lg-4 col-md-6 col-sm-12">
                                     {{
                                     getOGImage(
                                     specified_listing["reviewLink"]
                                     )
                                     }}
-                                    <!-- [if] there is a cover image for the post-->
+                                    -- [if] there is a cover image for the post--
                                     <img v-if="ogImage != null" :src="ogImage[specified_listing.reviewLink]
                                                               " alt="OG Image" style="width: 80px; height: 80px" loading="lazy" />
-                                    <!-- [else] there is no cover image for the post (put 88 bamboo's logo) -->
+                                    -- [else] there is no cover image for the post (put 88 bamboo's logo) --
                                     <img v-else
                                       src="https://88bamboo.co/cdn/shop/files/88B_New_Logo_-_white_face_transparent_background_180x.png?v=1655894111"
                                       style="width: 80px; height: 80px" loading="lazy" />
-                                  </div>
-                                  <div class="col-lg-8 col-md-12">
+                                  </div> -->
+                                  <div class="col-12">
                                     {{ deepDiveLinkFormatted }}
                                     {{ ogTitle[specified_listing.reviewLink] || deepDiveLinkFormatted }}
                                   </div>
