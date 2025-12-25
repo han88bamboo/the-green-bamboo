@@ -2614,16 +2614,11 @@
 
               <!-- End of modal body -->
               <div class="modal-footer d-flex">
-                <span v-for="review in publicFilteredReviews.filter(
-                  (review) => review.userID === parseInt(userID)
-                )" v-bind:key="review.id" class="me-auto">
-                  <button v-if="inEdit" class="btn btn-danger py-1 mobile-fs-7" @click="
-                    setDeleteID(
-                      publicFilteredReviews.find(
-                        (review) => review.userID === parseInt(userID)
-                      )
-                    )
-                    " data-bs-toggle="modal" data-bs-target="#deleteReview">
+                <span v-if="inEdit && specificReview.length > 0" class="me-auto">
+                  <button class="btn btn-danger py-1 mobile-fs-7" 
+                    @click="setDeleteID(specificReview[0])" 
+                    data-bs-toggle="modal" 
+                    data-bs-target="#deleteReview">
                     Delete Review
                   </button>
                 </span>
@@ -2631,19 +2626,14 @@
                   Close
                 </button>
                 <!--tzh removed btn-secondary added secondary-btn-less-round-inverse-->
-                <div v-if="specified_listing.drinkType !== 'Wine'">
+                <!-- Submit/Update button - works for all drink types including Wine/Sake -->
+                <div>
                   <button v-if="!inEdit" type="button" @click="addReview" class="btn secondary-btn-less-round">
                     Submit Review <span v-if="isSubmittingReview" class="spinner-border spinner-border-sm ms-2"
                       role="status" aria-hidden="true"></span>
                   </button>
                   <button v-else type="button" @click="editReview" class="btn secondary-btn-less-round">
                     Update Review <span v-if="isSubmittingReview" class="spinner-border spinner-border-sm ms-2"
-                      role="status" aria-hidden="true"></span>
-                  </button>
-                </div>
-                <div v-else>
-                  <button type="button" @click="addReview" class="btn secondary-btn-less-round">
-                    Submit Review <span v-if="isSubmittingReview" class="spinner-border spinner-border-sm ms-2"
                       role="status" aria-hidden="true"></span>
                   </button>
                 </div>
@@ -2960,7 +2950,7 @@
 
                     <ul class="dropdown-menu" >
                       <li
-                        v-if="(review.userID === parseInt(userID) && !(Array.isArray(VARIANT_DRNK_TYP) && VARIANT_DRNK_TYP.includes(specified_listing.drinkType))) || correctModerator || (user && user.isAdmin)">
+                        v-if="review.userID === parseInt(userID) || correctModerator || (user && user.isAdmin)">
                         <button class="dropdown-item" @click="setUpdateID(review); handleReviewClick()">
                           Edit
                         </button>
@@ -4245,6 +4235,9 @@ export default {
       
       hoverRating: null,
       hasInteractedWithStars: false,
+
+      // To edit review (stores the specific review ID being edited)
+      updateID: null,
 
       // To delete review
       deleteID: null,
@@ -5937,123 +5930,141 @@ export default {
       this.$router.replace(currentPath);
     },
 
-    getLoggedUserReview() {
-      const specificReview = this.filteredReviews.filter((review) => {
-        return review["userID"] == this.userID;
-      });
-      if (specificReview.length != 0) {
-        this.inEdit = true;
-        this.selectedLanguage = specificReview[0].language;
-        this.selectedColour = specificReview[0].colour;
-        this.reviewDesc = specificReview[0].reviewDesc;
-        this.wouldRecommend = specificReview[0].willRecommend;
-        this.wouldBuyAgain = specificReview[0].wouldBuyAgain;
-        this.aroma = specificReview[0].aroma;
-        this.taste = specificReview[0].taste;
-        this.finish = specificReview[0].finish;
-        this.rating = specificReview[0].rating;
-        this.isPublic = specificReview[0].isPublic !== undefined ? specificReview[0].isPublic : true;
-        // reconcile id with flavourtags
-        // this.selectedFlavourTags= specificReview[0].flavourTag
-        if (specificReview[0].flavourTag != null) {
-          specificReview[0].flavourTag.forEach((subtag) => {
-            const subTag = this.subTags.find(
-              (subTag) => parseInt(subtag) === subTag.id
-            );
-            if (subTag) {
-              const familyTag = this.flavorTags.find(
-                (family) => subTag.familyTagId === family.id
-              );
-              if (familyTag) {
-                const hexcode = familyTag.hexcode;
-                const subtagInfo = subTag.subTag;
-                this.selectedFlavourTags.push(subtagInfo + hexcode);
-              }
-            } else {
-              this.selectedFlavourTags.push("<deleted>");
-            }
-          });
-        }
-        this.finalSelectedFlavourTags = specificReview[0].flavourTag;
-        if (specificReview[0].taggedUsers != null) {
-          this.friendTagList = specificReview[0].taggedUsers.map((userId) =>
-            parseInt(userId)
+    /**
+     * Populates the review form fields from a review object.
+     * Used by both getLoggedUserReview() and setUpdateID() to avoid duplication.
+     * @param {Object} review - The review object to populate from
+     */
+    populateFormFromReview(review) {
+      this.selectedLanguage = review.language;
+      this.selectedColour = review.colour;
+      this.reviewDesc = review.reviewDesc;
+      this.wouldRecommend = review.willRecommend;
+      this.wouldBuyAgain = review.wouldBuyAgain;
+      this.aroma = review.aroma;
+      this.taste = review.taste;
+      this.finish = review.finish;
+      this.rating = review.rating;
+      this.isPublic = review.isPublic !== undefined ? review.isPublic : true;
+      
+      // Populate variant/vintage (for Wine/Sake)
+      this.variant = review.variant || '';
+      
+      // Reset and reconcile flavour tags
+      this.selectedFlavourTags = [];
+      if (review.flavourTag != null) {
+        review.flavourTag.forEach((subtag) => {
+          const subTag = this.subTags.find(
+            (subTag) => parseInt(subtag) === subTag.id
           );
-        }
-        this.selectedObservations = specificReview[0].observationTag;
-        this.image64 = specificReview[0].photo;
-        
-        // Handle location restoration based on review data
-        const reviewLocation = specificReview[0].location;
-        const reviewAddress = specificReview[0].address;
-        
-        // Check if location is "Home" (handle both string and null cases)
-        const isHomeLocation = (
-          (reviewLocation === null && reviewAddress && String(reviewAddress).toLowerCase() === 'home') ||
-          (reviewLocation && typeof reviewLocation === 'string' && reviewLocation.toLowerCase() === 'home')
+          if (subTag) {
+            const familyTag = this.flavorTags.find(
+              (family) => subTag.familyTagId === family.id
+            );
+            if (familyTag) {
+              const hexcode = familyTag.hexcode;
+              const subtagInfo = subTag.subTag;
+              this.selectedFlavourTags.push(subtagInfo + hexcode);
+            }
+          } else {
+            this.selectedFlavourTags.push("<deleted>");
+          }
+        });
+      }
+      this.finalSelectedFlavourTags = review.flavourTag;
+      
+      // Handle tagged users
+      if (review.taggedUsers != null) {
+        this.friendTagList = review.taggedUsers.map((userId) =>
+          parseInt(userId)
         );
+      } else {
+        this.friendTagList = [];
+      }
+      
+      this.selectedObservations = review.observationTag;
+      this.image64 = review.photo;
+      
+      // Handle location restoration based on review data
+      const reviewLocation = review.location;
+      const reviewAddress = review.address;
+      
+      // Check if location is "Home" (handle both string and null cases)
+      const isHomeLocation = (
+        (reviewLocation === null && reviewAddress && String(reviewAddress).toLowerCase() === 'home') ||
+        (reviewLocation && typeof reviewLocation === 'string' && reviewLocation.toLowerCase() === 'home')
+      );
+      
+      if (isHomeLocation) {
+        // Case 1: Home location (handles both legacy null format and current "Home" format)
+        this.selectedLocationType = 'home';
+        this.selectedLocation = 'Home';
+        this.selectedLocationAddress = 'Home';
+        this.locationInputValue = 'Home';
+      } else if (reviewLocation != null) {
+        // Case 2: Venue location - check if it's a venue ID (number) or venue name (string)
         
-        if (isHomeLocation) {
-          // Case 1: Home location (handles both legacy null format and current "Home" format)
-          this.selectedLocationType = 'home';
-          this.selectedLocation = 'Home';
-          this.selectedLocationAddress = 'Home';
-          this.locationInputValue = 'Home';
-        } else if (reviewLocation != null) {
-          // Case 2: Venue location - check if it's a venue ID (number) or venue name (string)
-          
-          // First, try to match by ID (for database venues)
-          let selectedLocation = this.locationOptions.filter((location) => {
-            return location["id"] == specificReview[0].location;
+        // First, try to match by ID (for database venues)
+        let selectedLocation = this.locationOptions.filter((location) => {
+          return location["id"] == review.location;
+        });
+        
+        if (selectedLocation.length > 0) {
+          // Venue found by ID in locationOptions (venue that sells this drink)
+          this.selectedLocationType = 'venue';
+          this.selectedLocation = selectedLocation[0].name;
+          this.selectedLocationAddress = selectedLocation[0].address;
+          this.selectedLocationId = selectedLocation[0].id;
+          this.locationInputValue = selectedLocation[0].name;
+        } else {
+          // Try to match by name (for Google Maps venues stored as names)
+          selectedLocation = this.locationOptions.filter((location) => {
+            return location["name"] == review.location;
           });
           
           if (selectedLocation.length > 0) {
-            // Venue found by ID in locationOptions (venue that sells this drink)
+            // Venue found by name in locationOptions
             this.selectedLocationType = 'venue';
             this.selectedLocation = selectedLocation[0].name;
             this.selectedLocationAddress = selectedLocation[0].address;
             this.selectedLocationId = selectedLocation[0].id;
             this.locationInputValue = selectedLocation[0].name;
           } else {
-            // Try to match by name (for Google Maps venues stored as names)
-            selectedLocation = this.locationOptions.filter((location) => {
-              return location["name"] == specificReview[0].location;
-            });
+            // Venue not in locationOptions - it's a Google Maps venue or custom location
+            // Check if we can find it in reviewedAtVenues to get the name
+            const reviewedVenue = this.reviewedAtVenues.find(venue => 
+              venue.id == review.location || venue.venueName == review.location
+            );
             
-            if (selectedLocation.length > 0) {
-              // Venue found by name in locationOptions
+            if (reviewedVenue) {
+              // Found in reviewedAtVenues - use the venue name
               this.selectedLocationType = 'venue';
-              this.selectedLocation = selectedLocation[0].name;
-              this.selectedLocationAddress = selectedLocation[0].address;
-              this.selectedLocationId = selectedLocation[0].id;
-              this.locationInputValue = selectedLocation[0].name;
+              this.selectedLocation = reviewedVenue.venueName;
+              this.selectedLocationAddress = reviewedVenue.address || review.address || '';
+              this.selectedLocationId = reviewedVenue.id;
+              this.locationInputValue = reviewedVenue.venueName;
             } else {
-              // Venue not in locationOptions - it's a Google Maps venue or custom location
-              // Check if we can find it in reviewedAtVenues to get the name
-              const reviewedVenue = this.reviewedAtVenues.find(venue => 
-                venue.id == specificReview[0].location || venue.venueName == specificReview[0].location
-              );
-              
-              if (reviewedVenue) {
-                // Found in reviewedAtVenues - use the venue name
-                this.selectedLocationType = 'venue';
-                this.selectedLocation = reviewedVenue.venueName;
-                this.selectedLocationAddress = reviewedVenue.address || specificReview[0].address || '';
-                this.selectedLocationId = reviewedVenue.id;
-                this.locationInputValue = reviewedVenue.venueName;
-              } else {
-                // Fallback: treat as Google Maps venue with name as-is
-                this.selectedLocationType = 'venue';
-                this.selectedLocation = specificReview[0].location;
-                this.selectedLocationAddress = specificReview[0].address || '';
-                this.locationInputValue = specificReview[0].location;
-              }
+              // Fallback: treat as Google Maps venue with name as-is
+              this.selectedLocationType = 'venue';
+              this.selectedLocation = review.location;
+              this.selectedLocationAddress = review.address || '';
+              this.locationInputValue = review.location;
             }
           }
         }
-        
-        // Clear cache when editing an existing review
-        this.clearReviewCache();
+      }
+      
+      // Clear cache when editing an existing review
+      this.clearReviewCache();
+    },
+
+    getLoggedUserReview() {
+      const specificReview = this.filteredReviews.filter((review) => {
+        return review["userID"] == this.userID;
+      });
+      if (specificReview.length != 0) {
+        this.inEdit = true;
+        this.populateFormFromReview(specificReview[0]);
       }
 
       return specificReview;
@@ -6536,7 +6547,11 @@ export default {
     },
 
     setUpdateID(review) {
+      // Store the specific review being edited
       this.updateID = review.id;
+      this.specificReview = [review];
+      this.populateFormFromReview(review);
+      this.inEdit = true;
     },
 
     async voteReview(review, vote) {
