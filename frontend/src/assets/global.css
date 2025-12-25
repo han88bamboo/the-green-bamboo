@@ -516,9 +516,11 @@ html {
 
 .tertiary-btn,
 .tertiary-btn-qa {
-  color: whitesmoke;
-  background-color: #747d92;
-  border: 1px solid rgb(110, 110, 110);
+  color: black;
+  font-weight: bold;
+  background-color: lightgrey;
+  border-radius:2px;
+  text-decoration: none;
 }
 
 .tertiary-btn-blue-outline {
@@ -2122,7 +2124,7 @@ button.primary-square:hover {
 
 .about-box {
   background-color: none; /*gainsboro*/
-  min-height: 3em;
+  min-height: 2em;
 }
 
 .edit-listings-svg-dimensions {

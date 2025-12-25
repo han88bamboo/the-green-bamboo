@@ -37,7 +37,7 @@
   <div class="container pt-5 mobile-pt-4" v-if="dataLoaded">
     <!-- Master Listing Banner for Wine/Sake -->
     <div v-if="Array.isArray(VARIANT_DRNK_TYP) && VARIANT_DRNK_TYP.includes(specified_listing.drinkType)"
-      class="row container mb-4">
+      class="row container mb-3">
       <div class="col-12">
         <div class="alert alert-info d-flex align-items-center" role="alert"
           style="background-color: #e7f3ff; border: 1px solid #b3d9ff; border-radius: 8px;">
@@ -64,7 +64,7 @@
       <!-- producer information -->
       <div class="col-12 col-md-9 no-margin no-right-padding-large-screen">
         <!-- header -->
-        <div class="row container">
+        <div class="row container mb-3">
           <!-- image -->
           <div class="col-5 col-md-5 col-lg-4 col-xl-3 d-flex justify-content-center">
             <div class="rounded overflow-hidden" style="
@@ -82,10 +82,10 @@
 
 
           <!-- details -->
-          <div class="col-12 col-lg-8 col-xl-9 text-start mobile-col-7 mobile-ps-0 mobile-pe-0">
+          <div class="col-9 text-start mobile-col-7 me-0 pe-0 mobile-ps-0 mobile-pe-0">
             <div class="container text-start mobile-ps-0 mobile-pe-0">
               <!-- drink category -->
-              <div class="row">
+              <div class="row align-items-end">
                 <div class="col-9 mobile-view-hide">
                   <h5 class="text-muted fst-italic" style="overflow-wrap: break-word; white-space: normal;">
                     {{ specified_listing["drinkType"] }} |
@@ -93,15 +93,42 @@
                     Drink ID: {{ specified_listing["id"] }}
                   </h5>
                 </div>
-                <div v-if="correctProducer" class="col-3">
-                  <div class="text-end mb-3 m-1">
-                    <div class="form-check form-switch form-check-inline">
+                <div v-if="correctProducer || correctModerator" class="col-3 mobile-view-hide">
+                  <div class="text-end m-1">
+                    <router-link
+                        :to="`/listing/edit/${specified_listing.id}`"
+                        class="btn btn-sm tertiary-btn"
+                      >
+                        <i class="bi bi-pen"></i>
+                    </router-link>
+                    <button
+                        type="button"
+                        class="btn btn-sm tertiary-btn reverse-clickable-text p-1"
+                        style="background-color: #dc3545; color: white;"
+                        data-bs-toggle="modal"
+                        data-bs-target="#deleteListingModal"
+                      >
+                        <span class="reverse-clickable-text"><i class="bi bi-trash"></i></span>
+                    </button>
+                    <div v-if="correctProducer" class="form-check form-switch form-check-inline">
                       <input class="form-check-input" type="checkbox" role="switch" id="lockCheck" name="lockCheck"
                         v-model="specified_listing.allowMod" data-bs-toggle="modal" data-bs-target="#lockModal" />
                       <label class="form-check-label" for="IBCheck" v-if="specified_listing.allowMod">Unlocked</label>
                       <label class="form-check-label" for="IBCheck" v-if="!specified_listing.allowMod">Locked</label>
                     </div>
                   </div>
+                </div>
+                <div v-else class="col-3 mobile-view-hide">
+                  <router-link :to="{ path: '/request/modify/edit/' + listing_id }" style="color: black">
+                        <p class="small text-muted no-margin xtext-decoration-underline fst-italic text-end">
+                          Suggest Edit
+                        </p>
+                  </router-link>
+                  <router-link :to="{ path: '/request/modify/duplicate/' + listing_id }" style="color: black">
+                        <p class="small text-muted no-margin xtext-decoration-underline fst-italic text-end">
+                          Report Duplicate
+                        </p>
+                  </router-link>
                 </div>
               </div>
               <!-- modal for lock listing to moderators -->
@@ -178,45 +205,46 @@
                       <!-- Red Add Review Button for regular users -->
                       <template v-else-if="userType == 'user'">
                         <!-- Logged-In User XYZ-->
-                        <button class="btn text-white fw-semibold px-2" @click="handleReviewClick"
+                        <button class="btn text-white fw-semibold px-2" @click="showMobileBlueBox = true"
                           style="border-radius: 0; height: 40px; background-color: #FF3E31;">
-                          {{ !inEdit ? 'Add Review' : 'Reviewed' }}
+                          {{ !inEdit ? 'Review' : 'Reviewed' }}
                         </button>
                       </template>
 
                       <!-- Red Add Review Button When User Is Logged Out -->
                       <template v-else>
-                        <router-link :to="{ path: '/login' }" class="text-decoration-none">
-                          <button class="btn btn-danger text-white fw-semibold px-2"
-                            style="border-radius: 0; height: 38px;">
-                            Add Review
-                          </button>
-                        </router-link>
+                        <button  
+                          class="btn text-white fw-semibold px-2"
+                          style="border-radius: 0; height: 40px; background-color: #FF3E31;"
+                          @click="userID !== 'defaultUser' ? showMobileBlueBox = true : $router.push('/login')">
+                          Review
+                        </button>
                       </template>
 
-                      <!-- Teal Bookmark Icon for non-venue logged-in users -->
-                      <div v-if="userType == 'user'"
-                        class="d-flex align-items-center justify-content-center teal-bookmark-icon"
-                        style="background-color: #f2994a; width: 40px; height: 40px; cursor: pointer;">
-                        <BookmarkIcon v-if="user" :user="user" :listing="specified_listing" :overlay="false" size="20"
-                          @icon-clicked="handleIconClick" />
+
+                      <div v-if="userType !== 'venue'"
+                        class="d-flex align-items-center justify-content-center"
+                        style="background-color: #f0b358; width: 40px; height: 40px; cursor: pointer;"
+                        :data-bs-toggle="userID !== 'defaultUser' ? 'modal' : undefined"
+                        :data-bs-target="userID !== 'defaultUser' ? '#bookmarkModal' : undefined"
+                        @click="userID !== 'defaultUser' ? handleIconClick(specified_listing.id) : $router.push('/login')">
+                        <i class="bi bi-bookmark" style="color: #ffffff; font-size: 18px;"></i>
                       </div>
 
-                      <!-- Teal Bookmark Button When User Is Logged Out (not for venue users) -->
-                      <router-link v-else-if="userType !== 'venue'" :to="{ path: '/login' }"
-                        class="d-flex align-items-center justify-content-center text-decoration-none"
-                        style="background-color: #f2994a; width: 38px; height: 38px;">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="#ffffff"
-                          viewBox="0 0 16 16">
-                          <path d="M2 2v13.5l5.5-3.5 5.5 3.5V2z" />
-                        </svg>
-                      </router-link>
-
+                    <button 
+                        class="btn text-white fw-semibold px-2"
+                        style="border-radius: 0; height: 40px; background: linear-gradient(135deg, #007bff, #0056b3);"
+                        :data-bs-toggle="userID !== 'defaultUser' ? 'modal' : undefined"
+                        :data-bs-target="userID !== 'defaultUser' ? '#cellarModal' : undefined"
+                        @click="userID !== 'defaultUser' ? onCellarModalOpen() : $router.push('/my-cellar')"
+                      >
+                          <i class="bi bi-archive-fill"></i>
+                      </button>
 
                       <!-- Black External Link Icon -->
                       <div class="d-flex align-items-center justify-content-center"
                         style="background-color: #000000; width: 40px; height: 40px; cursor: pointer;"
-                        data-bs-toggle="modal" data-bs-target="#whereToBuyModal">
+                        @click="showWhereToBuyModal = true">
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
                           stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                           <path d="M18 13v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
@@ -291,106 +319,46 @@
                     </div>
                   </div>
 
-                  <!-- Blue Add To Cellar Button (mobile only) -->
-                  <div class="col-12 d-flex align-items-center gap-1 mobile-view-show  ">
-                    <!-- Blue Add To Cellar Button -->
-                    <template v-if="userType == 'user'">
-                      <!-- Logged-In User -->
-                      <button class="btn fw-semibold fs-7 cellar-btn-blue-mobile" data-bs-toggle="modal"
-                        data-bs-target="#cellarModal"
-                        @click="onCellarModalOpen">
-                        Add To My Cellar
-                      </button>
-                      
-                      <!-- Mobile Follow Listing Button -->
-                      <button 
-                        v-if="userID !== 'defaultUser'"
-                        class="btn btn-sm"
-                        :style="{ backgroundColor: isFollowingListing(specified_listing.id) ? '#28a745' : '#FF3E31', color: 'white', borderRadius: '0px', height: '38px', minWidth: '40px' }"
-                        :aria-pressed="isFollowingListing(specified_listing.id)"
-                        :aria-label="isFollowingListing(specified_listing.id) ? 'Unfollow this listing' : 'Follow this listing'"
-                        @click="toggleListingFollow(specified_listing.id)"
-                        type="button"
-                      >
-                        <PhBellRinging v-if="isFollowingListing(specified_listing.id)" :size="20" color="white" />
-                        <PhBell v-else :size="20" color="white" />
-                      </button>
-                    </template>
-
-                    <!-- Blue Add To Cellar Button When User Is Logged Out -->
-                    <router-link v-else :to="{ path: '/login' }" class="text-decoration-none">
-                      <button class="btn fw-semibold px-2 cellar-btn-blue-mobile"
-                        style="height: 38px;">
-                        Add To My Cellar
-                      </button>
-                    </router-link>
-                  </div>
 
                 </div>
-                <!-- tzh edited classes suggest edit & report duplicate padding-top-for-suggesteditslink-large-screen-->
-                <div
-                  class="col-12 col-md-4 col-lg-4 text-end padding-left-for-suggesteditslink-large-screen padding-right-for-suggesteditslink-large-screen mobile-view-hide"
-                  style="position: relative">
-                  <!-- [if] correct producer-->
-                  <!-- TODO: check if moderator type is for the listing -->
-                  <div v-if="correctProducer || correctModerator" class="edit-listing-report-duplicate-btn">
-                    <button type="button" class="btn tertiary-btn reverse-clickable-text m-1">
-                      <router-link :to="`/listing/edit/${specified_listing.id}`" class="reverse-clickable-text">
-                        Edit Listing
-                      </router-link>
-                    </button>
-                    <!-- delete listing -->
-                    <button type="button" class="btn btn-danger reverse-clickable-text p-1" data-bs-toggle="modal"
-                      data-bs-target="#deleteListingModal">
-                      <!-- v-on:click="deleteListings(specified_listing)" -->
-                      <a class="reverse-clickable-text"> Delete Listing </a>
-                    </button>
-                  </div>
 
-                  <!-- [else] not correct producer -->
-                  <div v-else>
-                    <router-link :to="{ path: '/request/modify/edit/' + this.listing_id }" style="color: black">
-                      <p class="text-body-secondary no-margin xtext-decoration-underline fst-italic text-end">
-                        Suggest Edit
-                      </p>
-                    </router-link>
-                    <router-link :to="{
-                      path: '/request/modify/duplicate/' + this.listing_id,
-                    }" style="color: black">
-                      <p class="text-body-secondary no-margin xtext-decoration-underline fst-italic text-end">
-                        Report Duplicate
-                      </p>
-                    </router-link>
-                  </div>
-                </div>
+
               </div>
 
-              <!-- The Modal -->
+              <!-- The Bottom Sheet -->
 
-              <div class="modal fade" id="whereToBuyModal" tabindex="-1" aria-labelledby="whereToBuyModalLabel"
-                aria-hidden="true">
-                <div class="modal-dialog modal-lg">
-                  <div class="modal-content">
-                    <div class="modal-header">
-                      <h5 class="modal-title">More Details</h5>
-                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                      <div class="col-sm-12 col-md-9 col-lg-3">
+              <!-- Overlay -->
+              <div 
+                v-if="showWhereToBuyModal" 
+                class="where-to-buy-overlay mobile-view-show"
+                @click="showWhereToBuyModal = false"
+              ></div>
+              
+              <!-- Bottom Sheet Container -->
+              <div 
+                class="where-to-buy-wrapper mobile-view-show"
+                :class="{ 
+                  'show-mobile': showWhereToBuyModal 
+                }"
+              >
+                <!-- Mobile handle bar -->
+                <div class="bottom-sheet-handle mobile-view-show" @click="showWhereToBuyModal = false">
+                  <div class="handle-bar"></div>
+                </div>
+                
+                <div class="container p-3">
+                  <div>
+                    <h5 class="fw-bold text-center" style="color: #ccc">More Details</h5>
+                    <button type="button" class="btn-close" @click="showWhereToBuyModal = false" aria-label="Close"></button>
+                  </div>
+                  <div class="modal-body p-0">
+                      <div class="col-11 mobile-spacer">
                         <!-- where to buy -->
                         <div class="row mobile-view-hide">
-                          <div class="square primary-square-green rounded p-3 mb-3 text-start" style="
-                              height: 250px;
-                              border-radius: 10px;
-                              box-shadow: 4px 4px 4px rgba(0, 0, 0, 0.4);
-                            ">
-                            <!-- TZH added '-green'-->
+                          <div class="p-3 mb-3 text-start">
                             <!-- header text -->
-                            <div class="square-inline text-start">
-                              <h4 class="mr-auto">Where to Buy</h4>
-                            </div>
+                            <h5 class="fw-bold">Where to Buy</h5>
                             <!-- body -->
-                            <div style="height: 85%">
                               <div class="text-start pt-2 overflow-auto" style="max-height: 100%">
                                 <!-- [function] where to buy -->
                                 <div v-for="producer in producerListings" v-bind:key="producer">
@@ -401,7 +369,6 @@
                                   </router-link>
                                 </div>
                               </div>
-                            </div>
                           </div>
                         </div>
 
@@ -410,25 +377,32 @@
 
                         <!-- where to try -->
                         <div class="row">
-                          <div class="square primary-square-green rounded p-3 mb-3 text-start" style="
-                              border-radius: 10px;
-                              box-shadow: 4px 4px 4px rgba(0, 0, 0, 0.4);
-                            ">
+                          <div class="p-3 text-start">
                             <!-- header text -->
-                            <div class="square-inline text-start">
-                              <h4 class="mr-auto">Where to Try</h4>
+                            <div class="d-flex justify-content-between align-items-center flex-start">
+                            <h5 class="fw-bold  mb-0">Where to Try</h5>
+                            <button 
+                              v-if="userID !== 'defaultUser'"
+                              class="btn btn-sm"
+                              :style="{ backgroundColor: isFollowingListing(specified_listing.id) ? '#28a745' : '#ff3e31', color: 'white', height: '38px', minWidth: '40px' }"
+                              :aria-pressed="isFollowingListing(specified_listing.id)"
+                              :aria-label="isFollowingListing(specified_listing.id) ? 'Unfollow this listing' : 'Follow this listing'"
+                              @click="toggleListingFollow(specified_listing.id)"
+                              type="button"
+                            >
+                              <PhBellRinging v-if="isFollowingListing(specified_listing.id)" :size="20" color="white" />
+                              <PhBell v-else :size="20" color="white" />
+                            </button>
                             </div>
+                            <hr>
                             <!-- body -->
-                            <div style="height: 85%">
-                              <div class="text-start pt-2 overflow-auto">
+                              <div class="text-start pt-2">
                                 <!-- [function] where to try -->
-
                                 <div v-if="venues.length > 0">
                                   <div v-for="venue in venues" v-bind:key="venue.id">
                                     <router-link :to="{ path: '/profile/venue/' + venue.id + '/' + this.slugify(venue.venueName) }"
-                                      class="reverse-clickable-text venue-name">
-                                      <span class="location-icon">📍</span>
-                                      {{ venue.venueName }}
+                                      class="fw-bold pb-2 reverse-clickable-text text-color-black">
+                                      <span class="location-icon">📍 </span>{{ venue.venueName }}
                                     </router-link>
                                     <div class="vintages-container">
                                       <span v-for="vintage in venue.vintages" v-bind:key="vintage"
@@ -439,7 +413,21 @@
                                   </div>
                                 </div>
                                 <div v-else>
-                                  <p class="mb-1">We couldn't find any bars with this listing.</p>
+                                  We couldn't find any bars with this drink listed on their menu yet.
+                                    <router-link
+                                      v-if="userID === 'defaultUser'"
+                                      to="/signup"
+                                      class="default-text-no-background fst-italic"
+                                    >
+                                      Sign up to get notified when a bar adds this drink to their menu!
+                                    </router-link>
+                                    <span
+                                      v-else
+                                      class="default-text-no-background fst-italic"
+                                    >
+                                      Click the bell icon to get notified when a bar adds this drink to their menu!
+                                    </span>
+
                                 </div>
 
                                 <!-- [if] user does not allow location -->
@@ -485,18 +473,18 @@
                                     </router-link>
                                   </div>
                                 </div> -->
-                              </div>
                             </div>
                           </div>
                         </div>
 
                         <!-- 88 bamboo's review -->
                         <div class="row">
-                          <div class="square primary-square-green-outline xsecondary-square rounded p-3 mb-3">
+                          <div class="p-3 text-start">
                             <!-- TZH added 'primary-square-green-outline'-->
                             <!-- header text -->
                             <div class="py-2 text-start">
-                              <h4>88 Bamboo's Review</h4>
+                               <h5 class="fw-bold">88 Bamboo's Review</h5>
+                                 <hr class="color: black">
                               <a v-if="
                                 isHttpValid(specified_listing['reviewLink'])
                               " :href="specified_listing['reviewLink']"
@@ -540,8 +528,8 @@
                     </div>
                   </div>
                 </div>
-              </div>
-
+              
+ 
               <!-- description -->
               <div class="row container scrollable pe-0 mobile-view-hide">
                 <div class="g-0 row Xcol-lg-12 pe-0 ps-0 xpadding-right-for-suggesteditslink-large-screen">
@@ -572,17 +560,17 @@
                     <div class="col-12">
                       <p v-if="!showFullDescription" class="mobile-rating-smaller-text-2" style="margin-bottom: 0.2rem">
                         <!-- tzh added truncated description --->
-                        <em>{{
+                        {{
                           specified_listing["officialDesc"].slice(0, 250) +
                           (specified_listing["officialDesc"].length > 250
                             ? "..."
                             : "")
-                        }}</em>
+                        }}
                         <a @click="showFullDescription = true" style="font-weight: bold">(Read More)</a>
                       </p>
                       <p v-else style="margin-bottom: 0.2rem" class="mobile-rating-smaller-text-2">
                         <!-- tzh added full description --->
-                        <em>{{ specified_listing["officialDesc"] }}</em>
+                        {{ specified_listing["officialDesc"] }}
                         <a @click="showFullDescription = false" style="font-weight: bold">(Read Less)</a>
                       </p>
                     </div>
@@ -591,7 +579,7 @@
                     <!-- tzh removed d-flex justify-content-between align-items-center-->
                     <div class="col-12">
                       <p style="margin-bottom: 0.2rem" class="mobile-rating-smaller-text-2">
-                        <em>{{ specified_listing["officialDesc"] }}</em>
+                        {{ specified_listing["officialDesc"] }}
                       </p>
                     </div>
                   </div>
@@ -629,168 +617,376 @@
               <div class="col-12">
                 <p v-if="!showFullDescription" class="mobile-rating-smaller-text-2" style="margin-bottom: 0.2rem">
                   <!-- tzh added truncated description --->
-                  <em>{{
+                  {{
                     specified_listing["officialDesc"].slice(0, 250) +
                     (specified_listing["officialDesc"].length > 250
                       ? "..."
                       : "")
-                  }}</em>
-                  <a @click="showFullDescription = true" style="font-weight: bold">(Read More)</a>
+                  }}
+                  <a @click="showFullDescription = true" style="font-weight: bold"> (Read More)</a>
                 </p>
                 <p v-else style="margin-bottom: 0.2rem" class="mobile-rating-smaller-text-2">
                   <!-- tzh added full description --->
-                  <em>{{ specified_listing["officialDesc"] }}</em>
-                  <a @click="showFullDescription = false" style="font-weight: bold">(Read Less)</a>
+                  {{ specified_listing["officialDesc"] }}
+                  <a @click="showFullDescription = false" style="font-weight: bold"> (Read Less)</a>
                 </p>
               </div>
             </div>
 
             <div v-else class="about-box">
-              <!-- tzh removed d-flex justify-content-between align-items-center-->
               <div class="col-12">
                 <p style="margin-bottom: 0.2rem" class="mobile-rating-smaller-text-2">
-                  <em>{{ specified_listing["officialDesc"] }}</em>
+                  {{ specified_listing["officialDesc"] }}
                 </p>
               </div>
             </div>
           </div>
         </div>
-        <div class="row pt-2 container mobile-view-show text-black">
-          <p class="text-start mb-1 col-12" style="
-              white-space: nowrap;
-              overflow: hidden;
-              text-overflow: ellipsis;
-              font-size: 15px;
-              font-weight: bold;
-            ">
-            <span v-if="specified_listing.drinkType === 'Whiskey / Whisky'">
-              <span class="text-decoration-none">Whisky | </span>
-            </span>
-            <span v-else>{{ specified_listing["drinkType"] }} | </span>
-            <span class="text-decoration-none">{{ specified_listing["typeCategory"] }} |
-            </span>
-            <span v-if="specified_listing['drinkStyle']" class="text-decoration-none">{{ specified_listing["drinkStyle"]
-            }} |
-            </span>
-            <span v-if="specified_listing['abv']" class="text-decoration-none">{{ specified_listing["abv"] }}% |
-            </span>
-            <span v-if="specified_listing['originCountry']" class="text-decoration-none">{{
-              specified_listing["originCountry"]
-            }} |
-            </span>
-            <span v-if="specified_listing['id']" class="text-decoration-none">Drink ID: {{ specified_listing["id"] }}</span>
-          </p>
-          <div class="col-2 d-flex justify-content-end make-bookmark-bigger mobile-view-hide">
-            <BookmarkIcon v-if="user" :user="user" :listing="specified_listing" :overlay="false" size="30"
-              @icon-clicked="handleIconClick" />
-          </div>
-        </div>
-        <!-- more information (category, age, country of origin, abv, list buttons & bookmark) -->
-        <div class="row pt-4 mobile-view-hide">
-          <div class="col-9 col-lg-11">
-            <div class="row listing-details">
-              <!-- category -->
-              <div class="col-6 col-lg-3 pe-1 ps-4 text-start mobile-view-hide text-color-black">
-                <h5 class="text-body-secondary mb-1">
-                  <b> {{ specified_listing["typeCategory"] }} </b>
-                </h5>
-                <p class="mb-3"><u> Category </u></p>
-              </div>
 
-              <!-- drink styles -->
-              <div v-if="specified_listing['drinkStyle']"
-                class="col-6 col-lg-3 px-1 text-start mobile-view-hide text-color-black">
-                <h5 class="text-body-secondary mb-1">
-                  <b>
-                    {{ specified_listing["drinkStyle"] }}
-                  </b>
-                </h5>
-                <p class="mb-3"><u> Drink Style </u></p>
-              </div>
-
-              <!-- variety tags -->
-              <div v-if="specified_listing['varietyTags'] && specified_listing['varietyTags'].length > 0"
-                class="col-6 col-lg-3 px-1 text-start mobile-view-hide text-color-black">
-                <h5 class="text-body-secondary mb-1">
-                  <b> {{ specified_listing['varietyTags'].join('; ') }} </b>
-                </h5>
-                <p class="mb-3"><u> Variety Tag(s) </u></p>
-              </div>
-
-              <!-- age -->
-              <div v-if="specified_listing['age']"
-                class="col-6 col-lg-1 px-1 text-start mobile-view-hide text-color-black">
-                <!-- this code was only relevant before we had new vintage feature for reviews
-                  <div v-if="specified_listing['drinkType'] == 'Wine'">
-                  <h5 class="text-body-secondary mb-1">
-                    <b> {{ specified_listing["age"] }} </b>
-                  </h5>
-                  <p class="mb-3"><u> Vintage (Year)</u></p>
+        <div class="d-flex flex-row flex-nowrap align-items-start">
+          <div class="container p-0 flex-grow-1 pt-3 mobile-pt-1">
+            <!-- AGGREGATE RATINGS INFO - Avg Rating, % Recommend, % Drink Again, Flavour Tags, Action Tags -->
+            <div class="row container ms-1">
+              <!-- Category, Drink Style, Age, ABV, Country, Drink ID -->
+                <!-- MOBILE  -->
+                <div class="row pt-2 p-0 mobile-view-show">
+                  <p class="text-start mb-1 col-12" style="
+                      white-space: nowrap;
+                      overflow: hidden;
+                      text-overflow: ellipsis;
+                      font-size: 15px;
+                      font-weight: bold;
+                    ">
+                    <span v-if="specified_listing.drinkType === 'Whiskey / Whisky'">
+                      <span class="text-decoration-none">Whisky | </span>
+                    </span>
+                    <span v-else>{{ specified_listing["drinkType"] }} | </span>
+                    <span class="text-decoration-none">{{ specified_listing["typeCategory"] }} |
+                    </span>
+                    <span v-if="specified_listing['drinkStyle']" class="text-decoration-none">{{ specified_listing["drinkStyle"]
+                    }} |
+                    </span>
+                    <span v-if="specified_listing['abv']" class="text-decoration-none">{{ specified_listing["abv"] }}% |
+                    </span>
+                    <span v-if="specified_listing['originCountry']" class="text-decoration-none">{{
+                      specified_listing["originCountry"]
+                    }} |
+                    </span>
+                    <span v-if="specified_listing['id']" class="text-decoration-none">Drink ID: {{ specified_listing["id"] }}</span>
+                  </p>
+                  <div class="col-2 d-flex justify-content-end make-bookmark-bigger mobile-view-hide">
+                    <BookmarkIcon v-if="user" :user="user" :listing="specified_listing" :overlay="false" size="30"
+                      @icon-clicked="handleIconClick" />
+                  </div>
                 </div>
-                <div v-else> -->
-                <div>
-                  <h5 class="text-body-secondary mb-1">
-                    <b> {{ specified_listing["age"] }} </b>
-                  </h5>
-                  <p class="mb-3"><u>Years</u></p>
+                <!-- DESKTOP -->
+                <div class="row g-0 mobile-view-hide mt-2">
+                  <!-- Category -->
+                  <div class="col-3 text-start">
+                    <h6 class="mb-1">
+                      <b> {{ specified_listing["typeCategory"] }} </b>
+                    </h6>
+                    <p class="mb-2"><u> Category </u></p>
+                  </div>
+
+                  <!-- Drink Style -->
+                  <div v-if="specified_listing['drinkStyle']"
+                    class="col-3 text-start">
+                    <h6 class="mb-1">
+                      <b>
+                        {{ specified_listing["drinkStyle"] }}
+                      </b>
+                    </h6>
+                    <p class="mb-2"><u> Drink Style </u></p>
+                  </div>
+
+                  <!-- Variety Tag(s) -->
+                  <div v-if="specified_listing['varietyTags'] && specified_listing['varietyTags'].length > 0"
+                    class="col-3 text-start ">
+                    <h6 class="mb-1">
+                      <b> {{ specified_listing['varietyTags'].join('; ') }} </b>
+                    </h6>
+                    <p class="mb-2"><u> Variety Tag(s) </u></p>
+                  </div>
+
+                  <!-- Age -->
+                  <div v-if="specified_listing['age']"
+                    class="col-1 text-start ">
+                    <div>
+                      <h6 class="mb-1">
+                        <b> {{ specified_listing["age"] }} </b>
+                      </h6>
+                      <p class="mb-2"><u>Years</u></p>
+                    </div>
+                  </div>
+
+                  <!-- ABV -->
+                  <div v-if="specified_listing['abv']"
+                    class="col-1 text-start text-color-black">
+                    <h6 class=" mb-1">
+                      <b> {{ specified_listing["abv"] }}% </b>
+                    </h6>
+                    <p class="mb-2"><u> ABV </u></p>
+                  </div>
+                </div>
+
+              <!-- Avg Rating, % Recommend, % Drink Again -->
+              <div class="row flex-start g-1 container pb-2">
+                  <!-- Average Rating -->
+                  <div class="col-4 text-start mobile-pe-0">
+                    <h3 class="mobile-rating-smaller-text text-body-secondary  mb-0">
+                      <b>{{ specificReviewRating }} ★</b>
+                      <!--<svg xmlns="http://www.w3.org/2000/svg" width="30" height="1em" fill="currentColor" class="bi bi-star-fill-black" viewBox="0 0 16 16">
+                                            <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"/>
+                                        </svg>-->
+                    </h3>
+                    <p class="mb-2 mobile-view-hide mobile-rating-smaller-text-2">
+                      <u> Average Rating </u>
+                    </p>
+                    <p class="mb-2 mobile-view-show mobile-rating-smaller-text-2">
+                      <u> Rating </u>
+                    </p>
+                  </div>
+                  <!-- % Recommend -->
+                  <div class="col-4 text-start mobile-ps-0 mobile-pe-0">
+                    <h3 class="mobile-rating-smaller-text text-body-secondary  mb-0" >
+                      <b> {{ willRecommend }}% </b>
+                    </h3>
+                    <p class="mb-2 mobile-rating-smaller-text-2">
+                      <u> Would Recommend </u>
+                    </p>
+                  </div>
+                  <!-- % Drink Again -->
+                  <div class="col-4 text-start pe-0 mobile-ps-0 ">
+                    <h3 class="mobile-rating-smaller-text text-body-secondary mb-0 ">
+                      <b> {{ willDrinkAgain }}% </b>
+                    </h3>
+                    <p class="mb-2 mobile-rating-smaller-text-2">
+                      <u> Would Drink Again </u>
+                    </p>
+                  </div>
+              </div>
+
+              <!-- POPULAR FLAVOUR TAGS -->
+              <div class="row p-0 container">
+                <!-- flavor tags -->
+                  <div class="text-start mb-2 mobile-mb-0 text-color-black">
+                    <!-- flavor tag -->
+                    <span v-for="(count, tag) in sorted_flavorTagCounts" :key="tag" class="badge rounded-pill me-2"
+                      :style="{ backgroundColor: '#' + tag.split('#')[1] }">{{ tag.split("#")[0] }}</span>
+                    <p class="mb-2 mt-2 mobile-rating-smaller-text-2">
+                      <u> Most Popular Flavour Tags </u>
+                    </p>
+                </div>
+              </div>
+
+              <!-- POPULAR ACTION TAGS -->
+              <div class="row container p-0">
+                <div class="text-start mb-2 mobile-mb-0 text-color-black">
+                <!-- action tag -->
+                <span v-for="(count, tag) in sorted_observationTagCounts" :key="tag" class="badge rounded-pill me-2"
+                  :style="{ backgroundColor: getActionTagColor(tag), color: 'black' }">{{ getActionTagDisplayText(tag) }}</span>
+                <p class="mb-2 mt-2 mobile-rating-smaller-text-2">
+                  <u> Most Popular Action Tags </u>
+                </p>
                 </div>
               </div>
 
 
-              <!-- abv -->
-              <div v-if="specified_listing['abv']"
-                class="col-6 col-lg-1 px-1 text-start mobile-view-hide text-color-black">
-                <h5 class="text-body-secondary mb-1">
-                  <b> {{ specified_listing["abv"] }}% </b>
-                </h5>
-                <p class="mb-3"><u> ABV </u></p>
-              </div>
+
             </div>
           </div>
-
+          <!-- BLUE BOX - Single code for desktop & mobile -->
+          <!-- Mobile overlay -->
+          <div 
+            v-if="showMobileBlueBox" 
+            class="blue-box-overlay mobile-view-show"
+            @click="showMobileBlueBox = false"
+          ></div>
+          
+          <!-- Blue Box Container (desktop fixed, mobile bottom sheet) -->
+          <div 
+            class="blue-box-wrapper col-lg-4 me-0"
+            :class="{ 
+              'show-mobile': showMobileBlueBox 
+            }"
+          >
+            <!-- Mobile handle bar -->
+            <div class="bottom-sheet-handle mobile-view-show" @click="showMobileBlueBox = false">
+              <div class="handle-bar"></div>
+            </div>
+            
+            <div class="container p-2" >
+              <!-- FOR USERS:  DRINK, BOOKMARK, ADD TO CELLAR BUTTONS-->
+                <div v-if="userType !== 'venue'" class="row justify-content-between m-0 pb-1 pt-2 text-white" style="background: linear-gradient(135deg,#007bff,#0056b3); border-bottom: 0.5px solid white;">
+                  <div class="col-4 justify-content-center d-flex p-0">
+                    <button 
+                        v-if="showTastingNotesButton"
+                        @click="showMobileBlueBox = false; isLoggedIn ? handleReviewClick() : $router.push('/login')" 
+                        class="redbox-link py-2"
+                      >
+                      <h2><i class="bi bi-cup-straw dx-icon"></i></h2>
+                      <p class="small my-0">Drink</p>
+                    </button>
+                    <button v-else class="redbox-link py-2">
+                      <h2 style="color: #f0b258;"><i class="bi bi-cup-straw dx-icon"></i></h2>
+                      <p class="small my-0" style="color: #f0b258;">Drank!</p>
+                    </button>
+                  </div>
+                  <div class="col-3 justify-content-center d-flex p-0">
+                    <button
+                      class="redbox-link py-2"
+                      :data-bs-toggle="userID !== 'defaultUser' ? 'modal' : undefined"
+                      :data-bs-target="userID !== 'defaultUser' ? '#bookmarkModal' : undefined"
+                      @click="showMobileBlueBox = false; userID !== 'defaultUser' ? handleIconClick(specified_listing.id) : $router.push('/login')"
+                      >
+                      <h2><i class="bi bi-bookmark dx-icon"></i></h2>
+                      <p class="small my-0">Bookmark</p>
+                    </button>
+                  </div>
+                  <div class="col-5 justify-content-center d-flex ps-0">
+                      <button 
+                        class="redbox-link" 
+                        :data-bs-toggle="userID !== 'defaultUser' ? 'modal' : undefined"
+                        :data-bs-target="userID !== 'defaultUser' ? '#cellarModal' : undefined"
+                        @click="showMobileBlueBox = false; userID !== 'defaultUser' ? onCellarModalOpen() : $router.push('/my-cellar')"
+                      >
+                        <h2>
+                          <svg width="35" height="35">
+                            <use href="#bi-cellar"></use>
+                          </svg>
+                        </h2>
+                        <p class="small my-0">Add to Cellar</p>
+                      </button>
+                  </div>
+                </div>
+                <!-- FOR VENUES:  ADD TO MENU AND ADD TO CELLAR BUTTONS-->
+                <div v-else-if="userType === 'venue' && userID !== 'defaultUser'" class="row justify-content-between m-0 pb-1 pt-2 text-white" style="background: linear-gradient(135deg,#007bff,#0056b3); border-bottom: 0.5px solid white;">
+                  <div class="col-6 justify-content-center d-flex p-0">
+                    <button
+                      class="redbox-link py-2"
+                      data-bs-toggle="modal" data-bs-target="#menuModal" 
+                      @click="showMobileBlueBox = false; handleAddToMenuClick()"
+                      >
+                      <h2><i class="bi bi-journal-check"></i></h2>
+                      <p class="small my-0">Add to Menu</p>
+                    </button>
+                  </div>
+                  <div class="col-6 justify-content-center d-flex ps-0">
+                      <button 
+                        class="redbox-link" 
+                        :data-bs-toggle="userID !== 'defaultUser' ? 'modal' : undefined"
+                        :data-bs-target="userID !== 'defaultUser' ? '#cellarModal' : undefined"
+                        @click="showMobileBlueBox = false; userID !== 'defaultUser' ? onCellarModalOpen() : $router.push('/my-cellar')"
+                      >
+                        <h2>
+                          <svg width="35" height="35">
+                            <use href="#bi-cellar"></use>
+                          </svg>
+                        </h2>
+                        <p class="small my-0">Add to Cellar</p>
+                      </button>
+                  </div>
+                </div>
+                <!-- RATE -->
+                <div v-if="userType !== 'venue'" class="row justify-content-between m-0 p-0 pb-1 text-white" style="background: linear-gradient(135deg,#007bff,#0056b3); border-bottom: 0.5px solid white;">
+                  <button 
+                    v-if="showRateButton"
+                    @click="showMobileBlueBox = false; isLoggedIn ? handleReviewClick() : $router.push('/login')" 
+                    class="redbox-link pt-2 pb-0"
+                  >
+                    {{ rateButtonText }}
+                  </button>
+                  <button v-else class="redbox-link pt-2 pb-0">
+                    You Rated
+                  </button>
+                  <!-- Star Rating -->
+                  <div 
+                    v-if="useStarRatingContainer"
+                    class="star-rating"
+                    @mouseleave="hoverRating = null"
+                  >
+                    <span
+                      v-for="star in 10"
+                      :key="star"
+                      class="star p-0"
+                      :class="{ active: star <= (hoverRating || userCurrentRating) }"
+                      @mouseenter="hoverRating = star; hasInteractedWithStars = true"
+                      @click="showMobileBlueBox = false; isLoggedIn ? setRatingAndOpenModal(star) : $router.push('/login')"
+                    >
+                      ★
+                    </span>
+                  </div>
+                  <div v-else>
+                    <span
+                      v-for="star in 10"
+                      :key="star"
+                      class="star p-0"
+                      :class="{ active: star <= (hoverRating || userCurrentRating) }"
+                      @mouseenter="hoverRating = star; hasInteractedWithStars = true"
+                      @click="$router.push('/login')"
+                    >
+                      ★
+                    </span>
+                  </div>
+                </div>
+                <!-- ADD TASTING NOTES / ADD TO MENU -->
+                <div class="row justify-content-between m-0 p-0 pb-1 text-white" style="background: linear-gradient(135deg,#007bff,#0056b3); border-bottom: 0.5px solid white;">
+                  <!-- VENUE - ADD TO MENU  -->
+                  <div v-if="userType === 'venue' && userID !== 'defaultUser'">
+                    <button @click="showMobileBlueBox = false; handleAddToMenuClick()" data-bs-toggle="modal" data-bs-target="#menuModal" class="redbox-link py-2">
+                      Add To My Menu
+                    </button>
+                  </div>
+                  <!-- ADD TASTING NOTES -->
+                  <div v-else-if="userType !== 'venue'">
+                    <button 
+                      v-if="showTastingNotesButton"
+                      @click="showMobileBlueBox = false; isLoggedIn ? handleReviewClick() : $router.push('/login')" 
+                      class="redbox-link py-2"
+                    >
+                      {{ tastingNotesButtonText }}
+                    </button>
+                    <button v-else class="redbox-link py-2">
+                      Tasting Notes Added!
+                    </button>
+                  </div>
+                </div>
+                <!-- ADD TO LIST -->
+                <div v-if="userType !== 'venue'" class="row justify-content-between m-0 p-0 pb-1 text-white" style="background: linear-gradient(135deg,#007bff,#0056b3); border-bottom: 0.5px solid white;">
+                    <button
+                      class="redbox-link py-2"
+                      :data-bs-toggle="userID !== 'defaultUser' ? 'modal' : undefined"
+                      :data-bs-target="userID !== 'defaultUser' ? '#bookmarkModal' : undefined"
+                      @click="showMobileBlueBox = false; userID !== 'defaultUser' ? handleIconClick(specified_listing.id) : $router.push('/login')"
+                      >
+                      Add to List
+                    </button> 
+                </div>
+                <!-- SHARE -->
+                <div class="row justify-content-between m-0 p-0 pb-1 text-white" style="background: linear-gradient(135deg,#007bff,#0056b3);">
+                  <button class="redbox-link py-2" @click="shareListingLink">
+                    <span v-if="!linkCopied">Share</span>
+                    <span v-else style="color: #f0b258;"><i class="bi bi-check-circle me-1"></i>Link Copied!</span>
+                  </button>
+                </div>
+            </div>
+          </div>
+          
+          <!-- Mobile Trigger Button -->
+          <button 
+            v-if="!showMobileBlueBox"
+            class="mobile-blue-box-trigger mobile-view-show"
+            style="z-index: 900;"
+            @click="showMobileBlueBox = true"
+          >
+            <i class="bi bi-star-fill me-2"></i>
+            Rate, Bookmark, Add to Cellar & More
+          </button>
         </div>
 
-        <!-- more information (average rating, would recommend, would drink again) -->
-        <div class="row pt-3 container pe-4 g-0 align-items-center">
-          <div class="col-8 mobile-col-12">
-            <div class="row gx-2">
-              <!-- average rating -->
-              <div class="col-4 text-start ps-4 mobile-col-4 mobile-pe-0 text-color-black">
-                <h3 class="mobile-rating-smaller-text text-body-secondary rating-text" style="margin-bottom: 0">
-                  <b>{{ specificReviewRating }} ★</b>
-                  <!--<svg xmlns="http://www.w3.org/2000/svg" width="30" height="1em" fill="currentColor" class="bi bi-star-fill-black" viewBox="0 0 16 16">
-                                        <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"/>
-                                    </svg>-->
-                </h3>
-                <p class="mb-2 mobile-view-hide mobile-rating-smaller-text-2">
-                  <u> Average Rating </u>
-                </p>
-                <p class="mb-2 mobile-view-show mobile-rating-smaller-text-2">
-                  <u> Rating </u>
-                </p>
-              </div>
-              <!-- would recommend -->
-              <div class="col-4 text-start mobile-col-4 mobile-ps-0 mobile-pe-0 text-color-black">
-                <h3 class="mobile-rating-smaller-text text-body-secondary rating-text" style="margin-bottom: 0">
-                  <b> {{ willRecommend }}% </b>
-                </h3>
-                <p class="mb-2 mobile-rating-smaller-text-2">
-                  <u> Would Recommend </u>
-                </p>
-              </div>
-              <!-- would drink again -->
-              <div class="col-4 text-start pe-0 mobile-col-4 mobile-ps-0 text-color-black">
-                <h3 class="mobile-rating-smaller-text text-body-secondary rating-text" style="margin-bottom: 0">
-                  <b> {{ willDrinkAgain }}% </b>
-                </h3>
-                <p class="mb-2 mobile-rating-smaller-text-2">
-                  <u> Would Drink Again </u>
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <!-- Delete listing modal -->
+        <div class="">
+          <!-- DELETE LISTING MODAL -->
           <div class="modal fade" id="deleteListingModal" tabindex="-1" aria-labelledby="exampleModalLabel"
             aria-hidden="true">
             <div class="modal-dialog">
@@ -846,127 +1042,9 @@
               </div>
             </div>
           </div>
-          <!-- END of delete listing modal -->
-
-          <!-- ADD YOUR REVIEW & BOOKMARK -->
-          <div class="col-4 d-flex align-items-center mobile-view-hide me-0">
-            <!-- For venue users - show Add To Menu button -->
-            <div v-if="userType === 'venue' && userID !== 'defaultUser'">
-              <button class="btn btn-lg venue-btn-green"
-                @click="handleAddToMenuClick"
-                data-bs-toggle="modal" data-bs-target="#menuModal">
-                Add To My Menu
-              </button>
-            </div>
-            <!-- For non-venue users - show Add My Review buttons -->
-            <div v-else-if="userType !== 'venue'">
-              <!-- Logged-in users XYZ-->
-              <div v-if="Array.isArray(VARIANT_DRNK_TYP) && VARIANT_DRNK_TYP.includes(specified_listing.drinkType)">
-                <div v-if="userType === 'user' && userID !== 'defaultUser'">
-                  <button class="btn primary-btn-less-round-blue btn-lg" @click="handleReviewClick"
-                    style="font-weight: bold; min-width: 195.89px;"> <!--v-if="!inEdit"-->
-                    Add My Review
-                  </button>
-                </div>
-                <!-- Logged-out users -->
-                <div v-else>
-                  <button class="btn primary-btn-less-round-blue btn-lg" @click="$router.push('/login')"
-                    style="font-weight: bold; min-width: 195.89px;">
-                    Add My Review
-                  </button>
-                </div>
-              </div>
-              <div v-else>
-                <div v-if="userType === 'user' && userID !== 'defaultUser'">
-                  <button v-if="!inEdit" class="btn primary-btn-less-round-blue btn-lg" @click="handleReviewClick"
-                    style="font-weight: bold; min-width: 195.89px;">
-                    Add My Review
-                  </button>
-                  <button v-else class="btn primary-btn-less-round-blue btn-lg" style="font-weight: bold;">
-                    Review Added!
-                  </button>
-                </div>
-                <!-- Logged-out users -->
-                <div v-else>
-                  <button class="btn primary-btn-less-round-blue btn-lg" @click="$router.push('/login')"
-                    style="font-weight: bold; min-width: 195.89px;">
-                    Add My Review
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            <!-- Bookmark icon -->
-            <div v-if="userType !== 'venue'" class="d-flex align-items-center ms-2 mobile-view-hide">
-              <button class="btn btn-lg" style="background-color:#f2994a;">
-                <BookmarkIcon :user="user" :listing="specified_listing" :overlay="false" size="24"
-                  @icon-clicked="handleIconClick" />
-              </button>
-            </div>
-          </div>
-
-        </div>
-
-
-        <!-- popular flavorTag -->
-        <div class="row pt-3 mobile-pt-2 container ">
-          <!-- flavor tags -->
-          <div class="col-8 mobile-col-12">
-            <div class="text-start mb-2 mobile-mb-0 text-color-black">
-              <!-- flavor tag -->
-              <span v-for="(count, tag) in sorted_flavorTagCounts" :key="tag" class="badge rounded-pill me-2"
-                :style="{ backgroundColor: '#' + tag.split('#')[1] }">{{ tag.split("#")[0] }}</span>
-              <p class="mb-2 mt-2 mobile-rating-smaller-text-2">
-                <u> Most Popular Flavour Tags </u>
-              </p>
-            </div>
-          </div>
-
-          <!-- ADD TO CELLAR BUTTON -->
-          <div class="col-4 d-flex align-items-center mobile-view-hide me-0 mb-auto ms-0 ps-0">
-            <!-- Logged-in users -->
-            <div v-if="userType === 'user' && userID !== 'defaultUser'" class="d-flex align-items-center gap-2">
-              <button class="btn btn-lg cellar-btn-blue" data-bs-toggle="modal" data-bs-target="#cellarModal" 
-                @click="onCellarModalOpen">
-                Add To My Cellar
-              </button>
-              
-              <!-- Follow Listing Button -->
-              <button 
-                class="btn btn-lg"
-                :style="{ backgroundColor: isFollowingListing(specified_listing.id) ? '#28a745' : '#FF3E31', color: 'white', borderRadius: '8px' }"
-                :aria-pressed="isFollowingListing(specified_listing.id)"
-                :aria-label="isFollowingListing(specified_listing.id) ? 'Unfollow this listing' : 'Follow this listing'"
-                @click="toggleListingFollow(specified_listing.id)"
-                type="button"
-              >
-                <PhBellRinging v-if="isFollowingListing(specified_listing.id)" :size="24" color="white" />
-                <PhBell v-else :size="24" color="white" />
-              </button>
-            </div>
-            <!-- Logged-out users -->
-            <div v-else>
-              <button class="btn btn-lg cellar-btn-blue" @click="$router.push('/login')">
-                Add To My Cellar
-              </button>
-            </div>
-          </div>
-
-        </div>
-
-        <!-- popular observationTag -->
-        <div class="row pt-3 container mobile-pt-2">
-          <div class="text-start mb-2 mobile-mb-0 text-color-black">
-            <!-- flavor tag -->
-            <span v-for="(count, tag) in sorted_observationTagCounts" :key="tag" class="badge rounded-pill me-2"
-              :style="{ backgroundColor: getActionTagColor(tag), color: 'black' }">{{ getActionTagDisplayText(tag) }}</span>
-            <!--Updated to support dynamic colors-->
-            <p class="mb-2 mt-2 mobile-rating-smaller-text-2">
-              <u> Most Popular Action Tags </u>
-            </p>
-          </div>
-        </div>
+          <!-- END of DELETE LISTING MODAL -->
         <!--Anchor ABC-->
+
         <!-- Add To Cellar Modal --> 
         <div v-if="userID != 'defaultUser'" class="modal fade" id="cellarModal" tabindex="-1"
           aria-labelledby="cellarModalLabel" aria-hidden="true" data-bs-backdrop="static">
@@ -1581,7 +1659,7 @@
               <div class="modal-header" style="background: linear-gradient(135deg, #28a745, #1e7e34);">
                 <h5 class="modal-title" id="menuModalLabel" style="color: white; font-weight: bold">
                   
-                  Add To My Menu
+                  Add To Menu
                 </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
               </div>
@@ -2533,6 +2611,7 @@
             </div>
           </div>
         </div>
+        </div>
         <!-- END OF MODAL -->
 
         <VintageList v-if="Array.isArray(VARIANT_DRNK_TYP) && VARIANT_DRNK_TYP.includes(specified_listing.drinkType)"
@@ -2540,6 +2619,7 @@
           :listings="vintage_listings.listings" @vintage-selected="onVintageSelected" />
 
         <!-- reviews -->
+
         <!-- TODO  EDIT MODAL IF NOT DOING COMPONENT-->
         <div class="container no-right-padding-large-screen" :class="{ 'paywall-container': userID === 'defaultUser' }">
           <!-- Paywall Overlay for Non-Logged in Users -->
@@ -3409,146 +3489,174 @@
 
 
       <!-- where to buy & where to try & 88 bamboo's review -->
-      <div class="col-sm-12 col-md-9 col-lg-3 mobile-view-hide">
+      <div class="col-3 mobile-view-hide ">
+                        <!-- where to try -->
+                        <div class="row mb-3">
+                          <div class="text-start">
+                            <!-- header text -->
+                            <div class="d-flex justify-content-between align-items-center flex-start">
+                            <h5 class="fw-bold  mb-0">🗺️ Where to Try</h5>
+                            <button 
+                              v-if="userID !== 'defaultUser'"
+                              class="btn btn-sm"
+                              :style="{ backgroundColor: isFollowingListing(specified_listing.id) ? '#28a745' : '#ff3e31', color: 'white', height: '38px', minWidth: '40px' }"
+                              :aria-pressed="isFollowingListing(specified_listing.id)"
+                              :aria-label="isFollowingListing(specified_listing.id) ? 'Unfollow this listing' : 'Follow this listing'"
+                              @click="toggleListingFollow(specified_listing.id)"
+                              type="button"
+                            >
+                              <PhBellRinging v-if="isFollowingListing(specified_listing.id)" :size="20" color="white" />
+                              <PhBell v-else :size="20" color="white" />
+                            </button>
+                            </div>
+                            <hr>
+                            <!-- body -->
+                              <div class="text-start pt-2">
+                                <!-- [function] where to try -->
+                                <div v-if="venues.length > 0">
+                                  <div v-for="venue in venues" v-bind:key="venue.id">
+                                    <router-link :to="{ path: '/profile/venue/' + venue.id + '/' + this.slugify(venue.venueName) }"
+                                      class="fw-bold pb-2 reverse-clickable-text text-color-black">
+                                      <span class="location-icon">📍 </span>{{ venue.venueName }}
+                                    </router-link>
+                                    <div class="vintages-container">
+                                      <span v-for="vintage in venue.vintages" v-bind:key="vintage"
+                                        class="vintage-badge">
+                                        {{ vintage }}
+                                      </span>
+                                    </div>
+                                  </div>
+                                </div>
+                                <div v-else>
+                                  <p class="mb-1">
+                                    We couldn't find any bars with this drink listed on their menu yet.
+                                    <router-link
+                                      to="/signup"
+                                      class="default-text-no-background fst-italic"
+                                    >
+                                      Sign up to get notified when a bar adds this drink to their menu!
+                                    </router-link>
+                                  </p>
+                                </div>
 
+                                <!-- [if] user does not allow location -->
+                                <!-- <div v-if="nearestBars.length == 0">
+                                  <div v-for="venue in venueListings" v-bind:key="venue.id">
+                                    <router-link :to="{
+                                      path: '/profile/venue/' + venue.id + '/' + venue.venueName,
+                                    }" class="reverse-clickable-text">
+                                      <p class="mb-1">{{ venue.venueName }}</p>
+                                    </router-link>
+                                  </div>
+                                </div> -->
 
-        <!-- where to try -->
-        <div class="row">
-          <div class="square primary-square-green rounded p-3 mb-3 text-start" style="
-              border-radius: 10px;
-              box-shadow: 4px 4px 4px rgba(0, 0, 0, 0.4);
-            ">
-            <!-- header text -->
-            <div class="square-inline text-start">
-              <h4 class="mr-auto">Where to Try</h4>
-            </div>
-            <!-- body -->
-            <div style="height: 85%">
-              <div class="text-start pt-2 overflow-auto">
-                <!-- [function] where to try -->
+                                <!-- [else] user allows location -->
+                                <!-- <div v-else>
+                                  <div v-for="([venueID]) in nearestBars" :key="venueID">
+                                    <router-link :to="{
+                                      path: '/profile/venue/' + venueID + '/' + getVenueNameFromID(venueID),
+                                    }" class="reverse-clickable-text">
+                                      <p class="mb-4">
+                                        <u>
+                                          {{ getVenueNameFromID(venueID) }}
+                                        </u>
+                                        <br />
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15"
+                                          fill="currentColor" class="bi bi-geo-alt-fill" viewBox="0 0 16 16">
+                                          <path
+                                            d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10m0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6" />
+                                        </svg>
+                                        Distance:
+                                        {{ venueDetails[venueID]["distance"] }}
+                                        <br />
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15"
+                                          fill="currentColor" class="bi bi-clock" viewBox="0 0 16 16">
+                                          <path
+                                            d="M8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71z" />
+                                          <path
+                                            d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16m7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0" />
+                                        </svg>
+                                        Duration:
+                                        {{ venueDetails[venueID]["duration"] }}
+                                      </p>
+                                    </router-link>
+                                  </div>
+                                </div> -->
+                            </div>
+                          </div>
+                        </div>
 
-                <div v-if="venues.length > 0">
-                  <div v-for="venue in venues" v-bind:key="venue.id">
-                    <router-link :to="{ path: '/profile/venue/' + venue.id + '/' + this.slugify(venue.venueName) }"
-                      class="reverse-clickable-text venue-name">
-                      <span class="location-icon">📍</span>
-                      {{ venue.venueName }}
-                    </router-link>
-                    <div class="vintages-container">
-                      <span v-for="vintage in venue.vintages" v-bind:key="vintage" class="vintage-badge">
-                        {{ vintage }}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-                <div v-else>
-                  <p class="mb-1">We couldn't find any bars with this listing.</p>
-                </div>
-
-                <!-- [if] user does not allow location -->
-                <!-- <div v-if="nearestBars.length == 0">
-                  <div v-for="venue in venueListings" v-bind:key="venue.id">
-                    <router-link :to="{ path: '/profile/venue/' + venue.id + '/' + venue.venueName }"
-                      class="reverse-clickable-text">
-                      <p class="mb-1">{{ venue.venueName }}</p>
-                    </router-link>
-                  </div>
-                </div> -->
-                <!-- [else] user allows location -->
-                <!-- <div v-else>
-                  <div v-for="([venueID]) in nearestBars" v-bind:key="venueID">
-                    <router-link :to="{ path: '/profile/venue/' + venueID + '/' + getVenueNameFromID(venueID) }" class="reverse-clickable-text">
-                      <p class="mb-4">
-                        <u> {{ getVenueNameFromID(venueID) }} </u>
-                        <br />
-                        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="currentColor"
-                          class="bi bi-geo-alt-fill" viewBox="0 0 16 16">
-                          <path
-                            d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10m0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6" />
-                        </svg>
-                        Distance: {{ venueDetails[venueID]["distance"] }}
-                        <br />
-                        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="currentColor"
-                          class="bi bi-clock" viewBox="0 0 16 16">
-                          <path d="M8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71z" />
-                          <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16m7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0" />
-                        </svg>
-                        Duration: {{ venueDetails[venueID]["duration"] }}
-                      </p>
-                    </router-link>
-                  </div>
-                </div> -->
-
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- where to buy -->
-        <div class="row mobile-view-show">
-          <div class="square primary-square-green rounded p-3 mb-3 text-start" style="
-              height: 250px;
-              border-radius: 10px;
-              box-shadow: 4px 4px 4px rgba(0, 0, 0, 0.4);
-            ">
-            <!-- header text -->
-            <div class="square-inline text-start">
-              <h4 class="mr-auto">Where to Buy</h4>
-            </div>
-            <!-- body -->
-            <div style="height: 85%">
-              <div class="text-start pt-2 overflow-auto" style="max-height: 100%">
-                <!-- [function] where to buy -->
-                <div v-for="producer in producerListings" v-bind:key="producer">
-                  <router-link :to="{ path: '/profile/producer/' + producer + '/' + this.slugify(getProducerName(producer)) }" class="reverse-clickable-text">
-                    <p>{{ getProducerName(producer) }}</p>
-                  </router-link>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- 88 bamboo's review -->
-        <div class="row">
-          <div class="square primary-square-green-outline xsecondary-square rounded p-3 mb-3" style="
-              border-radius: 10px;
-              box-shadow: 4px 4px 4px rgba(0, 0, 0, 0.2);
-            ">
-            <!-- header text -->
-            <div class="py-2 text-start">
-              <h4>88 Bamboo's Review</h4>
-              <a v-if="isHttpValid(specified_listing['reviewLink'])" :href="specified_listing['reviewLink']"
-                class="text-left default-text-no-background row">
-                <div class="row">
-                  <!-- <div class="col-lg-4 col-md-6 col-sm-12">
-                    {{ getOGImage(specified_listing["reviewLink"]) }}
-                     [if] there is a cover image for the post
-                    <img v-if="ogImage != null" :src="ogImage[specified_listing.reviewLink]" alt="OG Image"
-                      style="width: 80px; height: 80px" />
-                     [else] there is no cover image for the post (put 88 Bamboo's logo) 
-                    <img v-else
-                      src="https://88bamboo.co/cdn/shop/files/88B_New_Logo_-_white_face_transparent_background_180x.png?v=1655894111"
-                      style="width: 80px; height: 80px" />
-                  </div> -->
-                  <div class="col-lg-12 col-md-12">
-                    {{ deepDiveLinkFormatted }}
-                  </div>
-                </div>
-              </a>
-              <div v-else>
-                <div class="text-body-secondary">
-                  <div class="fst-italic">
-                    No reviews available for this listing. For other 88 Bamboo
-                    reviews,
-                    <a href="https://88bamboo.co/blogs/news" class="default-text-no-background">click here</a>.
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="py-2"></div>
-          </div>
-        </div>
+                        <!-- where to buy -->
+                        <div class="row mobile-view-show">
+                          <div class="square primary-square-green rounded p-3 mb-3 text-start" style="
+                              height: 250px;
+                              border-radius: 10px;
+                              box-shadow: 4px 4px 4px rgba(0, 0, 0, 0.4);
+                            ">
+                            <!-- header text -->
+                            <div class="square-inline text-start">
+                              <h4 class="mr-auto">Where to Buy</h4>
+                            </div>
+                            <!-- body -->
+                            <div style="height: 85%">
+                              <div class="text-start pt-2 overflow-auto" style="max-height: 100%">
+                                <!-- [function] where to buy -->
+                                <div v-for="producer in producerListings" v-bind:key="producer">
+                                  <router-link :to="{ path: '/profile/producer/' + producer + '/' + this.slugify(getProducerName(producer)) }" class="reverse-clickable-text">
+                                    <p>{{ getProducerName(producer) }}</p>
+                                  </router-link>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        <!-- 88 bamboo's review -->
+                        <div class="row">
+                          <div class="text-start">
+                            <!-- TZH added 'primary-square-green-outline'-->
+                            <!-- header text -->
+                            <div class="py-2 text-start">
+                              <h5 class="fw-bold">📝 88 Bamboo's Review</h5>
+                              <hr class="color: black">
+                              <a v-if="
+                                                        isHttpValid(specified_listing['reviewLink'])
+                                                      " :href="specified_listing['reviewLink']"
+                                class="text-left default-text-no-background row">
+                                <div class="row">
+                                  <div class="col-lg-4 col-md-6 col-sm-12">
+                                    {{
+                                    getOGImage(
+                                    specified_listing["reviewLink"]
+                                    )
+                                    }}
+                                    <!-- [if] there is a cover image for the post-->
+                                    <img v-if="ogImage != null" :src="ogImage[specified_listing.reviewLink]
+                                                              " alt="OG Image" style="width: 80px; height: 80px" loading="lazy" />
+                                    <!-- [else] there is no cover image for the post (put 88 bamboo's logo) -->
+                                    <img v-else
+                                      src="https://88bamboo.co/cdn/shop/files/88B_New_Logo_-_white_face_transparent_background_180x.png?v=1655894111"
+                                      style="width: 80px; height: 80px" loading="lazy" />
+                                  </div>
+                                  <div class="col-lg-8 col-md-12">
+                                    {{ deepDiveLinkFormatted }}
+                                    {{ ogTitle[specified_listing.reviewLink] || deepDiveLinkFormatted }}
+                                  </div>
+                                </div>
+                              </a>
+                              <div v-else>
+                                <div class="text-body-secondary">
+                                  <div class="fst-italic">
+                                    No reviews available for this listing. For
+                                    other 88 Bamboo reviews,
+                                    <a href="https://88bamboo.co/blogs/news" class="default-text-no-background">click
+                                      here</a>.
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                            <div class="py-2"></div>
+                          </div>
+                        </div>
       </div>
     </div>
     <BookmarkModal v-if="user" :user="user" :listingID="listingIDAsInt"
@@ -4094,6 +4202,9 @@ export default {
       selectedFriendTag: null,
       friendTagList: [],
       showFriendTagList: [],
+      
+      hoverRating: null,
+      hasInteractedWithStars: false,
 
       // To delete review
       deleteID: null,
@@ -4128,6 +4239,7 @@ export default {
 
       // for bookmark component
       bookmarkListingID: null,
+      linkCopied: false,
       defaultPhoto:
         "https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultDrinkImage.png?v=1750084739",
       defaultProfilePhoto:
@@ -4241,6 +4353,10 @@ export default {
       // Add to cellar state
       addingToCellar: false,
       
+      // Mobile Blue Box bottom sheet
+      showMobileBlueBox: false,
+      showWhereToBuyModal: false,
+      
       // Form expansion state
       showExpandedCellarForm: false,
       
@@ -4309,6 +4425,19 @@ export default {
 
       // Initialize paywall scroll control for non-logged in users
       this.initializePaywallControls();
+
+      // Add event listeners to close mobile blue box when modals open
+      this.$nextTick(() => {
+        const modals = ['#reviewModal', '#cellarModal', '#menuModal', '#bookmarkModal'];
+        modals.forEach(modalId => {
+          const modalEl = document.querySelector(modalId);
+          if (modalEl) {
+            modalEl.addEventListener('show.bs.modal', () => {
+              this.showMobileBlueBox = false;
+            });
+          }
+        });
+      });
 
       
       // Note: Cellar modal, review modal, and menu modal event listeners will be set up after user data loads
@@ -4442,7 +4571,7 @@ export default {
       // Debug logging to identify the issue
       const hasListing = this.specified_listing && this.specified_listing.id;
       const hasValidQuantity = this.cellarForm.quantity >= 1;
-      const isValidUser = this.userType === 'user' && this.userID !== 'defaultUser';
+      const isValidUser = this.userID !== 'defaultUser';
       
       console.log('canAddToCellar debug:', {
         hasListing,
@@ -4552,6 +4681,94 @@ export default {
       const hasSections = this.venueMenuSections.length > 0;
       
       return hasTargetSection && sectionHasId && hasValidPrice && hasValidServingType && hasListing && hasSections;
+    },
+
+    // Check if user is logged in
+    isLoggedIn() {
+      return this.userType === 'user' && this.userID !== 'defaultUser';
+    },
+    
+    // Check if drink type supports special variants
+    supportsSpecialVariants() {
+      return Array.isArray(this.VARIANT_DRNK_TYP) && 
+             this.VARIANT_DRNK_TYP.includes(this.specified_listing?.drinkType);
+    },
+    
+    // Check if user has reviewed the current vintage/variant
+    hasReviewedCurrentVariant() {
+      if (!this.isLoggedIn || !this.supportsSpecialVariants) {
+        return this.inEdit;
+      }
+      
+      // For variant drinks, check if user has a review for the selected vintage
+      const userReview = this.reviews.find(review => 
+        review.userID === parseInt(this.userID) && 
+        (this.selectedVintage === 'Show All' || review.variant === parseInt(this.selectedVintage))
+      );
+      
+      return !!userReview;
+    },
+    
+    // Get user's rating for the current variant
+    userCurrentRating() {
+      if (!this.isLoggedIn) return 0;
+      
+      if (this.supportsSpecialVariants) {
+        // For variant drinks, find the rating for the selected vintage
+        const userReview = this.reviews.find(review => 
+          review.userID === parseInt(this.userID) && 
+          (this.selectedVintage === 'Show All' || review.variant === parseInt(this.selectedVintage))
+        );
+        return userReview ? userReview.rating : 0;
+      }
+      
+      // For non-variant drinks, use the rating from inEdit state
+      return this.inEdit ? this.rating : 0;
+    },
+    
+    // Determine the tasting notes button text
+    tastingNotesButtonText() {
+      if (!this.isLoggedIn) {
+        return this.supportsSpecialVariants ? 'Add Tasting Notes' : 'Add My Tasting Notes';
+      }
+      
+      if (this.supportsSpecialVariants) {
+        return this.hasReviewedCurrentVariant ? 'Tasting Notes Added!' : 'Add Tasting Notes';
+      }
+      
+      return this.inEdit ? 'Tasting Notes Added!' : 'Add Tasting Notes';
+    },
+    
+    // Show button if not reviewed yet
+    showTastingNotesButton() {
+      if (!this.isLoggedIn) return true;
+      
+      if (this.supportsSpecialVariants) {
+        return !this.hasReviewedCurrentVariant;
+      }
+      
+      return !this.inEdit;
+    },
+
+    // Rating button text
+    rateButtonText() {
+      if (this.supportsSpecialVariants) {
+        return this.hasReviewedCurrentVariant ? 'You Rated' : 'Rate';
+      }
+      return this.inEdit ? 'You Rated' : 'Rate';
+    },
+
+    // Show rate button (vs "You Rated" button)
+    showRateButton() {
+      if (this.supportsSpecialVariants) {
+        return !this.hasReviewedCurrentVariant;
+      }
+      return !this.inEdit;
+    },
+
+    // Whether to use star rating container div (all cases except logged out non-variant)
+    useStarRatingContainer() {
+      return this.isLoggedIn || this.supportsSpecialVariants;
     }
 
   },
@@ -4682,6 +4899,17 @@ export default {
 
   },
   methods: {
+    setRating(star) {
+      this.rating = star;
+    },
+
+    // Combined method to set rating and open modal
+    setRatingAndOpenModal(star) {
+      this.rating = star;
+      this.hasInteractedWithStars = true;
+      this.handleReviewClick();
+    },
+    
     // fetch specific listing data
     created() { },
 
@@ -5844,6 +6072,7 @@ export default {
         return user["photo"];
       }
     },
+    
     checkModFromUserID(userID) {
       const user = this.users.find((user) => {
         return user["id"] == userID;
@@ -5852,6 +6081,7 @@ export default {
         return user["modType"].length > 0;
       }
     },
+    
     checkAmbassadorFromUserID(userID) {
       const user = this.users.find((user) => {
         return user["id"] == userID;
@@ -5860,6 +6090,7 @@ export default {
         return user["ambassador"] === true;
       }
     },
+    
     checkCategoryExpertFromUserID(userID) {
       const user = this.users.find((user) => {
         return user["id"] == userID;
@@ -5873,6 +6104,7 @@ export default {
     displaySelectColour(colour) {
       this.selectedColour = colour;
     },
+    
     // function to display submitted image
     onFileChange(event) {
       const file = event.target.files[0];
@@ -6119,6 +6351,7 @@ export default {
       const cacheKey = `reviewCache_${this.listing_id}_${this.userID}`;
       localStorage.removeItem(cacheKey);
     },
+    
     async writeReview(submitAPI, submitData) {
       const response = await this.$axios
         .post(submitAPI, submitData)
@@ -6424,6 +6657,8 @@ export default {
       this.addingReview = true;
       // Reset rating validation flag
       this.hasShownRatingValidation = false;
+      // Reset star interaction flag
+      this.hasInteractedWithStars = false;
     },
 
     async updateToggle() {
@@ -6643,6 +6878,22 @@ export default {
           this.bookmarkListingID = data;
         }
       }
+    },
+
+    // Share button - copy link to clipboard
+    shareListingLink() {
+      const currentUrl = window.location.href;
+      navigator.clipboard.writeText(currentUrl)
+        .then(() => {
+          this.linkCopied = true;
+          setTimeout(() => {
+            this.linkCopied = false;
+          }, 2000);
+        })
+        .catch(err => {
+          console.error('Failed to copy link: ', err);
+          alert('Failed to copy link to clipboard');
+        });
     },
 
     // google map api prep
@@ -7438,6 +7689,12 @@ export default {
       // Reset rating validation flag when modal opens
       this.hasShownRatingValidation = false;
       
+      // Reset star interaction flag when modal opens (unless user clicked a star to open it)
+      // This ensures stars show as empty when modal first opens via button click
+      if (!this.hasInteractedWithStars) {
+        this.hasInteractedWithStars = false;
+      }
+      
       // Setup auto-resize functionality when the modal opens
       this.$nextTick(() => {
         this.setupAutoResize();
@@ -7548,7 +7805,7 @@ export default {
         
         // Use the same pattern as MyCellarPage for API calls
         const baseUrl = this.getApiBaseUrl();
-        const endpoint = `${baseUrl}/getData/getCellarData/user/${this.userID}`;
+        const endpoint = `${baseUrl}/getData/getCellarData/${this.userType}/${this.userID}`;
         console.log('📡 API endpoint:', endpoint);
         
         const response = await this.$axios.get(endpoint);
@@ -7911,7 +8168,7 @@ export default {
         const cellarData = {
           // Required fields
           listingId: this.specified_listing.id,
-          ownerType: 'user', // Assuming user ownership
+          ownerType: this.userType, // Use actual user type (user or venue)
           ownerId: parseInt(this.userID),
           quantity: parseInt(this.cellarForm.quantity),
           
@@ -8390,6 +8647,43 @@ export default {
 
 <style scoped>
 
+  /* Divider lines */
+    .redbox-link {
+      border: none;
+      color: white; 
+      text-decoration: none;
+      background-color: inherit;
+    }
+
+
+  .star-rating {
+  display: flex;
+  gap: 4px;
+  margin-top: 4px;
+  justify-content: center;
+}
+
+.star {
+  font-size: 20px;
+  cursor: pointer;
+  color: rgba(255, 255, 255, 0.35);
+  transition: color 0.15s ease, transform 0.1s ease;
+}
+
+.star.active {
+  color: #f0b258; /* warm gold */
+}
+
+.star:hover {
+  transform: scale(1.15);
+}
+
+.rate-label {
+  font-weight: 600;
+  line-height: 1;
+}
+
+
   .step-index { background: wheat ; color: black; border:  2px solid #f0b358;  width: 25px; height: 25px; display: inline-flex; align-items: center; justify-content: center; font-weight: bold; font-size:15px}
 
   .image-modal-overlay {
@@ -8835,7 +9129,7 @@ export default {
     left: -100vw;
     right: -100vw;
     bottom: 0;
-    z-index: 9999;
+    z-index: 899;
     pointer-events: none;
     width: 300vw;
     height: 100%;
@@ -9191,4 +9485,213 @@ input[type="range"].form-range::-webkit-slider-thumb {
     border: 2px solid #FFC107;
     border-radius: 5px;
 }
+
+/* ===================================
+   MOBILE BLUE BOX - BOTTOM SHEET
+   =================================== */
+
+/* Desktop: Blue Box visible in sidebar */
+.blue-box-wrapper {
+  /* Desktop positioning handled by col-lg-4 me-5 classes */
+}
+
+/* Mobile: Transform into bottom sheet */
+@media (max-width: 991px) {
+  .blue-box-wrapper {
+    position: fixed !important;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 10002;
+    background: white;
+    border-radius: 20px 20px 0 0;
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
+    transform: translateY(100%);
+    transition: transform 0.3s ease-out;
+    max-height: 80vh;
+    overflow-y: auto;
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    display: block !important;
+  }
+
+  .blue-box-wrapper.show-mobile {
+    transform: translateY(0);
+  }
+
+  .blue-box-wrapper .container {
+    max-width: 100% !important;
+    width: 100% !important;
+  }
+}
+
+/* Bottom sheet handle (mobile only) */
+.bottom-sheet-handle {
+  padding: 12px 0;
+  text-align: center;
+  cursor: pointer;
+  display: none;
+}
+
+@media (max-width: 991px) {
+  .bottom-sheet-handle {
+    display: block;
+  }
+}
+
+.handle-bar {
+  width: 40px;
+  height: 4px;
+  background: #ccc;
+  border-radius: 2px;
+  margin: 0 auto;
+}
+
+/* Mobile overlay */
+.blue-box-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 10001;
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Mobile trigger button */
+.mobile-blue-box-trigger {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(135deg, #007bff, #0056b3);
+  color: white;
+  border: none;
+  padding: 14px 24px;
+  border-radius: 50px;
+  font-weight: bold;
+  font-size: 15px;
+  box-shadow: 0 4px 12px rgba(0, 123, 255, 0.4);
+  z-index: 1040;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: none;
+  white-space: nowrap;
+}
+
+@media (max-width: 991px) {
+  .mobile-blue-box-trigger {
+    display: block;
+  }
+}
+
+.mobile-blue-box-trigger:hover {
+  transform: translateX(-50%) translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 123, 255, 0.5);
+}
+
+.mobile-blue-box-trigger:active {
+  transform: translateX(-50%) translateY(0);
+}
+
+/* ===================================
+   WHERE TO BUY MODAL - BOTTOM SHEET
+   =================================== */
+
+/* Desktop: Show as regular content */
+.where-to-buy-wrapper {
+  /* Desktop: stays in normal flow */
+}
+
+/* Mobile: Transform into bottom sheet */
+@media (max-width: 991px) {
+  .where-to-buy-wrapper {
+    position: fixed !important;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 1055;
+    background: white;
+    border-radius: 20px 20px 0 0;
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
+    transform: translateY(100%);
+    transition: transform 0.3s ease-out;
+    max-height: 80vh;
+    overflow-y: auto;
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    display: block !important;
+  }
+
+  .where-to-buy-wrapper.show-mobile {
+    transform: translateY(0);
+  }
+
+  .where-to-buy-wrapper .container {
+    max-width: 100% !important;
+    width: 100% !important;
+  }
+}
+
+/* Mobile overlay for where to buy */
+.where-to-buy-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1054;
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* Mobile trigger button for where to buy */
+.mobile-where-to-buy-trigger {
+  position: fixed;
+  bottom: 80px;
+  right: 20px;
+  background: #000000;
+  color: white;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 50px;
+  font-weight: bold;
+  font-size: 14px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  z-index: 1040;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: none;
+  white-space: nowrap;
+}
+
+@media (max-width: 991px) {
+  .mobile-where-to-buy-trigger {
+    display: block;
+  }
+}
+
+.mobile-where-to-buy-trigger:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.5);
+}
+
+.mobile-where-to-buy-trigger:active {
+  transform: translateY(0);
+}
+
 </style>

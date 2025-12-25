@@ -32,7 +32,47 @@
     <noscript>
       <strong>We're sorry but <%= htmlWebpackPlugin.options.title %> doesn't work properly without JavaScript enabled. Please enable it to continue.</strong>
     </noscript>
+    
+    <!-- Custom SVG Icons -->
+    <svg xmlns="http://www.w3.org/2000/svg" style="display:none">
+      <symbol id="bi-cellar" viewBox="0 0 77 85">
+        <!-- Shelf / base -->
+        <rect x="1" y="61.7324" width="72.6667" height="16.6667"
+          fill="none" stroke="currentColor" stroke-width="2" />
+
+        <!-- Feet -->
+        <rect x="8.4668" y="80.4004" width="14.8" height="3.6"
+          fill="none" stroke="currentColor" stroke-width="2" />
+        <rect x="51.4004" y="80.4004" width="14.8" height="3.6"
+          fill="none" stroke="currentColor" stroke-width="2" />
+
+        <!-- Side rails -->
+        <line x1="1" y1="61" x2="1" y2="44" stroke="currentColor" stroke-width="2" />
+        <line x1="73.7002" y1="61" x2="73.7002" y2="44" stroke="currentColor" stroke-width="2" />
+        <line x1="60" y1="43" x2="0" y2="43" stroke="currentColor" stroke-width="2" />
+
+        <!-- Dots (deduped) -->
+        <circle cx="15.8664" cy="52.3332" r="1.8" fill="none" stroke="currentColor" stroke-width="2" />
+        <circle cx="15.8664" cy="69.134"  r="1.8" fill="none" stroke="currentColor" stroke-width="2" />
+        <circle cx="58.8"    cy="52.3332" r="1.8" fill="none" stroke="currentColor" stroke-width="2" />
+        <circle cx="58.8"    cy="69.134"  r="1.8" fill="none" stroke="currentColor" stroke-width="2" />
+
+        <!-- Bottles (these were missing before) -->
+        <path d="M14.5731 16.6444C14.5731 18.3556 19.7998 22.7556 19.7998 25.4444C19.7998 28.1333 19.7998 42.0667 19.7998 42.0667H2.99981C2.99981 42.0667 2.99981 28.1333 2.99981 25.4444C2.99981 22.7556 8.41314 18.3556 8.41314 16.6444M14.5731 16.6444V1H8.41314V16.6444M14.5731 16.6444H8.41314"
+          fill="none" stroke="currentColor" stroke-width="2" />
+
+        <path d="M31.5731 16.6444C31.5731 18.3556 36.7998 22.7556 36.7998 25.4444C36.7998 28.1333 36.7998 42.0667 36.7998 42.0667H19.9998C19.9998 42.0667 19.9998 28.1333 19.9998 25.4444C19.9998 22.7556 25.4131 18.3556 25.4131 16.6444M31.5731 16.6444V1H25.4131V16.6444M31.5731 16.6444H25.4131"
+          fill="none" stroke="currentColor" stroke-width="2" />
+
+        <!-- Add (+) badge -->
+        <circle cx="67.5" cy="37.5" r="9" fill="none" stroke="currentColor" stroke-width="2" />
+        <line x1="67.5" y1="32.5" x2="67.5" y2="42.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+        <line x1="62.5" y1="37.5" x2="72.5" y2="37.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+      </symbol>
+    </svg>
+    
     <div id="app"></div>
     <!-- built files will be auto injected -->
   </body>
 </html>
+
