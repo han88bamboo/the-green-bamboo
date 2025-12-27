@@ -573,7 +573,25 @@
                             </div>
                         </div>
 
-                        XYZ
+                        <!-- Bulk Mode Toggle: Multiple items from same producer -->
+                        <div class="form-group text-start" :class="bulkSameProducerMode ? 'mb-2' : 'mb-4'">
+                            <div class="d-flex align-items-center">
+                                <p class="text-start mb-0 fw-bold me-3">Are you creating multiple items from the same Producer?<span class="text-danger"> *</span></p>
+                                <div class="form-check form-check-inline">
+                                    <input 
+                                        class="form-check-input bulk-mode-checkbox" 
+                                        type="checkbox" 
+                                        id="bulkSameProducerSwitch"
+                                        v-model="bulkSameProducerMode"
+                                        style="cursor: pointer; width: 1.5rem; height: 1.5rem; border: 2px solid #6c757d;">
+                                </div>
+                               
+                            </div>
+                             <span v-if="bulkSameProducerMode" class="ms-1 text-success text-start" style="font-size: 14px;">
+                                    <i class="ms-2 bi bi-check-circle-fill "></i>
+                                    Same Producer, Multiple Items. Certain fields will be auto-populated for convenience!
+                             </span>
+                        </div>
 
                         <!-- Input: Bottle Name -->
                         <div class="form-group mb-3">
@@ -927,6 +945,9 @@
                 // New bottler selection state
                 selectedBottler: {},
                 showBottlerDropdown: false,
+
+                // Bulk mode toggle
+                bulkSameProducerMode: false,
 
                 // Variety Tags
                 varietyTagInput: "",
@@ -2499,6 +2520,11 @@
 </script>
 
 <style scoped>
+/* Bulk mode checkbox checked state */
+.bulk-mode-checkbox:checked {
+    background-color: #198754 !important;
+    border-color: #198754 !important;
+}
 /* Country Dropdown Styles */
 .country-dropdown {
     position: absolute;
