@@ -387,8 +387,8 @@
                                        v-model="form['producerNew']" 
                                        autocomplete="off" 
                                        placeholder="Enter Producer Name" 
-                                       @input="handleProducerInput"
-                                       @blur="hideProducerDropdown">
+                                       @input="handleProducerInput(null)"
+                                       @blur="hideProducerDropdown(null)">
 
                                 <!-- Producer ID Search Input -->
                                 <input v-if="searchByProducerId"
@@ -396,8 +396,8 @@
                                        v-model="form['producerIdSearch']" 
                                        autocomplete="off" 
                                        placeholder="Enter Producer ID number" 
-                                       @input="handleProducerIdInput"
-                                       @blur="hideProducerIdDropdown">
+                                       @input="handleProducerIdInput(null)"
+                                       @blur="hideProducerIdDropdown(null)">
 
                                 <!-- Toggle Button -->
                                 <button type="button" 
@@ -1077,15 +1077,24 @@
                                     <div class="row">
                                         <div class="col-4">
                                             <input class="form-control" @change="event => handleFileSelectForItem(event, idx)" type="file" :id="'formFile-additional-' + idx" style="display: none" accept="image/*" />
-                                            <label :for="'formFile-additional-' + idx" class="upload-label d-block w-100">
-                                                <div v-if="!item.selectedImage && !item.photo" class="mobile-review-svg-button photo-dropzone">
+                                            <label :for="'formFile-additional-' + idx" class="upload-label d-block w-100"
+                                                   @dragover="event => handleDragOverForItem(event, idx)"
+                                                   @dragleave="event => handleDragLeaveForItem(event, idx)"
+                                                   @drop="event => handleDropForItem(event, idx)">
+                                                <div v-if="!item.selectedImage && !item.photo" 
+                                                     class="mobile-review-svg-button photo-dropzone"
+                                                     :class="{ 'dragging': item.isDragging }">
                                                     <div class="text-center">
                                                         <h2>📷</h2>
-                                                        <div>Click or drag image here</div>
+                                                        <div v-if="!item.isDragging">Click or drag image here</div>
+                                                        <div v-else class="fw-bold text-primary">Drop image here</div>
                                                     </div>
                                                 </div>
 
-                                                <div v-else class="mobile-review-svg-button">
+                                                <div v-else class="mobile-review-svg-button"
+                                                     @dragover="event => handleDragOverForItem(event, idx)"
+                                                     @dragleave="event => handleDragLeaveForItem(event, idx)"
+                                                     @drop="event => handleDropForItem(event, idx)">
                                                     <img :src="item.selectedImage || item.photo || defaultPhoto" alt="Drink photo"
                                                          class="review-preview-photo" loading="lazy" />
                                                 </div>
@@ -1686,6 +1695,7 @@
                     varietyTagsList: [],
                     photo: "",
                     selectedImage: "",
+                    isDragging: false,
                     abv: "",
                     age: "",
                     officialDesc: "",
@@ -1807,6 +1817,44 @@
                     item.photo = reader.result;
                 };
                 reader.readAsDataURL(file);
+            },
+
+            // Drag and drop handlers for additional items
+            handleDragOverForItem(event, index) {
+                event.preventDefault();
+                event.stopPropagation();
+                const item = this.additionalItems[index];
+                if (item) item.isDragging = true;
+            },
+
+            handleDragLeaveForItem(event, index) {
+                event.preventDefault();
+                event.stopPropagation();
+                const item = this.additionalItems[index];
+                if (item) item.isDragging = false;
+            },
+
+            handleDropForItem(event, index) {
+                event.preventDefault();
+                event.stopPropagation();
+                const item = this.additionalItems[index];
+                if (!item) return;
+                item.isDragging = false;
+
+                const files = event.dataTransfer.files;
+                if (files && files.length > 0) {
+                    const file = files[0];
+                    if (file.type.startsWith('image/')) {
+                        const reader = new FileReader();
+                        reader.onload = () => {
+                            item.selectedImage = reader.result;
+                            item.photo = reader.result;
+                        };
+                        reader.readAsDataURL(file);
+                    } else {
+                        alert('Please drop an image file.');
+                    }
+                }
             },
 
             // Function to validate tags format
@@ -2670,12 +2718,14 @@
 
             // Helper to close all producer dropdowns except the one being opened
             closeAllProducerDropdowns(exceptItemIndex = null) {
-                // Close main form dropdowns if we're opening an item dropdown
+                // If opening main form dropdown (null), close all item dropdowns
+                // If opening an item dropdown (number), close main form and other items
                 if (exceptItemIndex !== null) {
+                    // Opening an item dropdown - close main form dropdowns
                     this.showProducerDropdown = false;
                     this.showProducerIdDropdown = false;
                 }
-                // Close all item dropdowns except the one being opened
+                // Always close all item dropdowns except the one being opened
                 this.additionalItems.forEach((item, idx) => {
                     if (idx !== exceptItemIndex) {
                         item.showProducerDropdown = false;
