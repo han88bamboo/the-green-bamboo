@@ -802,22 +802,35 @@
                         </div>
 
                         <div class="mt-4 pt-3 border-top">
-                            <div class="d-flex justify-content-between flex-column flex-md-row align-items-stretch align-items-md-center gap-2 mb-3">
+                            <!-- Button row after Item 1 -->
+                            <div class="d-flex flex-column flex-md-row align-items-stretch align-items-md-center gap-2 mb-3">
+                                <!-- Active button when no additional items, disabled when there are -->
                                 <button
-                                    v-if="additionalItems.length < maxAdditionalItems"
+                                    v-if="additionalItems.length === 0"
                                     type="button"
                                     class="btn btn-primary w-100 w-md-auto"
                                     @click="addAdditionalItem"
                                 >
-                                    + Select Additional Item ({{ additionalItems.length + 1 }}/{{ maxAdditionalItems }})
+                                    + Select Additional Item (2/{{ maxAdditionalItems }})
                                 </button>
+                                <!-- Disabled button when there are additional items -->
                                 <button
                                     v-if="additionalItems.length > 0"
+                                    type="button"
+                                    class="btn btn-primary w-100 w-md-auto"
+                                    disabled
+                                    style="opacity: 0.5; cursor: not-allowed;"
+                                >
+                                    + Select Additional Item (2/{{ maxAdditionalItems }})
+                                </button>
+                                <!-- Remove Item 2 button, only when Item 2 is the last item -->
+                                <button
+                                    v-if="additionalItems.length === 1"
                                     type="button"
                                     class="btn btn-outline-danger w-100 w-md-auto"
                                     @click="removeLastAdditionalItem"
                                 >
-                                    Remove Item {{ additionalItems.length + 1 }}
+                                    Remove Item 2
                                 </button>
                             </div>
 
@@ -1056,6 +1069,38 @@
                                 <div v-if="formType == 'power'" class="form-group mb-3">
                                     <p class="text-start mb-1">Link to 88 Bamboo review</p>
                                     <input type="text" class="form-control" v-model="item.reviewLink" :id="'reviewLink-additional-' + idx" placeholder="Enter review link">
+                                </div>
+
+                                <!-- Button row after this additional item -->
+                                <div class="d-flex flex-column flex-md-row align-items-stretch align-items-md-center gap-2 mt-3">
+                                    <!-- Disabled button if NOT the last item -->
+                                    <button
+                                        v-if="idx < additionalItems.length - 1"
+                                        type="button"
+                                        class="btn btn-primary w-100 w-md-auto"
+                                        disabled
+                                        style="opacity: 0.5; cursor: not-allowed;"
+                                    >
+                                        + Select Additional Item ({{ idx + 3 }}/{{ maxAdditionalItems }})
+                                    </button>
+                                    <!-- Active button if this IS the last item AND we can add more -->
+                                    <button
+                                        v-else-if="idx + 3 <= maxAdditionalItems"
+                                        type="button"
+                                        class="btn btn-primary w-100 w-md-auto"
+                                        @click="addAdditionalItem"
+                                    >
+                                        + Select Additional Item ({{ idx + 3 }}/{{ maxAdditionalItems }})
+                                    </button>
+                                    <!-- Remove button for the NEXT item, shown only when next item is the last -->
+                                    <button
+                                        v-if="idx === additionalItems.length - 2"
+                                        type="button"
+                                        class="btn btn-outline-danger w-100 w-md-auto"
+                                        @click="removeLastAdditionalItem"
+                                    >
+                                        Remove Item {{ idx + 3 }}
+                                    </button>
                                 </div>
                             </div>
                         </div>
