@@ -13,6 +13,12 @@ const routes = [
     // meta: { requiresAuth: true },
   },
   {
+    path: "/request/new-bulk/:requestID?",
+    name: "requestNewBulk",
+    component: () => import(/* webpackChunkName: "request" */ "@/views/Users/BulkRequestListingNew.vue"),
+    // meta: { requiresAuth: true },
+  },
+  {
     path: "/request/modify/:mode/:listingID/:requestID?",
     name: "requestModify",
     component: () => import(/* webpackChunkName: "request" */ "@/views/Users/RequestListingModify.vue"),
