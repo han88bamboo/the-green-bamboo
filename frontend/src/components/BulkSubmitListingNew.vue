@@ -1884,6 +1884,285 @@
                 return true;
             },
 
+            // ============ BULK SUBMISSION METHODS ============
+
+            /**
+             * Validate a single item (used for both Item 1 and additional items)
+             * @param {Object} item - The item data object
+             * @param {String} drinkType - The drink type value
+             * @param {String} typeCategory - The type category value
+             * @param {String} drinkStyle - The drink style value
+             * @param {Boolean} isIndOperator - Whether item has independent bottler
+             * @param {Number} itemNum - Item number for error messages (1-indexed)
+             * @returns {Boolean} - Whether the item passed validation
+             */
+            validateSingleItem(item, drinkType, typeCategory, drinkStyle, isIndOperator, itemNum = 1) {
+                const prefix = itemNum > 1 ? `Item ${itemNum}: ` : "";
+                let hasErrors = false;
+
+                // Validate Bottle Name
+                if (!(item.listingName || "").trim()) {
+                    this.errors.push(`${prefix}Bottle Name is required.`);
+                    hasErrors = true;
+                }
+
+                // Validate Drink Type
+                if (!(drinkType || "").trim()) {
+                    this.errors.push(`${prefix}Drink Type is required.`);
+                    hasErrors = true;
+                }
+
+                // Validate Independent Bottler Name
+                if (isIndOperator === true && !(item.bottler || "").trim()) {
+                    this.errors.push(`${prefix}Name of independent bottler is required.`);
+                    hasErrors = true;
+                }
+
+                // Validate Producer ID
+                if (!item.producerID) {
+                    this.errors.push(`${prefix}Producer ID is required: Create new producer first!`);
+                    hasErrors = true;
+                }
+
+                // Validate Bottler ID (if independent bottler)
+                if (isIndOperator && !item.bottlerID) {
+                    this.errors.push(`${prefix}Bottler ID is required: Create new bottler first!`);
+                    hasErrors = true;
+                }
+
+                // Validate Country of Origin
+                if (!(item.originCountry || "").trim()) {
+                    this.errors.push(`${prefix}Country of Origin is required.`);
+                    hasErrors = true;
+                }
+
+                // Validate Tags format (power mode only)
+                if (this.formType === "power" && item.tags && item.tags.trim()) {
+                    if (!this.validateTagsFormat(item.tags.trim())) {
+                        this.errors.push(`${prefix}Tags must start with # and contain only letters/numbers. Multiple tags must be separated by commas.`);
+                        hasErrors = true;
+                    }
+                }
+
+                // Validate Order field (power mode only)
+                if (this.formType === "power" && item.order !== "" && item.order !== null && item.order !== undefined) {
+                    const orderValue = Number(item.order);
+                    if (!Number.isInteger(orderValue) || orderValue < -1) {
+                        this.errors.push(`${prefix}Order must be an integer greater than or equal to -1.`);
+                        hasErrors = true;
+                    }
+                }
+
+                return !hasErrors;
+            },
+
+            /**
+             * Validate all items for bulk submission
+             * @returns {Boolean} - Whether all items passed validation
+             */
+            validateAllItemsForBulk() {
+                // Validate Item 1 (main form)
+                this.validateSingleItem(
+                    this.form,
+                    this.tempDrinkType,
+                    this.tempTypeCategory,
+                    this.tempDrinkStyle,
+                    this.indOperator,
+                    1
+                );
+
+                // Validate each additional item
+                for (let i = 0; i < this.additionalItems.length; i++) {
+                    const item = this.additionalItems[i];
+                    this.validateSingleItem(
+                        item,
+                        item.tempDrinkType,
+                        item.tempTypeCategory,
+                        item.tempDrinkStyle,
+                        item.indOperator,
+                        i + 2
+                    );
+                }
+
+                return this.errors.length === 0;
+            },
+
+            /**
+             * Transform a single item to request payload format (formType="req")
+             */
+            transformItemToRequestPayload(item, drinkType, typeCategory, drinkStyle, isIndOperator, varietyTags) {
+                let abvValue = (item.abv || "").toString().trim();
+                if (abvValue) abvValue = abvValue + "%";
+
+                return {
+                    sourceLink: (item.sourceLink || "").trim(),
+                    listingName: (item.listingName || "").trim(),
+                    reviewLink: (item.reviewLink || "").trim(),
+                    producerNew: (item.producerNew || "").trim(),
+                    bottler: isIndOperator ? (item.bottler || "").trim() : "Original Bottling",
+                    originCountry: (item.originCountry || "").trim(),
+                    abv: abvValue,
+                    age: (item.age || "").toString().trim(),
+                    brandRelation: item.brandRelation || null,
+                    producerID: item.producerID || "",
+                    bottlerID: item.bottlerID || "",
+                    photo: item.photo || "",
+                    drinkType: (drinkType || "").trim(),
+                    typeCategory: (typeCategory || "").trim(),
+                    drinkStyle: (drinkStyle || "").trim(),
+                    officialDesc: (item.officialDesc || "").trim(),
+                    varietyTags: varietyTags && varietyTags.length > 0 ? varietyTags : null
+                };
+            },
+
+            /**
+             * Transform a single item to power payload format (formType="power")
+             */
+            transformItemToPowerPayload(item, drinkType, typeCategory, drinkStyle, isIndOperator, varietyTags) {
+                let abvValue = (item.abv || "").toString().trim();
+                if (abvValue) abvValue = abvValue + "%";
+
+                return {
+                    sourceLink: (item.sourceLink || "").trim(),
+                    listingName: (item.listingName || "").trim(),
+                    officialDesc: (item.officialDesc || "").trim(),
+                    reviewLink: (item.reviewLink || "").trim(),
+                    bottler: isIndOperator ? (item.bottler || "").trim() : "Original Bottling",
+                    originCountry: (item.originCountry || "").trim(),
+                    abv: abvValue,
+                    age: (item.age || "").toString().trim(),
+                    producerID: item.producerID,
+                    bottlerID: item.bottlerID || "",
+                    photo: item.photo || "",
+                    drinkType: (drinkType || "").trim(),
+                    typeCategory: (typeCategory || "").trim(),
+                    drinkStyle: (drinkStyle || "").trim(),
+                    tags: (item.tags || "").trim(),
+                    order: item.order || null,
+                    varietyTags: varietyTags && varietyTags.length > 0 ? varietyTags : null
+                };
+            },
+
+            /**
+             * Build bulk payload for request mode (formType="req")
+             */
+            buildBulkRequestPayload() {
+                const listings = [];
+
+                // Transform Item 1 (main form)
+                listings.push(this.transformItemToRequestPayload(
+                    this.form,
+                    this.tempDrinkType,
+                    this.tempTypeCategory,
+                    this.tempDrinkStyle,
+                    this.indOperator,
+                    this.varietyTagsList
+                ));
+
+                // Transform each additional item
+                for (const item of this.additionalItems) {
+                    listings.push(this.transformItemToRequestPayload(
+                        item,
+                        item.tempDrinkType,
+                        item.tempTypeCategory,
+                        item.tempDrinkStyle,
+                        item.indOperator,
+                        item.varietyTagsList
+                    ));
+                }
+
+                return {
+                    userID: this.form["userID"],
+                    submitterType: this.userType,
+                    listings: listings
+                };
+            },
+
+            /**
+             * Build bulk payload for power mode (formType="power")
+             */
+            buildBulkPowerPayload() {
+                const listings = [];
+
+                // Transform Item 1 (main form)
+                listings.push(this.transformItemToPowerPayload(
+                    this.form,
+                    this.tempDrinkType,
+                    this.tempTypeCategory,
+                    this.tempDrinkStyle,
+                    this.indOperator,
+                    this.varietyTagsList
+                ));
+
+                // Transform each additional item
+                for (const item of this.additionalItems) {
+                    listings.push(this.transformItemToPowerPayload(
+                        item,
+                        item.tempDrinkType,
+                        item.tempTypeCategory,
+                        item.tempDrinkStyle,
+                        item.indOperator,
+                        item.varietyTagsList
+                    ));
+                }
+
+                return {
+                    listings: listings
+                };
+            },
+
+            /**
+             * Submit bulk listings to new bulk endpoint
+             */
+            async writeBulkListings(submitAPI, payload) {
+                this.fillForm = false;
+                this.submitForm = true;
+
+                console.log("writeBulkListings called. API:", submitAPI);
+                console.log("Bulk payload:", JSON.stringify(payload, null, 2));
+
+                try {
+                    const response = await this.$axios.post(submitAPI, payload);
+                    const responseCode = response.data.code;
+
+                    console.log("Bulk API response:", response.data);
+
+                    if (responseCode === 201) {
+                        this.successSubmission = true;
+                        this.submitForm = false;
+
+                        // Clear cache
+                        localStorage.removeItem('cachedListingForm');
+                        localStorage.removeItem('cachedListingTempDrinkType');
+                        localStorage.removeItem('cachedListingTempTypeCategory');
+                        localStorage.removeItem('cachedListingTempDrinkStyle');
+                        localStorage.removeItem('cachedVarietyTagsList');
+
+                        // Log results summary
+                        if (response.data.data && response.data.data.results) {
+                            const results = response.data.data.results;
+                            const successCount = results.filter(r => r.success).length;
+                            const failCount = results.filter(r => !r.success).length;
+                            console.log(`Bulk submission complete: ${successCount} succeeded, ${failCount} failed`);
+                        }
+                    } else {
+                        this.errorSubmission = true;
+                        this.submitForm = false;
+                        this.errorMessage = true;
+                    }
+
+                    return response;
+                } catch (error) {
+                    console.error("Bulk API error:", error.response?.data || error);
+                    this.errorSubmission = true;
+                    this.submitForm = false;
+                    this.errorMessage = true;
+                    return error;
+                }
+            },
+
+            // ============ END BULK SUBMISSION METHODS ============
+
             // Function to check if user is a power user
             async checkPower() {
                 let powerValid = false;
@@ -2850,6 +3129,42 @@
                 this.errors = [];
                 console.log("submitFunction called. formType:", this.formType, "formMode:", this.formMode, "prevListing:", this.prevListing);
 
+                // ============ BULK SUBMISSION MODE ============
+                // Detect bulk mode: more than just Item 1 (i.e., additionalItems.length > 0)
+                const isBulkMode = this.additionalItems.length > 0;
+
+                if (isBulkMode && this.formMode === "new") {
+                    console.log("Bulk submission mode detected. Item count:", this.additionalItems.length + 1);
+
+                    // Validate all items first
+                    if (!this.validateAllItemsForBulk()) {
+                        console.log("Bulk validation errors:", this.errors);
+                        return "Submission Incomplete";
+                    }
+
+                    let submitAPI = "";
+                    let bulkPayload = {};
+
+                    if (this.formType === "req") {
+                        // Request mode bulk submission
+                        submitAPI = `${process.env.VUE_APP_API_URL}/requestListing/requestListingBulk`;
+                        bulkPayload = this.buildBulkRequestPayload();
+                    } else if (this.formType === "power") {
+                        // Power mode bulk submission
+                        submitAPI = `${process.env.VUE_APP_API_URL}/createListing/createListingBulk`;
+                        bulkPayload = this.buildBulkPowerPayload();
+                    } else {
+                        alert("There was an issue with bulk submission. Invalid form type!");
+                        return "Invalid Mode";
+                    }
+
+                    console.log("Bulk submission to:", submitAPI);
+                    console.log("Bulk payload:", bulkPayload);
+                    this.writeBulkListings(submitAPI, bulkPayload);
+                    return;
+                }
+
+                // ============ SINGLE-ITEM SUBMISSION MODE (original logic below) ============
 
                 // Form Validation for Edit/Duplicate Request
                 if (this.formType == "req" && (this.formMode == "edit" || this.formMode == "dup")) {
