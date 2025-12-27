@@ -292,6 +292,10 @@
                     <!-- Form: Listing Details -->
                     <div v-if="formType == 'power' || formMode == 'new'">
 
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h2 class="h5 fw-bold mb-0">Item 1</h2>
+                        </div>
+
                         <!-- Power User Fields: Tags and Order -->
                         <div class="row" v-if="formType == 'power'">
                             <!-- Input: Tags -->
@@ -797,7 +801,264 @@
                             <input type="text" class="form-control" v-model="form['reviewLink']" id="reviewLink" placeholder="Enter review link">
                         </div>
 
-                        XYZ
+                        <div class="mt-4 pt-3 border-top">
+                            <div class="d-flex justify-content-between flex-column flex-md-row align-items-stretch align-items-md-center gap-2 mb-3">
+                                <button
+                                    v-if="additionalItems.length < maxAdditionalItems"
+                                    type="button"
+                                    class="btn btn-primary w-100 w-md-auto"
+                                    @click="addAdditionalItem"
+                                >
+                                    + Select Additional Item ({{ additionalItems.length + 1 }}/{{ maxAdditionalItems }})
+                                </button>
+                                <button
+                                    v-if="additionalItems.length > 0"
+                                    type="button"
+                                    class="btn btn-outline-danger w-100 w-md-auto"
+                                    @click="removeLastAdditionalItem"
+                                >
+                                    Remove Item {{ additionalItems.length + 1 }}
+                                </button>
+                            </div>
+
+                            <div
+                                v-for="(item, idx) in additionalItems"
+                                :key="'additional-item-' + idx"
+                                class="mb-4 pb-4 border-top"
+                            >
+                                <h2 class="h5 fw-bold mb-3">Item {{ idx + 2 }}</h2>
+
+                                <div class="row" v-if="formType == 'power'">
+                                    <div class="col-md-7 mb-3">
+                                        <p class="text-start mb-1">Tags <span class="text-muted" style="font-size: 14px;">(Separate multiple tags with commas.)</span></p>
+                                        <input type="text" class="form-control"
+                                               v-model="item.tags"
+                                               :id="'tags-additional-' + idx"
+                                               placeholder="#whiskyliveparis, #sakefestivalosaka">
+                                    </div>
+                                    <div class="col-md-5 mb-3">
+                                        <p class="text-start mb-1">Order <span class="text-muted" style="font-size: 14px;">(Integer from -1 onwards)</span></p>
+                                        <input type="number" class="form-control"
+                                               v-model.number="item.order"
+                                               :id="'order-additional-' + idx"
+                                               placeholder="Enter order (-1, 0, 1, 2...)"
+                                               min="-1"
+                                               step="1">
+                                    </div>
+                                </div>
+
+                                <div class="form-group mb-3">
+                                    <p class="text-start mb-1"><span class="fw-bold">Producer (Brand, Brewery, Winery, Distillery, Bar, etc.) </span><span class="text-danger fw-bold">*</span></p>
+                                    <input type="text" class="form-control"
+                                           v-model="item.producerNew"
+                                           :id="'producer-additional-' + idx"
+                                           placeholder="Enter Producer Name">
+                                </div>
+
+                                <div class="mb-3">
+                                    <p class="text-start mb-1">Is this bottled by an independent bottler? <span class="text-danger">*</span></p>
+                                    <div class="form-check form-switch form-check-inline">
+                                        <input class="form-check-input" type="checkbox" role="switch"
+                                               :id="'IBCheck-additional-' + idx"
+                                               v-model="item.indOperator">
+                                        <label class="form-check-label" :for="'IBCheck-additional-' + idx" v-if="item.indOperator">Yes</label>
+                                        <label class="form-check-label" :for="'IBCheck-additional-' + idx" v-else>No</label>
+                                    </div>
+                                </div>
+
+                                <div class="form-group mb-3" v-if="item.indOperator">
+                                    <p class="text-start mb-1">If yes, who is the independent bottler? <span class="text-danger">*</span></p>
+                                    <input type="text" class="form-control"
+                                           v-model="item.bottler"
+                                           :id="'bottler-additional-' + idx"
+                                           :disabled="!item.indOperator"
+                                           placeholder="Enter Bottler Name">
+                                </div>
+
+                                <div class="form-group mb-3">
+                                    <p class="text-start mb-1 fw-bold">Country of Origin <span class="text-danger" v-if="formType == 'power'">*</span></p>
+                                    <div class="input-group">
+                                        <select class="form-select" v-model="item.originCountry" :id="'originCountry-additional-' + idx">
+                                            <option value="">Select country of origin</option>
+                                            <option v-for="country in countries" :key="country" :value="country">
+                                                {{ country }}
+                                            </option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="form-group mb-3">
+                                    <p class="text-start mb-1 "><span class="fw-bold">Drink Name / Name of Bottle, Cocktail or Item </span><span class="text-danger fw-bold">*</span></p>
+                                    <input type="text" v-model="item.listingName" class="form-control" :id="'bottleName-additional-' + idx" placeholder="Enter Drink/Bottle Name">
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-4 mb-3 fw-bold">
+                                        <p class="text-start mb-1">Drink Type <span class="text-danger">*</span></p>
+                                        <div class="input-group">
+                                            <select class="form-select"
+                                                    :id="'drinkType-additional-' + idx"
+                                                    v-model="item.tempDrinkType"
+                                                    @change="getDrinkCategoryListForItem(idx)">
+                                                <option v-for="taste in drinkCategoriesList" :key="taste" :value="taste">
+                                                    {{ taste }}
+                                                </option>
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-4 mb-3">
+                                        <p class="text-start mb-1">Drink Category</p>
+                                        <div class="input-group" v-if="item.tempTypeCategoryList && item.tempTypeCategoryList.length > 1">
+                                            <select class="form-select"
+                                                    :id="'drinkCategory-additional-' + idx"
+                                                    v-model="item.tempTypeCategory"
+                                                    @change="getDrinkStyleListForItem(idx)">
+                                                <option v-for="cat in item.tempTypeCategoryList.sort()" :key="cat" :value="cat">
+                                                    {{ cat }}
+                                                </option>
+                                            </select>
+                                        </div>
+                                        <div class="input-group" v-else>
+                                            <select class="form-select" disabled>
+                                                <option selected>-</option>
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-4 mb-3">
+                                        <p class="text-start mb-1">Drink Style</p>
+                                        <div class="input-group" v-if="item.tempDrinkStylesList && item.tempDrinkStylesList.length > 1">
+                                            <select class="form-select"
+                                                    :id="'drinkStyle-additional-' + idx"
+                                                    v-model="item.tempDrinkStyle">
+                                                <option v-for="style in item.tempDrinkStylesList.sort()" :key="style" :value="style">
+                                                    {{ style }}
+                                                </option>
+                                            </select>
+                                        </div>
+                                        <div class="input-group" v-else>
+                                            <select class="form-select" disabled>
+                                                <option selected>-</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="form-group mb-3">
+                                    <p class="text-start mb-1 fw-bold">Variety Tags</p>
+                                    <p class="text-start mb-1 text-muted" style="font-size: 14px;">Add any applicable tags (eg. Pinot Noir, Bourbon Barrel, Nectaron, Yamadanishiki, Espadin, Angelica)</p>
+                                    <div class="input-group mb-2">
+                                        <input
+                                            type="text"
+                                            class="form-control"
+                                            v-model="item.varietyTagInput"
+                                            @keyup.enter="addVarietyTagForItem(idx)"
+                                            :id="'varietyTag-additional-' + idx"
+                                            placeholder="Type a variety tag and click +"
+                                            maxlength="20"
+                                        >
+                                        <button
+                                            class="btn btn-outline-success"
+                                            type="button"
+                                            @click="addVarietyTagForItem(idx)"
+                                            :disabled="!item.varietyTagInput || !item.varietyTagInput.trim()"
+                                        >
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus-circle" viewBox="0 0 16 16">
+                                                <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                                                <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                    <div v-if="item.varietyTagsList.length > 0" class="d-flex flex-wrap gap-2">
+                                        <span
+                                            v-for="(tag, tagIdx) in item.varietyTagsList"
+                                            :key="tagIdx"
+                                            class="badge bg-primary d-flex align-items-center"
+                                            style="font-size: 14px; padding: 8px 12px;"
+                                        >
+                                            {{ tag }}
+                                            <button
+                                                type="button"
+                                                class="btn-close btn-close-white ms-2"
+                                                style="font-size: 10px;"
+                                                @click="removeVarietyTagForItem(idx, tagIdx)"
+                                                aria-label="Remove tag"
+                                            ></button>
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <div class="form-group mb-3">
+                                    <p class="text-start mb-1 fw-bold">Photo of drink</p>
+                                    <div class="row">
+                                        <div class="col-4">
+                                            <input class="form-control" @change="event => handleFileSelectForItem(event, idx)" type="file" :id="'formFile-additional-' + idx" style="display: none" accept="image/*" />
+                                            <label :for="'formFile-additional-' + idx" class="upload-label d-block w-100">
+                                                <div v-if="!item.selectedImage && !item.photo" class="mobile-review-svg-button photo-dropzone">
+                                                    <div class="text-center">
+                                                        <h2>📷</h2>
+                                                        <div>Click or drag image here</div>
+                                                    </div>
+                                                </div>
+
+                                                <div v-else class="mobile-review-svg-button">
+                                                    <img :src="item.selectedImage || item.photo || defaultPhoto" alt="Drink photo"
+                                                         class="review-preview-photo" loading="lazy" />
+                                                </div>
+                                            </label>
+                                        </div>
+                                        <div class="col-8">
+                                            <div class="text-muted small">
+                                                <p class="mt-1"><strong>Upload a clear image of your drink.</strong></p>
+                                            </div>
+                                            <div class="text-center mt-2">
+                                                <button v-if="item.selectedImage || item.photo" type="button" class="btn btn-sm btn-outline-secondary"
+                                                        @click="() => { item.selectedImage = ''; item.photo = ''; }">
+                                                    Clear Photo
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row mb-3">
+                                    <div class="form-group col-6">
+                                        <p class="text-start mb-1">Strength</p>
+                                        <div class="form-group row">
+                                            <div class="col-6 pe-1">
+                                                <input type="number" v-model="item.abv" class="form-control" :id="'abv-additional-' + idx" min="0" max="100" step="0.1">
+                                            </div>
+                                            <label :for="'abv-additional-' + idx" class="col-6 col-form-label ps-1 text-start">% ABV</label>
+                                        </div>
+                                    </div>
+                                    <div class="form-group col-6" >
+                                        <p class="text-start mb-1">Age</p>
+                                        <div class="form-group row">
+                                            <div class="col-6 pe-1">
+                                                <input type="number" v-model="item.age" class="form-control" :id="'age-additional-' + idx" min="0">
+                                            </div>
+                                            <label :for="'age-additional-' + idx" class="col-6 col-form-label ps-1 text-start">years old</label>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="form-group mb-3">
+                                    <p class="text-start mb-1">Official Description</p>
+                                    <textarea rows=3 class="form-control" v-model="item.officialDesc" :id="'officialDesc-additional-' + idx" placeholder="Enter description of drink"></textarea>
+                                </div>
+
+                                <div v-if="formType == 'power'" class="form-group mb-3">
+                                    <p class="text-start mb-1">Link to website or source </p>
+                                    <input type="text" class="form-control" v-model="item.sourceLink" :id="'sourceLink-additional-' + idx" placeholder="Enter source link">
+                                </div>
+
+                                <div v-if="formType == 'power'" class="form-group mb-3">
+                                    <p class="text-start mb-1">Link to 88 Bamboo review</p>
+                                    <input type="text" class="form-control" v-model="item.reviewLink" :id="'reviewLink-additional-' + idx" placeholder="Enter review link">
+                                </div>
+                            </div>
+                        </div>
 
                     </div>
 
@@ -968,6 +1229,10 @@
 
                 // Bulk mode toggle
                 bulkSameProducerMode: false,
+
+                // Additional items
+                additionalItems: [],
+                maxAdditionalItems: 20,
 
                 // Variety Tags
                 varietyTagInput: "",
@@ -1176,6 +1441,125 @@
             // Remove variety tag from the list
             removeVarietyTag(index) {
                 this.varietyTagsList.splice(index, 1);
+            },
+
+            // Additional item helpers (UI-only for now)
+            createAdditionalItem(prefill = false) {
+                const baseType = prefill ? this.tempDrinkType : "";
+                const typeCategoryList = this.buildTypeCategoryList(baseType);
+                return {
+                    tags: "",
+                    order: "",
+                    producerNew: prefill ? this.form['producerNew'] : "",
+                    producerID: prefill ? this.form['producerID'] : "",
+                    producerIdSearch: prefill ? this.form['producerIdSearch'] : "",
+                    indOperator: prefill ? this.indOperator : false,
+                    bottler: prefill ? this.form['bottler'] : "",
+                    bottlerID: prefill ? this.form['bottlerID'] : "",
+                    originCountry: prefill ? this.form['originCountry'] : "",
+                    listingName: "",
+                    tempDrinkType: baseType,
+                    tempTypeCategory: "",
+                    tempDrinkStyle: "",
+                    tempTypeCategoryList: typeCategoryList,
+                    tempDrinkStylesList: this.buildDrinkStyleList(""),
+                    varietyTagInput: "",
+                    varietyTagsList: [],
+                    photo: "",
+                    selectedImage: "",
+                    abv: "",
+                    age: "",
+                    officialDesc: "",
+                    sourceLink: "",
+                    reviewLink: "",
+                };
+            },
+
+            addAdditionalItem() {
+                if (this.additionalItems.length >= this.maxAdditionalItems) return;
+                const newItem = this.createAdditionalItem(this.bulkSameProducerMode);
+                this.additionalItems.push(newItem);
+            },
+
+            removeLastAdditionalItem() {
+                if (this.additionalItems.length === 0) return;
+                this.additionalItems.pop();
+            },
+
+            buildTypeCategoryList(drinkType) {
+                if (!drinkType || !Array.isArray(this.drinkCategories)) {
+                    return ["-"];
+                }
+                const found = this.drinkCategories.find(cat => cat.drinkType === drinkType);
+                const list = found && Array.isArray(found.typeCategory) ? [...found.typeCategory] : [];
+                list.unshift("-");
+                return list;
+            },
+
+            buildDrinkStyleList(typeCategory) {
+                if (!typeCategory || !Array.isArray(this.drinkStyles)) {
+                    return ["-"];
+                }
+                const category = this.drinkStyles.find(style => style.typeCategory === typeCategory);
+                const list = category && Array.isArray(category.drinkStyle) ? [...category.drinkStyle] : [];
+                list.unshift("-");
+                return list;
+            },
+
+            getDrinkCategoryListForItem(index) {
+                const item = this.additionalItems[index];
+                if (!item) return;
+                item.tempTypeCategoryList = this.buildTypeCategoryList(item.tempDrinkType);
+                item.tempTypeCategory = "";
+                item.tempDrinkStylesList = this.buildDrinkStyleList("");
+                item.tempDrinkStyle = "";
+            },
+
+            getDrinkStyleListForItem(index) {
+                const item = this.additionalItems[index];
+                if (!item) return;
+                item.tempDrinkStylesList = this.buildDrinkStyleList(item.tempTypeCategory);
+                item.tempDrinkStyle = item.tempDrinkStylesList[0] || "";
+            },
+
+            addVarietyTagForItem(index) {
+                const item = this.additionalItems[index];
+                if (!item) return;
+                const tag = (item.varietyTagInput || "").trim();
+                if (!tag) return;
+                if (tag.length > 20) {
+                    alert("Each variety tag must be 20 characters or less.");
+                    return;
+                }
+                if (!/^[a-zA-Z0-9\s]+$/.test(tag)) {
+                    alert("Variety tags can only contain letters, numbers, and spaces.");
+                    return;
+                }
+                if (item.varietyTagsList.some(t => t.toLowerCase() === tag.toLowerCase())) {
+                    alert("This variety tag has already been added.");
+                    return;
+                }
+                item.varietyTagsList.push(tag);
+                item.varietyTagInput = "";
+            },
+
+            removeVarietyTagForItem(index, tagIndex) {
+                const item = this.additionalItems[index];
+                if (!item) return;
+                item.varietyTagsList.splice(tagIndex, 1);
+            },
+
+            handleFileSelectForItem(event, index) {
+                const item = this.additionalItems[index];
+                if (!item) return;
+                const file = event.target.files ? event.target.files[0] : null;
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = () => {
+                    item.selectedImage = reader.result;
+                    item.photo = reader.result;
+                };
+                reader.readAsDataURL(file);
             },
 
             // Function to validate tags format
