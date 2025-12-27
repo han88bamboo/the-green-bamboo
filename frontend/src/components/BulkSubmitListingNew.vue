@@ -292,7 +292,7 @@
                     <!-- Form: Listing Details -->
                     <div v-if="formType == 'power' || formMode == 'new'">
 
-                        <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div v-if="additionalItems.length > 0" class="d-flex justify-content-between align-items-center mb-3">
                             <h2 class="h5 fw-bold mb-0">Item 1</h2>
                         </div>
 
@@ -824,9 +824,9 @@
                             <div
                                 v-for="(item, idx) in additionalItems"
                                 :key="'additional-item-' + idx"
-                                class="mb-4 pb-4 border-top"
+                                class="mb-4 pb-4 border-top text-start"
                             >
-                                <h2 class="h5 fw-bold mb-3">Item {{ idx + 2 }}</h2>
+                                <h2 class="h5 fw-bold mb-3 mt-2">Item {{ idx + 2 }}</h2>
 
                                 <div class="row" v-if="formType == 'power'">
                                     <div class="col-md-7 mb-3">
