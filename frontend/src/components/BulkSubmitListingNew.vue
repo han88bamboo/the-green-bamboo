@@ -513,6 +513,68 @@
                             </div>
                         </div>
 
+                        <!-- Input: Country of Origin -->
+                        <div class="form-group mb-3">
+                            <div class=" mb-3">
+                                <p class="text-start mb-1 fw-bold">Country of Origin <span class="text-danger" v-if="formType == 'power'">*</span></p>
+                                <!-- Simple select dropdown -->
+                                <div class="input-group">
+                                    <select class="form-select" v-model="form['originCountry']">
+                                        <option value="">Select country of origin</option>
+                                        <option v-for="country in countries" :key="country" :value="country">
+                                            {{ country }}
+                                        </option>
+                                    </select>
+                                </div>
+                                
+                                <!-- COMMENTED OUT: Sophisticated searchable drawer version -->
+                                <!--
+                                <div style="position: relative;">
+                                    <div class="input-group mb-0">
+                                        --Searchable input that opens country dropdown--
+                                        <input
+                                            ref="countryInput"
+                                            type="text"
+                                            class="form-control"
+                                            v-model="countryInputValue"
+                                            placeholder="Select country of origin"
+                                            @input="handleCountryInput"
+                                            @focus="openCountryDrawer"
+                                            style="cursor: text; background-color: white;"
+                                        />
+                                        --Search icon--
+                                        <span class="input-group-text" style="cursor: pointer;" @click="openCountryDrawer">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                                                <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
+                                            </svg>
+                                        </span>
+                                    </div>
+                                    
+                                    <div v-if="showCountryDrawer" class="country-dropdown">
+                                        <div class="country-dropdown-body">
+                                            <div 
+                                                v-for="country in filteredCountries" 
+                                                :key="country"
+                                                class="country-item"
+                                                @click="selectCountry(country)"
+                                            >
+                                                <span class="country-name">{{ country }}</span>
+                                                <svg v-if="selectedCountry === country" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="check-icon" viewBox="0 0 16 16">
+                                                    <path d="M10.97 4.97a.235.235 0 0 0-.02.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.061L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-1.071-1.05z"/>
+                                                </svg>
+                                            </div>
+                                            <div v-if="filteredCountries.length === 0" class="no-results">
+                                                No countries found
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                -->
+                            </div>
+                        </div>
+
+                        XYZ
+
                         <!-- Input: Bottle Name -->
                         <div class="form-group mb-3">
                             <p class="text-start mb-1 "><span class="fw-bold">Drink Name / Name of Bottle, Cocktail or Item </span><span class="text-danger fw-bold">*</span> <span class="text-muted" style="font-size: 14px;">(Include any identification numbers eg. cask, batch, serial, barrel, edition numbers; do NOT include vintage year for wines.)</span></p>
@@ -622,84 +684,6 @@
                             </div>
                         </div>
 
-                        <!-- Input: Country of Origin -->
-                        <div class="form-group mb-3">
-                            <div class=" mb-3">
-                                <p class="text-start mb-1 fw-bold">Country of Origin <span class="text-danger" v-if="formType == 'power'">*</span></p>
-                                <!-- Simple select dropdown -->
-                                <div class="input-group">
-                                    <select class="form-select" v-model="form['originCountry']">
-                                        <option value="">Select country of origin</option>
-                                        <option v-for="country in countries" :key="country" :value="country">
-                                            {{ country }}
-                                        </option>
-                                    </select>
-                                </div>
-                                
-                                <!-- COMMENTED OUT: Sophisticated searchable drawer version -->
-                                <!--
-                                <div style="position: relative;">
-                                    <div class="input-group mb-0">
-                                        --Searchable input that opens country dropdown--
-                                        <input
-                                            ref="countryInput"
-                                            type="text"
-                                            class="form-control"
-                                            v-model="countryInputValue"
-                                            placeholder="Select country of origin"
-                                            @input="handleCountryInput"
-                                            @focus="openCountryDrawer"
-                                            style="cursor: text; background-color: white;"
-                                        />
-                                        --Search icon--
-                                        <span class="input-group-text" style="cursor: pointer;" @click="openCountryDrawer">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                                                <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
-                                            </svg>
-                                        </span>
-                                    </div>
-                                    
-                                    <div v-if="showCountryDrawer" class="country-dropdown">
-                                        <div class="country-dropdown-body">
-                                            <div 
-                                                v-for="country in filteredCountries" 
-                                                :key="country"
-                                                class="country-item"
-                                                @click="selectCountry(country)"
-                                            >
-                                                <span class="country-name">{{ country }}</span>
-                                                <svg v-if="selectedCountry === country" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="check-icon" viewBox="0 0 16 16">
-                                                    <path d="M10.97 4.97a.235.235 0 0 0-.02.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.061L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-1.071-1.05z"/>
-                                                </svg>
-                                            </div>
-                                            <div v-if="filteredCountries.length === 0" class="no-results">
-                                                No countries found
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                -->
-                            </div>
-                        </div>
-
-                        <!-- [POWER] Input: Drink Description -->
-                        <div class="form-group mb-3" > <!-- v-if="formType == 'power'"   shifted out to allow ordinary users to submit official descp too-->
-                            <p class="text-start mb-1">Official Description</p>
-                            <textarea rows=3 class="form-control" v-model="form['officialDesc']" id="officialDesc" placeholder="Enter description of drink"></textarea>
-                        </div>
-
-                        <!-- Input: Link to website or source (optional for actual listing, mandatory for request) -->
-                        <div v-if="formType == 'power'"  class="form-group mb-3">
-                            <p class="text-start mb-1">Link to website or source </p> <!--<span class="text-danger" v-if="formType == 'req'">*</span>-->
-                            <input type="text" class="form-control" v-model="form['sourceLink']" id="sourceLink" placeholder="Enter source link">
-                        </div>
-
-                        <!-- Input: Link to 88 Bamboo review -->
-                        <div v-if="formType == 'power'"  class="form-group mb-3">
-                            <p class="text-start mb-1">Link to 88 Bamboo review</p>
-                            <input type="text" class="form-control" v-model="form['reviewLink']" id="reviewLink" placeholder="Enter review link">
-                        </div>
-
                         <!-- Input: Photo file -->
                         <div class="form-group mb-3 mobile-view-hide">
                             <p class="text-start mb-1 fw-bold">Photo of drink</p>
@@ -757,6 +741,24 @@
                                     <label for="age" class="col-6 col-form-label ps-1 text-start">years old</label>
                                 </div>
                             </div>
+                        </div>
+
+                        <!-- [POWER] Input: Drink Description -->
+                        <div class="form-group mb-3" > <!-- v-if="formType == 'power'"   shifted out to allow ordinary users to submit official descp too-->
+                            <p class="text-start mb-1">Official Description</p>
+                            <textarea rows=3 class="form-control" v-model="form['officialDesc']" id="officialDesc" placeholder="Enter description of drink"></textarea>
+                        </div>
+
+                        <!-- Input: Link to website or source (optional for actual listing, mandatory for request) -->
+                        <div v-if="formType == 'power'"  class="form-group mb-3">
+                            <p class="text-start mb-1">Link to website or source </p> <!--<span class="text-danger" v-if="formType == 'req'">*</span>-->
+                            <input type="text" class="form-control" v-model="form['sourceLink']" id="sourceLink" placeholder="Enter source link">
+                        </div>
+
+                        <!-- Input: Link to 88 Bamboo review -->
+                        <div v-if="formType == 'power'"  class="form-group mb-3">
+                            <p class="text-start mb-1">Link to 88 Bamboo review</p>
+                            <input type="text" class="form-control" v-model="form['reviewLink']" id="reviewLink" placeholder="Enter review link">
                         </div>
 
                     </div>
