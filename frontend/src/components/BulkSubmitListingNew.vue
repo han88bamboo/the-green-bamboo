@@ -1250,19 +1250,65 @@
     </div>
 
     <!-- Staging Modal -->
-    <div v-if="showStagingModal" class="staging-modal-overlay" @click.self="closeStagingModal">
+    <div v-if="showStagingModal" class="staging-modal-overlay" @click.self="!bulkSubmissionInProgress && closeStagingModal()">
         <div class="staging-modal-content">
             <div class="staging-modal-header">
-                <h4 class="mb-0">Review Staged Listings</h4>
-                <button type="button" class="btn-close" @click="closeStagingModal"></button>
+                <h4 class="mb-0">
+                    <span v-if="!bulkSubmissionComplete">Review Staged Listings</span>
+                    <span v-else>Submission Results</span>
+                </h4>
+                <button type="button" class="btn-close" @click="closeStagingModal" :disabled="bulkSubmissionInProgress"></button>
             </div>
             <div class="staging-modal-body">
-                <p class="text-muted mb-3">{{ getStagedItemsCount() }} item(s) staged for submission. Please review before confirming.</p>
+                <!-- Pre-submission info -->
+                <p v-if="!bulkSubmissionComplete && !bulkSubmissionInProgress" class="text-muted mb-3">
+                    {{ getStagedItemsCount() }} item(s) staged for submission. Please review before confirming.
+                </p>
+                
+                <!-- In-progress spinner -->
+                <div v-if="bulkSubmissionInProgress" class="text-center py-3">
+                    <div class="spinner-border text-primary mb-2" role="status">
+                        <span class="visually-hidden">Submitting...</span>
+                    </div>
+                    <p class="text-info fw-bold mb-0">Submitting {{ getStagedItemsCount() }} item(s)... Please wait.</p>
+                </div>
+                
+                <!-- Post-submission summary -->
+                <div v-if="bulkSubmissionComplete && bulkSubmissionSummary" class="mb-3">
+                    <div class="alert" :class="bulkSubmissionSummary.failCount === 0 ? 'alert-success' : (bulkSubmissionSummary.successCount === 0 ? 'alert-danger' : 'alert-warning')">
+                        <h5 class="alert-heading mb-2">
+                            <span v-if="bulkSubmissionSummary.failCount === 0">✓ All items submitted successfully!</span>
+                            <span v-else-if="bulkSubmissionSummary.successCount === 0">✗ All items failed to submit</span>
+                            <span v-else>⚠ Partial success</span>
+                        </h5>
+                        <p class="mb-1">
+                            <strong>{{ bulkSubmissionSummary.successCount }}</strong> succeeded, 
+                            <strong>{{ bulkSubmissionSummary.failCount }}</strong> failed 
+                            (out of {{ bulkSubmissionSummary.totalSubmitted }} total)
+                        </p>
+                        <p v-if="bulkSubmissionSummary.pointsAwarded > 0" class="mb-1 text-success">
+                            🎯 +{{ bulkSubmissionSummary.pointsAwarded }} proof points awarded!
+                        </p>
+                        <p v-if="bulkSubmissionSummary.autoApprovalEnabled" class="mb-0 text-info small">
+                            <i class="bi bi-info-circle"></i> Auto-approval is enabled. Successful items are now live.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Validation errors (if any) -->
+                <div v-if="errors.length > 0" class="alert alert-danger mb-3">
+                    <h6 class="alert-heading">Validation Errors:</h6>
+                    <ul class="mb-0">
+                        <li v-for="error in errors" :key="error">{{ error }}</li>
+                    </ul>
+                </div>
+                
                 <div class="table-responsive staging-table-wrapper">
-                    <table class="table table-bordered table-hover staging-table">
+                    <table class="table table-bordered staging-table">
                         <thead class="table-light sticky-header">
                             <tr>
                                 <th>#</th>
+                                <th v-if="bulkSubmissionComplete" style="min-width: 200px;">Status</th>
                                 <th>Photo</th>
                                 <th>Listing Name</th>
                                 <th>Producer</th>
@@ -1282,8 +1328,18 @@
                         </thead>
                         <tbody>
                             <!-- Item 1 (main form) -->
-                            <tr>
+                            <tr :class="getRowClass(0)">
                                 <td>1</td>
+                                <td v-if="bulkSubmissionComplete">
+                                    <span v-if="getItemSubmissionStatus(0)?.success" class="badge bg-success">
+                                        ✓ Success
+                                        <span v-if="getItemSubmissionStatus(0)?.listingId"> (ID: {{ getItemSubmissionStatus(0).listingId }})</span>
+                                        <span v-else-if="getItemSubmissionStatus(0)?.requestId"> (Req: {{ getItemSubmissionStatus(0).requestId }})</span>
+                                    </span>
+                                    <span v-else class="badge bg-danger text-wrap text-start" style="white-space: normal;">
+                                        ✗ {{ getItemSubmissionStatus(0)?.error || 'Failed' }}
+                                    </span>
+                                </td>
                                 <td>
                                     <img 
                                         v-if="form['photo']" 
@@ -1309,8 +1365,18 @@
                                 <td class="text-truncate-cell">{{ form['reviewLink'] || '-' }}</td>
                             </tr>
                             <!-- Additional items -->
-                            <tr v-for="(item, index) in additionalItems" :key="'staged-' + index">
+                            <tr v-for="(item, index) in additionalItems" :key="'staged-' + index" :class="getRowClass(index + 1)">
                                 <td>{{ index + 2 }}</td>
+                                <td v-if="bulkSubmissionComplete">
+                                    <span v-if="getItemSubmissionStatus(index + 1)?.success" class="badge bg-success">
+                                        ✓ Success
+                                        <span v-if="getItemSubmissionStatus(index + 1)?.listingId"> (ID: {{ getItemSubmissionStatus(index + 1).listingId }})</span>
+                                        <span v-else-if="getItemSubmissionStatus(index + 1)?.requestId"> (Req: {{ getItemSubmissionStatus(index + 1).requestId }})</span>
+                                    </span>
+                                    <span v-else class="badge bg-danger text-wrap text-start" style="white-space: normal;">
+                                        ✗ {{ getItemSubmissionStatus(index + 1)?.error || 'Failed' }}
+                                    </span>
+                                </td>
                                 <td>
                                     <img 
                                         v-if="item.photo" 
@@ -1340,8 +1406,29 @@
                 </div>
             </div>
             <div class="staging-modal-footer">
-                <button type="button" class="btn btn-secondary" @click="closeStagingModal">Cancel</button>
-                <button type="button" class="btn btn-success" @click="confirmStagedSubmission">Confirm Submission</button>
+                <!-- Pre-submission buttons -->
+                <template v-if="!bulkSubmissionComplete && !bulkSubmissionInProgress">
+                    <button type="button" class="btn btn-secondary" @click="closeStagingModal">Cancel</button>
+                    <button type="button" class="btn btn-success" @click="confirmStagedSubmission">Confirm Submission</button>
+                </template>
+                
+                <!-- In-progress state -->
+                <template v-if="bulkSubmissionInProgress">
+                    <button type="button" class="btn btn-secondary" disabled>Please wait...</button>
+                </template>
+                
+                <!-- Post-submission buttons -->
+                <template v-if="bulkSubmissionComplete">
+                    <button type="button" class="btn btn-secondary" @click="closeStagingModal">Close</button>
+                    <button 
+                        v-if="bulkSubmissionSummary && bulkSubmissionSummary.successCount === bulkSubmissionSummary.totalSubmitted"
+                        type="button" 
+                        class="btn btn-primary" 
+                        @click="closeStagingModal(); reset();"
+                    >
+                        Submit More Listings
+                    </button>
+                </template>
             </div>
         </div>
     </div>
@@ -1493,6 +1580,12 @@
                 
                 // Drag and drop state
                 isDragging: false,
+
+                // Bulk submission results tracking
+                bulkSubmissionResults: [],        // Array of results from API
+                bulkSubmissionSummary: null,      // { totalSubmitted, successCount, failCount, autoApprovalEnabled, pointsAwarded, badgeAwarded }
+                bulkSubmissionInProgress: false,  // True while API call is in progress
+                bulkSubmissionComplete: false,    // True after API response received
             };
         },
         async mounted() {
@@ -1717,6 +1810,12 @@
 
             // Staging Modal Methods
             openStagingModal() {
+                // Reset bulk submission state when opening modal
+                this.bulkSubmissionResults = [];
+                this.bulkSubmissionSummary = null;
+                this.bulkSubmissionInProgress = false;
+                this.bulkSubmissionComplete = false;
+                
                 this.showStagingModal = true;
                 // Prevent body scroll when modal is open
                 document.body.style.overflow = 'hidden';
@@ -1725,6 +1824,13 @@
             closeStagingModal() {
                 this.showStagingModal = false;
                 document.body.style.overflow = '';
+                
+                // If submission was complete, reset bulk state
+                if (this.bulkSubmissionComplete) {
+                    this.bulkSubmissionResults = [];
+                    this.bulkSubmissionSummary = null;
+                    this.bulkSubmissionComplete = false;
+                }
             },
 
             getStagedItemsCount() {
@@ -1736,11 +1842,128 @@
                 return tagsList.join(', ');
             },
 
-            confirmStagedSubmission() {
-                // Close the modal first
-                this.closeStagingModal();
-                // Trigger the form submission (validation will happen in submitFunction)
-                this.$refs.listingForm.requestSubmit();
+            // Get submission status for an item by index
+            getItemSubmissionStatus(index) {
+                if (!this.bulkSubmissionComplete || !this.bulkSubmissionResults.length) {
+                    return null; // No status yet
+                }
+                const result = this.bulkSubmissionResults.find(r => r.index === index);
+                return result || null;
+            },
+
+            // Get status badge class for table row
+            getStatusBadgeClass(index) {
+                const status = this.getItemSubmissionStatus(index);
+                if (!status) return '';
+                return status.success ? 'bg-success' : 'bg-danger';
+            },
+
+            // Get status text for table cell
+            getStatusText(index) {
+                const status = this.getItemSubmissionStatus(index);
+                if (!status) return '-';
+                if (status.success) {
+                    const idText = status.listingId ? `ID: ${status.listingId}` : (status.requestId ? `Req ID: ${status.requestId}` : '');
+                    return `✓ Success ${idText}`;
+                }
+                return `✗ Failed: ${status.error || 'Unknown error'}`;
+            },
+
+            // Get row class based on submission status
+            getRowClass(index) {
+                const status = this.getItemSubmissionStatus(index);
+                if (!status) return 'row-pending';
+                return status.success ? 'row-success' : 'row-error';
+            },
+
+            async confirmStagedSubmission() {
+                // Validate all items first
+                this.errors = [];
+                if (!this.validateAllItemsForBulk()) {
+                    console.log("Bulk validation errors:", this.errors);
+                    return;
+                }
+
+                // Set in-progress state (keep modal open)
+                this.bulkSubmissionInProgress = true;
+                this.bulkSubmissionComplete = false;
+                this.bulkSubmissionResults = [];
+                this.bulkSubmissionSummary = null;
+
+                let submitAPI = "";
+                let bulkPayload = {};
+
+                if (this.formType === "req") {
+                    // Request mode bulk submission
+                    submitAPI = `${process.env.VUE_APP_API_URL}/requestListing/requestListingBulk`;
+                    bulkPayload = this.buildBulkRequestPayload();
+                } else if (this.formType === "power") {
+                    // Power mode bulk submission
+                    submitAPI = `${process.env.VUE_APP_API_URL}/createListing/createListingBulk`;
+                    bulkPayload = this.buildBulkPowerPayload();
+                } else {
+                    alert("Invalid form type for bulk submission!");
+                    this.bulkSubmissionInProgress = false;
+                    return;
+                }
+
+                console.log("Bulk submission to:", submitAPI);
+                console.log("Bulk payload:", JSON.stringify(bulkPayload, null, 2));
+
+                try {
+                    const response = await this.$axios.post(submitAPI, bulkPayload);
+                    const responseData = response.data;
+
+                    console.log("Bulk API response:", responseData);
+
+                    // Store results
+                    this.bulkSubmissionResults = responseData.data?.results || [];
+                    this.bulkSubmissionSummary = {
+                        totalSubmitted: responseData.data?.totalSubmitted || 0,
+                        successCount: responseData.data?.successCount || 0,
+                        failCount: responseData.data?.failCount || 0,
+                        autoApprovalEnabled: responseData.data?.autoApprovalEnabled || false,
+                        pointsAwarded: responseData.data?.pointsAwarded || 0,
+                        badgeAwarded: responseData.data?.badgeAwarded || null,
+                        message: responseData.message || ''
+                    };
+
+                    // If there were any successes, clear cache
+                    if (this.bulkSubmissionSummary.successCount > 0) {
+                        localStorage.removeItem('cachedListingForm');
+                        localStorage.removeItem('cachedListingTempDrinkType');
+                        localStorage.removeItem('cachedListingTempTypeCategory');
+                        localStorage.removeItem('cachedListingTempDrinkStyle');
+                        localStorage.removeItem('cachedVarietyTagsList');
+                    }
+
+                    // Handle badge popup if badge was awarded
+                    if (this.bulkSubmissionSummary.badgeAwarded) {
+                        this.earnedBadges = [this.bulkSubmissionSummary.badgeAwarded];
+                        this.showBadgePopup = true;
+                    }
+
+                } catch (error) {
+                    console.error("Bulk API error:", error.response?.data || error);
+                    
+                    // Create error results for all items
+                    const totalItems = 1 + this.additionalItems.length;
+                    this.bulkSubmissionResults = Array.from({ length: totalItems }, (_, i) => ({
+                        index: i,
+                        success: false,
+                        error: error.response?.data?.message || 'Server error occurred'
+                    }));
+                    
+                    this.bulkSubmissionSummary = {
+                        totalSubmitted: totalItems,
+                        successCount: 0,
+                        failCount: totalItems,
+                        message: error.response?.data?.message || 'An error occurred during submission'
+                    };
+                } finally {
+                    this.bulkSubmissionInProgress = false;
+                    this.bulkSubmissionComplete = true;
+                }
             },
 
             buildTypeCategoryList(drinkType) {
@@ -2047,34 +2270,41 @@
              * Build bulk payload for request mode (formType="req")
              */
             buildBulkRequestPayload() {
-                const listings = [];
+                const items = [];
 
                 // Transform Item 1 (main form)
-                listings.push(this.transformItemToRequestPayload(
+                const item1 = this.transformItemToRequestPayload(
                     this.form,
                     this.tempDrinkType,
                     this.tempTypeCategory,
                     this.tempDrinkStyle,
                     this.indOperator,
                     this.varietyTagsList
-                ));
+                );
+                // Add userID and submitterType to each item for requestListingBulk
+                item1.userID = this.form["userID"];
+                item1.submitterType = this.userType;
+                items.push(item1);
 
                 // Transform each additional item
                 for (const item of this.additionalItems) {
-                    listings.push(this.transformItemToRequestPayload(
+                    const transformedItem = this.transformItemToRequestPayload(
                         item,
                         item.tempDrinkType,
                         item.tempTypeCategory,
                         item.tempDrinkStyle,
                         item.indOperator,
                         item.varietyTagsList
-                    ));
+                    );
+                    // Add userID and submitterType to each item
+                    transformedItem.userID = this.form["userID"];
+                    transformedItem.submitterType = this.userType;
+                    items.push(transformedItem);
                 }
 
+                // Backend requestListingBulk expects 'items' key
                 return {
-                    userID: this.form["userID"],
-                    submitterType: this.userType,
-                    listings: listings
+                    items: items
                 };
             },
 
@@ -3738,6 +3968,38 @@
 .staging-table td {
     padding: 8px 12px;
     vertical-align: middle;
+}
+
+/* Submission result row highlighting */
+.staging-table tr.row-success {
+    background-color: rgba(25, 135, 84, 0.1) !important;
+}
+
+.staging-table tr.row-success:hover {
+    background-color: rgba(25, 135, 84, 0.15) !important;
+}
+
+.staging-table tr.row-error {
+    background-color: rgba(220, 53, 69, 0.1) !important;
+}
+
+.staging-table tr.row-error:hover {
+    background-color: rgba(220, 53, 69, 0.15) !important;
+}
+
+.staging-table tr.row-pending {
+    background-color: transparent;
+}
+
+/* Status badges in table */
+.staging-table .badge {
+    font-size: 0.85em;
+    padding: 6px 10px;
+}
+
+.staging-table .badge.bg-danger {
+    max-width: 180px;
+    word-wrap: break-word;
 }
 
 .staging-thumbnail {
