@@ -262,7 +262,7 @@
                 </div>
 
                 <!-- Form Fields -->
-                <form v-on:submit.prevent="submitFunction" id="frm">
+                <form v-on:submit.prevent="submitFunction" id="frm" ref="listingForm">
 
                     <!-- Form: Propose Edit / Report Duplicate -->
                     <div v-if="formType == 'req' && (formMode == 'edit' || formMode == 'dup')">
@@ -1157,6 +1157,7 @@
                     <div v-if="formType == 'power'">
                         <button type="button" class="btn btn-secondary mx-1 mb-3" @click="goBack">Return</button>
                         <button type="submit" class="btn primary-square-btn-green mx-1 mb-3" v-if="formMode == 'new'">Create New Listing</button>  <!--tzh changed secondary-btn to primary-square-btn-green-->
+                        <button type="button" class="btn btn-outline-primary mx-1 mb-3" v-if="formMode == 'new'" @click="openStagingModal">Stage Listing(s) for Submission</button>
                         <button type="submit" class="btn primary-square-btn-green mx-1 mb-3" v-if="formMode == 'edit'">Save Listing Edits</button> <!--tzh changed secondary-btn to primary-square-btn-green-->
 
                         <button type="button" class="btn btn-danger rounded-pill mx-1 mb-3" v-if="prevListing" @click="updateRequestStatus('reject')">Reject Request</button>
@@ -1165,6 +1166,103 @@
                 
                 </form>
 
+            </div>
+        </div>
+    </div>
+
+    <!-- Staging Modal -->
+    <div v-if="showStagingModal" class="staging-modal-overlay" @click.self="closeStagingModal">
+        <div class="staging-modal-content">
+            <div class="staging-modal-header">
+                <h4 class="mb-0">Review Staged Listings</h4>
+                <button type="button" class="btn-close" @click="closeStagingModal"></button>
+            </div>
+            <div class="staging-modal-body">
+                <p class="text-muted mb-3">{{ getStagedItemsCount() }} item(s) staged for submission. Please review before confirming.</p>
+                <div class="table-responsive staging-table-wrapper">
+                    <table class="table table-bordered table-hover staging-table">
+                        <thead class="table-light sticky-header">
+                            <tr>
+                                <th>#</th>
+                                <th>Photo</th>
+                                <th>Listing Name</th>
+                                <th>Producer</th>
+                                <th>IB</th>
+                                <th>Bottler</th>
+                                <th>Drink Type</th>
+                                <th>Category</th>
+                                <th>Style</th>
+                                <th>Country</th>
+                                <th>ABV</th>
+                                <th>Age</th>
+                                <th>Variety Tags</th>
+                                <th>Description</th>
+                                <th>Source Link</th>
+                                <th>Review Link</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Item 1 (main form) -->
+                            <tr>
+                                <td>1</td>
+                                <td>
+                                    <img 
+                                        v-if="form['photo']" 
+                                        :src="form['photo']" 
+                                        class="staging-thumbnail"
+                                        alt="Item 1 photo"
+                                    />
+                                    <span v-else class="text-muted">-</span>
+                                </td>
+                                <td>{{ form['listingName'] || '-' }}</td>
+                                <td>{{ form['producerNew'] || '-' }}</td>
+                                <td>{{ indOperator ? 'Yes' : 'No' }}</td>
+                                <td>{{ form['bottler'] || '-' }}</td>
+                                <td>{{ tempDrinkType || '-' }}</td>
+                                <td>{{ tempTypeCategory || '-' }}</td>
+                                <td>{{ tempDrinkStyle || '-' }}</td>
+                                <td>{{ form['originCountry'] || '-' }}</td>
+                                <td>{{ form['abv'] || '-' }}</td>
+                                <td>{{ form['age'] || '-' }}</td>
+                                <td>{{ formatVarietyTags(varietyTagsList) }}</td>
+                                <td class="text-truncate-cell">{{ form['officialDesc'] || '-' }}</td>
+                                <td class="text-truncate-cell">{{ form['sourceLink'] || '-' }}</td>
+                                <td class="text-truncate-cell">{{ form['reviewLink'] || '-' }}</td>
+                            </tr>
+                            <!-- Additional items -->
+                            <tr v-for="(item, index) in additionalItems" :key="'staged-' + index">
+                                <td>{{ index + 2 }}</td>
+                                <td>
+                                    <img 
+                                        v-if="item.photo" 
+                                        :src="item.photo" 
+                                        class="staging-thumbnail"
+                                        alt="Item photo"
+                                    />
+                                    <span v-else class="text-muted">-</span>
+                                </td>
+                                <td>{{ item.listingName || '-' }}</td>
+                                <td>{{ item.producerNew || '-' }}</td>
+                                <td>{{ item.indOperator ? 'Yes' : 'No' }}</td>
+                                <td>{{ item.bottler || '-' }}</td>
+                                <td>{{ item.tempDrinkType || '-' }}</td>
+                                <td>{{ item.tempTypeCategory || '-' }}</td>
+                                <td>{{ item.tempDrinkStyle || '-' }}</td>
+                                <td>{{ item.originCountry || '-' }}</td>
+                                <td>{{ item.abv || '-' }}</td>
+                                <td>{{ item.age || '-' }}</td>
+                                <td>{{ formatVarietyTags(item.varietyTagsList) }}</td>
+                                <td class="text-truncate-cell">{{ item.officialDesc || '-' }}</td>
+                                <td class="text-truncate-cell">{{ item.sourceLink || '-' }}</td>
+                                <td class="text-truncate-cell">{{ item.reviewLink || '-' }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="staging-modal-footer">
+                <button type="button" class="btn btn-secondary" @click="closeStagingModal">Cancel</button>
+                <button type="button" class="btn btn-success" @click="confirmStagedSubmission">Confirm Submission</button>
             </div>
         </div>
     </div>
@@ -1219,6 +1317,7 @@
                 fillForm: false,
                 requestRemoval: false,
                 showCreateProducerModal: false,
+                showStagingModal: false,
 
                 // Error-specific flags
                 errorMessage: false,
@@ -1529,6 +1628,34 @@
             removeLastAdditionalItem() {
                 if (this.additionalItems.length === 0) return;
                 this.additionalItems.pop();
+            },
+
+            // Staging Modal Methods
+            openStagingModal() {
+                this.showStagingModal = true;
+                // Prevent body scroll when modal is open
+                document.body.style.overflow = 'hidden';
+            },
+
+            closeStagingModal() {
+                this.showStagingModal = false;
+                document.body.style.overflow = '';
+            },
+
+            getStagedItemsCount() {
+                return 1 + this.additionalItems.length;
+            },
+
+            formatVarietyTags(tagsList) {
+                if (!tagsList || tagsList.length === 0) return '-';
+                return tagsList.join(', ');
+            },
+
+            confirmStagedSubmission() {
+                // Close the modal first
+                this.closeStagingModal();
+                // Trigger the form submission (validation will happen in submitFunction)
+                this.$refs.listingForm.requestSubmit();
             },
 
             buildTypeCategoryList(drinkType) {
@@ -3007,6 +3134,108 @@
 </script>
 
 <style scoped>
+/* Staging Modal Styles */
+.staging-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.6);
+    z-index: 1060;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.staging-modal-content {
+    background: white;
+    border-radius: 12px;
+    width: 95%;
+    max-width: 1400px;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+}
+
+.staging-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 24px;
+    border-bottom: 1px solid #dee2e6;
+    flex-shrink: 0;
+}
+
+.staging-modal-body {
+    padding: 20px 24px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+}
+
+.staging-table-wrapper {
+    overflow: auto;
+    flex: 1;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+}
+
+.staging-table {
+    margin-bottom: 0;
+    font-size: 0.85rem;
+    white-space: nowrap;
+}
+
+.staging-table thead th {
+    position: sticky;
+    top: 0;
+    background: #f8f9fa;
+    z-index: 10;
+    border-bottom: 2px solid #dee2e6;
+    padding: 10px 12px;
+    font-weight: 600;
+}
+
+.staging-table td {
+    padding: 8px 12px;
+    vertical-align: middle;
+}
+
+.staging-thumbnail {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 4px;
+    border: 1px solid #dee2e6;
+}
+
+.text-truncate-cell {
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.staging-modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    padding: 16px 24px;
+    border-top: 1px solid #dee2e6;
+    flex-shrink: 0;
+}
+
+.sticky-header {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
 /* Bulk mode checkbox checked state */
 .bulk-mode-checkbox:checked {
     background-color: #198754 !important;
