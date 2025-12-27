@@ -861,11 +861,81 @@
                                 </div>
 
                                 <div class="form-group mb-3">
-                                    <p class="text-start mb-1"><span class="fw-bold">Producer (Brand, Brewery, Winery, Distillery, Bar, etc.) </span><span class="text-danger fw-bold">*</span></p>
-                                    <input type="text" class="form-control"
-                                           v-model="item.producerNew"
-                                           :id="'producer-additional-' + idx"
-                                           placeholder="Enter Producer Name">
+                                    <p class="text-start mb-1"><span class="fw-bold">Producer (Brand, Brewery, Winery, Distillery, Bar, etc.) </span><span class="text-danger fw-bold">*</span> <span class="text-muted" style="font-size: 14px;" v-if="!item.searchByProducerId">(Just begin typing, then select from the drop-down suggestions.)</span><span class="text-muted" style="font-size: 14px;" v-if="item.searchByProducerId">(Enter numeric Producer ID - found on producer profile page or URL.)</span></p>
+                                    
+                                    <!-- Input group with toggle button -->
+                                    <div class="input-group">
+                                        <!-- Producer Name Search Input -->
+                                        <input v-if="!item.searchByProducerId"
+                                               type="text" class="form-control"
+                                               v-model="item.producerNew"
+                                               :id="'producer-additional-' + idx"
+                                               autocomplete="off"
+                                               placeholder="Enter Producer Name"
+                                               @input="handleProducerInput(idx)"
+                                               @blur="hideProducerDropdown(idx)">
+
+                                        <!-- Producer ID Search Input -->
+                                        <input v-if="item.searchByProducerId"
+                                               type="text" class="form-control"
+                                               v-model="item.producerIdSearch"
+                                               :id="'producerId-additional-' + idx"
+                                               autocomplete="off"
+                                               placeholder="Enter Producer ID number"
+                                               @input="handleProducerIdInput(idx)"
+                                               @blur="hideProducerIdDropdown(idx)">
+
+                                        <!-- Toggle Button -->
+                                        <button type="button"
+                                                class="btn btn-outline-secondary"
+                                                @click="toggleProducerSearchMode(idx)">
+                                            {{ item.searchByProducerId ? 'by Producer ID' : 'by Producer Name' }}
+                                        </button>
+                                    </div>
+
+                                    <!-- Validation error for Producer ID -->
+                                    <div v-if="item.searchByProducerId && item.producerIdValidationError"
+                                         class="text-danger mt-1" style="font-size: 14px;">
+                                        {{ item.producerIdValidationError }}
+                                    </div>
+
+                                    <!-- Dropdown list for Producer Name Search -->
+                                    <ul class="list-group"
+                                        v-if="!item.searchByProducerId && producerList && producerList.length > 0 && item.producerNew && item.showProducerDropdown">
+                                        <li v-for="producer in producerList" :key="producer.id"
+                                            class="list-group-item list-group-item-action text-start"
+                                            @click="selectProducerFromAnySearch(producer, idx)">
+                                            {{ producer.producerName }}
+                                            <small class="text-muted" v-if="producer.originCountry || producer.id">
+                                                ({{ producer.originCountry }}{{ producer.originCountry && producer.id ? ' | ' : '' }}{{ producer.id ? 'Producer ID: ' + producer.id : '' }})
+                                            </small>
+                                        </li>
+                                    </ul>
+
+                                    <!-- Dropdown list for Producer ID Search -->
+                                    <ul class="list-group"
+                                        v-if="item.searchByProducerId && producerIdList && producerIdList.length > 0 && item.producerIdSearch && item.showProducerIdDropdown">
+                                        <li v-for="producer in producerIdList" :key="producer.id"
+                                            class="list-group-item list-group-item-action text-start"
+                                            @click="selectProducerFromAnySearch(producer, idx)">
+                                            {{ producer.producerName }}
+                                            <small class="text-muted" v-if="producer.originCountry || producer.id">
+                                                ({{ producer.originCountry }}{{ producer.originCountry && producer.id ? ' | ' : '' }}{{ producer.id ? 'Producer ID: ' + producer.id : '' }})
+                                            </small>
+                                        </li>
+                                    </ul>
+
+                                    <!-- Show selected producer -->
+                                    <div v-if="item.selectedProducer && item.selectedProducer.id"
+                                         class="mt-2 p-2 bg-light border rounded">
+                                        <small class="text-success fw-bold">
+                                            ✓ Producer Selected: {{ item.selectedProducer.producerName }}
+                                            <button type="button" class="btn btn-sm btn-outline-danger ms-2"
+                                                    @click="clearSelectedProducer(idx)">
+                                                Clear
+                                            </button>
+                                        </small>
+                                    </div>
                                 </div>
 
                                 <div class="mb-3">
@@ -1597,6 +1667,11 @@
                     producerNew: prefill ? this.form['producerNew'] : "",
                     producerID: prefill ? this.form['producerID'] : "",
                     producerIdSearch: prefill ? this.form['producerIdSearch'] : "",
+                    selectedProducer: prefill && this.selectedProducer ? { ...this.selectedProducer } : {},
+                    showProducerDropdown: false,
+                    showProducerIdDropdown: false,
+                    searchByProducerId: false,
+                    producerIdValidationError: "",
                     indOperator: prefill ? this.indOperator : false,
                     bottler: prefill ? this.form['bottler'] : "",
                     bottlerID: prefill ? this.form['bottlerID'] : "",
@@ -2415,73 +2490,129 @@
             },
 
             // Toggle between producer search modes
-            toggleProducerSearchMode() {
-                this.searchByProducerId = !this.searchByProducerId;
-                this.producerIdValidationError = "";
-                
-                // Clear dropdowns when switching modes
-                this.showProducerDropdown = false;
-                this.showProducerIdDropdown = false;
+            toggleProducerSearchMode(itemIndex = null) {
+                if (itemIndex !== null) {
+                    const item = this.additionalItems[itemIndex];
+                    if (!item) return;
+                    item.searchByProducerId = !item.searchByProducerId;
+                    item.producerIdValidationError = "";
+                    item.showProducerDropdown = false;
+                    item.showProducerIdDropdown = false;
+                } else {
+                    this.searchByProducerId = !this.searchByProducerId;
+                    this.producerIdValidationError = "";
+                    this.showProducerDropdown = false;
+                    this.showProducerIdDropdown = false;
+                }
+                // Clear shared search lists
                 this.producerList = [];
                 this.producerIdList = [];
             },
 
             // New methods for drawer-style producer selection
-            handleProducerInput() {
-                this.showProducerDropdown = true;
-                this.showProducerIdDropdown = false; // Hide other dropdown
-                this.getProducerID(); // Keep existing logic for ID resolution
+            handleProducerInput(itemIndex = null) {
+                // Close all other dropdowns first
+                this.closeAllProducerDropdowns(itemIndex);
                 
-                // Trigger debounced search if input has at least 2 characters
-                if (this.form['producerNew'] && this.form['producerNew'].length >= 2) {
-                    this.debouncedFetchProducers(this.form['producerNew']);
+                if (itemIndex !== null) {
+                    const item = this.additionalItems[itemIndex];
+                    if (!item) return;
+                    item.showProducerDropdown = true;
+                    item.showProducerIdDropdown = false;
+                    
+                    if (item.producerNew && item.producerNew.length >= 2) {
+                        this.debouncedFetchProducers(item.producerNew);
+                    } else {
+                        this.producerList = [];
+                        item.showProducerDropdown = false;
+                    }
                 } else {
-                    this.producerList = [];
-                    this.showProducerDropdown = false;
+                    this.showProducerDropdown = true;
+                    this.showProducerIdDropdown = false;
+                    this.getProducerID();
+                    
+                    if (this.form['producerNew'] && this.form['producerNew'].length >= 2) {
+                        this.debouncedFetchProducers(this.form['producerNew']);
+                    } else {
+                        this.producerList = [];
+                        this.showProducerDropdown = false;
+                    }
                 }
             },
 
             // New method for producer ID input
-            handleProducerIdInput() {
-                this.showProducerIdDropdown = true;
-                this.showProducerDropdown = false; // Hide other dropdown
-                this.producerIdValidationError = "";
+            handleProducerIdInput(itemIndex = null) {
+                // Close all other dropdowns first
+                this.closeAllProducerDropdowns(itemIndex);
                 
-                // Validate numeric input
-                const input = this.form['producerIdSearch'];
-                if (input && !/^\d+$/.test(input)) {
-                    this.producerIdValidationError = "Producer ID must contain only numeric values.";
-                    this.producerIdList = [];
-                    this.showProducerIdDropdown = false;
-                    return;
-                }
-                
-                // Trigger debounced search if input has at least 1 character and is numeric
-                if (input && input.length >= 1) {
-                    this.debouncedFetchProducerById(input);
+                if (itemIndex !== null) {
+                    const item = this.additionalItems[itemIndex];
+                    if (!item) return;
+                    item.showProducerIdDropdown = true;
+                    item.showProducerDropdown = false;
+                    item.producerIdValidationError = "";
+                    
+                    const input = item.producerIdSearch;
+                    if (input && !/^\d+$/.test(input)) {
+                        item.producerIdValidationError = "Producer ID must contain only numeric values.";
+                        this.producerIdList = [];
+                        item.showProducerIdDropdown = false;
+                        return;
+                    }
+                    
+                    if (input && input.length >= 1) {
+                        this.debouncedFetchProducerById(input);
+                    } else {
+                        this.producerIdList = [];
+                        item.showProducerIdDropdown = false;
+                    }
                 } else {
-                    this.producerIdList = [];
-                    this.showProducerIdDropdown = false;
+                    this.showProducerIdDropdown = true;
+                    this.showProducerDropdown = false;
+                    this.producerIdValidationError = "";
+                    
+                    const input = this.form['producerIdSearch'];
+                    if (input && !/^\d+$/.test(input)) {
+                        this.producerIdValidationError = "Producer ID must contain only numeric values.";
+                        this.producerIdList = [];
+                        this.showProducerIdDropdown = false;
+                        return;
+                    }
+                    
+                    if (input && input.length >= 1) {
+                        this.debouncedFetchProducerById(input);
+                    } else {
+                        this.producerIdList = [];
+                        this.showProducerIdDropdown = false;
+                    }
                 }
             },
 
             // Shared method for selecting producer from either search
-            selectProducerFromAnySearch(producer) {
-                this.selectedProducer = producer;
-                this.form['producerNew'] = producer.producerName;
-                this.form['producerIdSearch'] = producer.id;
-                this.form['producerID'] = producer.id;
+            selectProducerFromAnySearch(producer, itemIndex = null) {
+                if (itemIndex !== null) {
+                    const item = this.additionalItems[itemIndex];
+                    if (!item) return;
+                    item.selectedProducer = producer;
+                    item.producerNew = producer.producerName;
+                    item.producerIdSearch = producer.id;
+                    item.producerID = producer.id;
+                    item.showProducerDropdown = false;
+                    item.showProducerIdDropdown = false;
+                    item.producerIdValidationError = "";
+                } else {
+                    this.selectedProducer = producer;
+                    this.form['producerNew'] = producer.producerName;
+                    this.form['producerIdSearch'] = producer.id;
+                    this.form['producerID'] = producer.id;
+                    this.showProducerDropdown = false;
+                    this.showProducerIdDropdown = false;
+                    this.producerIdValidationError = "";
+                }
                 
-                // Hide both dropdowns
-                this.showProducerDropdown = false;
-                this.showProducerIdDropdown = false;
-                
-                // Clear both search lists
+                // Clear shared search lists
                 this.producerList = [];
                 this.producerIdList = [];
-                
-                // Clear validation error
-                this.producerIdValidationError = "";
             },
 
             // Keep original selectProducer for backward compatibility
@@ -2489,30 +2620,68 @@
                 this.selectProducerFromAnySearch(producer);
             },
 
-            clearSelectedProducer() {
-                this.selectedProducer = {};
-                this.form['producerNew'] = '';
-                this.form['producerIdSearch'] = '';
-                this.form['producerID'] = '';
-                this.showProducerDropdown = false;
-                this.showProducerIdDropdown = false;
+            clearSelectedProducer(itemIndex = null) {
+                if (itemIndex !== null) {
+                    const item = this.additionalItems[itemIndex];
+                    if (!item) return;
+                    item.selectedProducer = {};
+                    item.producerNew = '';
+                    item.producerIdSearch = '';
+                    item.producerID = '';
+                    item.showProducerDropdown = false;
+                    item.showProducerIdDropdown = false;
+                    item.producerIdValidationError = "";
+                } else {
+                    this.selectedProducer = {};
+                    this.form['producerNew'] = '';
+                    this.form['producerIdSearch'] = '';
+                    this.form['producerID'] = '';
+                    this.showProducerDropdown = false;
+                    this.showProducerIdDropdown = false;
+                    this.producerIdValidationError = "";
+                }
                 this.producerList = [];
                 this.producerIdList = [];
-                this.producerIdValidationError = "";
             },
 
-            hideProducerDropdown() {
+            hideProducerDropdown(itemIndex = null) {
                 // Use a timeout to allow click events on dropdown items to fire first
                 setTimeout(() => {
+                    if (itemIndex !== null) {
+                        const item = this.additionalItems[itemIndex];
+                        if (item) item.showProducerDropdown = false;
+                    } else {
+                        this.showProducerDropdown = false;
+                    }
+                }, 150);
+            },
+
+            hideProducerIdDropdown(itemIndex = null) {
+                // Use a timeout to allow click events on dropdown items to fire first
+                setTimeout(() => {
+                    if (itemIndex !== null) {
+                        const item = this.additionalItems[itemIndex];
+                        if (item) item.showProducerIdDropdown = false;
+                    } else {
+                        this.showProducerIdDropdown = false;
+                    }
+                }, 150);
+            },
+
+            // Helper to close all producer dropdowns except the one being opened
+            closeAllProducerDropdowns(exceptItemIndex = null) {
+                // Close main form dropdowns if we're opening an item dropdown
+                if (exceptItemIndex !== null) {
                     this.showProducerDropdown = false;
-                }, 150);
-            },
-
-            hideProducerIdDropdown() {
-                // Use a timeout to allow click events on dropdown items to fire first
-                setTimeout(() => {
                     this.showProducerIdDropdown = false;
-                }, 150);
+                }
+                // Close all item dropdowns except the one being opened
+                this.additionalItems.forEach((item, idx) => {
+                    if (idx !== exceptItemIndex) {
+                        item.showProducerDropdown = false;
+                        item.showProducerIdDropdown = false;
+                    }
+                });
             },
 
             // Debounced function to fetch producer by ID
