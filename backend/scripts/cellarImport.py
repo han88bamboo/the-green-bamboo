@@ -437,15 +437,14 @@ def processAndDetectDuplicates():
         # Clean headers
         df.columns = [str(h).strip().replace('\ufeff', '').replace('\u200b', '') for h in df.columns]
         
-        # Check if unaccent extension is available
+        # Check if required extensions are available
         try:
             with db_manager.get_cursor() as cursor:
                 cursor.execute("CREATE EXTENSION IF NOT EXISTS unaccent")
-                has_unaccent = True
-                print("unaccent extension available")
+                cursor.execute("CREATE EXTENSION IF NOT EXISTS pg_trgm")
+                print("unaccent and pg_trgm extensions available")
         except Exception as e:
-            print(f"Could not enable unaccent extension: {e}")
-            has_unaccent = False
+            print(f"Could not enable extensions: {e}")
         
         results = []
         
@@ -512,10 +511,11 @@ def processAndDetectDuplicates():
 
                 print(f"Searching for: {drink_name} (normalized: {normalized_name})")
 
-                # Build search query with proper normalization
+                # Build search query with trigram similarity for fuzzy matching
                 normalize_listing = get_normalize_sql().format(field='l."listingName"')
                 normalize_producer_sql = get_normalize_sql().format(field='p."producerName"')
 
+                # Use trigram similarity to cast a wider net, then FuzzyWuzzy for precise scoring
                 search_query = f"""
                     SELECT 
                         l."id",
@@ -528,15 +528,17 @@ def processAndDetectDuplicates():
                         l."photo"
                     FROM "listings" l
                     LEFT JOIN "producers" p ON l."producerID" = p."id"
-                    WHERE {normalize_listing} LIKE %s
+                    WHERE similarity({normalize_listing}, %s) > 0.3
+                       OR {normalize_listing} LIKE %s
                 """
 
-                search_params = [f'%{normalized_name}%']
+                search_params = [normalized_name, f'%{normalized_name}%']
 
                 # Add producer filter if available
                 if normalized_producer:
+                    search_query += f" OR similarity({normalize_producer_sql}, %s) > 0.3"
                     search_query += f" OR {normalize_producer_sql} LIKE %s"
-                    search_params.append(f'%{normalized_producer}%')
+                    search_params.extend([normalized_producer, f'%{normalized_producer}%'])
 
                 search_query += " LIMIT 20"
                 
@@ -565,12 +567,13 @@ def processAndDetectDuplicates():
                         match_producer_normalized = normalize_string(match['producerName']) if match['producerName'] else ''
                         
                         # Name similarity (primary factor) - using normalized strings
-                        name_score = fuzz.ratio(normalized_name, match_name_normalized)
+                        # Use token_sort_ratio to handle word order (e.g., "12 glenfiddich" vs "glenfiddich 12")
+                        name_score = fuzz.token_sort_ratio(normalized_name, match_name_normalized)
                         
                         # Producer match bonus
                         producer_bonus = 0
                         if normalized_producer and match_producer_normalized:
-                            producer_score = fuzz.ratio(normalized_producer, match_producer_normalized)
+                            producer_score = fuzz.token_sort_ratio(normalized_producer, match_producer_normalized)
                             if producer_score >= 90:
                                 producer_bonus = 20  # Increased bonus for exact producer match
                             elif producer_score >= 80:
