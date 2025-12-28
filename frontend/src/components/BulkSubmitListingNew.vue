@@ -1229,6 +1229,7 @@
                     <div v-if="formType == 'req'">
                         <button type="button" class="btn btn-secondary mx-1 mb-3" @click="goBack">Return</button>
                         <button type="submit" class="btn primary-square-btn-green mx-1 mb-3" v-if="formMode == 'new'">Submit Listing Request</button>  <!--tzh added -green-->
+                         <button type="button" class="btn btn-outline-primary mx-1 mb-3" v-if="formMode == 'new'" @click="openStagingModal">Stage Listing(s) for Submission</button>
                         <button type="submit" class="btn primary-square-btn-green mx-1 mb-3" v-if="formMode == 'edit'">Submit Edit Request</button> <!--tzh added -green-->
                         <button type="submit" class="btn primary-square-btn-green mx-1 mb-3" v-if="formMode == 'dup'">Submit Duplicate Report</button> <!--tzh added -green-->
                         
