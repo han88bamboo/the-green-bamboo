@@ -12288,12 +12288,13 @@ def detectPotentialDuplicateListings():
                 match_bottler_normalized = normalize_string(match['bottlerName']) if match.get('bottlerName') else ''
                 
                 # PRIMARY: Name similarity (0-100)
-                name_score = fuzz.ratio(normalized_name, match_name_normalized)
+                # Use token_sort_ratio to handle word order (e.g., "12 glenfiddich" vs "glenfiddich 12")
+                name_score = fuzz.token_sort_ratio(normalized_name, match_name_normalized)
                 
                 # BONUS: Producer match (+10 to +20 points)
                 producer_bonus = 0
                 if normalized_producer and match_producer_normalized:
-                    producer_score = fuzz.ratio(normalized_producer, match_producer_normalized)
+                    producer_score = fuzz.token_sort_ratio(normalized_producer, match_producer_normalized)
                     if producer_score >= 90:
                         producer_bonus = 20
                     elif producer_score >= 80:
@@ -12304,7 +12305,7 @@ def detectPotentialDuplicateListings():
                 # BONUS: Bottler match (+10 to +20 points) - only if bottler was provided
                 bottler_bonus = 0
                 if normalized_bottler and match_bottler_normalized:
-                    bottler_score = fuzz.ratio(normalized_bottler, match_bottler_normalized)
+                    bottler_score = fuzz.token_sort_ratio(normalized_bottler, match_bottler_normalized)
                     if bottler_score >= 90:
                         bottler_bonus = 20
                     elif bottler_score >= 80:
