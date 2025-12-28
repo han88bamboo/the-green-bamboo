@@ -388,7 +388,9 @@
                                        autocomplete="off" 
                                        placeholder="Enter Producer Name" 
                                        @input="handleProducerInput(null)"
-                                       @blur="hideProducerDropdown(null)">
+                                       @blur="hideProducerDropdown(null)"
+                                       :disabled="duplicateDetection.isConfirmed"
+                                       :class="{ 'duplicate-confirmed-field': duplicateDetection.isConfirmed }">
 
                                 <!-- Producer ID Search Input -->
                                 <input v-if="searchByProducerId"
@@ -397,12 +399,15 @@
                                        autocomplete="off" 
                                        placeholder="Enter Producer ID number" 
                                        @input="handleProducerIdInput(null)"
-                                       @blur="hideProducerIdDropdown(null)">
+                                       @blur="hideProducerIdDropdown(null)"
+                                       :disabled="duplicateDetection.isConfirmed"
+                                       :class="{ 'duplicate-confirmed-field': duplicateDetection.isConfirmed }">
 
                                 <!-- Toggle Button -->
                                 <button type="button" 
                                         class="btn btn-outline-secondary" 
-                                        @click="toggleProducerSearchMode()">
+                                        @click="toggleProducerSearchMode()"
+                                        :disabled="duplicateDetection.isConfirmed">
                                     {{ searchByProducerId ? 'by Producer ID' : 'by Producer Name' }}
                                 </button>
                             </div>                            <!-- Validation error for Producer ID -->
@@ -443,7 +448,8 @@
                                 <small class="text-success fw-bold">
                                     ✓ Producer Selected: {{ selectedProducer.producerName }}
                                     <button type="button" class="btn btn-sm btn-outline-danger ms-2"
-                                            @click="clearSelectedProducer()">
+                                            @click="clearSelectedProducer()"
+                                            v-if="!duplicateDetection.isConfirmed">
                                         Clear
                                     </button>
                                 </small>
@@ -482,7 +488,9 @@
                             <!-- Toggleable Switch -->
                             <div class="text-start mb-3">
                                 <div class="form-check form-switch form-check-inline">
-                                    <input class="form-check-input" type="checkbox" role="switch" id="IBCheck" name="IBCheck" v-model="indOperator">
+                                    <input class="form-check-input" type="checkbox" role="switch" id="IBCheck" name="IBCheck" v-model="indOperator"
+                                           :disabled="duplicateDetection.isConfirmed"
+                                           @change="triggerDuplicateCheck">
                                     <label class="form-check-label" for="IBCheck" v-if="indOperator">Yes</label>
                                     <label class="form-check-label" for="IBCheck" v-if="!indOperator">No</label>
                                 </div>
@@ -494,15 +502,16 @@
                             
                             <input type="text" class="form-control" 
                                    v-model="form['bottler']" 
-                                   :disabled="!indOperator" 
+                                   :disabled="!indOperator || duplicateDetection.isConfirmed" 
                                    autocomplete="off" 
                                    placeholder="Enter Bottler Name" 
                                    @input="handleBottlerInput"
-                                   @blur="hideBottlerDropdown">
+                                   @blur="hideBottlerDropdown"
+                                   :class="{ 'duplicate-confirmed-field': duplicateDetection.isConfirmed }">
 
                             <!-- Dropdown list with drawer styling -->
                             <ul class="list-group"
-                                v-if="bottlersList && bottlersList.length > 0 && form['bottler'] && showBottlerDropdown && indOperator">
+                                v-if="bottlersList && bottlersList.length > 0 && form['bottler'] && showBottlerDropdown && indOperator && !duplicateDetection.isConfirmed">
                                 <li v-for="bottler in bottlersList" :key="bottler.id"
                                     class="list-group-item list-group-item-action text-start"
                                     @click="selectBottler(bottler)">
@@ -519,7 +528,8 @@
                                 <small class="text-success fw-bold">
                                     ✓ Bottler Selected: {{ selectedBottler.producerName }}
                                     <button type="button" class="btn btn-sm btn-outline-danger ms-2"
-                                            @click="clearSelectedBottler()">
+                                            @click="clearSelectedBottler()"
+                                            v-if="!duplicateDetection.isConfirmed">
                                         Clear
                                     </button>
                                 </small>
@@ -532,7 +542,10 @@
                                 <p class="text-start mb-1 fw-bold">Country of Origin <span class="text-danger" v-if="formType == 'power'">*</span></p>
                                 <!-- Simple select dropdown -->
                                 <div class="input-group">
-                                    <select class="form-select" v-model="form['originCountry']">
+                                    <select class="form-select" v-model="form['originCountry']"
+                                            :disabled="duplicateDetection.isConfirmed"
+                                            :class="{ 'duplicate-confirmed-field': duplicateDetection.isConfirmed }"
+                                            @change="triggerDuplicateCheck">
                                         <option value="">Select country of origin</option>
                                         <option v-for="country in countries" :key="country" :value="country">
                                             {{ country }}
@@ -609,7 +622,10 @@
                         <!-- Input: Bottle Name -->
                         <div class="form-group mb-3">
                             <p class="text-start mb-1 "><span class="fw-bold">Drink Name / Name of Bottle, Cocktail or Item </span><span class="text-danger fw-bold">*</span> <span class="text-muted" style="font-size: 14px;">(Include any identification numbers eg. cask, batch, serial, barrel, edition numbers; do NOT include vintage year for wines.)</span></p>
-                            <input type="text" v-model="form['listingName']" class="form-control" id="bottleName" placeholder="Enter Drink/Bottle Name">
+                            <input type="text" v-model="form['listingName']" class="form-control" id="bottleName" placeholder="Enter Drink/Bottle Name"
+                                   :disabled="duplicateDetection.isConfirmed"
+                                   :class="{ 'duplicate-confirmed-field': duplicateDetection.isConfirmed }"
+                                   @input="triggerDuplicateCheck">
                         </div>
 
                         <!-- Input: drinkType (eg. Whiskey) + typeCategory (eg. Single Malt) -->
@@ -617,7 +633,9 @@
                             <div class="col-md-4 mb-3 fw-bold">
                                 <p class="text-start mb-1">Drink Type <span class="text-danger">*</span></p>
                                 <div class="input-group">
-                                    <select class="form-select" id="drinkTypeSelect" v-model="tempDrinkType" @change="getDrinkCategoryList">
+                                    <select class="form-select" id="drinkTypeSelect" v-model="tempDrinkType" @change="getDrinkCategoryList(); triggerDuplicateCheck()"
+                                            :disabled="duplicateDetection.isConfirmed"
+                                            :class="{ 'duplicate-confirmed-field': duplicateDetection.isConfirmed }">
                                         <option v-for="taste in drinkCategoriesList" :key="taste" :value="taste">
                                         {{ taste }}
                                         </option>
@@ -630,7 +648,9 @@
 
                                 <!-- For drink types that have serveral categories to choose from -->
                                 <div class="input-group" v-if="tempTypeCategoryList.length > 1">
-                                    <select class="form-select" id="inputGroupSelect01" v-model="tempTypeCategory" @change="getDrinkStyleList">
+                                    <select class="form-select" id="inputGroupSelect01" v-model="tempTypeCategory" @change="getDrinkStyleList"
+                                            :disabled="duplicateDetection.isConfirmed"
+                                            :class="{ 'duplicate-confirmed-field': duplicateDetection.isConfirmed }">
                                         <option v-for="cat in tempTypeCategoryList.sort()" :key="cat" :value="cat" >
                                             {{ cat }}
                                         </option>
@@ -650,7 +670,9 @@
 
                                 <!-- For drink categories that have serveral styles to choose from -->
                                 <div class="input-group" v-if="tempDrinkStylesList.length > 1">
-                                    <select class="form-select" id="inputGroupSelect02" v-model="tempDrinkStyle">
+                                    <select class="form-select" id="inputGroupSelect02" v-model="tempDrinkStyle"
+                                            :disabled="duplicateDetection.isConfirmed"
+                                            :class="{ 'duplicate-confirmed-field': duplicateDetection.isConfirmed }">
                                         <option v-for="style in tempDrinkStylesList.sort()" :key="style" :value="style" >
                                             {{ style }}
                                         </option>
@@ -666,7 +688,106 @@
 
                             </div>
                         </div>
-                        XYZ
+
+                        <!-- Duplicate Detection Section (Item 1) -->
+                        <div v-if="duplicateDetection.matches.length > 0 || duplicateDetection.isLoading || duplicateDetection.isConfirmed" 
+                             class="duplicate-detection-card mb-3"
+                             :class="{ 'confirmed': duplicateDetection.isConfirmed }">
+                            
+                            <!-- Card Header (clickable to collapse/expand) -->
+                            <div class="duplicate-detection-header" @click="toggleDuplicateCollapse">
+                                <div class="d-flex align-items-center flex-grow-1">
+                                    <span class="duplicate-icon me-2">🔍</span>
+                                    <span class="fw-bold" v-if="!duplicateDetection.isConfirmed">
+                                        Wait, Do You Mean:
+                                    </span>
+                                    <span class="fw-bold" v-else>
+                                        ✓ Matched to existing listing
+                                    </span>
+                                    <span v-if="!duplicateDetection.isConfirmed" class="ms-auto me-2">
+                                        ({{ duplicateDetection.matches.length }} potential match{{ duplicateDetection.matches.length !== 1 ? 'es' : '' }})
+                                    </span>
+                                </div>
+                                <div class="d-flex align-items-center">
+                                    <span v-if="duplicateDetection.isLoading" class="spinner-border spinner-border-sm me-2" role="status">
+                                        <span class="visually-hidden">Searching...</span>
+                                    </span>
+                                    <svg v-if="!duplicateDetection.isCollapsed" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-chevron-up" viewBox="0 0 16 16">
+                                        <path fill-rule="evenodd" d="M7.646 4.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1-.708.708L8 5.707l-5.646 5.647a.5.5 0 0 1-.708-.708l6-6z"/>
+                                    </svg>
+                                    <svg v-else xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-chevron-down" viewBox="0 0 16 16">
+                                        <path fill-rule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z"/>
+                                    </svg>
+                                </div>
+                            </div>
+
+                            <!-- Card Body (collapsible) -->
+                            <div v-show="!duplicateDetection.isCollapsed" class="duplicate-detection-body">
+                                
+                                <!-- Confirmed duplicate display -->
+                                <div v-if="duplicateDetection.isConfirmed && duplicateDetection.confirmedDuplicate" class="confirmed-duplicate-info">
+                                    <div class="d-flex align-items-center mb-2">
+                                        <img v-if="duplicateDetection.confirmedDuplicate.photo" 
+                                             :src="duplicateDetection.confirmedDuplicate.photo" 
+                                             class="duplicate-thumbnail me-3" 
+                                             :alt="duplicateDetection.confirmedDuplicate.listingName">
+                                        <div class="flex-grow-1">
+                                            <div class="fw-bold">{{ duplicateDetection.confirmedDuplicate.listingName }}</div>
+                                            <div class="text-muted small">
+                                                {{ duplicateDetection.confirmedDuplicate.producerName }}
+                                                <span v-if="duplicateDetection.confirmedDuplicate.originCountry"> · {{ duplicateDetection.confirmedDuplicate.originCountry }}</span>
+                                            </div>
+                                        </div>
+                                        <div class="d-flex flex-column align-items-end gap-1">
+                                            <button type="button" class="btn btn-sm btn-outline-secondary" 
+                                                    @click.stop="openListingInNewTab(duplicateDetection.confirmedDuplicate.id, duplicateDetection.confirmedDuplicate.listingName)">
+                                                View Listing ↗
+                                            </button>
+                                            <button type="button" class="btn btn-sm btn-outline-warning" @click.stop="undoDuplicateConfirmation">
+                                                Undo Selection
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="alert alert-success mb-0 py-2 small">
+                                        <strong>Note:</strong> This item is linked to an existing listing. Fields have been pre-filled and locked.
+                                    </div>
+                                </div>
+
+                                <!-- Match suggestions list -->
+                                <div v-else class="duplicate-matches-list">
+                                    <div v-for="match in duplicateDetection.matches" :key="match.id" class="duplicate-match-item">
+                                        <div class="d-flex align-items-center">
+                                            <img v-if="match.photo" :src="match.photo" class="duplicate-thumbnail me-3" :alt="match.listingName">
+                                            <div v-else class="duplicate-thumbnail-placeholder me-3">📷</div>
+                                            <div class="flex-grow-1">
+                                                <div class="fw-bold">{{ match.listingName }}</div>
+                                                <div class="text-muted small">
+                                                    {{ match.producerName }}
+                                                    <span v-if="match.bottlerName"> · Bottled by {{ match.bottlerName }}</span>
+                                                </div>
+                                                <div class="text-muted small">
+                                                    <span v-if="match.drinkType">{{ match.drinkType }}</span>
+                                                    <span v-if="match.originCountry"> · {{ match.originCountry }}</span>
+                                                    <span v-if="match.abv"> · {{ match.abv }}%</span>
+                                                    <span v-if="match.age"> · {{ match.age }} yrs</span>
+                                                </div>
+                                            </div>
+                                            <div class="d-flex flex-column align-items-end gap-1">
+                                                <!-- <span class="badge bg-secondary">{{ match.similarity }}% match</span> -->
+                                                <button type="button" class="btn btn-sm btn-outline-primary" 
+                                                        @click.stop="openListingInNewTab(match.id, match.listingName)">
+                                                    View ↗
+                                                </button>
+                                                <button type="button" class="btn btn-sm btn-success" @click.stop="confirmDuplicate(match)">
+                                                    Yes, this is it
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                         <!-- Input: Variety Tags -->
                         <div class="form-group mb-3">
                             <p class="text-start mb-1 fw-bold">Variety Tags</p>
@@ -943,7 +1064,8 @@
                                     <div class="form-check form-switch form-check-inline">
                                         <input class="form-check-input" type="checkbox" role="switch"
                                                :id="'IBCheck-additional-' + idx"
-                                               v-model="item.indOperator">
+                                               v-model="item.indOperator"
+                                               @change="triggerDuplicateCheckForItem(idx)">
                                         <label class="form-check-label" :for="'IBCheck-additional-' + idx" v-if="item.indOperator">Yes</label>
                                         <label class="form-check-label" :for="'IBCheck-additional-' + idx" v-else>No</label>
                                     </div>
@@ -989,7 +1111,10 @@
                                 <div class="form-group mb-3">
                                     <p class="text-start mb-1 fw-bold">Country of Origin <span class="text-danger" v-if="formType == 'power'">*</span></p>
                                     <div class="input-group">
-                                        <select class="form-select" v-model="item.originCountry" :id="'originCountry-additional-' + idx">
+                                        <select class="form-select" v-model="item.originCountry" :id="'originCountry-additional-' + idx"
+                                                :disabled="item.duplicateDetection && item.duplicateDetection.isConfirmed"
+                                                :class="{ 'duplicate-confirmed-field': item.duplicateDetection && item.duplicateDetection.isConfirmed }"
+                                                @change="triggerDuplicateCheckForItem(idx)">
                                             <option value="">Select country of origin</option>
                                             <option v-for="country in countries" :key="country" :value="country">
                                                 {{ country }}
@@ -1000,7 +1125,10 @@
 
                                 <div class="form-group mb-3">
                                     <p class="text-start mb-1 "><span class="fw-bold">Drink Name / Name of Bottle, Cocktail or Item </span><span class="text-danger fw-bold">*</span></p>
-                                    <input type="text" v-model="item.listingName" class="form-control" :id="'bottleName-additional-' + idx" placeholder="Enter Drink/Bottle Name">
+                                    <input type="text" v-model="item.listingName" class="form-control" :id="'bottleName-additional-' + idx" placeholder="Enter Drink/Bottle Name"
+                                           :disabled="item.duplicateDetection && item.duplicateDetection.isConfirmed"
+                                           :class="{ 'duplicate-confirmed-field': item.duplicateDetection && item.duplicateDetection.isConfirmed }"
+                                           @input="triggerDuplicateCheckForItem(idx)">
                                 </div>
 
                                 <div class="row">
@@ -1010,7 +1138,9 @@
                                             <select class="form-select"
                                                     :id="'drinkType-additional-' + idx"
                                                     v-model="item.tempDrinkType"
-                                                    @change="getDrinkCategoryListForItem(idx)">
+                                                    @change="getDrinkCategoryListForItem(idx); triggerDuplicateCheckForItem(idx)"
+                                                    :disabled="item.duplicateDetection && item.duplicateDetection.isConfirmed"
+                                                    :class="{ 'duplicate-confirmed-field': item.duplicateDetection && item.duplicateDetection.isConfirmed }">
                                                 <option v-for="taste in drinkCategoriesList" :key="taste" :value="taste">
                                                     {{ taste }}
                                                 </option>
@@ -1024,7 +1154,9 @@
                                             <select class="form-select"
                                                     :id="'drinkCategory-additional-' + idx"
                                                     v-model="item.tempTypeCategory"
-                                                    @change="getDrinkStyleListForItem(idx)">
+                                                    @change="getDrinkStyleListForItem(idx)"
+                                                    :disabled="item.duplicateDetection && item.duplicateDetection.isConfirmed"
+                                                    :class="{ 'duplicate-confirmed-field': item.duplicateDetection && item.duplicateDetection.isConfirmed }">
                                                 <option v-for="cat in item.tempTypeCategoryList.sort()" :key="cat" :value="cat">
                                                     {{ cat }}
                                                 </option>
@@ -1042,7 +1174,9 @@
                                         <div class="input-group" v-if="item.tempDrinkStylesList && item.tempDrinkStylesList.length > 1">
                                             <select class="form-select"
                                                     :id="'drinkStyle-additional-' + idx"
-                                                    v-model="item.tempDrinkStyle">
+                                                    v-model="item.tempDrinkStyle"
+                                                    :disabled="item.duplicateDetection && item.duplicateDetection.isConfirmed"
+                                                    :class="{ 'duplicate-confirmed-field': item.duplicateDetection && item.duplicateDetection.isConfirmed }">
                                                 <option v-for="style in item.tempDrinkStylesList.sort()" :key="style" :value="style">
                                                     {{ style }}
                                                 </option>
@@ -1052,6 +1186,105 @@
                                             <select class="form-select" disabled>
                                                 <option selected>-</option>
                                             </select>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Duplicate Detection Section (Additional Item) -->
+                                <div v-if="item.duplicateDetection && (item.duplicateDetection.matches.length > 0 || item.duplicateDetection.isLoading || item.duplicateDetection.isConfirmed)" 
+                                     class="duplicate-detection-card mb-3"
+                                     :class="{ 'confirmed': item.duplicateDetection.isConfirmed }">
+                                    
+                                    <!-- Card Header (clickable to collapse/expand) -->
+                                    <div class="duplicate-detection-header" @click="toggleDuplicateCollapseForItem(idx)">
+                                        <div class="d-flex align-items-center flex-grow-1">
+                                            <span class="duplicate-icon me-2">🔍</span>
+                                            <span class="fw-bold" v-if="!item.duplicateDetection.isConfirmed">
+                                                Wait, Do You Mean these:
+                                            </span>
+                                            <span class="fw-bold text-success" v-else>
+                                                ✓ Matched to existing listing
+                                            </span>
+                                            <span v-if="!item.duplicateDetection.isConfirmed" class="text-muted ms-auto me-2">
+                                                ({{ item.duplicateDetection.matches.length }} potential match{{ item.duplicateDetection.matches.length !== 1 ? 'es' : '' }})
+                                            </span>
+                                        </div>
+                                        <div class="d-flex align-items-center">
+                                            <span v-if="item.duplicateDetection.isLoading" class="spinner-border spinner-border-sm me-2" role="status">
+                                                <span class="visually-hidden">Searching...</span>
+                                            </span>
+                                            <svg v-if="!item.duplicateDetection.isCollapsed" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-chevron-up" viewBox="0 0 16 16">
+                                                <path fill-rule="evenodd" d="M7.646 4.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1-.708.708L8 5.707l-5.646 5.647a.5.5 0 0 1-.708-.708l6-6z"/>
+                                            </svg>
+                                            <svg v-else xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-chevron-down" viewBox="0 0 16 16">
+                                                <path fill-rule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z"/>
+                                            </svg>
+                                        </div>
+                                    </div>
+
+                                    <!-- Card Body (collapsible) -->
+                                    <div v-show="!item.duplicateDetection.isCollapsed" class="duplicate-detection-body">
+                                        
+                                        <!-- Confirmed duplicate display -->
+                                        <div v-if="item.duplicateDetection.isConfirmed && item.duplicateDetection.confirmedDuplicate" class="confirmed-duplicate-info">
+                                            <div class="d-flex align-items-center mb-2">
+                                                <img v-if="item.duplicateDetection.confirmedDuplicate.photo" 
+                                                     :src="item.duplicateDetection.confirmedDuplicate.photo" 
+                                                     class="duplicate-thumbnail me-3" 
+                                                     :alt="item.duplicateDetection.confirmedDuplicate.listingName">
+                                                <div class="flex-grow-1">
+                                                    <div class="fw-bold">{{ item.duplicateDetection.confirmedDuplicate.listingName }}</div>
+                                                    <div class="text-muted small">
+                                                        {{ item.duplicateDetection.confirmedDuplicate.producerName }}
+                                                        <span v-if="item.duplicateDetection.confirmedDuplicate.originCountry"> · {{ item.duplicateDetection.confirmedDuplicate.originCountry }}</span>
+                                                    </div>
+                                                </div>
+                                                <div class="d-flex flex-column align-items-end gap-1">
+                                                    <button type="button" class="btn btn-sm btn-outline-secondary" 
+                                                            @click.stop="openListingInNewTab(item.duplicateDetection.confirmedDuplicate.id, item.duplicateDetection.confirmedDuplicate.listingName)">
+                                                        View Listing ↗
+                                                    </button>
+                                                    <button type="button" class="btn btn-sm btn-outline-warning" @click.stop="undoDuplicateConfirmationForItem(idx)">
+                                                        Undo Selection
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            <div class="alert alert-success mb-0 py-2 small">
+                                                <strong>Note:</strong> This item is linked to an existing listing. Fields have been pre-filled and locked.
+                                            </div>
+                                        </div>
+
+                                        <!-- Match suggestions list -->
+                                        <div v-else class="duplicate-matches-list">
+                                            <div v-for="match in item.duplicateDetection.matches" :key="match.id" class="duplicate-match-item">
+                                                <div class="d-flex align-items-center">
+                                                    <img v-if="match.photo" :src="match.photo" class="duplicate-thumbnail me-3" :alt="match.listingName">
+                                                    <div v-else class="duplicate-thumbnail-placeholder me-3">📷</div>
+                                                    <div class="flex-grow-1">
+                                                        <div class="fw-bold">{{ match.listingName }}</div>
+                                                        <div class="text-muted small">
+                                                            {{ match.producerName }}
+                                                            <span v-if="match.bottlerName"> · Bottled by {{ match.bottlerName }}</span>
+                                                        </div>
+                                                        <div class="text-muted small">
+                                                            <span v-if="match.drinkType">{{ match.drinkType }}</span>
+                                                            <span v-if="match.originCountry"> · {{ match.originCountry }}</span>
+                                                            <span v-if="match.abv"> · {{ match.abv }}%</span>
+                                                            <span v-if="match.age"> · {{ match.age }} yrs</span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="d-flex flex-column align-items-end gap-1">
+                                                        <span class="badge bg-secondary">{{ match.similarity }}% match</span>
+                                                        <button type="button" class="btn btn-sm btn-outline-primary" 
+                                                                @click.stop="openListingInNewTab(match.id, match.listingName)">
+                                                            View ↗
+                                                        </button>
+                                                        <button type="button" class="btn btn-sm btn-success" @click.stop="confirmDuplicateForItem(idx, match)">
+                                                            Yes, this is it
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -1610,6 +1843,16 @@
                 // Drag and drop state
                 isDragging: false,
 
+                // Duplicate detection state for main form (Item 1)
+                duplicateDetection: {
+                    isLoading: false,
+                    isCollapsed: false,
+                    matches: [],
+                    confirmedDuplicate: null,  // The listing object if user confirmed a duplicate
+                    isConfirmed: false,        // Whether user has confirmed this is a duplicate
+                },
+                duplicateDebounceTimer: null,
+
                 // Bulk submission results tracking
                 bulkSubmissionResults: [],        // Array of results from API
                 bulkSubmissionSummary: null,      // { totalSubmitted, successCount, failCount, autoApprovalEnabled, pointsAwarded, badgeAwarded }
@@ -1738,6 +1981,11 @@
                     this.debouncedFetchProducers(newVal);
                 }
             },
+
+            // ============ DUPLICATE DETECTION ============
+            // Both Item 1 and Additional Items use explicit @input/@change handlers in template
+            // on the 5 trigger fields: listingName, tempDrinkType, originCountry, producer, bottler
+            // Producer/Bottler selection triggers are in selectProducer() and selectBottler() methods
         },
         methods:{
 
@@ -1825,6 +2073,15 @@
                     officialDesc: "",
                     sourceLink: "",
                     reviewLink: "",
+                    // Duplicate detection state for this additional item
+                    duplicateDetection: {
+                        isLoading: false,
+                        isCollapsed: false,
+                        matches: [],
+                        confirmedDuplicate: null,
+                        isConfirmed: false,
+                    },
+                    duplicateDebounceTimer: null,
                 };
             },
 
@@ -3188,6 +3445,8 @@
                     item.showProducerDropdown = false;
                     item.showProducerIdDropdown = false;
                     item.producerIdValidationError = "";
+                    // Trigger duplicate check when producer is selected
+                    this.triggerDuplicateCheckForItem(itemIndex);
                 } else {
                     this.selectedProducer = producer;
                     this.form['producerNew'] = producer.producerName;
@@ -3196,6 +3455,8 @@
                     this.showProducerDropdown = false;
                     this.showProducerIdDropdown = false;
                     this.producerIdValidationError = "";
+                    // Trigger duplicate check when producer is selected
+                    this.triggerDuplicateCheck();
                 }
                 
                 // Clear shared search lists
@@ -3320,6 +3581,8 @@
                 this.form['bottlerID'] = bottler.id;
                 this.showBottlerDropdown = false;
                 this.bottlersList = [];
+                // Trigger duplicate detection when bottler is selected
+                this.triggerDuplicateCheck();
             },
 
             clearSelectedBottler() {
@@ -3366,6 +3629,8 @@
                 item.bottlerID = bottler.id;
                 item.showBottlerDropdown = false;
                 this.bottlersList = [];
+                // Trigger duplicate check when bottler is selected
+                this.triggerDuplicateCheckForItem(idx);
             },
 
             clearSelectedBottlerForItem(idx) {
@@ -3972,6 +4237,375 @@
                     fileInput.value = '';
                 }
             },
+
+            // ============ DUPLICATE DETECTION METHODS ============
+
+            /**
+             * Check if all required fields are filled for duplicate detection (main form - Item 1)
+             * Required: Producer confirmed, Drink Name (3+ chars), Drink Type, Country
+             * If indOperator is true, also need Bottler confirmed
+             */
+            canTriggerDuplicateCheck() {
+                // Producer must be confirmed (has ID from selection)
+                if (!this.selectedProducer || !this.selectedProducer.id) return false;
+                
+                // Drink name must be at least 3 characters
+                if (!this.form['listingName'] || this.form['listingName'].trim().length < 3) return false;
+                
+                // Drink type must be selected
+                if (!this.tempDrinkType) return false;
+                
+                // Country must be selected
+                if (!this.form['originCountry']) return false;
+                
+                // If independent bottler is checked, bottler must be confirmed
+                if (this.indOperator && (!this.selectedBottler || !this.selectedBottler.id)) return false;
+                
+                return true;
+            },
+
+            /**
+             * Check if all required fields are filled for duplicate detection (additional item)
+             */
+            canTriggerDuplicateCheckForItem(idx) {
+                const item = this.additionalItems[idx];
+                if (!item) return false;
+                
+                // Producer must be confirmed
+                if (!item.selectedProducer || !item.selectedProducer.id) return false;
+                
+                // Drink name must be at least 3 characters
+                if (!item.listingName || item.listingName.trim().length < 3) return false;
+                
+                // Drink type must be selected
+                if (!item.tempDrinkType) return false;
+                
+                // Country must be selected
+                if (!item.originCountry) return false;
+                
+                // If independent bottler is checked, bottler must be confirmed
+                if (item.indOperator && (!item.selectedBottler || !item.selectedBottler.id)) return false;
+                
+                return true;
+            },
+
+            /**
+             * Trigger duplicate detection for main form (Item 1) with debounce
+             */
+            triggerDuplicateCheck() {
+                // Don't trigger if already confirmed a duplicate
+                if (this.duplicateDetection.isConfirmed) return;
+                
+                // Clear previous timer
+                if (this.duplicateDebounceTimer) {
+                    clearTimeout(this.duplicateDebounceTimer);
+                }
+                
+                // Check if all required fields are filled
+                if (!this.canTriggerDuplicateCheck()) {
+                    // Clear matches if requirements not met
+                    this.duplicateDetection.matches = [];
+                    return;
+                }
+                
+                // Set debounce timer (2 seconds)
+                this.duplicateDebounceTimer = setTimeout(() => {
+                    this.fetchDuplicateSuggestions();
+                }, 2000);
+            },
+
+            /**
+             * Trigger duplicate detection for additional item with debounce
+             */
+            triggerDuplicateCheckForItem(idx) {
+                const item = this.additionalItems[idx];
+                if (!item) return;
+                
+                // Don't trigger if already confirmed a duplicate
+                if (item.duplicateDetection.isConfirmed) return;
+                
+                // Clear previous timer
+                if (item.duplicateDebounceTimer) {
+                    clearTimeout(item.duplicateDebounceTimer);
+                }
+                
+                // Check if all required fields are filled
+                if (!this.canTriggerDuplicateCheckForItem(idx)) {
+                    item.duplicateDetection.matches = [];
+                    return;
+                }
+                
+                // Set debounce timer (2 seconds)
+                item.duplicateDebounceTimer = setTimeout(() => {
+                    this.fetchDuplicateSuggestionsForItem(idx);
+                }, 2000);
+            },
+
+            /**
+             * Fetch duplicate suggestions from backend for main form (Item 1)
+             */
+            async fetchDuplicateSuggestions() {
+                this.duplicateDetection.isLoading = true;
+                
+                try {
+                    // Build query params matching backend expectations
+                    const params = new URLSearchParams({
+                        listingName: this.form['listingName'].trim(),
+                        producerId: this.selectedProducer.id.toString(),
+                        producerName: this.selectedProducer.producerName || this.form['producerNew'],
+                        drinkType: this.tempDrinkType,
+                        originCountry: this.form['originCountry'],
+                    });
+                    
+                    // Add optional bottler params if applicable
+                    if (this.indOperator && this.selectedBottler && this.selectedBottler.id) {
+                        params.append('bottlerId', this.selectedBottler.id.toString());
+                        params.append('bottlerName', this.selectedBottler.producerName || this.form['bottler']);
+                    }
+                    
+                    const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/detectPotentialDuplicateListings?${params.toString()}`);
+                    
+                    if (response.data && response.data.data && response.data.data.matches) {
+                        this.duplicateDetection.matches = response.data.data.matches;
+                        // Auto-expand if matches found
+                        if (response.data.data.matches.length > 0) {
+                            this.duplicateDetection.isCollapsed = false;
+                        }
+                    } else {
+                        this.duplicateDetection.matches = [];
+                    }
+                } catch (error) {
+                    console.error('Error fetching duplicate suggestions:', error);
+                    this.duplicateDetection.matches = [];
+                } finally {
+                    this.duplicateDetection.isLoading = false;
+                }
+            },
+
+            /**
+             * Fetch duplicate suggestions from backend for additional item
+             */
+            async fetchDuplicateSuggestionsForItem(idx) {
+                const item = this.additionalItems[idx];
+                if (!item) return;
+                
+                item.duplicateDetection.isLoading = true;
+                
+                try {
+                    // Build query params matching backend expectations
+                    const params = new URLSearchParams({
+                        listingName: item.listingName.trim(),
+                        producerId: item.selectedProducer.id.toString(),
+                        producerName: item.selectedProducer.producerName || item.producerNew,
+                        drinkType: item.tempDrinkType,
+                        originCountry: item.originCountry,
+                    });
+                    
+                    // Add optional bottler params if applicable
+                    if (item.indOperator && item.selectedBottler && item.selectedBottler.id) {
+                        params.append('bottlerId', item.selectedBottler.id.toString());
+                        params.append('bottlerName', item.selectedBottler.producerName || item.bottler);
+                    }
+                    
+                    const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/detectPotentialDuplicateListings?${params.toString()}`);
+                    
+                    if (response.data && response.data.data && response.data.data.matches) {
+                        item.duplicateDetection.matches = response.data.data.matches;
+                        // Auto-expand if matches found
+                        if (response.data.data.matches.length > 0) {
+                            item.duplicateDetection.isCollapsed = false;
+                        }
+                    } else {
+                        item.duplicateDetection.matches = [];
+                    }
+                } catch (error) {
+                    console.error('Error fetching duplicate suggestions for item:', error);
+                    item.duplicateDetection.matches = [];
+                } finally {
+                    item.duplicateDetection.isLoading = false;
+                }
+            },
+
+            /**
+             * Confirm a duplicate match for main form (Item 1)
+             * Pre-fills all form fields and locks them
+             */
+            confirmDuplicate(match) {
+                // Store the confirmed duplicate
+                this.duplicateDetection.confirmedDuplicate = match;
+                this.duplicateDetection.isConfirmed = true;
+                
+                // Pre-fill all form fields from the matched listing
+                this.form['listingName'] = match.listingName || '';
+                this.tempDrinkType = match.drinkType || '';
+                this.getDrinkCategoryList();
+                this.tempTypeCategory = match.typeCategory || '-';
+                this.getDrinkStyleList();
+                this.form['originCountry'] = match.originCountry || '';
+                this.selectedCountry = match.originCountry || '';
+                this.countryInputValue = match.originCountry || '';
+                
+                // Handle ABV (remove % sign if present)
+                if (match.abv !== null && match.abv !== undefined) {
+                    this.form['abv'] = match.abv;
+                }
+                
+                // Handle age
+                if (match.age !== null && match.age !== undefined) {
+                    this.form['age'] = match.age;
+                }
+                
+                // Handle photo
+                if (match.photo) {
+                    this.form['photo'] = match.photo;
+                }
+                
+                // Handle producer
+                if (match.producerId && match.producerName) {
+                    this.form['producerID'] = match.producerId;
+                    this.form['producerNew'] = match.producerName;
+                    this.selectedProducer = {
+                        id: match.producerId,
+                        producerName: match.producerName
+                    };
+                }
+                
+                // Handle bottler
+                if (match.bottlerId && match.bottlerName) {
+                    this.indOperator = true;
+                    this.form['bottlerID'] = match.bottlerId;
+                    this.form['bottler'] = match.bottlerName;
+                    this.selectedBottler = {
+                        id: match.bottlerId,
+                        producerName: match.bottlerName
+                    };
+                } else {
+                    this.indOperator = false;
+                    this.form['bottlerID'] = '';
+                    this.form['bottler'] = '';
+                    this.selectedBottler = {};
+                }
+                
+                // Store the listing ID for reference
+                this.form['listingID'] = match.id;
+            },
+
+            /**
+             * Confirm a duplicate match for additional item
+             * Pre-fills all item fields and locks them
+             */
+            confirmDuplicateForItem(idx, match) {
+                const item = this.additionalItems[idx];
+                if (!item) return;
+                
+                // Store the confirmed duplicate
+                item.duplicateDetection.confirmedDuplicate = match;
+                item.duplicateDetection.isConfirmed = true;
+                
+                // Pre-fill all item fields from the matched listing
+                item.listingName = match.listingName || '';
+                item.tempDrinkType = match.drinkType || '';
+                item.tempTypeCategoryList = this.buildTypeCategoryList(match.drinkType);
+                item.tempTypeCategory = match.typeCategory || '-';
+                item.tempDrinkStylesList = this.buildDrinkStyleList(match.typeCategory);
+                item.originCountry = match.originCountry || '';
+                
+                // Handle ABV
+                if (match.abv !== null && match.abv !== undefined) {
+                    item.abv = match.abv;
+                }
+                
+                // Handle age
+                if (match.age !== null && match.age !== undefined) {
+                    item.age = match.age;
+                }
+                
+                // Handle photo
+                if (match.photo) {
+                    item.photo = match.photo;
+                }
+                
+                // Handle producer
+                if (match.producerId && match.producerName) {
+                    item.producerID = match.producerId;
+                    item.producerNew = match.producerName;
+                    item.selectedProducer = {
+                        id: match.producerId,
+                        producerName: match.producerName
+                    };
+                }
+                
+                // Handle bottler
+                if (match.bottlerId && match.bottlerName) {
+                    item.indOperator = true;
+                    item.bottlerID = match.bottlerId;
+                    item.bottler = match.bottlerName;
+                    item.selectedBottler = {
+                        id: match.bottlerId,
+                        producerName: match.bottlerName
+                    };
+                } else {
+                    item.indOperator = false;
+                    item.bottlerID = '';
+                    item.bottler = '';
+                    item.selectedBottler = {};
+                }
+                
+                // Store the listing ID reference
+                item.confirmedListingId = match.id;
+            },
+
+            /**
+             * Undo duplicate confirmation for main form (Item 1)
+             * Re-enables editing of all fields
+             */
+            undoDuplicateConfirmation() {
+                this.duplicateDetection.confirmedDuplicate = null;
+                this.duplicateDetection.isConfirmed = false;
+                this.form['listingID'] = '';
+                // Matches are preserved so user can select again if needed
+            },
+
+            /**
+             * Undo duplicate confirmation for additional item
+             * Re-enables editing of all fields
+             */
+            undoDuplicateConfirmationForItem(idx) {
+                const item = this.additionalItems[idx];
+                if (!item) return;
+                
+                item.duplicateDetection.confirmedDuplicate = null;
+                item.duplicateDetection.isConfirmed = false;
+                item.confirmedListingId = null;
+                // Matches are preserved so user can select again if needed
+            },
+
+            /**
+             * Toggle collapse state of duplicate detection card for main form
+             */
+            toggleDuplicateCollapse() {
+                this.duplicateDetection.isCollapsed = !this.duplicateDetection.isCollapsed;
+            },
+
+            /**
+             * Toggle collapse state of duplicate detection card for additional item
+             */
+            toggleDuplicateCollapseForItem(idx) {
+                const item = this.additionalItems[idx];
+                if (!item) return;
+                item.duplicateDetection.isCollapsed = !item.duplicateDetection.isCollapsed;
+            },
+
+            /**
+             * Open listing in new tab
+             */
+            openListingInNewTab(listingId, listingName) {
+                const slug = this.slugify(listingName);
+                const url = `/listing/view/${listingId}/${slug}`;
+                window.open(url, '_blank');
+            },
+
+            // ============ END DUPLICATE DETECTION METHODS ============
         }
     }
 </script>
@@ -4257,4 +4891,103 @@
         max-height: 190px;
     }
 }
+
+/* ============ DUPLICATE DETECTION STYLES ============ */
+.duplicate-detection-card {
+    border: 2px solid #28a745;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #f8fff9;
+    box-shadow: 0 2px 8px rgba(40, 167, 69, 0.15);
+}
+
+.duplicate-detection-card.confirmed {
+    border-color: #198754;
+    background: #d1e7dd;
+}
+
+.duplicate-detection-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    color: white;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.duplicate-detection-header:hover {
+    background: linear-gradient(135deg, #218838 0%, #1abc9c 100%);
+}
+
+.duplicate-detection-card.confirmed .duplicate-detection-header {
+    background: linear-gradient(135deg, #198754 0%, #157347 100%);
+}
+
+.duplicate-icon {
+    font-size: 18px;
+}
+
+.duplicate-detection-body {
+    max-height: 320px;
+    overflow-y: auto;
+    padding: 12px 16px;
+}
+
+.duplicate-matches-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.duplicate-match-item {
+    padding: 12px;
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+}
+
+.duplicate-match-item:hover {
+    border-color: #28a745;
+    box-shadow: 0 2px 8px rgba(40, 167, 69, 0.1);
+}
+
+.duplicate-thumbnail {
+    width: 50px;
+    height: 50px;
+    object-fit: cover;
+    border-radius: 6px;
+    border: 1px solid #e0e0e0;
+}
+
+.duplicate-thumbnail-placeholder {
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f0f0f0;
+    border-radius: 6px;
+    font-size: 20px;
+}
+
+.confirmed-duplicate-info {
+    background: white;
+    padding: 12px;
+    border-radius: 8px;
+}
+
+/* Disabled state for form fields when duplicate is confirmed */
+.duplicate-confirmed-field {
+    background-color: #e9ecef !important;
+    cursor: not-allowed;
+    opacity: 0.8;
+}
+
+.duplicate-confirmed-field:focus {
+    background-color: #e9ecef !important;
+}
+/* ============ END DUPLICATE DETECTION STYLES ============ */
 </style>
