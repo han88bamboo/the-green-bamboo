@@ -94,6 +94,7 @@ import re
 import requests
 import hashlib
 import traceback
+import unicodedata
 from urllib.parse import unquote
 from bs4 import BeautifulSoup
 from flask import Blueprint, g, jsonify, request
@@ -103,6 +104,7 @@ from datetime import datetime, timezone, date, timedelta
 from scripts import pointsHelperFunc
 from scripts import pointsHelperFunc
 from scripts.currencyService import currency_converter
+from fuzzywuzzy import fuzz
 
 # Import the database manager for connection pooling
 from app import db_manager
@@ -339,6 +341,49 @@ def fetch_follow_lists(cursor, user_id):
         "listings": follow_lists_data["listings"] if follow_lists_data and follow_lists_data["listings"] else []
     }
 
+def normalize_string(s):
+    """
+    Normalize string for better matching:
+    - Convert to lowercase
+    - Remove accents (Ã -> A, é -> e)
+    - Remove special characters (except letters, numbers, spaces)
+    - Trim whitespace
+    """
+    if not s:
+        return ""
+    
+    # Normalize unicode characters and remove accents
+    s = unicodedata.normalize('NFKD', s)
+    s = s.encode('ASCII', 'ignore').decode('ASCII')
+    
+    # Convert to lowercase
+    s = s.lower()
+    
+    # Remove special characters except spaces and numbers
+    s = re.sub(r'[^a-z0-9\s]', '', s)
+    
+    # Remove extra whitespace
+    s = ' '.join(s.split())
+    
+    return s
+
+def get_normalize_sql():
+    """Returns SQL function to normalize text for comparison"""
+    return """
+        REGEXP_REPLACE(
+            REGEXP_REPLACE(
+                LOWER(
+                    TRANSLATE(
+                        {field},
+                        'áàâäãåāăąÁÀÂÄÃÅĀĂĄéèêëēėęÉÈÊËĒĖĘíìîïīįÍÌÎÏĪĮóòôöõøōőÓÒÔÖÕØŌŐúùûüūůűÚÙÛÜŪŮŰçćčĆČñńÑŃ',
+                        'aaaaaaaaaaaaaaaaaeeeeeeeeeeeeeeiiiiiiiiiiiioooooooooooooooouuuuuuuuuuuuuuccccnnnn'
+                    )
+                ),
+                '[^a-z0-9\s]', '', 'g'
+            ),
+            '\s+', ' ', 'g'
+        )
+    """
 # def modifyPhotos():
 #     data = db.producers.find({})
 #     dataEncode = parse_json(data)
@@ -12093,3 +12138,225 @@ def random_pick_respondent_for_one_poll(poll_id):
             "message": "An error occurred selecting a random respondent."
         }), 500
 
+
+# ============================================================================
+# DUPLICATE DETECTION FOR LISTING SUBMISSION
+# ============================================================================
+
+@blueprint.route("/detectPotentialDuplicateListings", methods=['GET'])
+def detectPotentialDuplicateListings():
+    """
+    Detect potential duplicate listings based on form input.
+    Uses fuzzy matching similar to cellar import duplicate detection.
+    
+    Query Parameters:
+        - listingName (required): The drink name being entered
+        - producerId (required): Selected producer's ID
+        - producerName (required): Selected producer's name
+        - drinkType (required): Selected drink type
+        - originCountry (required): Selected country
+        - bottlerId (optional): Bottler ID if independent bottler
+        - bottlerName (optional): Bottler name if independent bottler
+        - threshold (optional): Similarity threshold, default 85
+    
+    Returns:
+        JSON with matching listings sorted by similarity score
+    """
+    request_id = getattr(g, 'request_id', 'unknown')
+    
+    try:
+        # ====== STEP 1: Extract and validate parameters ======
+        listing_name = request.args.get('listingName', '').strip()
+        producer_id = request.args.get('producerId', '').strip()
+        producer_name = request.args.get('producerName', '').strip()
+        drink_type = request.args.get('drinkType', '').strip()
+        origin_country = request.args.get('originCountry', '').strip()
+        bottler_id = request.args.get('bottlerId', '').strip() or None
+        bottler_name = request.args.get('bottlerName', '').strip() or None
+        threshold = int(request.args.get('threshold', 85))
+        
+        # Validate required fields
+        if not listing_name or len(listing_name) < 3:
+            logger.info(f"REQ-{request_id} detectPotentialDuplicateListings: listing name too short or missing")
+            return jsonify({
+                "code": 400,
+                "message": "Listing name must be at least 3 characters",
+                "data": {"matches": [], "totalMatches": 0}
+            }), 400
+        
+        if not producer_id or not producer_name:
+            logger.info(f"REQ-{request_id} detectPotentialDuplicateListings: producer not selected")
+            return jsonify({
+                "code": 400,
+                "message": "Producer must be selected",
+                "data": {"matches": [], "totalMatches": 0}
+            }), 400
+        
+        if not drink_type:
+            logger.info(f"REQ-{request_id} detectPotentialDuplicateListings: drink type missing")
+            return jsonify({
+                "code": 400,
+                "message": "Drink type is required",
+                "data": {"matches": [], "totalMatches": 0}
+            }), 400
+        
+        if not origin_country:
+            logger.info(f"REQ-{request_id} detectPotentialDuplicateListings: origin country missing")
+            return jsonify({
+                "code": 400,
+                "message": "Country of origin is required",
+                "data": {"matches": [], "totalMatches": 0}
+            }), 400
+        
+        logger.info(f"REQ-{request_id} detectPotentialDuplicateListings: searching for '{listing_name}' by producer '{producer_name}'")
+        
+        # ====== STEP 2: Normalize search terms ======
+        # This mirrors cellarImport.py lines 497-502
+        normalized_name = normalize_string(listing_name)
+        normalized_producer = normalize_string(producer_name)
+        normalized_bottler = normalize_string(bottler_name) if bottler_name else None
+        
+        logger.info(f"REQ-{request_id} Normalized search: name='{normalized_name}', producer='{normalized_producer}'")
+        
+        # ====== STEP 3: Query database for candidates ======
+        # Using PostgreSQL trigram similarity (pg_trgm) for fuzzy matching at database level
+        # This catches typos like "benfiddic" vs "glenfiddich" that LIKE would miss
+        with db_manager.get_cursor() as cursor:
+            # Ensure pg_trgm extension is available (for trigram similarity)
+            try:
+                cursor.execute("CREATE EXTENSION IF NOT EXISTS pg_trgm")
+            except Exception as ext_err:
+                logger.warning(f"REQ-{request_id} Could not enable pg_trgm: {ext_err}")
+            
+            # Build normalized SQL expressions
+            normalize_listing = get_normalize_sql().format(field='l."listingName"')
+            normalize_producer_sql = get_normalize_sql().format(field='p."producerName"')
+            
+            # Use trigram similarity (%) for fuzzy matching instead of LIKE
+            # similarity() returns 0-1, we use 0.3 as minimum to cast a wide net
+            # The Python fuzzy matching in Step 4 will do the precise scoring
+            search_query = f"""
+                SELECT 
+                    l."id",
+                    l."listingName",
+                    l."producerID",
+                    p."producerName",
+                    l."bottlerID",
+                    b."producerName" as "bottlerName",
+                    l."drinkType",
+                    l."typeCategory",
+                    l."originCountry",
+                    l."abv",
+                    l."age",
+                    l."photo",
+                    GREATEST(
+                        similarity({normalize_listing}, %s),
+                        similarity({normalize_producer_sql}, %s)
+                    ) as trigram_score
+                FROM "listings" l
+                LEFT JOIN "producers" p ON l."producerID" = p."id"
+                LEFT JOIN "producers" b ON l."bottlerID" = b."id"
+                WHERE similarity({normalize_listing}, %s) > 0.3
+                   OR similarity({normalize_producer_sql}, %s) > 0.3
+                   OR {normalize_listing} LIKE %s
+                   OR {normalize_producer_sql} LIKE %s
+                ORDER BY trigram_score DESC
+                LIMIT 50
+            """
+            
+            # Parameters: 2 for SELECT trigram scores, 2 for WHERE trigram, 2 for WHERE LIKE
+            search_params = [
+                normalized_name, normalized_producer,  # For GREATEST() in SELECT
+                normalized_name, normalized_producer,  # For WHERE similarity()
+                f'%{normalized_name}%', f'%{normalized_producer}%'  # For WHERE LIKE (fallback)
+            ]
+            
+            cursor.execute(search_query, search_params)
+            potential_matches = cursor.fetchall()
+            
+            logger.info(f"REQ-{request_id} Found {len(potential_matches)} potential candidates from database (using trigram similarity)")
+        
+        # ====== STEP 4: Calculate fuzzy match scores ======
+        # This mirrors cellarImport.py lines 553-610
+        matches_with_scores = []
+        
+        for match in potential_matches:
+            try:
+                # Normalize database values for comparison
+                match_name_normalized = normalize_string(match['listingName']) if match['listingName'] else ''
+                match_producer_normalized = normalize_string(match['producerName']) if match['producerName'] else ''
+                match_bottler_normalized = normalize_string(match['bottlerName']) if match.get('bottlerName') else ''
+                
+                # PRIMARY: Name similarity (0-100)
+                name_score = fuzz.ratio(normalized_name, match_name_normalized)
+                
+                # BONUS: Producer match (+10 to +20 points)
+                producer_bonus = 0
+                if normalized_producer and match_producer_normalized:
+                    producer_score = fuzz.ratio(normalized_producer, match_producer_normalized)
+                    if producer_score >= 90:
+                        producer_bonus = 20
+                    elif producer_score >= 80:
+                        producer_bonus = 15
+                    elif producer_score >= 60:
+                        producer_bonus = 10
+                
+                # BONUS: Bottler match (+10 to +20 points) - only if bottler was provided
+                bottler_bonus = 0
+                if normalized_bottler and match_bottler_normalized:
+                    bottler_score = fuzz.ratio(normalized_bottler, match_bottler_normalized)
+                    if bottler_score >= 90:
+                        bottler_bonus = 20
+                    elif bottler_score >= 80:
+                        bottler_bonus = 15
+                    elif bottler_score >= 60:
+                        bottler_bonus = 10
+                
+                # Calculate total score (capped at 100)
+                total_score = min(100, name_score + producer_bonus + bottler_bonus)
+                
+                # Only include matches above threshold
+                if total_score >= threshold:
+                    matches_with_scores.append({
+                        "id": match['id'],
+                        "listingName": match['listingName'],
+                        "producerId": match['producerID'],
+                        "producerName": match['producerName'],
+                        "bottlerId": match['bottlerID'],
+                        "bottlerName": match.get('bottlerName'),
+                        "drinkType": match['drinkType'],
+                        "typeCategory": match['typeCategory'],
+                        "originCountry": match['originCountry'],
+                        "abv": float(match['abv']) if match['abv'] else None,
+                        "age": match['age'],
+                        "photo": match['photo'],
+                        "similarity": round(total_score, 1)
+                    })
+                    
+            except Exception as e:
+                logger.warning(f"REQ-{request_id} Error calculating score for match {match.get('id')}: {e}")
+                continue
+        
+        # ====== STEP 5: Sort and return results ======
+        # Sort by similarity (highest first) and take top 10
+        matches_with_scores.sort(key=lambda x: x['similarity'], reverse=True)
+        top_matches = matches_with_scores[:10]
+        
+        logger.info(f"REQ-{request_id} detectPotentialDuplicateListings: returning {len(top_matches)} matches above {threshold}% threshold")
+        
+        return jsonify({
+            "code": 200,
+            "message": f"Found {len(top_matches)} potential duplicate(s)",
+            "data": {
+                "matches": top_matches,
+                "totalMatches": len(top_matches)
+            }
+        }), 200
+        
+    except Exception as e:
+        logger.error(f"REQ-{request_id} detectPotentialDuplicateListings error: {str(e)}", exc_info=True)
+        return jsonify({
+            "code": 500,
+            "message": f"Error detecting duplicates: {str(e)}",
+            "data": {"matches": [], "totalMatches": 0}
+        }), 500

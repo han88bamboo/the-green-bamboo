@@ -374,7 +374,7 @@ def requestListingsBulk():
         else:
             fail_count += 1
     
-    # Award proof points and badges ONCE per bulk submission (only for user submitters)
+    # Award proof points per successful item (only for user submitters)
     points_awarded = 0
     badge_awarded = None
     
@@ -388,7 +388,9 @@ def requestListingsBulk():
                     proof_points_row = cursor.fetchone()
                     
                     if proof_points_row:
-                        points_awarded = proof_points_row['proofPoints']
+                        # Award 3 points per successful item
+                        points_per_item = proof_points_row['proofPoints']
+                        points_awarded = points_per_item * success_count
                         cursor.execute(
                             'UPDATE "pointsRecorder" SET "currentPoints" = "currentPoints" + %s WHERE "userID" = %s AND "userType" = %s;',
                             (points_awarded, first_successful_user_id, 'user')
