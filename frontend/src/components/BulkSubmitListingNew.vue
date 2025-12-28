@@ -802,12 +802,13 @@
                                     @keyup.enter="addVarietyTag"
                                     placeholder="Type a variety tag and click +"
                                     maxlength="20"
+                                    :disabled="duplicateDetection.isConfirmed"
                                 >
                                 <button 
                                     class="btn btn-outline-success" 
                                     type="button" 
                                     @click="addVarietyTag"
-                                    :disabled="!varietyTagInput.trim()"
+                                    :disabled="!varietyTagInput.trim() || duplicateDetection.isConfirmed"
                                 >
                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus-circle" viewBox="0 0 16 16">
                                         <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
@@ -831,6 +832,7 @@
                                         style="font-size: 10px;"
                                         @click="removeVarietyTag(index)"
                                         aria-label="Remove tag"
+                                        :disabled="duplicateDetection.isConfirmed"
                                     ></button>
                                 </span>
                             </div>
@@ -888,7 +890,8 @@
                                 <p class="text-start mb-1">Strength</p> <!--<span class="text-danger" v-if="formType == 'power'">*</span>-->
                                 <div class="form-group row">
                                     <div class="col-6 pe-1">
-                                        <input type="number" v-model="form['abv']" class="form-control" id="abv" min="0" max="100" step="0.1">
+                                        <input type="number" v-model="form['abv']" class="form-control" id="abv" min="0" max="100" step="0.1"
+                                               :disabled="duplicateDetection.isConfirmed">
                                     </div>
                                     <label for="abv" class="col-6 col-form-label ps-1 text-start">% ABV</label>
                                 </div>
@@ -897,7 +900,8 @@
                                 <p class="text-start mb-1">Age</p>
                                 <div class="form-group row">
                                     <div class="col-6 pe-1">
-                                        <input type="number" v-model="form['age']" class="form-control" id="age" min="0">
+                                        <input type="number" v-model="form['age']" class="form-control" id="age" min="0"
+                                               :disabled="duplicateDetection.isConfirmed">
                                     </div>
                                     <label for="age" class="col-6 col-form-label ps-1 text-start">years old</label>
                                 </div>
@@ -907,7 +911,8 @@
                         <!-- [POWER] Input: Drink Description -->
                         <div class="form-group mb-3" > <!-- v-if="formType == 'power'"   shifted out to allow ordinary users to submit official descp too-->
                             <p class="text-start mb-1">Official Description</p>
-                            <textarea rows=3 class="form-control" v-model="form['officialDesc']" id="officialDesc" placeholder="Enter description of drink"></textarea>
+                            <textarea rows=3 class="form-control" v-model="form['officialDesc']" id="officialDesc" placeholder="Enter description of drink"
+                                      :disabled="duplicateDetection.isConfirmed"></textarea>
                         </div>
 
                         <!-- Input: Link to website or source (optional for actual listing, mandatory for request) -->
@@ -1301,12 +1306,13 @@
                                             :id="'varietyTag-additional-' + idx"
                                             placeholder="Type a variety tag and click +"
                                             maxlength="20"
+                                            :disabled="item.duplicateDetection && item.duplicateDetection.isConfirmed"
                                         >
                                         <button
                                             class="btn btn-outline-success"
                                             type="button"
                                             @click="addVarietyTagForItem(idx)"
-                                            :disabled="!item.varietyTagInput || !item.varietyTagInput.trim()"
+                                            :disabled="!item.varietyTagInput || !item.varietyTagInput.trim() || (item.duplicateDetection && item.duplicateDetection.isConfirmed)"
                                         >
                                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus-circle" viewBox="0 0 16 16">
                                                 <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
@@ -1328,6 +1334,7 @@
                                                 style="font-size: 10px;"
                                                 @click="removeVarietyTagForItem(idx, tagIdx)"
                                                 aria-label="Remove tag"
+                                                :disabled="item.duplicateDetection && item.duplicateDetection.isConfirmed"
                                             ></button>
                                         </span>
                                     </div>
@@ -1380,7 +1387,8 @@
                                         <p class="text-start mb-1">Strength</p>
                                         <div class="form-group row">
                                             <div class="col-6 pe-1">
-                                                <input type="number" v-model="item.abv" class="form-control" :id="'abv-additional-' + idx" min="0" max="100" step="0.1">
+                                                <input type="number" v-model="item.abv" class="form-control" :id="'abv-additional-' + idx" min="0" max="100" step="0.1"
+                                                       :disabled="item.duplicateDetection && item.duplicateDetection.isConfirmed">
                                             </div>
                                             <label :for="'abv-additional-' + idx" class="col-6 col-form-label ps-1 text-start">% ABV</label>
                                         </div>
@@ -1389,7 +1397,8 @@
                                         <p class="text-start mb-1">Age</p>
                                         <div class="form-group row">
                                             <div class="col-6 pe-1">
-                                                <input type="number" v-model="item.age" class="form-control" :id="'age-additional-' + idx" min="0">
+                                                <input type="number" v-model="item.age" class="form-control" :id="'age-additional-' + idx" min="0"
+                                                       :disabled="item.duplicateDetection && item.duplicateDetection.isConfirmed">
                                             </div>
                                             <label :for="'age-additional-' + idx" class="col-6 col-form-label ps-1 text-start">years old</label>
                                         </div>
@@ -1398,7 +1407,8 @@
 
                                 <div class="form-group mb-3">
                                     <p class="text-start mb-1">Official Description</p>
-                                    <textarea rows=3 class="form-control" v-model="item.officialDesc" :id="'officialDesc-additional-' + idx" placeholder="Enter description of drink"></textarea>
+                                    <textarea rows=3 class="form-control" v-model="item.officialDesc" :id="'officialDesc-additional-' + idx" placeholder="Enter description of drink"
+                                              :disabled="item.duplicateDetection && item.duplicateDetection.isConfirmed"></textarea>
                                 </div>
 
                                 <div v-if="formType == 'power'" class="form-group mb-3">
