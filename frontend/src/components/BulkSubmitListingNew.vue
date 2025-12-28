@@ -1362,8 +1362,8 @@
                                 <td v-if="bulkSubmissionComplete">
                                     <span v-if="getItemSubmissionStatus(0)?.success" class="badge bg-success">
                                         ✓ Success
-                                        <span v-if="getItemSubmissionStatus(0)?.listingId"> (ID: {{ getItemSubmissionStatus(0).listingId }})</span>
-                                        <span v-else-if="getItemSubmissionStatus(0)?.requestId"> (Req: {{ getItemSubmissionStatus(0).requestId }})</span>
+                                        <span v-if="getItemSubmissionStatus(0)?.listingId"> (Listing ID: {{ getItemSubmissionStatus(0).listingId }})</span>
+                                        <span v-else-if="getItemSubmissionStatus(0)?.requestId"> (Req ID: {{ getItemSubmissionStatus(0).requestId }})</span>
                                     </span>
                                     <span v-else class="badge bg-danger text-wrap text-start" style="white-space: normal;">
                                         ✗ {{ getItemSubmissionStatus(0)?.error || 'Failed' }}
