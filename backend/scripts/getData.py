@@ -12235,6 +12235,7 @@ def detectPotentialDuplicateListings():
             # Use trigram similarity (%) for fuzzy matching instead of LIKE
             # similarity() returns 0-1, we use 0.3 as minimum to cast a wide net
             # The Python fuzzy matching in Step 4 will do the precise scoring
+            # IMPORTANT: Filter by drinkType and originCountry to only match relevant listings
             search_query = f"""
                 SELECT 
                     l."id",
@@ -12256,17 +12257,22 @@ def detectPotentialDuplicateListings():
                 FROM "listings" l
                 LEFT JOIN "producers" p ON l."producerID" = p."id"
                 LEFT JOIN "producers" b ON l."bottlerID" = b."id"
-                WHERE similarity({normalize_listing}, %s) > 0.3
-                   OR similarity({normalize_producer_sql}, %s) > 0.3
-                   OR {normalize_listing} LIKE %s
-                   OR {normalize_producer_sql} LIKE %s
+                WHERE l."drinkType" = %s
+                  AND l."originCountry" = %s
+                  AND (
+                      similarity({normalize_listing}, %s) > 0.3
+                      OR similarity({normalize_producer_sql}, %s) > 0.3
+                      OR {normalize_listing} LIKE %s
+                      OR {normalize_producer_sql} LIKE %s
+                  )
                 ORDER BY trigram_score DESC
                 LIMIT 50
             """
             
-            # Parameters: 2 for SELECT trigram scores, 2 for WHERE trigram, 2 for WHERE LIKE
+            # Parameters: 2 for SELECT trigram scores, 2 for WHERE exact match, 2 for WHERE trigram, 2 for WHERE LIKE
             search_params = [
                 normalized_name, normalized_producer,  # For GREATEST() in SELECT
+                drink_type, origin_country,            # For WHERE exact match on drinkType and originCountry
                 normalized_name, normalized_producer,  # For WHERE similarity()
                 f'%{normalized_name}%', f'%{normalized_producer}%'  # For WHERE LIKE (fallback)
             ]
@@ -12274,7 +12280,7 @@ def detectPotentialDuplicateListings():
             cursor.execute(search_query, search_params)
             potential_matches = cursor.fetchall()
             
-            logger.info(f"REQ-{request_id} Found {len(potential_matches)} potential candidates from database (using trigram similarity)")
+            logger.info(f"REQ-{request_id} Found {len(potential_matches)} potential candidates from database (filtered by drinkType='{drink_type}', originCountry='{origin_country}')")
         
         # ====== STEP 4: Calculate fuzzy match scores ======
         # This mirrors cellarImport.py lines 553-610

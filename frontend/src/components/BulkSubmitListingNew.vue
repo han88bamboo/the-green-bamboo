@@ -709,9 +709,6 @@
                                     </span>
                                 </div>
                                 <div class="d-flex align-items-center">
-                                    <span v-if="duplicateDetection.isLoading" class="spinner-border spinner-border-sm me-2" role="status">
-                                        <span class="visually-hidden">Searching...</span>
-                                    </span>
                                     <svg v-if="!duplicateDetection.isCollapsed" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-chevron-up" viewBox="0 0 16 16">
                                         <path fill-rule="evenodd" d="M7.646 4.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1-.708.708L8 5.707l-5.646 5.647a.5.5 0 0 1-.708-.708l6-6z"/>
                                     </svg>
@@ -963,9 +960,9 @@
                             <div
                                 v-for="(item, idx) in additionalItems"
                                 :key="'additional-item-' + idx"
-                                class="mb-4 pb-4 border-top text-start"
+                                class="mb-4 pb-4 border-top "
                             >
-                                <h2 class="h5 fw-bold mb-3 mt-2">Item {{ idx + 2 }}</h2>
+                                <h2 class="h5 fw-bold mb-3 mt-2 text-start">Item {{ idx + 2 }}</h2>
 
                                 <div class="row" v-if="formType == 'power'">
                                     <div class="col-md-7 mb-3">
@@ -1064,9 +1061,9 @@
                                     </div>
                                 </div>
 
-                                <div class="mb-3">
+                                <div class="mb-3 text-start">
                                     <p class="text-start mb-1">Is this bottled by an independent bottler? <span class="text-danger">*</span></p>
-                                    <div class="form-check form-switch form-check-inline">
+                                    <div class="form-check form-switch form-check-inline text-start">
                                         <input class="form-check-input" type="checkbox" role="switch"
                                                :id="'IBCheck-additional-' + idx"
                                                v-model="item.indOperator"
@@ -1207,17 +1204,14 @@
                                             <span class="fw-bold" v-if="!item.duplicateDetection.isConfirmed">
                                                 Wait, Do You Mean these:
                                             </span>
-                                            <span class="fw-bold text-success" v-else>
+                                            <span class="fw-bold " v-else>
                                                 ✓ Matched to existing listing
                                             </span>
-                                            <span v-if="!item.duplicateDetection.isConfirmed" class="text-muted ms-auto me-2">
+                                            <span v-if="!item.duplicateDetection.isConfirmed" class="ms-auto me-2">
                                                 ({{ item.duplicateDetection.matches.length }} potential match{{ item.duplicateDetection.matches.length !== 1 ? 'es' : '' }})
                                             </span>
                                         </div>
                                         <div class="d-flex align-items-center">
-                                            <span v-if="item.duplicateDetection.isLoading" class="spinner-border spinner-border-sm me-2" role="status">
-                                                <span class="visually-hidden">Searching...</span>
-                                            </span>
                                             <svg v-if="!item.duplicateDetection.isCollapsed" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-chevron-up" viewBox="0 0 16 16">
                                                 <path fill-rule="evenodd" d="M7.646 4.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1-.708.708L8 5.707l-5.646 5.647a.5.5 0 0 1-.708-.708l6-6z"/>
                                             </svg>
@@ -1370,7 +1364,7 @@
                                         </div>
                                         <div class="col-8">
                                             <div class="text-muted small">
-                                                <p class="mt-1"><strong>Upload a clear image of your drink.</strong></p>
+                                                <p class="mt-1"><strong>Upload a clear image of your drink. We recommend the official image!</strong></p>
                                             </div>
                                             <div class="text-center mt-2">
                                                 <button v-if="item.selectedImage || item.photo" type="button" class="btn btn-sm btn-outline-secondary"
@@ -3251,7 +3245,18 @@
 
             // Helper function to get drink category list for selected drink type ("tempDrinkType")
             getDrinkCategoryList() {
-                this.tempTypeCategoryList = this.drinkCategories.find(cat => cat.drinkType == this.tempDrinkType).typeCategory;
+                const found = this.drinkCategories.find(cat => cat.drinkType == this.tempDrinkType);
+                
+                if (!found) {
+                    // If no matching drink type (e.g., '-' selected), reset to empty/default
+                    this.tempTypeCategoryList = ["-"];
+                    this.tempTypeCategory = "";
+                    this.tempDrinkStylesList = ["-"];
+                    this.tempDrinkStyle = "";
+                    return;
+                }
+                
+                this.tempTypeCategoryList = [...found.typeCategory];
 
                 // Add a '-' option for no drink category
                 this.tempTypeCategoryList.unshift("-");
