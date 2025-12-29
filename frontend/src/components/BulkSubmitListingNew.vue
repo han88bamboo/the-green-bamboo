@@ -1527,35 +1527,50 @@
             </div>
             <div class="staging-modal-body">
                 <!-- Pre-submission info -->
-                <p v-if="!bulkSubmissionComplete && !bulkSubmissionInProgress" class="text-muted mb-3">
-                    {{ getStagedItemsCount() }} item(s) staged for submission. Please review before confirming.
-                </p>
+                <div v-if="!bulkSubmissionComplete && !bulkSubmissionInProgress" class="mb-3">
+                    <p class="text-muted mb-1">
+                        <span v-if="getNewItemsCount() > 0">
+                            <strong>{{ getNewItemsCount() }}</strong> item(s) to be submitted
+                        </span>
+                        <span v-if="getNewItemsCount() > 0 && getConfirmedDuplicatesCount() > 0">, </span>
+                        <span v-if="getConfirmedDuplicatesCount() > 0" class="text-secondary">
+                            <strong>{{ getConfirmedDuplicatesCount() }}</strong> existing listing(s) <span class="small">(will not be submitted)</span>
+                        </span>
+                    </p>
+                    <p class="text-muted small mb-0">Please review before confirming.</p>
+                </div>
                 
                 <!-- In-progress spinner -->
                 <div v-if="bulkSubmissionInProgress" class="text-center py-3">
                     <div class="spinner-border text-primary mb-2" role="status">
                         <span class="visually-hidden">Submitting...</span>
                     </div>
-                    <p class="text-info fw-bold mb-0">Submitting {{ getStagedItemsCount() }} item(s)... Please wait.</p>
+                    <p class="text-info fw-bold mb-0">Submitting {{ getNewItemsCount() }} item(s)... Please wait.</p>
                 </div>
                 
                 <!-- Post-submission summary -->
                 <div v-if="bulkSubmissionComplete && bulkSubmissionSummary" class="mb-3">
-                    <div class="alert" :class="bulkSubmissionSummary.failCount === 0 ? 'alert-success' : (bulkSubmissionSummary.successCount === 0 ? 'alert-danger' : 'alert-warning')">
+                    <div class="alert" :class="bulkSubmissionSummary.failCount === 0 && bulkSubmissionSummary.totalSubmitted > 0 ? 'alert-success' : (bulkSubmissionSummary.successCount === 0 && bulkSubmissionSummary.totalSubmitted > 0 ? 'alert-danger' : (bulkSubmissionSummary.totalSubmitted === 0 ? 'alert-info' : 'alert-warning'))">
                         <h5 class="alert-heading mb-2">
-                            <span v-if="bulkSubmissionSummary.failCount === 0">✓ All items submitted successfully!</span>
+                            <span v-if="bulkSubmissionSummary.totalSubmitted === 0">ℹ️ No new submissions</span>
+                            <span v-else-if="bulkSubmissionSummary.failCount === 0">✓ All items submitted successfully!</span>
                             <span v-else-if="bulkSubmissionSummary.successCount === 0">✗ All items failed to submit</span>
                             <span v-else>⚠ Partial success</span>
                         </h5>
                         <p class="mb-1">
-                            <strong>{{ bulkSubmissionSummary.successCount }}</strong> succeeded, 
-                            <strong>{{ bulkSubmissionSummary.failCount }}</strong> failed 
-                            (out of {{ bulkSubmissionSummary.totalSubmitted }} total)
+                            <span v-if="bulkSubmissionSummary.totalSubmitted > 0">
+                                <strong>{{ bulkSubmissionSummary.successCount }}</strong> submitted successfully, 
+                                <strong>{{ bulkSubmissionSummary.failCount }}</strong> failed
+                            </span>
+                            <span v-if="bulkSubmissionSummary.existingCount > 0">
+                                <span v-if="bulkSubmissionSummary.totalSubmitted > 0">, </span>
+                                <strong>{{ bulkSubmissionSummary.existingCount }}</strong> existing listing(s) <span class="text-muted">(not submitted)</span>
+                            </span>
                         </p>
                         <p v-if="bulkSubmissionSummary.pointsAwarded > 0" class="mb-1 text-success">
                             🎯 +{{ bulkSubmissionSummary.pointsAwarded }} proof points awarded!
                         </p>
-                        <p v-if="bulkSubmissionSummary.autoApprovalEnabled" class="mb-0 text-info small">
+                        <p v-if="bulkSubmissionSummary.autoApprovalEnabled && bulkSubmissionSummary.successCount > 0" class="mb-0 text-info small">
                             <i class="bi bi-info-circle"></i> Auto-approval is enabled. Successful items are now live.
                         </p>
                     </div>
@@ -1574,7 +1589,7 @@
                         <thead class="table-light sticky-header">
                             <tr>
                                 <th>#</th>
-                                <th v-if="bulkSubmissionComplete" style="min-width: 200px;">Status</th>
+                                <th style="min-width: 220px;">Status</th>
                                 <th>Photo</th>
                                 <th>Listing Name</th>
                                 <th>Producer</th>
@@ -1596,15 +1611,51 @@
                             <!-- Item 1 (main form) -->
                             <tr :class="getRowClass(0)">
                                 <td>1</td>
-                                <td v-if="bulkSubmissionComplete">
-                                    <span v-if="getItemSubmissionStatus(0)?.success" class="badge bg-success">
-                                        ✓ Success
-                                        <span v-if="getItemSubmissionStatus(0)?.listingId"> (Listing ID: {{ getItemSubmissionStatus(0).listingId }})</span>
-                                        <span v-else-if="getItemSubmissionStatus(0)?.requestId"> (Req ID: {{ getItemSubmissionStatus(0).requestId }})</span>
-                                    </span>
-                                    <span v-else class="badge bg-danger text-wrap text-start" style="white-space: normal;">
-                                        ✗ {{ getItemSubmissionStatus(0)?.error || 'Failed' }}
-                                    </span>
+                                <td>
+                                    <!-- Pre-submission: show if existing or pending -->
+                                    <template v-if="!bulkSubmissionComplete">
+                                        <span v-if="isItemConfirmedDuplicate(0)" class="badge bg-secondary">
+                                            📌 Existing listing
+                                            <a v-if="getConfirmedDuplicateInfo(0)?.id" 
+                                               :href="'/listing/view/' + getConfirmedDuplicateInfo(0).id + '/' + slugify(getConfirmedDuplicateInfo(0).listingName || '')"
+                                               target="_blank"
+                                               class="ms-1 text-white"
+                                               @click.stop>
+                                                (ID: {{ getConfirmedDuplicateInfo(0).id }}) ↗
+                                            </a>
+                                        </span>
+                                        <span v-else class="badge bg-primary">🆕 New submission</span>
+                                    </template>
+                                    <!-- Post-submission: show result -->
+                                    <template v-else>
+                                        <!-- Existing listing (skipped) -->
+                                        <span v-if="getItemSubmissionStatus(0)?.isExisting" class="badge bg-secondary">
+                                            ⏭️ Skipped - Already exists
+                                            <a v-if="getItemSubmissionStatus(0)?.existingListingId" 
+                                               :href="'/listing/view/' + getItemSubmissionStatus(0).existingListingId + '/' + slugify(getItemSubmissionStatus(0).existingListingName || '')"
+                                               target="_blank"
+                                               class="ms-1 text-white"
+                                               @click.stop>
+                                                (ID: {{ getItemSubmissionStatus(0).existingListingId }}) ↗
+                                            </a>
+                                        </span>
+                                        <!-- Success -->
+                                        <span v-else-if="getItemSubmissionStatus(0)?.success" class="badge bg-success">
+                                            ✓ Success
+                                            <a v-if="getItemSubmissionStatus(0)?.listingId" 
+                                               :href="'/listing/view/' + getItemSubmissionStatus(0).listingId + '/' + slugify(form['listingName'] || '')"
+                                               target="_blank"
+                                               class="ms-1 text-white"
+                                               @click.stop>
+                                                (ID: {{ getItemSubmissionStatus(0).listingId }}) ↗
+                                            </a>
+                                            <span v-else-if="getItemSubmissionStatus(0)?.requestId"> (Req ID: {{ getItemSubmissionStatus(0).requestId }})</span>
+                                        </span>
+                                        <!-- Failed -->
+                                        <span v-else class="badge bg-danger text-wrap text-start" style="white-space: normal;">
+                                            ✗ {{ getItemSubmissionStatus(0)?.error || 'Failed' }}
+                                        </span>
+                                    </template>
                                 </td>
                                 <td>
                                     <img 
@@ -1633,15 +1684,51 @@
                             <!-- Additional items -->
                             <tr v-for="(item, index) in additionalItems" :key="'staged-' + index" :class="getRowClass(index + 1)">
                                 <td>{{ index + 2 }}</td>
-                                <td v-if="bulkSubmissionComplete">
-                                    <span v-if="getItemSubmissionStatus(index + 1)?.success" class="badge bg-success">
-                                        ✓ Success
-                                        <span v-if="getItemSubmissionStatus(index + 1)?.listingId"> (ID: {{ getItemSubmissionStatus(index + 1).listingId }})</span>
-                                        <span v-else-if="getItemSubmissionStatus(index + 1)?.requestId"> (Req: {{ getItemSubmissionStatus(index + 1).requestId }})</span>
-                                    </span>
-                                    <span v-else class="badge bg-danger text-wrap text-start" style="white-space: normal;">
-                                        ✗ {{ getItemSubmissionStatus(index + 1)?.error || 'Failed' }}
-                                    </span>
+                                <td>
+                                    <!-- Pre-submission: show if existing or pending -->
+                                    <template v-if="!bulkSubmissionComplete">
+                                        <span v-if="isItemConfirmedDuplicate(index + 1)" class="badge bg-secondary">
+                                               Existing listing 
+                                            <a v-if="getConfirmedDuplicateInfo(index + 1)?.id" 
+                                               :href="'/listing/view/' + getConfirmedDuplicateInfo(index + 1).id + '/' + slugify(getConfirmedDuplicateInfo(index + 1).listingName || '')"
+                                               target="_blank"
+                                               class="ms-1 text-white"
+                                               @click.stop>
+                                               (ID: {{ getConfirmedDuplicateInfo(index + 1).id }})
+                                            </a>↗
+                                        </span> 
+                                        <span v-else class="badge bg-primary">New submission</span>
+                                    </template>
+                                    <!-- Post-submission: show result -->
+                                    <template v-else>
+                                        <!-- Existing listing (skipped) -->
+                                        <span v-if="getItemSubmissionStatus(index + 1)?.isExisting" class="badge bg-secondary">
+                                            ⏭️ Skipped - Already exists
+                                            <a v-if="getItemSubmissionStatus(index + 1)?.existingListingId" 
+                                               :href="'/listing/view/' + getItemSubmissionStatus(index + 1).existingListingId + '/' + slugify(getItemSubmissionStatus(index + 1).existingListingName || '')"
+                                               target="_blank"
+                                               class="ms-1 text-white"
+                                               @click.stop>
+                                                (ID: {{ getItemSubmissionStatus(index + 1).existingListingId }}) ↗
+                                            </a>
+                                        </span>
+                                        <!-- Success -->
+                                        <span v-else-if="getItemSubmissionStatus(index + 1)?.success" class="badge bg-success">
+                                            ✓ Success
+                                            <a v-if="getItemSubmissionStatus(index + 1)?.listingId" 
+                                               :href="'/listing/view/' + getItemSubmissionStatus(index + 1).listingId + '/' + slugify(item.listingName || '')"
+                                               target="_blank"
+                                               class="ms-1 text-white"
+                                               @click.stop>
+                                                (ID: {{ getItemSubmissionStatus(index + 1).listingId }}) ↗
+                                            </a>
+                                            <span v-else-if="getItemSubmissionStatus(index + 1)?.requestId"> (Req: {{ getItemSubmissionStatus(index + 1).requestId }})</span>
+                                        </span>
+                                        <!-- Failed -->
+                                        <span v-else class="badge bg-danger text-wrap text-start" style="white-space: normal;">
+                                            ✗ {{ getItemSubmissionStatus(index + 1)?.error || 'Failed' }}
+                                        </span>
+                                    </template>
                                 </td>
                                 <td>
                                     <img 
@@ -1687,7 +1774,7 @@
                 <template v-if="bulkSubmissionComplete">
                     <button type="button" class="btn btn-secondary" @click="closeStagingModal">Close</button>
                     <button 
-                        v-if="bulkSubmissionSummary && bulkSubmissionSummary.successCount === bulkSubmissionSummary.totalSubmitted"
+                        v-if="bulkSubmissionSummary && (bulkSubmissionSummary.failCount === 0 || bulkSubmissionSummary.totalSubmitted === 0)"
                         type="button" 
                         class="btn btn-primary" 
                         @click="closeStagingModal(); reset();"
@@ -2129,6 +2216,40 @@
                 return 1 + this.additionalItems.length;
             },
 
+            // Check if an item at a given index is a confirmed duplicate
+            isItemConfirmedDuplicate(index) {
+                if (index === 0) {
+                    return this.duplicateDetection.isConfirmed;
+                }
+                const item = this.additionalItems[index - 1];
+                return item?.duplicateDetection?.isConfirmed || false;
+            },
+
+            // Get the confirmed duplicate info for an item
+            getConfirmedDuplicateInfo(index) {
+                if (index === 0) {
+                    return this.duplicateDetection.confirmedDuplicate;
+                }
+                const item = this.additionalItems[index - 1];
+                return item?.duplicateDetection?.confirmedDuplicate || null;
+            },
+
+            // Count confirmed duplicates (existing listings)
+            getConfirmedDuplicatesCount() {
+                let count = this.duplicateDetection.isConfirmed ? 1 : 0;
+                for (const item of this.additionalItems) {
+                    if (item.duplicateDetection?.isConfirmed) {
+                        count++;
+                    }
+                }
+                return count;
+            },
+
+            // Count new items to be submitted (excluding confirmed duplicates)
+            getNewItemsCount() {
+                return this.getStagedItemsCount() - this.getConfirmedDuplicatesCount();
+            },
+
             formatVarietyTags(tagsList) {
                 if (!tagsList || tagsList.length === 0) return '-';
                 return tagsList.join(', ');
@@ -2136,6 +2257,19 @@
 
             // Get submission status for an item by index
             getItemSubmissionStatus(index) {
+                // Check if this is a confirmed duplicate (existing listing)
+                if (this.isItemConfirmedDuplicate(index)) {
+                    const duplicateInfo = this.getConfirmedDuplicateInfo(index);
+                    return {
+                        index: index,
+                        success: false,
+                        skipped: true,
+                        isExisting: true,
+                        existingListingId: duplicateInfo?.id || null,
+                        existingListingName: duplicateInfo?.listingName || null
+                    };
+                }
+                
                 if (!this.bulkSubmissionComplete || !this.bulkSubmissionResults.length) {
                     return null; // No status yet
                 }
@@ -2147,6 +2281,7 @@
             getStatusBadgeClass(index) {
                 const status = this.getItemSubmissionStatus(index);
                 if (!status) return '';
+                if (status.isExisting) return 'bg-secondary';
                 return status.success ? 'bg-success' : 'bg-danger';
             },
 
@@ -2154,6 +2289,9 @@
             getStatusText(index) {
                 const status = this.getItemSubmissionStatus(index);
                 if (!status) return '-';
+                if (status.isExisting) {
+                    return `⏭️ Skipped - Already exists - Drink ID: ${status.existingListingId || 'N/A'}`;
+                }
                 if (status.success) {
                     const idText = status.listingId ? `ID: ${status.listingId}` : (status.requestId ? `Req ID: ${status.requestId}` : '');
                     return `✓ Success ${idText}`;
@@ -2165,6 +2303,7 @@
             getRowClass(index) {
                 const status = this.getItemSubmissionStatus(index);
                 if (!status) return 'row-pending';
+                if (status.isExisting) return 'row-skipped';
                 return status.success ? 'row-success' : 'row-error';
             },
 
@@ -2181,6 +2320,28 @@
                 this.bulkSubmissionComplete = false;
                 this.bulkSubmissionResults = [];
                 this.bulkSubmissionSummary = null;
+
+                // Count existing listings (confirmed duplicates)
+                const existingCount = this.getConfirmedDuplicatesCount();
+                const newItemsCount = this.getNewItemsCount();
+
+                // If all items are existing listings, skip API call
+                if (newItemsCount === 0) {
+                    console.log("All items are existing listings. Skipping API call.");
+                    this.bulkSubmissionSummary = {
+                        totalSubmitted: 0,
+                        successCount: 0,
+                        failCount: 0,
+                        existingCount: existingCount,
+                        autoApprovalEnabled: false,
+                        pointsAwarded: 0,
+                        badgeAwarded: null,
+                        message: `All ${existingCount} item(s) are existing listings. Nothing to submit.`
+                    };
+                    this.bulkSubmissionInProgress = false;
+                    this.bulkSubmissionComplete = true;
+                    return;
+                }
 
                 let submitAPI = "";
                 let bulkPayload = {};
@@ -2201,6 +2362,7 @@
 
                 console.log("Bulk submission to:", submitAPI);
                 console.log("Bulk payload:", JSON.stringify(bulkPayload, null, 2));
+                console.log(`Submitting ${newItemsCount} new item(s), ${existingCount} existing listing(s) skipped.`);
 
                 try {
                     const response = await this.$axios.post(submitAPI, bulkPayload);
@@ -2208,12 +2370,26 @@
 
                     console.log("Bulk API response:", responseData);
 
-                    // Store results
-                    this.bulkSubmissionResults = responseData.data?.results || [];
+                    // Map backend results back to original indices using originalIndex
+                    const apiResults = responseData.data?.results || [];
+                    const mappedResults = apiResults.map(result => {
+                        // The backend returns index relative to the payload, but we included originalIndex
+                        // We need to find the item in the payload that matches this result
+                        const payloadItems = this.formType === "req" ? bulkPayload.items : bulkPayload.listings;
+                        const originalIndex = payloadItems[result.index]?.originalIndex;
+                        return {
+                            ...result,
+                            index: originalIndex !== undefined ? originalIndex : result.index
+                        };
+                    });
+
+                    // Store mapped results
+                    this.bulkSubmissionResults = mappedResults;
                     this.bulkSubmissionSummary = {
                         totalSubmitted: responseData.data?.totalSubmitted || 0,
                         successCount: responseData.data?.successCount || 0,
                         failCount: responseData.data?.failCount || 0,
+                        existingCount: existingCount,
                         autoApprovalEnabled: responseData.data?.autoApprovalEnabled || false,
                         pointsAwarded: responseData.data?.pointsAwarded || 0,
                         badgeAwarded: responseData.data?.badgeAwarded || null,
@@ -2238,18 +2414,32 @@
                 } catch (error) {
                     console.error("Bulk API error:", error.response?.data || error);
                     
-                    // Create error results for all items
-                    const totalItems = 1 + this.additionalItems.length;
-                    this.bulkSubmissionResults = Array.from({ length: totalItems }, (_, i) => ({
-                        index: i,
-                        success: false,
-                        error: error.response?.data?.message || 'Server error occurred'
-                    }));
+                    // Create error results for only the new items (not confirmed duplicates)
+                    // Map errors to original indices
+                    const errorResults = [];
+                    if (!this.duplicateDetection.isConfirmed) {
+                        errorResults.push({
+                            index: 0,
+                            success: false,
+                            error: error.response?.data?.message || 'Server error occurred'
+                        });
+                    }
+                    for (let i = 0; i < this.additionalItems.length; i++) {
+                        if (!this.additionalItems[i].duplicateDetection?.isConfirmed) {
+                            errorResults.push({
+                                index: i + 1,
+                                success: false,
+                                error: error.response?.data?.message || 'Server error occurred'
+                            });
+                        }
+                    }
                     
+                    this.bulkSubmissionResults = errorResults;
                     this.bulkSubmissionSummary = {
-                        totalSubmitted: totalItems,
+                        totalSubmitted: newItemsCount,
                         successCount: 0,
-                        failCount: totalItems,
+                        failCount: newItemsCount,
+                        existingCount: existingCount,
                         message: error.response?.data?.message || 'An error occurred during submission'
                     };
                 } finally {
@@ -2473,22 +2663,29 @@
 
             /**
              * Validate all items for bulk submission
+             * Skip validation for confirmed duplicates (existing listings)
              * @returns {Boolean} - Whether all items passed validation
              */
             validateAllItemsForBulk() {
-                // Validate Item 1 (main form)
-                this.validateSingleItem(
-                    this.form,
-                    this.tempDrinkType,
-                    this.tempTypeCategory,
-                    this.tempDrinkStyle,
-                    this.indOperator,
-                    1
-                );
+                // Validate Item 1 (main form) - skip if confirmed duplicate
+                if (!this.duplicateDetection.isConfirmed) {
+                    this.validateSingleItem(
+                        this.form,
+                        this.tempDrinkType,
+                        this.tempTypeCategory,
+                        this.tempDrinkStyle,
+                        this.indOperator,
+                        1
+                    );
+                }
 
-                // Validate each additional item
+                // Validate each additional item - skip confirmed duplicates
                 for (let i = 0; i < this.additionalItems.length; i++) {
                     const item = this.additionalItems[i];
+                    // Skip validation for confirmed duplicates
+                    if (item.duplicateDetection?.isConfirmed) {
+                        continue;
+                    }
                     this.validateSingleItem(
                         item,
                         item.tempDrinkType,
@@ -2560,26 +2757,35 @@
 
             /**
              * Build bulk payload for request mode (formType="req")
+             * Excludes confirmed duplicates (existing listings) from the payload
              */
             buildBulkRequestPayload() {
                 const items = [];
 
-                // Transform Item 1 (main form)
-                const item1 = this.transformItemToRequestPayload(
-                    this.form,
-                    this.tempDrinkType,
-                    this.tempTypeCategory,
-                    this.tempDrinkStyle,
-                    this.indOperator,
-                    this.varietyTagsList
-                );
-                // Add userID and submitterType to each item for requestListingBulk
-                item1.userID = this.form["userID"];
-                item1.submitterType = this.userType;
-                items.push(item1);
+                // Transform Item 1 (main form) - skip if confirmed duplicate
+                if (!this.duplicateDetection.isConfirmed) {
+                    const item1 = this.transformItemToRequestPayload(
+                        this.form,
+                        this.tempDrinkType,
+                        this.tempTypeCategory,
+                        this.tempDrinkStyle,
+                        this.indOperator,
+                        this.varietyTagsList
+                    );
+                    // Add userID and submitterType to each item for requestListingBulk
+                    item1.userID = this.form["userID"];
+                    item1.submitterType = this.userType;
+                    item1.originalIndex = 0; // Track original index for result mapping
+                    items.push(item1);
+                }
 
-                // Transform each additional item
-                for (const item of this.additionalItems) {
+                // Transform each additional item - skip confirmed duplicates
+                for (let i = 0; i < this.additionalItems.length; i++) {
+                    const item = this.additionalItems[i];
+                    // Skip confirmed duplicates
+                    if (item.duplicateDetection?.isConfirmed) {
+                        continue;
+                    }
                     const transformedItem = this.transformItemToRequestPayload(
                         item,
                         item.tempDrinkType,
@@ -2591,6 +2797,7 @@
                     // Add userID and submitterType to each item
                     transformedItem.userID = this.form["userID"];
                     transformedItem.submitterType = this.userType;
+                    transformedItem.originalIndex = i + 1; // Track original index for result mapping
                     items.push(transformedItem);
                 }
 
@@ -2602,30 +2809,42 @@
 
             /**
              * Build bulk payload for power mode (formType="power")
+             * Excludes confirmed duplicates (existing listings) from the payload
              */
             buildBulkPowerPayload() {
                 const listings = [];
 
-                // Transform Item 1 (main form)
-                listings.push(this.transformItemToPowerPayload(
-                    this.form,
-                    this.tempDrinkType,
-                    this.tempTypeCategory,
-                    this.tempDrinkStyle,
-                    this.indOperator,
-                    this.varietyTagsList
-                ));
+                // Transform Item 1 (main form) - skip if confirmed duplicate
+                if (!this.duplicateDetection.isConfirmed) {
+                    const item1 = this.transformItemToPowerPayload(
+                        this.form,
+                        this.tempDrinkType,
+                        this.tempTypeCategory,
+                        this.tempDrinkStyle,
+                        this.indOperator,
+                        this.varietyTagsList
+                    );
+                    item1.originalIndex = 0; // Track original index for result mapping
+                    listings.push(item1);
+                }
 
-                // Transform each additional item
-                for (const item of this.additionalItems) {
-                    listings.push(this.transformItemToPowerPayload(
+                // Transform each additional item - skip confirmed duplicates
+                for (let i = 0; i < this.additionalItems.length; i++) {
+                    const item = this.additionalItems[i];
+                    // Skip confirmed duplicates
+                    if (item.duplicateDetection?.isConfirmed) {
+                        continue;
+                    }
+                    const transformedItem = this.transformItemToPowerPayload(
                         item,
                         item.tempDrinkType,
                         item.tempTypeCategory,
                         item.tempDrinkStyle,
                         item.indOperator,
                         item.varietyTagsList
-                    ));
+                    );
+                    transformedItem.originalIndex = i + 1; // Track original index for result mapping
+                    listings.push(transformedItem);
                 }
 
                 return {
@@ -4715,6 +4934,14 @@
     background-color: rgba(220, 53, 69, 0.15) !important;
 }
 
+.staging-table tr.row-skipped {
+    background-color: rgba(108, 117, 125, 0.1) !important;
+}
+
+.staging-table tr.row-skipped:hover {
+    background-color: rgba(108, 117, 125, 0.15) !important;
+}
+
 .staging-table tr.row-pending {
     background-color: transparent;
 }
@@ -4728,6 +4955,16 @@
 .staging-table .badge.bg-danger {
     max-width: 180px;
     word-wrap: break-word;
+}
+
+/* Clickable links inside badges */
+.staging-table .badge a {
+    color: inherit;
+    text-decoration: underline;
+}
+
+.staging-table .badge a:hover {
+    opacity: 0.8;
 }
 
 .staging-thumbnail {
