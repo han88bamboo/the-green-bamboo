@@ -1632,7 +1632,7 @@
                                     <!-- Pre-submission: show if existing or pending -->
                                     <template v-if="!bulkSubmissionComplete">
                                         <span v-if="isItemConfirmedDuplicate(0)" class="badge bg-secondary">
-                                            📌 Existing listing
+                                            Already Exists!
                                             <a v-if="getConfirmedDuplicateInfo(0)?.id" 
                                                :href="'/listing/view/' + getConfirmedDuplicateInfo(0).id + '/' + slugify(getConfirmedDuplicateInfo(0).listingName || '')"
                                                target="_blank"
@@ -3073,8 +3073,20 @@
             // Handle clicks outside popover to close it
             handlePopoverClickOutside(event) {
                 if (!this.activePopover) return;
-                const popoverEl = this.$refs.activePopoverContainer;
-                if (popoverEl && !popoverEl.contains(event.target)) {
+                
+                const popoverRef = this.$refs.activePopoverContainer;
+                if (!popoverRef) {
+                    this.closePopover();
+                    return;
+                }
+                
+                // Handle both single element and array of elements (from v-for)
+                const popoverElements = Array.isArray(popoverRef) ? popoverRef : [popoverRef];
+                
+                // Check if click is inside any of the popover elements
+                const isClickInside = popoverElements.some(el => el && el.contains && el.contains(event.target));
+                
+                if (!isClickInside) {
                     this.closePopover();
                 }
             },
