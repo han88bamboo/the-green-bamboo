@@ -1530,14 +1530,19 @@
                 <div v-if="!bulkSubmissionComplete && !bulkSubmissionInProgress" class="mb-3">
                     <p class="text-muted mb-1">
                         <span v-if="getNewItemsCount() > 0">
-                            <strong>{{ getNewItemsCount() }}</strong> item(s) to be submitted
+                            <strong>{{ getNewItemsCount() }}</strong> of {{ getStagedItemsCount() }} item(s) selected for submission
                         </span>
-                        <span v-if="getNewItemsCount() > 0 && getConfirmedDuplicatesCount() > 0">, </span>
-                        <span v-if="getConfirmedDuplicatesCount() > 0" class="text-secondary">
-                            <strong>{{ getConfirmedDuplicatesCount() }}</strong> existing listing(s) <span class="small">(will not be submitted)</span>
+                        <span v-else-if="getStagedItemsCount() > 0" class="text-warning">
+                            <strong>0</strong> items selected for submission
+                        </span>
+                        <span v-if="getConfirmedDuplicatesCount() > 0" class="text-secondary ms-2">
+                            (<strong>{{ getConfirmedDuplicatesCount() }}</strong> existing listing(s) will be skipped)
+                        </span>
+                        <span v-if="getUncheckedItemsCount() > 0" class="text-secondary ms-2">
+                            (<strong>{{ getUncheckedItemsCount() }}</strong> unchecked)
                         </span>
                     </p>
-                    <p class="text-muted small mb-0">Please review before confirming.</p>
+                    <p class="text-muted small mb-0">Use checkboxes to select items. Click cells to edit. Review before confirming.</p>
                 </div>
                 
                 <!-- In-progress spinner -->
@@ -1588,6 +1593,7 @@
                     <table class="table table-bordered staging-table">
                         <thead class="table-light sticky-header">
                             <tr>
+                                <th v-if="!bulkSubmissionComplete" style="width: 40px; text-align: center;">Create?</th>
                                 <th>#</th>
                                 <th style="min-width: 220px;">Status</th>
                                 <th>Photo</th>
@@ -1609,7 +1615,18 @@
                         </thead>
                         <tbody>
                             <!-- Item 1 (main form) -->
-                            <tr :class="getRowClass(0)">
+                            <tr :class="[getRowClass(0), { 'row-unchecked': !isItemSelected(0) && !bulkSubmissionComplete }]">
+                                <!-- Checkbox column (hidden after submission) -->
+                                <td v-if="!bulkSubmissionComplete" class="text-center">
+                                    <input 
+                                        type="checkbox" 
+                                        class="form-check-input staging-checkbox"
+                                        :checked="isItemSelected(0)"
+                                        :disabled="isItemConfirmedDuplicate(0)"
+                                        :class="{ 'disabled-checkbox': isItemConfirmedDuplicate(0) }"
+                                        @change="toggleItemSelection(0)"
+                                    />
+                                </td>
                                 <td>1</td>
                                 <td>
                                     <!-- Pre-submission: show if existing or pending -->
@@ -1666,23 +1683,306 @@
                                     />
                                     <span v-else class="text-muted">-</span>
                                 </td>
-                                <td>{{ form['listingName'] || '-' }}</td>
-                                <td>{{ form['producerNew'] || '-' }}</td>
-                                <td>{{ indOperator ? 'Yes' : 'No' }}</td>
-                                <td>{{ form['bottler'] || '-' }}</td>
-                                <td>{{ tempDrinkType || '-' }}</td>
-                                <td>{{ tempTypeCategory || '-' }}</td>
-                                <td>{{ tempDrinkStyle || '-' }}</td>
-                                <td>{{ form['originCountry'] || '-' }}</td>
-                                <td>{{ form['abv'] || '-' }}</td>
-                                <td>{{ form['age'] || '-' }}</td>
+                                <!-- Listing Name - Editable -->
+                                <td class="editable-cell" @click="startEditing(0, 'listingName')" :class="{ 'editing': isEditing(0, 'listingName'), 'not-editable': isItemConfirmedDuplicate(0) || bulkSubmissionComplete }">
+                                    <template v-if="isEditing(0, 'listingName')">
+                                        <input 
+                                            type="text" 
+                                            class="form-control form-control-sm inline-edit-input"
+                                            v-model="form['listingName']"
+                                            @blur="stopEditing()"
+                                            @keyup.enter="stopEditing()"
+                                            @keyup.escape="stopEditing()"
+                                            ref="editInput"
+                                            @click.stop
+                                        />
+                                    </template>
+                                    <template v-else>
+                                        <span :class="{ 'text-muted': !form['listingName'] }">{{ truncateText(form['listingName'], 15) || '-' }}</span>
+                                    </template>
+                                </td>
+                                <!-- Producer - Popover editable -->
+                                <td class="editable-cell popover-cell" @click.stop="openPopover(0, 'producer')" :class="{ 'not-editable': isItemConfirmedDuplicate(0) || bulkSubmissionComplete, 'popover-active': isPopoverActive(0, 'producer') }">
+                                    <span :class="{ 'text-muted': !form['producerNew'] }">{{ truncateText(form['producerNew'], 12) || '-' }}</span>
+                                    <!-- Producer Popover -->
+                                    <div v-if="isPopoverActive(0, 'producer')" class="cell-popover" ref="activePopoverContainer" @click.stop>
+                                        <div class="popover-header">
+                                            <span class="popover-title">Edit Producer</span>
+                                            <button type="button" class="btn-close btn-close-sm" @click.stop="closePopover"></button>
+                                        </div>
+                                        <div class="popover-body">
+                                            <input 
+                                                type="text" 
+                                                class="form-control form-control-sm"
+                                                v-model="popoverSearchQuery"
+                                                @input="onPopoverSearchInput"
+                                                placeholder="Search producer..."
+                                                ref="popoverInput"
+                                            />
+                                            <div v-if="popoverSearchResults.length > 0" class="popover-dropdown">
+                                                <div 
+                                                    v-for="result in popoverSearchResults.slice(0, 8)" 
+                                                    :key="result.id" 
+                                                    class="popover-dropdown-item"
+                                                    @click.stop="selectPopoverResult(result)"
+                                                >
+                                                    <span class="result-name">{{ result.producerName }}</span>
+                                                    <span class="result-id text-muted">#{{ result.id }}</span>
+                                                </div>
+                                            </div>
+                                            <div v-else-if="popoverSearchQuery && popoverSearchQuery.length >= 2" class="popover-no-results text-muted">
+                                                No results found
+                                            </div>
+                                        </div>
+                                        <div class="popover-footer">
+                                            <button type="button" class="btn btn-sm btn-outline-secondary" @click.stop="clearPopoverSelection">Clear</button>
+                                            <button type="button" class="btn btn-sm btn-secondary" @click.stop="closePopover">Close</button>
+                                        </div>
+                                    </div>
+                                </td>
+                                <!-- IB - Editable Toggle -->
+                                <td class="editable-cell" @click="!isItemConfirmedDuplicate(0) && !bulkSubmissionComplete && toggleIBForRow(0)" :class="{ 'not-editable': isItemConfirmedDuplicate(0) || bulkSubmissionComplete }">
+                                    <span :class="indOperator ? 'text-success fw-bold' : 'text-muted'">{{ indOperator ? 'Yes' : 'No' }}</span>
+                                </td>
+                                <!-- Bottler - Popover editable (only when IB=Yes) -->
+                                <td class="editable-cell popover-cell" @click.stop="isBottlerEditable(0) && openPopover(0, 'bottler')" :class="{ 'not-editable': isItemConfirmedDuplicate(0) || bulkSubmissionComplete || !isBottlerEditable(0), 'popover-active': isPopoverActive(0, 'bottler') }">
+                                    <span :class="{ 'text-muted': !form['bottler'] || !indOperator }">{{ indOperator ? (truncateText(form['bottler'], 12) || '-') : '-' }}</span>
+                                    <!-- Bottler Popover -->
+                                    <div v-if="isPopoverActive(0, 'bottler')" class="cell-popover" ref="activePopoverContainer" @click.stop>
+                                        <div class="popover-header">
+                                            <span class="popover-title">Edit Bottler</span>
+                                            <button type="button" class="btn-close btn-close-sm" @click.stop="closePopover"></button>
+                                        </div>
+                                        <div class="popover-body">
+                                            <input 
+                                                type="text" 
+                                                class="form-control form-control-sm"
+                                                v-model="popoverSearchQuery"
+                                                @input="onPopoverSearchInput"
+                                                placeholder="Search bottler..."
+                                                ref="popoverInput"
+                                            />
+                                            <div v-if="popoverSearchResults.length > 0" class="popover-dropdown">
+                                                <div 
+                                                    v-for="result in popoverSearchResults.slice(0, 8)" 
+                                                    :key="result.id" 
+                                                    class="popover-dropdown-item"
+                                                    @click.stop="selectPopoverResult(result)"
+                                                >
+                                                    <span class="result-name">{{ result.producerName }}</span>
+                                                    <span class="result-id text-muted">#{{ result.id }}</span>
+                                                </div>
+                                            </div>
+                                            <div v-else-if="popoverSearchQuery && popoverSearchQuery.length >= 2" class="popover-no-results text-muted">
+                                                No results found
+                                            </div>
+                                        </div>
+                                        <div class="popover-footer">
+                                            <button type="button" class="btn btn-sm btn-outline-secondary" @click.stop="clearPopoverSelection">Clear</button>
+                                            <button type="button" class="btn btn-sm btn-secondary" @click.stop="closePopover">Close</button>
+                                        </div>
+                                    </div>
+                                </td>
+                                <!-- Drink Type - Editable Dropdown -->
+                                <td class="editable-cell" @click="startEditing(0, 'drinkType')" :class="{ 'editing': isEditing(0, 'drinkType'), 'not-editable': isItemConfirmedDuplicate(0) || bulkSubmissionComplete }">
+                                    <template v-if="isEditing(0, 'drinkType')">
+                                        <select 
+                                            class="form-select form-select-sm inline-edit-select"
+                                            v-model="tempDrinkType"
+                                            @change="onDrinkTypeChangeInModal(0); stopEditing()"
+                                            @blur="stopEditing()"
+                                            @click.stop
+                                            ref="editInput"
+                                        >
+                                            <option v-for="type in drinkCategoriesList" :key="type" :value="type">{{ type }}</option>
+                                        </select>
+                                    </template>
+                                    <template v-else>
+                                        <span :class="{ 'text-muted': !tempDrinkType || tempDrinkType === '-' }">{{ tempDrinkType || '-' }}</span>
+                                    </template>
+                                </td>
+                                <!-- Category - Editable Dropdown -->
+                                <td class="editable-cell" @click="startEditing(0, 'category')" :class="{ 'editing': isEditing(0, 'category'), 'not-editable': isItemConfirmedDuplicate(0) || bulkSubmissionComplete }">
+                                    <template v-if="isEditing(0, 'category')">
+                                        <select 
+                                            class="form-select form-select-sm inline-edit-select"
+                                            v-model="tempTypeCategory"
+                                            @change="onCategoryChangeInModal(0); stopEditing()"
+                                            @blur="stopEditing()"
+                                            @click.stop
+                                            ref="editInput"
+                                        >
+                                            <option v-for="cat in tempTypeCategoryList" :key="cat" :value="cat">{{ cat }}</option>
+                                        </select>
+                                    </template>
+                                    <template v-else>
+                                        <span :class="{ 'text-muted': !tempTypeCategory || tempTypeCategory === '-' }">{{ tempTypeCategory || '-' }}</span>
+                                    </template>
+                                </td>
+                                <!-- Style - Editable Dropdown -->
+                                <td class="editable-cell" @click="startEditing(0, 'style')" :class="{ 'editing': isEditing(0, 'style'), 'not-editable': isItemConfirmedDuplicate(0) || bulkSubmissionComplete }">
+                                    <template v-if="isEditing(0, 'style')">
+                                        <select 
+                                            class="form-select form-select-sm inline-edit-select"
+                                            v-model="tempDrinkStyle"
+                                            @blur="stopEditing()"
+                                            @change="stopEditing()"
+                                            @click.stop
+                                            ref="editInput"
+                                        >
+                                            <option v-for="style in tempDrinkStylesList" :key="style" :value="style">{{ style }}</option>
+                                        </select>
+                                    </template>
+                                    <template v-else>
+                                        <span :class="{ 'text-muted': !tempDrinkStyle || tempDrinkStyle === '-' }">{{ tempDrinkStyle || '-' }}</span>
+                                    </template>
+                                </td>
+                                <!-- Country - Editable Dropdown -->
+                                <td class="editable-cell" @click="startEditing(0, 'country')" :class="{ 'editing': isEditing(0, 'country'), 'not-editable': isItemConfirmedDuplicate(0) || bulkSubmissionComplete }">
+                                    <template v-if="isEditing(0, 'country')">
+                                        <select 
+                                            class="form-select form-select-sm inline-edit-select"
+                                            v-model="form['originCountry']"
+                                            @blur="stopEditing()"
+                                            @change="stopEditing()"
+                                            @click.stop
+                                            ref="editInput"
+                                        >
+                                            <option value="">Select country</option>
+                                            <option v-for="country in countries" :key="country" :value="country">{{ country }}</option>
+                                        </select>
+                                    </template>
+                                    <template v-else>
+                                        <span :class="{ 'text-muted': !form['originCountry'] }">{{ truncateText(form['originCountry'], 10) || '-' }}</span>
+                                    </template>
+                                </td>
+                                <!-- ABV - Editable Number -->
+                                <td class="editable-cell" @click="startEditing(0, 'abv')" :class="{ 'editing': isEditing(0, 'abv'), 'not-editable': isItemConfirmedDuplicate(0) || bulkSubmissionComplete }">
+                                    <template v-if="isEditing(0, 'abv')">
+                                        <input 
+                                            type="number" 
+                                            class="form-control form-control-sm inline-edit-input inline-edit-number"
+                                            v-model="form['abv']"
+                                            @blur="stopEditing()"
+                                            @keyup.enter="stopEditing()"
+                                            @keyup.escape="stopEditing()"
+                                            min="0" max="100" step="0.1"
+                                            ref="editInput"
+                                            @click.stop
+                                        />
+                                    </template>
+                                    <template v-else>
+                                        <span :class="{ 'text-muted': !form['abv'] }">{{ form['abv'] || '-' }}</span>
+                                    </template>
+                                </td>
+                                <!-- Age - Editable Number -->
+                                <td class="editable-cell" @click="startEditing(0, 'age')" :class="{ 'editing': isEditing(0, 'age'), 'not-editable': isItemConfirmedDuplicate(0) || bulkSubmissionComplete }">
+                                    <template v-if="isEditing(0, 'age')">
+                                        <input 
+                                            type="number" 
+                                            class="form-control form-control-sm inline-edit-input inline-edit-number"
+                                            v-model="form['age']"
+                                            @blur="stopEditing()"
+                                            @keyup.enter="stopEditing()"
+                                            @keyup.escape="stopEditing()"
+                                            min="0"
+                                            ref="editInput"
+                                            @click.stop
+                                        />
+                                    </template>
+                                    <template v-else>
+                                        <span :class="{ 'text-muted': !form['age'] }">{{ form['age'] || '-' }}</span>
+                                    </template>
+                                </td>
                                 <td>{{ formatVarietyTags(varietyTagsList) }}</td>
-                                <td class="text-truncate-cell">{{ form['officialDesc'] || '-' }}</td>
-                                <td class="text-truncate-cell">{{ form['sourceLink'] || '-' }}</td>
-                                <td class="text-truncate-cell">{{ form['reviewLink'] || '-' }}</td>
+                                <!-- Description - Popover editable -->
+                                <td class="editable-cell popover-cell" @click.stop="openPopover(0, 'description')" :class="{ 'not-editable': isItemConfirmedDuplicate(0) || bulkSubmissionComplete, 'popover-active': isPopoverActive(0, 'description') }">
+                                    <span :class="{ 'text-muted': !form['officialDesc'] }">{{ truncateText(form['officialDesc'], 30) || '-' }}</span>
+                                    <!-- Description Popover -->
+                                    <div v-if="isPopoverActive(0, 'description')" class="cell-popover popover-wide" ref="activePopoverContainer" @click.stop>
+                                        <div class="popover-header">
+                                            <span class="popover-title">Edit Description</span>
+                                            <button type="button" class="btn-close btn-close-sm" @click.stop="closePopover"></button>
+                                        </div>
+                                        <div class="popover-body">
+                                            <textarea 
+                                                class="form-control form-control-sm"
+                                                v-model="popoverTextValue"
+                                                rows="4"
+                                                placeholder="Enter description..."
+                                                ref="popoverInput"
+                                            ></textarea>
+                                        </div>
+                                        <div class="popover-footer">
+                                            <button type="button" class="btn btn-sm btn-secondary" @click.stop="closePopover">Cancel</button>
+                                            <button type="button" class="btn btn-sm btn-primary" @click.stop="savePopoverTextValue">Save</button>
+                                        </div>
+                                    </div>
+                                </td>
+                                <!-- Source Link - Popover editable -->
+                                <td class="editable-cell popover-cell" @click.stop="openPopover(0, 'sourceLink')" :class="{ 'not-editable': isItemConfirmedDuplicate(0) || bulkSubmissionComplete, 'popover-active': isPopoverActive(0, 'sourceLink') }">
+                                    <span :class="{ 'text-muted': !form['sourceLink'] }">{{ truncateText(form['sourceLink'], 15) || '-' }}</span>
+                                    <!-- Source Link Popover -->
+                                    <div v-if="isPopoverActive(0, 'sourceLink')" class="cell-popover" ref="activePopoverContainer" @click.stop>
+                                        <div class="popover-header">
+                                            <span class="popover-title">Edit Source Link</span>
+                                            <button type="button" class="btn-close btn-close-sm" @click.stop="closePopover"></button>
+                                        </div>
+                                        <div class="popover-body">
+                                            <input 
+                                                type="url" 
+                                                class="form-control form-control-sm"
+                                                v-model="popoverTextValue"
+                                                placeholder="https://..."
+                                                ref="popoverInput"
+                                                @keyup.enter="savePopoverTextValue"
+                                            />
+                                        </div>
+                                        <div class="popover-footer">
+                                            <button type="button" class="btn btn-sm btn-secondary" @click.stop="closePopover">Cancel</button>
+                                            <button type="button" class="btn btn-sm btn-primary" @click.stop="savePopoverTextValue">Save</button>
+                                        </div>
+                                    </div>
+                                </td>
+                                <!-- Review Link - Popover editable -->
+                                <td class="editable-cell popover-cell" @click.stop="openPopover(0, 'reviewLink')" :class="{ 'not-editable': isItemConfirmedDuplicate(0) || bulkSubmissionComplete, 'popover-active': isPopoverActive(0, 'reviewLink') }">
+                                    <span :class="{ 'text-muted': !form['reviewLink'] }">{{ truncateText(form['reviewLink'], 15) || '-' }}</span>
+                                    <!-- Review Link Popover -->
+                                    <div v-if="isPopoverActive(0, 'reviewLink')" class="cell-popover" ref="activePopoverContainer" @click.stop>
+                                        <div class="popover-header">
+                                            <span class="popover-title">Edit Review Link</span>
+                                            <button type="button" class="btn-close btn-close-sm" @click.stop="closePopover"></button>
+                                        </div>
+                                        <div class="popover-body">
+                                            <input 
+                                                type="url" 
+                                                class="form-control form-control-sm"
+                                                v-model="popoverTextValue"
+                                                placeholder="https://..."
+                                                ref="popoverInput"
+                                                @keyup.enter="savePopoverTextValue"
+                                            />
+                                        </div>
+                                        <div class="popover-footer">
+                                            <button type="button" class="btn btn-sm btn-secondary" @click.stop="closePopover">Cancel</button>
+                                            <button type="button" class="btn btn-sm btn-primary" @click.stop="savePopoverTextValue">Save</button>
+                                        </div>
+                                    </div>
+                                </td>
                             </tr>
                             <!-- Additional items -->
-                            <tr v-for="(item, index) in additionalItems" :key="'staged-' + index" :class="getRowClass(index + 1)">
+                            <tr v-for="(item, index) in additionalItems" :key="'staged-' + index" :class="[getRowClass(index + 1), { 'row-unchecked': !isItemSelected(index + 1) && !bulkSubmissionComplete }]">
+                                <!-- Checkbox column (hidden after submission) -->
+                                <td v-if="!bulkSubmissionComplete" class="text-center">
+                                    <input 
+                                        type="checkbox" 
+                                        class="form-check-input staging-checkbox"
+                                        :checked="isItemSelected(index + 1)"
+                                        :disabled="isItemConfirmedDuplicate(index + 1)"
+                                        :class="{ 'disabled-checkbox': isItemConfirmedDuplicate(index + 1) }"
+                                        @change="toggleItemSelection(index + 1)"
+                                    />
+                                </td>
                                 <td>{{ index + 2 }}</td>
                                 <td>
                                     <!-- Pre-submission: show if existing or pending -->
@@ -1739,20 +2039,292 @@
                                     />
                                     <span v-else class="text-muted">-</span>
                                 </td>
-                                <td>{{ item.listingName || '-' }}</td>
-                                <td>{{ item.producerNew || '-' }}</td>
-                                <td>{{ item.indOperator ? 'Yes' : 'No' }}</td>
-                                <td>{{ item.bottler || '-' }}</td>
-                                <td>{{ item.tempDrinkType || '-' }}</td>
-                                <td>{{ item.tempTypeCategory || '-' }}</td>
-                                <td>{{ item.tempDrinkStyle || '-' }}</td>
-                                <td>{{ item.originCountry || '-' }}</td>
-                                <td>{{ item.abv || '-' }}</td>
-                                <td>{{ item.age || '-' }}</td>
+                                <!-- Listing Name - Editable -->
+                                <td class="editable-cell" @click="startEditing(index + 1, 'listingName')" :class="{ 'editing': isEditing(index + 1, 'listingName'), 'not-editable': isItemConfirmedDuplicate(index + 1) || bulkSubmissionComplete }">
+                                    <template v-if="isEditing(index + 1, 'listingName')">
+                                        <input 
+                                            type="text" 
+                                            class="form-control form-control-sm inline-edit-input"
+                                            v-model="item.listingName"
+                                            @blur="stopEditing()"
+                                            @keyup.enter="stopEditing()"
+                                            @keyup.escape="stopEditing()"
+                                            ref="editInput"
+                                            @click.stop
+                                        />
+                                    </template>
+                                    <template v-else>
+                                        <span :class="{ 'text-muted': !item.listingName }">{{ truncateText(item.listingName, 15) || '-' }}</span>
+                                    </template>
+                                </td>
+                                <!-- Producer - Popover editable -->
+                                <td class="editable-cell popover-cell" @click.stop="openPopover(index + 1, 'producer')" :class="{ 'not-editable': isItemConfirmedDuplicate(index + 1) || bulkSubmissionComplete, 'popover-active': isPopoverActive(index + 1, 'producer') }">
+                                    <span :class="{ 'text-muted': !item.producerNew }">{{ truncateText(item.producerNew, 12) || '-' }}</span>
+                                    <!-- Producer Popover -->
+                                    <div v-if="isPopoverActive(index + 1, 'producer')" class="cell-popover" ref="activePopoverContainer" @click.stop>
+                                        <div class="popover-header">
+                                            <span class="popover-title">Edit Producer</span>
+                                            <button type="button" class="btn-close btn-close-sm" @click.stop="closePopover"></button>
+                                        </div>
+                                        <div class="popover-body">
+                                            <input 
+                                                type="text" 
+                                                class="form-control form-control-sm"
+                                                v-model="popoverSearchQuery"
+                                                @input="onPopoverSearchInput"
+                                                placeholder="Search producer..."
+                                                ref="popoverInput"
+                                            />
+                                            <div v-if="popoverSearchResults.length > 0" class="popover-dropdown">
+                                                <div 
+                                                    v-for="result in popoverSearchResults.slice(0, 8)" 
+                                                    :key="result.id" 
+                                                    class="popover-dropdown-item"
+                                                    @click.stop="selectPopoverResult(result)"
+                                                >
+                                                    <span class="result-name">{{ result.producerName }}</span>
+                                                    <span class="result-id text-muted">#{{ result.id }}</span>
+                                                </div>
+                                            </div>
+                                            <div v-else-if="popoverSearchQuery && popoverSearchQuery.length >= 2" class="popover-no-results text-muted">
+                                                No results found
+                                            </div>
+                                        </div>
+                                        <div class="popover-footer">
+                                            <button type="button" class="btn btn-sm btn-outline-secondary" @click.stop="clearPopoverSelection">Clear</button>
+                                            <button type="button" class="btn btn-sm btn-secondary" @click.stop="closePopover">Close</button>
+                                        </div>
+                                    </div>
+                                </td>
+                                <!-- IB - Editable Toggle -->
+                                <td class="editable-cell" @click="!isItemConfirmedDuplicate(index + 1) && !bulkSubmissionComplete && toggleIBForRow(index + 1)" :class="{ 'not-editable': isItemConfirmedDuplicate(index + 1) || bulkSubmissionComplete }">
+                                    <span :class="item.indOperator ? 'text-success fw-bold' : 'text-muted'">{{ item.indOperator ? 'Yes' : 'No' }}</span>
+                                </td>
+                                <!-- Bottler - Popover editable (only when IB=Yes) -->
+                                <td class="editable-cell popover-cell" @click.stop="isBottlerEditable(index + 1) && openPopover(index + 1, 'bottler')" :class="{ 'not-editable': isItemConfirmedDuplicate(index + 1) || bulkSubmissionComplete || !isBottlerEditable(index + 1), 'popover-active': isPopoverActive(index + 1, 'bottler') }">
+                                    <span :class="{ 'text-muted': !item.bottler || !item.indOperator }">{{ item.indOperator ? (truncateText(item.bottler, 12) || '-') : '-' }}</span>
+                                    <!-- Bottler Popover -->
+                                    <div v-if="isPopoverActive(index + 1, 'bottler')" class="cell-popover" ref="activePopoverContainer" @click.stop>
+                                        <div class="popover-header">
+                                            <span class="popover-title">Edit Bottler</span>
+                                            <button type="button" class="btn-close btn-close-sm" @click.stop="closePopover"></button>
+                                        </div>
+                                        <div class="popover-body">
+                                            <input 
+                                                type="text" 
+                                                class="form-control form-control-sm"
+                                                v-model="popoverSearchQuery"
+                                                @input="onPopoverSearchInput"
+                                                placeholder="Search bottler..."
+                                                ref="popoverInput"
+                                            />
+                                            <div v-if="popoverSearchResults.length > 0" class="popover-dropdown">
+                                                <div 
+                                                    v-for="result in popoverSearchResults.slice(0, 8)" 
+                                                    :key="result.id" 
+                                                    class="popover-dropdown-item"
+                                                    @click.stop="selectPopoverResult(result)"
+                                                >
+                                                    <span class="result-name">{{ result.producerName }}</span>
+                                                    <span class="result-id text-muted">#{{ result.id }}</span>
+                                                </div>
+                                            </div>
+                                            <div v-else-if="popoverSearchQuery && popoverSearchQuery.length >= 2" class="popover-no-results text-muted">
+                                                No results found
+                                            </div>
+                                        </div>
+                                        <div class="popover-footer">
+                                            <button type="button" class="btn btn-sm btn-outline-secondary" @click.stop="clearPopoverSelection">Clear</button>
+                                            <button type="button" class="btn btn-sm btn-secondary" @click.stop="closePopover">Close</button>
+                                        </div>
+                                    </div>
+                                </td>
+                                <!-- Drink Type - Editable Dropdown -->
+                                <td class="editable-cell" @click="startEditing(index + 1, 'drinkType')" :class="{ 'editing': isEditing(index + 1, 'drinkType'), 'not-editable': isItemConfirmedDuplicate(index + 1) || bulkSubmissionComplete }">
+                                    <template v-if="isEditing(index + 1, 'drinkType')">
+                                        <select 
+                                            class="form-select form-select-sm inline-edit-select"
+                                            v-model="item.tempDrinkType"
+                                            @change="onDrinkTypeChangeInModal(index + 1); stopEditing()"
+                                            @blur="stopEditing()"
+                                            @click.stop
+                                            ref="editInput"
+                                        >
+                                            <option v-for="type in drinkCategoriesList" :key="type" :value="type">{{ type }}</option>
+                                        </select>
+                                    </template>
+                                    <template v-else>
+                                        <span :class="{ 'text-muted': !item.tempDrinkType || item.tempDrinkType === '-' }">{{ item.tempDrinkType || '-' }}</span>
+                                    </template>
+                                </td>
+                                <!-- Category - Editable Dropdown -->
+                                <td class="editable-cell" @click="startEditing(index + 1, 'category')" :class="{ 'editing': isEditing(index + 1, 'category'), 'not-editable': isItemConfirmedDuplicate(index + 1) || bulkSubmissionComplete }">
+                                    <template v-if="isEditing(index + 1, 'category')">
+                                        <select 
+                                            class="form-select form-select-sm inline-edit-select"
+                                            v-model="item.tempTypeCategory"
+                                            @change="onCategoryChangeInModal(index + 1); stopEditing()"
+                                            @blur="stopEditing()"
+                                            @click.stop
+                                            ref="editInput"
+                                        >
+                                            <option v-for="cat in item.tempTypeCategoryList" :key="cat" :value="cat">{{ cat }}</option>
+                                        </select>
+                                    </template>
+                                    <template v-else>
+                                        <span :class="{ 'text-muted': !item.tempTypeCategory || item.tempTypeCategory === '-' }">{{ item.tempTypeCategory || '-' }}</span>
+                                    </template>
+                                </td>
+                                <!-- Style - Editable Dropdown -->
+                                <td class="editable-cell" @click="startEditing(index + 1, 'style')" :class="{ 'editing': isEditing(index + 1, 'style'), 'not-editable': isItemConfirmedDuplicate(index + 1) || bulkSubmissionComplete }">
+                                    <template v-if="isEditing(index + 1, 'style')">
+                                        <select 
+                                            class="form-select form-select-sm inline-edit-select"
+                                            v-model="item.tempDrinkStyle"
+                                            @blur="stopEditing()"
+                                            @change="stopEditing()"
+                                            @click.stop
+                                            ref="editInput"
+                                        >
+                                            <option v-for="style in item.tempDrinkStylesList" :key="style" :value="style">{{ style }}</option>
+                                        </select>
+                                    </template>
+                                    <template v-else>
+                                        <span :class="{ 'text-muted': !item.tempDrinkStyle || item.tempDrinkStyle === '-' }">{{ item.tempDrinkStyle || '-' }}</span>
+                                    </template>
+                                </td>
+                                <!-- Country - Editable Dropdown -->
+                                <td class="editable-cell" @click="startEditing(index + 1, 'country')" :class="{ 'editing': isEditing(index + 1, 'country'), 'not-editable': isItemConfirmedDuplicate(index + 1) || bulkSubmissionComplete }">
+                                    <template v-if="isEditing(index + 1, 'country')">
+                                        <select 
+                                            class="form-select form-select-sm inline-edit-select"
+                                            v-model="item.originCountry"
+                                            @blur="stopEditing()"
+                                            @change="stopEditing()"
+                                            @click.stop
+                                            ref="editInput"
+                                        >
+                                            <option value="">Select country</option>
+                                            <option v-for="country in countries" :key="country" :value="country">{{ country }}</option>
+                                        </select>
+                                    </template>
+                                    <template v-else>
+                                        <span :class="{ 'text-muted': !item.originCountry }">{{ truncateText(item.originCountry, 10) || '-' }}</span>
+                                    </template>
+                                </td>
+                                <!-- ABV - Editable Number -->
+                                <td class="editable-cell" @click="startEditing(index + 1, 'abv')" :class="{ 'editing': isEditing(index + 1, 'abv'), 'not-editable': isItemConfirmedDuplicate(index + 1) || bulkSubmissionComplete }">
+                                    <template v-if="isEditing(index + 1, 'abv')">
+                                        <input 
+                                            type="number" 
+                                            class="form-control form-control-sm inline-edit-input inline-edit-number"
+                                            v-model="item.abv"
+                                            @blur="stopEditing()"
+                                            @keyup.enter="stopEditing()"
+                                            @keyup.escape="stopEditing()"
+                                            min="0" max="100" step="0.1"
+                                            ref="editInput"
+                                            @click.stop
+                                        />
+                                    </template>
+                                    <template v-else>
+                                        <span :class="{ 'text-muted': !item.abv }">{{ item.abv || '-' }}</span>
+                                    </template>
+                                </td>
+                                <!-- Age - Editable Number -->
+                                <td class="editable-cell" @click="startEditing(index + 1, 'age')" :class="{ 'editing': isEditing(index + 1, 'age'), 'not-editable': isItemConfirmedDuplicate(index + 1) || bulkSubmissionComplete }">
+                                    <template v-if="isEditing(index + 1, 'age')">
+                                        <input 
+                                            type="number" 
+                                            class="form-control form-control-sm inline-edit-input inline-edit-number"
+                                            v-model="item.age"
+                                            @blur="stopEditing()"
+                                            @keyup.enter="stopEditing()"
+                                            @keyup.escape="stopEditing()"
+                                            min="0"
+                                            ref="editInput"
+                                            @click.stop
+                                        />
+                                    </template>
+                                    <template v-else>
+                                        <span :class="{ 'text-muted': !item.age }">{{ item.age || '-' }}</span>
+                                    </template>
+                                </td>
                                 <td>{{ formatVarietyTags(item.varietyTagsList) }}</td>
-                                <td class="text-truncate-cell">{{ item.officialDesc || '-' }}</td>
-                                <td class="text-truncate-cell">{{ item.sourceLink || '-' }}</td>
-                                <td class="text-truncate-cell">{{ item.reviewLink || '-' }}</td>
+                                <!-- Description - Popover editable -->
+                                <td class="editable-cell popover-cell" @click.stop="openPopover(index + 1, 'description')" :class="{ 'not-editable': isItemConfirmedDuplicate(index + 1) || bulkSubmissionComplete, 'popover-active': isPopoverActive(index + 1, 'description') }">
+                                    <span :class="{ 'text-muted': !item.officialDesc }">{{ truncateText(item.officialDesc, 30) || '-' }}</span>
+                                    <!-- Description Popover -->
+                                    <div v-if="isPopoverActive(index + 1, 'description')" class="cell-popover popover-wide" ref="activePopoverContainer" @click.stop>
+                                        <div class="popover-header">
+                                            <span class="popover-title">Edit Description</span>
+                                            <button type="button" class="btn-close btn-close-sm" @click.stop="closePopover"></button>
+                                        </div>
+                                        <div class="popover-body">
+                                            <textarea 
+                                                class="form-control form-control-sm"
+                                                v-model="popoverTextValue"
+                                                rows="4"
+                                                placeholder="Enter description..."
+                                                ref="popoverInput"
+                                            ></textarea>
+                                        </div>
+                                        <div class="popover-footer">
+                                            <button type="button" class="btn btn-sm btn-secondary" @click.stop="closePopover">Cancel</button>
+                                            <button type="button" class="btn btn-sm btn-primary" @click.stop="savePopoverTextValue">Save</button>
+                                        </div>
+                                    </div>
+                                </td>
+                                <!-- Source Link - Popover editable -->
+                                <td class="editable-cell popover-cell" @click.stop="openPopover(index + 1, 'sourceLink')" :class="{ 'not-editable': isItemConfirmedDuplicate(index + 1) || bulkSubmissionComplete, 'popover-active': isPopoverActive(index + 1, 'sourceLink') }">
+                                    <span :class="{ 'text-muted': !item.sourceLink }">{{ truncateText(item.sourceLink, 15) || '-' }}</span>
+                                    <!-- Source Link Popover -->
+                                    <div v-if="isPopoverActive(index + 1, 'sourceLink')" class="cell-popover" ref="activePopoverContainer" @click.stop>
+                                        <div class="popover-header">
+                                            <span class="popover-title">Edit Source Link</span>
+                                            <button type="button" class="btn-close btn-close-sm" @click.stop="closePopover"></button>
+                                        </div>
+                                        <div class="popover-body">
+                                            <input 
+                                                type="url" 
+                                                class="form-control form-control-sm"
+                                                v-model="popoverTextValue"
+                                                placeholder="https://..."
+                                                ref="popoverInput"
+                                                @keyup.enter="savePopoverTextValue"
+                                            />
+                                        </div>
+                                        <div class="popover-footer">
+                                            <button type="button" class="btn btn-sm btn-secondary" @click.stop="closePopover">Cancel</button>
+                                            <button type="button" class="btn btn-sm btn-primary" @click.stop="savePopoverTextValue">Save</button>
+                                        </div>
+                                    </div>
+                                </td>
+                                <!-- Review Link - Popover editable -->
+                                <td class="editable-cell popover-cell" @click.stop="openPopover(index + 1, 'reviewLink')" :class="{ 'not-editable': isItemConfirmedDuplicate(index + 1) || bulkSubmissionComplete, 'popover-active': isPopoverActive(index + 1, 'reviewLink') }">
+                                    <span :class="{ 'text-muted': !item.reviewLink }">{{ truncateText(item.reviewLink, 15) || '-' }}</span>
+                                    <!-- Review Link Popover -->
+                                    <div v-if="isPopoverActive(index + 1, 'reviewLink')" class="cell-popover" ref="activePopoverContainer" @click.stop>
+                                        <div class="popover-header">
+                                            <span class="popover-title">Edit Review Link</span>
+                                            <button type="button" class="btn-close btn-close-sm" @click.stop="closePopover"></button>
+                                        </div>
+                                        <div class="popover-body">
+                                            <input 
+                                                type="url" 
+                                                class="form-control form-control-sm"
+                                                v-model="popoverTextValue"
+                                                placeholder="https://..."
+                                                ref="popoverInput"
+                                                @keyup.enter="savePopoverTextValue"
+                                            />
+                                        </div>
+                                        <div class="popover-footer">
+                                            <button type="button" class="btn btn-sm btn-secondary" @click.stop="closePopover">Cancel</button>
+                                            <button type="button" class="btn btn-sm btn-primary" @click.stop="savePopoverTextValue">Save</button>
+                                        </div>
+                                    </div>
+                                </td>
                             </tr>
                         </tbody>
                     </table>
@@ -1949,6 +2521,18 @@
                 bulkSubmissionSummary: null,      // { totalSubmitted, successCount, failCount, autoApprovalEnabled, pointsAwarded, badgeAwarded }
                 bulkSubmissionInProgress: false,  // True while API call is in progress
                 bulkSubmissionComplete: false,    // True after API response received
+
+                // Staging modal selection state (for checkboxes)
+                stagedItemsSelection: [],         // Array of booleans - true = selected for submission
+
+                // Staging modal inline editing state
+                editingCell: null,                // { rowIndex: number, field: string } or null when not editing
+
+                // Staging modal popover editing state (for complex fields)
+                activePopover: null,              // { rowIndex: number, field: string } or null when no popover open
+                popoverSearchQuery: '',           // Search query for producer/bottler popovers
+                popoverSearchResults: [],         // Search results for producer/bottler popovers
+                popoverTextValue: '',             // Text value for description/link popovers
             };
         },
         async mounted() {
@@ -2015,8 +2599,9 @@
             }
         },
         beforeUnmount() {
-            // Clean up event listener when component is destroyed
+            // Clean up event listeners when component is destroyed
             document.removeEventListener('click', this.handleClickOutside);
+            document.removeEventListener('click', this.handlePopoverClickOutside);
         },
         watch: {
             form: {
@@ -2195,14 +2780,36 @@
                 this.bulkSubmissionInProgress = false;
                 this.bulkSubmissionComplete = false;
                 
+                // Initialize selection state: all items selected by default
+                // Index 0 = Item 1 (main form), Index 1+ = additional items
+                const totalItems = 1 + this.additionalItems.length;
+                this.stagedItemsSelection = new Array(totalItems).fill(true);
+                
+                // Reset editing state
+                this.editingCell = null;
+                
+                // Reset popover state
+                this.activePopover = null;
+                this.popoverSearchQuery = '';
+                this.popoverSearchResults = [];
+                this.popoverTextValue = '';
+                
                 this.showStagingModal = true;
                 // Prevent body scroll when modal is open
                 document.body.style.overflow = 'hidden';
+                
+                // Add click-outside listener for popovers
+                this.$nextTick(() => {
+                    document.addEventListener('click', this.handlePopoverClickOutside);
+                });
             },
 
             closeStagingModal() {
                 this.showStagingModal = false;
                 document.body.style.overflow = '';
+                
+                // Remove click-outside listener for popovers
+                document.removeEventListener('click', this.handlePopoverClickOutside);
                 
                 // If submission was complete, reset bulk state
                 if (this.bulkSubmissionComplete) {
@@ -2245,10 +2852,381 @@
                 return count;
             },
 
-            // Count new items to be submitted (excluding confirmed duplicates)
+            // Count new items to be submitted (excluding confirmed duplicates AND unchecked items)
             getNewItemsCount() {
-                return this.getStagedItemsCount() - this.getConfirmedDuplicatesCount();
+                let count = 0;
+                const totalItems = this.getStagedItemsCount();
+                for (let i = 0; i < totalItems; i++) {
+                    // Skip if not selected (unchecked)
+                    if (!this.isItemSelected(i)) continue;
+                    // Skip if confirmed duplicate
+                    if (this.isItemConfirmedDuplicate(i)) continue;
+                    count++;
+                }
+                return count;
             },
+
+            // Check if an item is selected (checkbox checked)
+            isItemSelected(index) {
+                // If selection array not initialized yet, default to true
+                if (!this.stagedItemsSelection || this.stagedItemsSelection.length === 0) {
+                    return true;
+                }
+                return this.stagedItemsSelection[index] !== false;
+            },
+
+            // Toggle item selection
+            toggleItemSelection(index) {
+                if (this.stagedItemsSelection[index] !== undefined) {
+                    this.stagedItemsSelection[index] = !this.stagedItemsSelection[index];
+                }
+            },
+
+            // Get count of selected items (for display)
+            getSelectedItemsCount() {
+                if (!this.stagedItemsSelection || this.stagedItemsSelection.length === 0) {
+                    return this.getStagedItemsCount();
+                }
+                return this.stagedItemsSelection.filter((selected, idx) => selected && !this.isItemConfirmedDuplicate(idx)).length;
+            },
+
+            // Get count of unchecked items (excluding duplicates)
+            getUncheckedItemsCount() {
+                if (!this.stagedItemsSelection || this.stagedItemsSelection.length === 0) {
+                    return 0;
+                }
+                return this.stagedItemsSelection.filter((selected, idx) => !selected && !this.isItemConfirmedDuplicate(idx)).length;
+            },
+
+            // ============ INLINE EDITING METHODS ============
+
+            // Truncate text to specified length
+            truncateText(text, maxLength) {
+                if (!text) return '';
+                if (text.length <= maxLength) return text;
+                return text.substring(0, maxLength) + '...';
+            },
+
+            // Check if a specific cell is being edited
+            isEditing(rowIndex, field) {
+                // Don't allow editing if submission is complete or in progress
+                if (this.bulkSubmissionComplete || this.bulkSubmissionInProgress) return false;
+                // Don't allow editing if item is a confirmed duplicate
+                if (this.isItemConfirmedDuplicate(rowIndex)) return false;
+                
+                return this.editingCell && 
+                       this.editingCell.rowIndex === rowIndex && 
+                       this.editingCell.field === field;
+            },
+
+            // Start editing a cell
+            startEditing(rowIndex, field) {
+                // Don't allow editing if submission is complete or in progress
+                if (this.bulkSubmissionComplete || this.bulkSubmissionInProgress) return;
+                // Don't allow editing if item is a confirmed duplicate
+                if (this.isItemConfirmedDuplicate(rowIndex)) return;
+                
+                this.editingCell = { rowIndex, field };
+                
+                // Focus the input after Vue updates the DOM
+                this.$nextTick(() => {
+                    if (this.$refs.editInput) {
+                        // Handle both single ref and array of refs
+                        const input = Array.isArray(this.$refs.editInput) 
+                            ? this.$refs.editInput[0] 
+                            : this.$refs.editInput;
+                        if (input) {
+                            input.focus();
+                            // Select text for text inputs
+                            if (input.type === 'text' || input.type === 'number') {
+                                input.select();
+                            }
+                        }
+                    }
+                });
+            },
+
+            // Stop editing
+            stopEditing() {
+                this.editingCell = null;
+            },
+
+            // Toggle Independent Bottler for a row
+            toggleIBForRow(rowIndex) {
+                if (this.bulkSubmissionComplete || this.bulkSubmissionInProgress) return;
+                if (this.isItemConfirmedDuplicate(rowIndex)) return;
+
+                if (rowIndex === 0) {
+                    // Item 1 (main form)
+                    this.indOperator = !this.indOperator;
+                    // If turning off IB, clear bottler fields
+                    if (!this.indOperator) {
+                        this.form['bottler'] = '';
+                        this.form['bottlerID'] = '';
+                        this.selectedBottler = {};
+                    }
+                } else {
+                    // Additional items
+                    const item = this.additionalItems[rowIndex - 1];
+                    if (item) {
+                        item.indOperator = !item.indOperator;
+                        // If turning off IB, clear bottler fields
+                        if (!item.indOperator) {
+                            item.bottler = '';
+                            item.bottlerID = '';
+                            item.selectedBottler = {};
+                        }
+                    }
+                }
+            },
+
+            // Handle drink type change in modal (updates category and style lists)
+            onDrinkTypeChangeInModal(rowIndex) {
+                if (rowIndex === 0) {
+                    // Item 1 - use existing method
+                    this.getDrinkCategoryList();
+                } else {
+                    // Additional items
+                    this.getDrinkCategoryListForItem(rowIndex - 1);
+                }
+            },
+
+            // Handle category change in modal (updates style list)
+            onCategoryChangeInModal(rowIndex) {
+                if (rowIndex === 0) {
+                    // Item 1 - use existing method
+                    this.getDrinkStyleList();
+                } else {
+                    // Additional items
+                    this.getDrinkStyleListForItem(rowIndex - 1);
+                }
+            },
+
+            // ============ END INLINE EDITING METHODS ============
+
+            // ============ POPOVER EDITING METHODS (for complex fields) ============
+
+            // Check if a popover is active for a specific cell
+            isPopoverActive(rowIndex, field) {
+                return this.activePopover && 
+                       this.activePopover.rowIndex === rowIndex && 
+                       this.activePopover.field === field;
+            },
+
+            // Open popover for a cell
+            openPopover(rowIndex, field) {
+                // Don't allow popover if submission is complete or in progress
+                if (this.bulkSubmissionComplete || this.bulkSubmissionInProgress) return;
+                // Don't allow popover if item is a confirmed duplicate
+                if (this.isItemConfirmedDuplicate(rowIndex)) return;
+                
+                // Close any active inline editing
+                this.editingCell = null;
+                
+                // Initialize popover state based on field type
+                if (field === 'producer' || field === 'bottler') {
+                    // Search-based fields - initialize with current value
+                    if (rowIndex === 0) {
+                        this.popoverSearchQuery = field === 'producer' ? this.form['producerNew'] : this.form['bottler'];
+                    } else {
+                        const item = this.additionalItems[rowIndex - 1];
+                        this.popoverSearchQuery = field === 'producer' ? item.producerNew : item.bottler;
+                    }
+                    this.popoverSearchResults = [];
+                    // Trigger initial search if there's a query
+                    if (this.popoverSearchQuery && this.popoverSearchQuery.length >= 2) {
+                        this.searchPopoverField(field);
+                    }
+                } else {
+                    // Text-based fields (description, sourceLink, reviewLink)
+                    if (rowIndex === 0) {
+                        this.popoverTextValue = this.form[field === 'description' ? 'officialDesc' : field] || '';
+                    } else {
+                        const item = this.additionalItems[rowIndex - 1];
+                        this.popoverTextValue = item[field === 'description' ? 'officialDesc' : field] || '';
+                    }
+                }
+                
+                this.activePopover = { rowIndex, field };
+                
+                // Focus input after DOM updates
+                this.$nextTick(() => {
+                    const input = this.$refs.popoverInput;
+                    if (input) {
+                        const el = Array.isArray(input) ? input[0] : input;
+                        if (el) {
+                            el.focus();
+                            if (el.select) el.select();
+                        }
+                    }
+                });
+            },
+
+            // Close popover
+            closePopover() {
+                this.activePopover = null;
+                this.popoverSearchQuery = '';
+                this.popoverSearchResults = [];
+                this.popoverTextValue = '';
+            },
+
+            // Handle clicks outside popover to close it
+            handlePopoverClickOutside(event) {
+                if (!this.activePopover) return;
+                const popoverEl = this.$refs.activePopoverContainer;
+                if (popoverEl && !popoverEl.contains(event.target)) {
+                    this.closePopover();
+                }
+            },
+
+            // Search for producer/bottler in popover
+            searchPopoverField(field) {
+                if (!this.popoverSearchQuery || this.popoverSearchQuery.length < 2) {
+                    this.popoverSearchResults = [];
+                    return;
+                }
+                
+                clearTimeout(this.popoverSearchTimer);
+                this.popoverSearchTimer = setTimeout(async () => {
+                    try {
+                        if (field === 'producer') {
+                            const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getUniqueProducersNamesID/${this.popoverSearchQuery}/0`);
+                            this.popoverSearchResults = response.data.data || [];
+                        } else if (field === 'bottler') {
+                            const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getUniqueBottlersNamesID/${this.popoverSearchQuery}`);
+                            this.popoverSearchResults = response.data.data || [];
+                        }
+                    } catch (error) {
+                        console.error(`Error searching ${field}:`, error);
+                        this.popoverSearchResults = [];
+                    }
+                }, 300);
+            },
+
+            // Handle popover search input change
+            onPopoverSearchInput() {
+                if (this.activePopover) {
+                    this.searchPopoverField(this.activePopover.field);
+                }
+            },
+
+            // Select producer/bottler from popover search results
+            selectPopoverResult(result) {
+                if (!this.activePopover) return;
+                
+                const { rowIndex, field } = this.activePopover;
+                
+                if (field === 'producer') {
+                    if (rowIndex === 0) {
+                        this.selectedProducer = result;
+                        this.form['producerNew'] = result.producerName;
+                        this.form['producerIdSearch'] = result.id;
+                        this.form['producerID'] = result.id;
+                        // Trigger duplicate check
+                        this.triggerDuplicateCheck();
+                    } else {
+                        const item = this.additionalItems[rowIndex - 1];
+                        if (item) {
+                            item.selectedProducer = result;
+                            item.producerNew = result.producerName;
+                            item.producerIdSearch = result.id;
+                            item.producerID = result.id;
+                            // Trigger duplicate check
+                            this.triggerDuplicateCheckForItem(rowIndex - 1);
+                        }
+                    }
+                } else if (field === 'bottler') {
+                    if (rowIndex === 0) {
+                        this.selectedBottler = result;
+                        this.form['bottler'] = result.producerName;
+                        this.form['bottlerID'] = result.id;
+                        // Trigger duplicate check
+                        this.triggerDuplicateCheck();
+                    } else {
+                        const item = this.additionalItems[rowIndex - 1];
+                        if (item) {
+                            item.selectedBottler = result;
+                            item.bottler = result.producerName;
+                            item.bottlerID = result.id;
+                            // Trigger duplicate check
+                            this.triggerDuplicateCheckForItem(rowIndex - 1);
+                        }
+                    }
+                }
+                
+                this.closePopover();
+            },
+
+            // Save text value from popover (for description/links)
+            savePopoverTextValue() {
+                if (!this.activePopover) return;
+                
+                const { rowIndex, field } = this.activePopover;
+                const fieldName = field === 'description' ? 'officialDesc' : field;
+                
+                if (rowIndex === 0) {
+                    this.form[fieldName] = this.popoverTextValue;
+                } else {
+                    const item = this.additionalItems[rowIndex - 1];
+                    if (item) {
+                        item[fieldName] = this.popoverTextValue;
+                    }
+                }
+                
+                this.closePopover();
+            },
+
+            // Clear producer/bottler from popover
+            clearPopoverSelection() {
+                if (!this.activePopover) return;
+                
+                const { rowIndex, field } = this.activePopover;
+                
+                if (field === 'producer') {
+                    if (rowIndex === 0) {
+                        this.selectedProducer = {};
+                        this.form['producerNew'] = '';
+                        this.form['producerIdSearch'] = '';
+                        this.form['producerID'] = '';
+                    } else {
+                        const item = this.additionalItems[rowIndex - 1];
+                        if (item) {
+                            item.selectedProducer = {};
+                            item.producerNew = '';
+                            item.producerIdSearch = '';
+                            item.producerID = '';
+                        }
+                    }
+                } else if (field === 'bottler') {
+                    if (rowIndex === 0) {
+                        this.selectedBottler = {};
+                        this.form['bottler'] = '';
+                        this.form['bottlerID'] = '';
+                    } else {
+                        const item = this.additionalItems[rowIndex - 1];
+                        if (item) {
+                            item.selectedBottler = {};
+                            item.bottler = '';
+                            item.bottlerID = '';
+                        }
+                    }
+                }
+                
+                this.popoverSearchQuery = '';
+                this.popoverSearchResults = [];
+            },
+
+            // Check if bottler popover should be enabled (IB must be Yes)
+            isBottlerEditable(rowIndex) {
+                if (rowIndex === 0) {
+                    return this.indOperator;
+                } else {
+                    const item = this.additionalItems[rowIndex - 1];
+                    return item && item.indOperator;
+                }
+            },
+
+            // ============ END POPOVER EDITING METHODS ============
 
             formatVarietyTags(tagsList) {
                 if (!tagsList || tagsList.length === 0) return '-';
@@ -2663,12 +3641,12 @@
 
             /**
              * Validate all items for bulk submission
-             * Skip validation for confirmed duplicates (existing listings)
+             * Skip validation for confirmed duplicates (existing listings) and unchecked items
              * @returns {Boolean} - Whether all items passed validation
              */
             validateAllItemsForBulk() {
-                // Validate Item 1 (main form) - skip if confirmed duplicate
-                if (!this.duplicateDetection.isConfirmed) {
+                // Validate Item 1 (main form) - skip if confirmed duplicate OR unchecked
+                if (!this.duplicateDetection.isConfirmed && this.isItemSelected(0)) {
                     this.validateSingleItem(
                         this.form,
                         this.tempDrinkType,
@@ -2679,11 +3657,15 @@
                     );
                 }
 
-                // Validate each additional item - skip confirmed duplicates
+                // Validate each additional item - skip confirmed duplicates OR unchecked
                 for (let i = 0; i < this.additionalItems.length; i++) {
                     const item = this.additionalItems[i];
                     // Skip validation for confirmed duplicates
                     if (item.duplicateDetection?.isConfirmed) {
+                        continue;
+                    }
+                    // Skip validation for unchecked items
+                    if (!this.isItemSelected(i + 1)) {
                         continue;
                     }
                     this.validateSingleItem(
@@ -2762,8 +3744,8 @@
             buildBulkRequestPayload() {
                 const items = [];
 
-                // Transform Item 1 (main form) - skip if confirmed duplicate
-                if (!this.duplicateDetection.isConfirmed) {
+                // Transform Item 1 (main form) - skip if confirmed duplicate OR unchecked
+                if (!this.duplicateDetection.isConfirmed && this.isItemSelected(0)) {
                     const item1 = this.transformItemToRequestPayload(
                         this.form,
                         this.tempDrinkType,
@@ -2779,11 +3761,15 @@
                     items.push(item1);
                 }
 
-                // Transform each additional item - skip confirmed duplicates
+                // Transform each additional item - skip confirmed duplicates OR unchecked
                 for (let i = 0; i < this.additionalItems.length; i++) {
                     const item = this.additionalItems[i];
                     // Skip confirmed duplicates
                     if (item.duplicateDetection?.isConfirmed) {
+                        continue;
+                    }
+                    // Skip unchecked items
+                    if (!this.isItemSelected(i + 1)) {
                         continue;
                     }
                     const transformedItem = this.transformItemToRequestPayload(
@@ -2814,8 +3800,8 @@
             buildBulkPowerPayload() {
                 const listings = [];
 
-                // Transform Item 1 (main form) - skip if confirmed duplicate
-                if (!this.duplicateDetection.isConfirmed) {
+                // Transform Item 1 (main form) - skip if confirmed duplicate OR unchecked
+                if (!this.duplicateDetection.isConfirmed && this.isItemSelected(0)) {
                     const item1 = this.transformItemToPowerPayload(
                         this.form,
                         this.tempDrinkType,
@@ -2828,11 +3814,15 @@
                     listings.push(item1);
                 }
 
-                // Transform each additional item - skip confirmed duplicates
+                // Transform each additional item - skip confirmed duplicates OR unchecked
                 for (let i = 0; i < this.additionalItems.length; i++) {
                     const item = this.additionalItems[i];
                     // Skip confirmed duplicates
                     if (item.duplicateDetection?.isConfirmed) {
+                        continue;
+                    }
+                    // Skip unchecked items
+                    if (!this.isItemSelected(i + 1)) {
                         continue;
                     }
                     const transformedItem = this.transformItemToPowerPayload(
@@ -4944,6 +5934,210 @@
 
 .staging-table tr.row-pending {
     background-color: transparent;
+}
+
+/* Unchecked row styling */
+.staging-table tr.row-unchecked {
+    background-color: rgba(108, 117, 125, 0.08) !important;
+    opacity: 0.6;
+}
+
+.staging-table tr.row-unchecked:hover {
+    background-color: rgba(108, 117, 125, 0.12) !important;
+    opacity: 0.75;
+}
+
+/* Staging checkbox styles */
+.staging-checkbox {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+}
+
+.staging-checkbox.disabled-checkbox {
+    cursor: not-allowed;
+    opacity: 0.4;
+    background-color: #e9ecef !important;
+}
+
+.staging-checkbox:checked {
+    background-color: #198754;
+    border-color: #198754;
+}
+
+.staging-checkbox.disabled-checkbox:checked {
+    background-color: #6c757d;
+    border-color: #6c757d;
+}
+
+/* Inline editing styles */
+.editable-cell {
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+    position: relative;
+    min-width: 60px;
+}
+
+.editable-cell:hover:not(.editing):not(.not-editable) {
+    background-color: rgba(13, 110, 253, 0.08);
+}
+
+.editable-cell.editing {
+    padding: 2px 4px !important;
+    background-color: rgba(13, 110, 253, 0.12);
+}
+
+.editable-cell.not-editable {
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+.inline-edit-input {
+    min-width: 80px;
+    max-width: 150px;
+    font-size: 0.85rem !important;
+    padding: 2px 6px !important;
+    height: auto !important;
+}
+
+.inline-edit-number {
+    min-width: 60px;
+    max-width: 80px;
+}
+
+.inline-edit-select {
+    min-width: 80px;
+    max-width: 140px;
+    font-size: 0.85rem !important;
+    padding: 2px 24px 2px 6px !important;
+    height: auto !important;
+}
+
+/* Popover editing styles */
+.popover-cell {
+    position: relative;
+}
+
+.popover-cell.popover-active {
+    background-color: rgba(13, 110, 253, 0.12);
+    z-index: 100;
+}
+
+.cell-popover {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    z-index: 1050;
+    min-width: 280px;
+    background: #fff;
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    border-radius: 8px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+    margin-top: 4px;
+}
+
+.cell-popover.popover-wide {
+    min-width: 350px;
+}
+
+.popover-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 12px;
+    background: #f8f9fa;
+    border-bottom: 1px solid #dee2e6;
+    border-radius: 8px 8px 0 0;
+}
+
+.popover-title {
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: #333;
+}
+
+.btn-close-sm {
+    font-size: 0.65rem;
+    padding: 4px;
+}
+
+.popover-body {
+    padding: 12px;
+}
+
+.popover-body input,
+.popover-body textarea {
+    font-size: 0.9rem;
+}
+
+.popover-body textarea {
+    resize: vertical;
+    min-height: 80px;
+}
+
+.popover-dropdown {
+    max-height: 200px;
+    overflow-y: auto;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    margin-top: 8px;
+    background: #fff;
+}
+
+.popover-dropdown-item {
+    padding: 8px 12px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #f0f0f0;
+    transition: background-color 0.15s ease;
+}
+
+.popover-dropdown-item:last-child {
+    border-bottom: none;
+}
+
+.popover-dropdown-item:hover {
+    background-color: #f8f9fa;
+}
+
+.popover-dropdown-item .result-name {
+    font-weight: 500;
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    margin-right: 8px;
+}
+
+.popover-dropdown-item .result-id {
+    font-size: 0.8rem;
+    flex-shrink: 0;
+}
+
+.popover-no-results {
+    padding: 12px;
+    text-align: center;
+    font-size: 0.85rem;
+    margin-top: 8px;
+    background: #f8f9fa;
+    border-radius: 4px;
+}
+
+.popover-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    padding: 10px 12px;
+    border-top: 1px solid #dee2e6;
+    background: #f8f9fa;
+    border-radius: 0 0 8px 8px;
+}
+
+.popover-footer .btn {
+    font-size: 0.85rem;
+    padding: 4px 12px;
 }
 
 /* Status badges in table */
