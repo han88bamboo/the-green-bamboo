@@ -1638,22 +1638,22 @@
                                                target="_blank"
                                                class="ms-1 text-white"
                                                @click.stop>
-                                                (ID: {{ getConfirmedDuplicateInfo(0).id }}) ↗
-                                            </a>
+                                                (ID: {{ getConfirmedDuplicateInfo(0).id }})
+                                            </a>↗
                                         </span>
-                                        <span v-else class="badge bg-primary">🆕 New submission</span>
+                                        <span v-else class="badge bg-primary">New submission</span>
                                     </template>
                                     <!-- Post-submission: show result -->
                                     <template v-else>
                                         <!-- Existing listing (skipped) -->
                                         <span v-if="getItemSubmissionStatus(0)?.isExisting" class="badge bg-secondary">
-                                            ⏭️ Skipped - Already exists
+                                            ⏭️ Skipped -
                                             <a v-if="getItemSubmissionStatus(0)?.existingListingId" 
                                                :href="'/listing/view/' + getItemSubmissionStatus(0).existingListingId + '/' + slugify(getItemSubmissionStatus(0).existingListingName || '')"
                                                target="_blank"
                                                class="ms-1 text-white"
                                                @click.stop>
-                                                (ID: {{ getItemSubmissionStatus(0).existingListingId }}) ↗
+                                            Already exists (ID: {{ getItemSubmissionStatus(0).existingListingId }}) ↗
                                             </a>
                                         </span>
                                         <!-- Success -->
@@ -1702,10 +1702,10 @@
                                     </template>
                                 </td>
                                 <!-- Producer - Popover editable -->
-                                <td class="editable-cell popover-cell" @click.stop="openPopover(0, 'producer')" :class="{ 'not-editable': isItemConfirmedDuplicate(0) || bulkSubmissionComplete, 'popover-active': isPopoverActive(0, 'producer') }">
+                                <td class="editable-cell popover-cell" @click.stop="openPopover(0, 'producer', $event)" :class="{ 'not-editable': isItemConfirmedDuplicate(0) || bulkSubmissionComplete, 'popover-active': isPopoverActive(0, 'producer') }">
                                     <span :class="{ 'text-muted': !form['producerNew'] }">{{ truncateText(form['producerNew'], 12) || '-' }}</span>
                                     <!-- Producer Popover -->
-                                    <div v-if="isPopoverActive(0, 'producer')" class="cell-popover" ref="activePopoverContainer" @click.stop>
+                                    <div v-if="isPopoverActive(0, 'producer')" class="cell-popover" :style="{ top: popoverPosition.top + 'px', left: popoverPosition.left + 'px' }" ref="activePopoverContainer" @click.stop>
                                         <div class="popover-header">
                                             <span class="popover-title">Edit Producer</span>
                                             <button type="button" class="btn-close btn-close-sm" @click.stop="closePopover"></button>
@@ -1745,10 +1745,10 @@
                                     <span :class="indOperator ? 'text-success fw-bold' : 'text-muted'">{{ indOperator ? 'Yes' : 'No' }}</span>
                                 </td>
                                 <!-- Bottler - Popover editable (only when IB=Yes) -->
-                                <td class="editable-cell popover-cell" @click.stop="isBottlerEditable(0) && openPopover(0, 'bottler')" :class="{ 'not-editable': isItemConfirmedDuplicate(0) || bulkSubmissionComplete || !isBottlerEditable(0), 'popover-active': isPopoverActive(0, 'bottler') }">
+                                <td class="editable-cell popover-cell" @click.stop="isBottlerEditable(0) && openPopover(0, 'bottler', $event)" :class="{ 'not-editable': isItemConfirmedDuplicate(0) || bulkSubmissionComplete || !isBottlerEditable(0), 'popover-active': isPopoverActive(0, 'bottler') }">
                                     <span :class="{ 'text-muted': !form['bottler'] || !indOperator }">{{ indOperator ? (truncateText(form['bottler'], 12) || '-') : '-' }}</span>
                                     <!-- Bottler Popover -->
-                                    <div v-if="isPopoverActive(0, 'bottler')" class="cell-popover" ref="activePopoverContainer" @click.stop>
+                                    <div v-if="isPopoverActive(0, 'bottler')" class="cell-popover" :style="{ top: popoverPosition.top + 'px', left: popoverPosition.left + 'px' }" ref="activePopoverContainer" @click.stop>
                                         <div class="popover-header">
                                             <span class="popover-title">Edit Bottler</span>
                                             <button type="button" class="btn-close btn-close-sm" @click.stop="closePopover"></button>
@@ -1896,10 +1896,10 @@
                                 </td>
                                 <td>{{ formatVarietyTags(varietyTagsList) }}</td>
                                 <!-- Description - Popover editable -->
-                                <td class="editable-cell popover-cell" @click.stop="openPopover(0, 'description')" :class="{ 'not-editable': isItemConfirmedDuplicate(0) || bulkSubmissionComplete, 'popover-active': isPopoverActive(0, 'description') }">
+                                <td class="editable-cell popover-cell" @click.stop="openPopover(0, 'description', $event)" :class="{ 'not-editable': isItemConfirmedDuplicate(0) || bulkSubmissionComplete, 'popover-active': isPopoverActive(0, 'description') }">
                                     <span :class="{ 'text-muted': !form['officialDesc'] }">{{ truncateText(form['officialDesc'], 30) || '-' }}</span>
                                     <!-- Description Popover -->
-                                    <div v-if="isPopoverActive(0, 'description')" class="cell-popover popover-wide" ref="activePopoverContainer" @click.stop>
+                                    <div v-if="isPopoverActive(0, 'description')" class="cell-popover popover-wide" :style="{ top: popoverPosition.top + 'px', left: popoverPosition.left + 'px' }" ref="activePopoverContainer" @click.stop>
                                         <div class="popover-header">
                                             <span class="popover-title">Edit Description</span>
                                             <button type="button" class="btn-close btn-close-sm" @click.stop="closePopover"></button>
@@ -1920,10 +1920,10 @@
                                     </div>
                                 </td>
                                 <!-- Source Link - Popover editable -->
-                                <td class="editable-cell popover-cell" @click.stop="openPopover(0, 'sourceLink')" :class="{ 'not-editable': isItemConfirmedDuplicate(0) || bulkSubmissionComplete, 'popover-active': isPopoverActive(0, 'sourceLink') }">
+                                <td class="editable-cell popover-cell" @click.stop="openPopover(0, 'sourceLink', $event)" :class="{ 'not-editable': isItemConfirmedDuplicate(0) || bulkSubmissionComplete, 'popover-active': isPopoverActive(0, 'sourceLink') }">
                                     <span :class="{ 'text-muted': !form['sourceLink'] }">{{ truncateText(form['sourceLink'], 15) || '-' }}</span>
                                     <!-- Source Link Popover -->
-                                    <div v-if="isPopoverActive(0, 'sourceLink')" class="cell-popover" ref="activePopoverContainer" @click.stop>
+                                    <div v-if="isPopoverActive(0, 'sourceLink')" class="cell-popover" :style="{ top: popoverPosition.top + 'px', left: popoverPosition.left + 'px' }" ref="activePopoverContainer" @click.stop>
                                         <div class="popover-header">
                                             <span class="popover-title">Edit Source Link</span>
                                             <button type="button" class="btn-close btn-close-sm" @click.stop="closePopover"></button>
@@ -1945,10 +1945,10 @@
                                     </div>
                                 </td>
                                 <!-- Review Link - Popover editable -->
-                                <td class="editable-cell popover-cell" @click.stop="openPopover(0, 'reviewLink')" :class="{ 'not-editable': isItemConfirmedDuplicate(0) || bulkSubmissionComplete, 'popover-active': isPopoverActive(0, 'reviewLink') }">
+                                <td class="editable-cell popover-cell" @click.stop="openPopover(0, 'reviewLink', $event)" :class="{ 'not-editable': isItemConfirmedDuplicate(0) || bulkSubmissionComplete, 'popover-active': isPopoverActive(0, 'reviewLink') }">
                                     <span :class="{ 'text-muted': !form['reviewLink'] }">{{ truncateText(form['reviewLink'], 15) || '-' }}</span>
                                     <!-- Review Link Popover -->
-                                    <div v-if="isPopoverActive(0, 'reviewLink')" class="cell-popover" ref="activePopoverContainer" @click.stop>
+                                    <div v-if="isPopoverActive(0, 'reviewLink')" class="cell-popover" :style="{ top: popoverPosition.top + 'px', left: popoverPosition.left + 'px' }" ref="activePopoverContainer" @click.stop>
                                         <div class="popover-header">
                                             <span class="popover-title">Edit Review Link</span>
                                             <button type="button" class="btn-close btn-close-sm" @click.stop="closePopover"></button>
@@ -1988,7 +1988,7 @@
                                     <!-- Pre-submission: show if existing or pending -->
                                     <template v-if="!bulkSubmissionComplete">
                                         <span v-if="isItemConfirmedDuplicate(index + 1)" class="badge bg-secondary">
-                                               Existing listing 
+                                               Already Exists! 
                                             <a v-if="getConfirmedDuplicateInfo(index + 1)?.id" 
                                                :href="'/listing/view/' + getConfirmedDuplicateInfo(index + 1).id + '/' + slugify(getConfirmedDuplicateInfo(index + 1).listingName || '')"
                                                target="_blank"
@@ -2058,10 +2058,10 @@
                                     </template>
                                 </td>
                                 <!-- Producer - Popover editable -->
-                                <td class="editable-cell popover-cell" @click.stop="openPopover(index + 1, 'producer')" :class="{ 'not-editable': isItemConfirmedDuplicate(index + 1) || bulkSubmissionComplete, 'popover-active': isPopoverActive(index + 1, 'producer') }">
+                                <td class="editable-cell popover-cell" @click.stop="openPopover(index + 1, 'producer', $event)" :class="{ 'not-editable': isItemConfirmedDuplicate(index + 1) || bulkSubmissionComplete, 'popover-active': isPopoverActive(index + 1, 'producer') }">
                                     <span :class="{ 'text-muted': !item.producerNew }">{{ truncateText(item.producerNew, 12) || '-' }}</span>
                                     <!-- Producer Popover -->
-                                    <div v-if="isPopoverActive(index + 1, 'producer')" class="cell-popover" ref="activePopoverContainer" @click.stop>
+                                    <div v-if="isPopoverActive(index + 1, 'producer')" class="cell-popover" :style="{ top: popoverPosition.top + 'px', left: popoverPosition.left + 'px' }" ref="activePopoverContainer" @click.stop>
                                         <div class="popover-header">
                                             <span class="popover-title">Edit Producer</span>
                                             <button type="button" class="btn-close btn-close-sm" @click.stop="closePopover"></button>
@@ -2101,10 +2101,10 @@
                                     <span :class="item.indOperator ? 'text-success fw-bold' : 'text-muted'">{{ item.indOperator ? 'Yes' : 'No' }}</span>
                                 </td>
                                 <!-- Bottler - Popover editable (only when IB=Yes) -->
-                                <td class="editable-cell popover-cell" @click.stop="isBottlerEditable(index + 1) && openPopover(index + 1, 'bottler')" :class="{ 'not-editable': isItemConfirmedDuplicate(index + 1) || bulkSubmissionComplete || !isBottlerEditable(index + 1), 'popover-active': isPopoverActive(index + 1, 'bottler') }">
+                                <td class="editable-cell popover-cell" @click.stop="isBottlerEditable(index + 1) && openPopover(index + 1, 'bottler', $event)" :class="{ 'not-editable': isItemConfirmedDuplicate(index + 1) || bulkSubmissionComplete || !isBottlerEditable(index + 1), 'popover-active': isPopoverActive(index + 1, 'bottler') }">
                                     <span :class="{ 'text-muted': !item.bottler || !item.indOperator }">{{ item.indOperator ? (truncateText(item.bottler, 12) || '-') : '-' }}</span>
                                     <!-- Bottler Popover -->
-                                    <div v-if="isPopoverActive(index + 1, 'bottler')" class="cell-popover" ref="activePopoverContainer" @click.stop>
+                                    <div v-if="isPopoverActive(index + 1, 'bottler')" class="cell-popover" :style="{ top: popoverPosition.top + 'px', left: popoverPosition.left + 'px' }" ref="activePopoverContainer" @click.stop>
                                         <div class="popover-header">
                                             <span class="popover-title">Edit Bottler</span>
                                             <button type="button" class="btn-close btn-close-sm" @click.stop="closePopover"></button>
@@ -2252,10 +2252,10 @@
                                 </td>
                                 <td>{{ formatVarietyTags(item.varietyTagsList) }}</td>
                                 <!-- Description - Popover editable -->
-                                <td class="editable-cell popover-cell" @click.stop="openPopover(index + 1, 'description')" :class="{ 'not-editable': isItemConfirmedDuplicate(index + 1) || bulkSubmissionComplete, 'popover-active': isPopoverActive(index + 1, 'description') }">
+                                <td class="editable-cell popover-cell" @click.stop="openPopover(index + 1, 'description', $event)" :class="{ 'not-editable': isItemConfirmedDuplicate(index + 1) || bulkSubmissionComplete, 'popover-active': isPopoverActive(index + 1, 'description') }">
                                     <span :class="{ 'text-muted': !item.officialDesc }">{{ truncateText(item.officialDesc, 30) || '-' }}</span>
                                     <!-- Description Popover -->
-                                    <div v-if="isPopoverActive(index + 1, 'description')" class="cell-popover popover-wide" ref="activePopoverContainer" @click.stop>
+                                    <div v-if="isPopoverActive(index + 1, 'description')" class="cell-popover popover-wide" :style="{ top: popoverPosition.top + 'px', left: popoverPosition.left + 'px' }" ref="activePopoverContainer" @click.stop>
                                         <div class="popover-header">
                                             <span class="popover-title">Edit Description</span>
                                             <button type="button" class="btn-close btn-close-sm" @click.stop="closePopover"></button>
@@ -2276,10 +2276,10 @@
                                     </div>
                                 </td>
                                 <!-- Source Link - Popover editable -->
-                                <td class="editable-cell popover-cell" @click.stop="openPopover(index + 1, 'sourceLink')" :class="{ 'not-editable': isItemConfirmedDuplicate(index + 1) || bulkSubmissionComplete, 'popover-active': isPopoverActive(index + 1, 'sourceLink') }">
+                                <td class="editable-cell popover-cell" @click.stop="openPopover(index + 1, 'sourceLink', $event)" :class="{ 'not-editable': isItemConfirmedDuplicate(index + 1) || bulkSubmissionComplete, 'popover-active': isPopoverActive(index + 1, 'sourceLink') }">
                                     <span :class="{ 'text-muted': !item.sourceLink }">{{ truncateText(item.sourceLink, 15) || '-' }}</span>
                                     <!-- Source Link Popover -->
-                                    <div v-if="isPopoverActive(index + 1, 'sourceLink')" class="cell-popover" ref="activePopoverContainer" @click.stop>
+                                    <div v-if="isPopoverActive(index + 1, 'sourceLink')" class="cell-popover" :style="{ top: popoverPosition.top + 'px', left: popoverPosition.left + 'px' }" ref="activePopoverContainer" @click.stop>
                                         <div class="popover-header">
                                             <span class="popover-title">Edit Source Link</span>
                                             <button type="button" class="btn-close btn-close-sm" @click.stop="closePopover"></button>
@@ -2301,10 +2301,10 @@
                                     </div>
                                 </td>
                                 <!-- Review Link - Popover editable -->
-                                <td class="editable-cell popover-cell" @click.stop="openPopover(index + 1, 'reviewLink')" :class="{ 'not-editable': isItemConfirmedDuplicate(index + 1) || bulkSubmissionComplete, 'popover-active': isPopoverActive(index + 1, 'reviewLink') }">
+                                <td class="editable-cell popover-cell" @click.stop="openPopover(index + 1, 'reviewLink', $event)" :class="{ 'not-editable': isItemConfirmedDuplicate(index + 1) || bulkSubmissionComplete, 'popover-active': isPopoverActive(index + 1, 'reviewLink') }">
                                     <span :class="{ 'text-muted': !item.reviewLink }">{{ truncateText(item.reviewLink, 15) || '-' }}</span>
                                     <!-- Review Link Popover -->
-                                    <div v-if="isPopoverActive(index + 1, 'reviewLink')" class="cell-popover" ref="activePopoverContainer" @click.stop>
+                                    <div v-if="isPopoverActive(index + 1, 'reviewLink')" class="cell-popover" :style="{ top: popoverPosition.top + 'px', left: popoverPosition.left + 'px' }" ref="activePopoverContainer" @click.stop>
                                         <div class="popover-header">
                                             <span class="popover-title">Edit Review Link</span>
                                             <button type="button" class="btn-close btn-close-sm" @click.stop="closePopover"></button>
@@ -2530,6 +2530,7 @@
 
                 // Staging modal popover editing state (for complex fields)
                 activePopover: null,              // { rowIndex: number, field: string } or null when no popover open
+                popoverPosition: { top: 0, left: 0 }, // Position for fixed popover
                 popoverSearchQuery: '',           // Search query for producer/bottler popovers
                 popoverSearchResults: [],         // Search results for producer/bottler popovers
                 popoverTextValue: '',             // Text value for description/link popovers
@@ -3014,7 +3015,7 @@
             },
 
             // Open popover for a cell
-            openPopover(rowIndex, field) {
+            openPopover(rowIndex, field, event) {
                 // Don't allow popover if submission is complete or in progress
                 if (this.bulkSubmissionComplete || this.bulkSubmissionInProgress) return;
                 // Don't allow popover if item is a confirmed duplicate
@@ -3022,6 +3023,15 @@
                 
                 // Close any active inline editing
                 this.editingCell = null;
+                
+                // Calculate popover position based on clicked cell
+                if (event && event.currentTarget) {
+                    const rect = event.currentTarget.getBoundingClientRect();
+                    this.popoverPosition = {
+                        top: rect.bottom + 4,
+                        left: rect.left
+                    };
+                }
                 
                 // Initialize popover state based on field type
                 if (field === 'producer' || field === 'bottler') {
@@ -5896,6 +5906,7 @@
     flex: 1;
     border: 1px solid #dee2e6;
     border-radius: 8px;
+    position: relative;
 }
 
 .staging-table {
@@ -6032,14 +6043,11 @@
 
 .popover-cell.popover-active {
     background-color: rgba(13, 110, 253, 0.12);
-    z-index: 100;
 }
 
 .cell-popover {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    z-index: 1050;
+    position: fixed;
+    z-index: 1100;
     min-width: 280px;
     background: #fff;
     border: 1px solid rgba(0, 0, 0, 0.15);
