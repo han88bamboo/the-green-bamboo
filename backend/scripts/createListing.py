@@ -1,5 +1,7 @@
 # Port: 5001
-# Routes: /createListing (POST)
+# Routes: /createListing (POST), /createListingBulk (POST), /stageListingsFromCSV (POST),
+#         /getStagedListings (GET), /updateStagedListing/<id> (PUT), /deleteStagedListing/<id> (DELETE),
+#         /commitStagedListings (POST)
 # Dataclass: listings
 # -----------------------------------------------------------------------------------------
 
@@ -7,10 +9,15 @@ import os
 import json
 import pytz
 import re
+import csv
+import io
+import chardet
 import s3Images
 from flask import Blueprint, g, request, jsonify
 from datetime import datetime, timedelta
 from scripts import notifications
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from psycopg2.extras import execute_values
 # Import the database manager for connection pooling
 from app import db_manager
 # [OLD] TO BE DELETED FOR POSTGRES:
@@ -904,3 +911,659 @@ def prepare_bulk_item_data(raw_item):
         processed['photo'] = "https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultDrinkImage.png?v=1750084739"
     
     return processed
+
+
+# ==================== STAGING IMPORTS HELPER FUNCTIONS ====================
+
+def detect_csv_encoding(file):
+    """Detect the encoding of a CSV file using chardet."""
+    raw_data = file.read()
+    detected_encoding = chardet.detect(raw_data)['encoding']
+    print(f">detecting encoding: {detected_encoding}")
+    file.seek(0)  # Reset the pointer to the start of the file
+    return detected_encoding
+
+
+def hash_password_for_producer(id, password):
+    """Hash password for new producer creation (same as adminFunctions.py)."""
+    combinedString = str(id) + password
+    hash_val = 0
+    for i in range(len(combinedString)):
+        char = ord(combinedString[i])
+        hash_val = (hash_val << 5) - hash_val + char
+        hash_val &= 0xFFFFFFFF  # Convert to 32-bit integer
+    if hash_val & (1 << 31):  # If the highest bit is set
+        hash_val -= 1 << 32  # Convert to a signed integer
+    return hash_val
+
+
+# ==================== STAGING LISTINGS ENDPOINTS ====================
+
+# -----------------------------------------------------------------------------------------
+# [POST] Stage listings from CSV for review before final import
+# - Parse CSV file and store in tempListingsForImport table
+# - Does NOT create producers or insert into listings table yet
+# - Uploads images to S3 immediately
+# - Possible return codes: 201 (Staged), 400 (Invalid CSV), 500 (Error)
+@blueprint.route('/stageListingsFromCSV', methods=['POST'])
+def stageListingsFromCSV():
+    try:
+        # Get submitter info from form data
+        submitter_id = request.form.get('submitterID')
+        submitter_type = request.form.get('submitterType')
+        
+        if not submitter_id or not submitter_type:
+            return jsonify({
+                "code": 400,
+                "message": "Missing required fields: submitterID and submitterType"
+            }), 400
+        
+        if submitter_type not in ['user', 'producer', 'venue']:
+            return jsonify({
+                "code": 400,
+                "message": "submitterType must be 'user', 'producer', or 'venue'"
+            }), 400
+        
+        submitter_id = int(submitter_id)
+        
+        # Get the uploaded file
+        if 'file' not in request.files:
+            return jsonify({
+                "code": 400,
+                "message": "No file provided"
+            }), 400
+        
+        file = request.files['file']
+        
+        if not file.filename.endswith('.csv'):
+            return jsonify({
+                "code": 400,
+                "message": "File must be a CSV file"
+            }), 400
+        
+        with db_manager.get_cursor() as cursor:
+            # Detect encoding of CSV file
+            file_encoding = detect_csv_encoding(file)
+            
+            # Define column data types (same as importListings)
+            # Column order: listingName, producer, bottler, originCountry, drinkType, 
+            #               typeCategory, drinkStyle, age, abv, reviewLink, officialDesc, sourceLink, photo
+            column_data_types = [str, str, str, str, str, str, str, str, float, str, str, str, str]
+            
+            # Read all rows from CSV
+            with io.TextIOWrapper(file, encoding=file_encoding, errors='replace') as csv_file:
+                csv_data = csv.reader(csv_file)
+                # Skip first 4 header rows (same as importListings)
+                for _ in range(4):
+                    try:
+                        next(csv_data)
+                    except StopIteration:
+                        break
+                rows = list(csv_data)
+            
+            if not rows:
+                return jsonify({
+                    "code": 400,
+                    "message": "CSV file is empty or has no data rows"
+                }), 400
+            
+            # Fetch existing producers to check if they exist
+            cursor.execute('SELECT "producerName", "id", "isIndependentBottler" FROM "producers"')
+            producers = cursor.fetchall()
+            producer_name_id_dict = {row['producerName']: row['id'] for row in producers}
+            
+            staged_listings = []
+            validation_errors = []
+            image_urls = []
+            row_numbers = []
+            
+            for row_index, row in enumerate(rows):
+                row_number = row_index + 5  # Account for 4 skipped header rows + 1-based indexing
+                
+                # Skip empty rows
+                if not row or all(cell.strip() == '' for cell in row):
+                    continue
+                
+                # Validate row has enough columns
+                if len(row) < len(column_data_types):
+                    validation_errors.append({
+                        "rowNumber": row_number,
+                        "error": f"Row has {len(row)} columns, expected {len(column_data_types)}"
+                    })
+                    continue
+                
+                # Convert row data to appropriate types
+                converted_row = []
+                row_validation_error = None
+                
+                for i, (data_type, value) in enumerate(zip(column_data_types, row)):
+                    if data_type is float:
+                        value = value.replace('%', '').strip() if value else ''
+                        try:
+                            if value and value.lower() not in ['n/a', 'na', 'nas', '']:
+                                converted_value = float(value)
+                            else:
+                                converted_value = None
+                        except ValueError:
+                            converted_value = None
+                    else:
+                        converted_value = data_type(value.strip()) if value and value.strip() else None
+                    converted_row.append(converted_value)
+                
+                # Extract fields
+                listing_name = converted_row[0]
+                producer_name = converted_row[1]
+                bottler_name = converted_row[2]
+                origin_country = converted_row[3]
+                drink_type = converted_row[4]
+                type_category = converted_row[5]
+                drink_style = converted_row[6]
+                age = converted_row[7]
+                abv = converted_row[8]
+                review_link = converted_row[9]
+                official_desc = converted_row[10]
+                source_link = converted_row[11]
+                photo_url = converted_row[12]
+                
+                # Validate required fields
+                if not listing_name:
+                    validation_errors.append({
+                        "rowNumber": row_number,
+                        "error": "Missing listing name (column 1)"
+                    })
+                    continue
+                
+                if not producer_name:
+                    validation_errors.append({
+                        "rowNumber": row_number,
+                        "error": "Missing producer name (column 2)"
+                    })
+                    continue
+                
+                # Check if producer exists
+                producer_id = producer_name_id_dict.get(producer_name)
+                
+                # Handle bottler scenarios
+                if bottler_name in ["OB", "Original Bottling", None, ""]:
+                    bottler_id = None
+                    bottler_name_display = "OB" if bottler_name in ["OB", "Original Bottling"] else None
+                else:
+                    bottler_id = producer_name_id_dict.get(bottler_name)
+                    bottler_name_display = bottler_name
+                
+                # Store image URL for later S3 upload
+                image_urls.append(photo_url)
+                row_numbers.append(row_number)
+                
+                staged_listings.append({
+                    'listingName': listing_name,
+                    'producerID': producer_id,
+                    'producerName': producer_name,
+                    'bottler': bottler_name_display,
+                    'bottlerID': bottler_id,
+                    'bottlerName': bottler_name if bottler_name not in ["OB", "Original Bottling", None, ""] else None,
+                    'originCountry': origin_country,
+                    'drinkType': drink_type,
+                    'typeCategory': type_category,
+                    'drinkStyle': drink_style,
+                    'age': str(age) if age else None,
+                    'abv': abv,
+                    'reviewLink': review_link,
+                    'officialDesc': official_desc,
+                    'sourceLink': source_link,
+                    'photo': None,  # Will be updated after S3 upload
+                    'allowMod': True,
+                    'addedDate': None,  # Will be set when committed to listings
+                    'submitterID': submitter_id,
+                    'submitterType': submitter_type,
+                    'rowNumber': row_number,
+                    'validationErrors': None
+                })
+            
+            if not staged_listings:
+                return jsonify({
+                    "code": 400,
+                    "message": "No valid rows found in CSV",
+                    "validationErrors": validation_errors
+                }), 400
+            
+            # Parallelize S3 image uploads while maintaining order
+            def upload_image_with_index(indexed_data):
+                index, image_url = indexed_data
+                if image_url and image_url.strip():
+                    try:
+                        s3_url = s3Images.uploadURLtoS3(image_url)
+                        return index, s3_url
+                    except Exception as e:
+                        print(f"Error uploading image from URL {image_url}: {str(e)}")
+                        return index, "https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultDrinkImage.png?v=1750084739"
+                return index, "https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultDrinkImage.png?v=1750084739"
+            
+            # Create indexed data to maintain order
+            indexed_image_urls = list(enumerate(image_urls))
+            s3_urls = [None] * len(image_urls)
+            
+            with ThreadPoolExecutor() as executor:
+                future_to_index = {
+                    executor.submit(upload_image_with_index, indexed_data): indexed_data[0]
+                    for indexed_data in indexed_image_urls
+                }
+                for future in as_completed(future_to_index):
+                    index, s3_url = future.result()
+                    s3_urls[index] = s3_url
+            
+            print(f"S3 URLs for staging: {s3_urls}")
+            
+            # Update photo URLs in staged listings
+            for listing, s3_url in zip(staged_listings, s3_urls):
+                listing['photo'] = s3_url
+            
+            # Bulk insert into tempListingsForImport
+            if staged_listings:
+                insert_columns = [
+                    "listingName", "producerID", "producerName", "bottler", "bottlerID", 
+                    "bottlerName", "originCountry", "drinkType", "typeCategory", "drinkStyle",
+                    "age", "abv", "reviewLink", "officialDesc", "sourceLink", "photo",
+                    "allowMod", "addedDate", "submitterID", "submitterType", "rowNumber", "validationErrors"
+                ]
+                
+                insert_query = """
+                    INSERT INTO "tempListingsForImport" ({}) VALUES %s RETURNING id
+                """.format(', '.join(f'"{col}"' for col in insert_columns))
+                
+                insert_values = [
+                    (
+                        listing['listingName'],
+                        listing['producerID'],
+                        listing['producerName'],
+                        listing['bottler'],
+                        listing['bottlerID'],
+                        listing['bottlerName'],
+                        listing['originCountry'],
+                        listing['drinkType'],
+                        listing['typeCategory'],
+                        listing['drinkStyle'],
+                        listing['age'],
+                        listing['abv'],
+                        listing['reviewLink'],
+                        listing['officialDesc'],
+                        listing['sourceLink'],
+                        listing['photo'],
+                        listing['allowMod'],
+                        listing['addedDate'],
+                        listing['submitterID'],
+                        listing['submitterType'],
+                        listing['rowNumber'],
+                        listing['validationErrors']
+                    )
+                    for listing in staged_listings
+                ]
+                
+                execute_values(cursor, insert_query, insert_values)
+                inserted_rows = cursor.fetchall()
+                inserted_ids = [row['id'] for row in inserted_rows]
+                
+                # Add IDs to staged listings for response
+                for listing, inserted_id in zip(staged_listings, inserted_ids):
+                    listing['id'] = inserted_id
+                
+                print(f"Successfully staged {len(staged_listings)} listings")
+            
+            # Prepare response with staged listings and any validation errors
+            response_data = {
+                "staged": staged_listings,
+                "stagedCount": len(staged_listings),
+                "validationErrors": validation_errors,
+                "errorCount": len(validation_errors)
+            }
+            
+            return jsonify({
+                "code": 201,
+                "message": f"Successfully staged {len(staged_listings)} listings for review",
+                "data": response_data
+            }), 201
+    
+    except Exception as e:
+        print(f"Error in stageListingsFromCSV: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({
+            "code": 500,
+            "message": f"Error staging listings: {str(e)}"
+        }), 500
+
+
+# -----------------------------------------------------------------------------------------
+# [GET] Get staged listings for a specific submitter
+# - Fetch all staged listings from tempListingsForImport for the given submitter
+# - Possible return codes: 200 (Success), 500 (Error)
+@blueprint.route('/getStagedListings', methods=['GET'])
+def getStagedListings():
+    try:
+        submitter_id = request.args.get('submitterID')
+        submitter_type = request.args.get('submitterType')
+        
+        if not submitter_id or not submitter_type:
+            return jsonify({
+                "code": 400,
+                "message": "Missing required query parameters: submitterID and submitterType"
+            }), 400
+        
+        submitter_id = int(submitter_id)
+        
+        with db_manager.get_cursor() as cursor:
+            cursor.execute('''
+                SELECT * FROM "tempListingsForImport"
+                WHERE "submitterID" = %s AND "submitterType" = %s
+                ORDER BY "stagedAt" DESC, "rowNumber" ASC
+            ''', (submitter_id, submitter_type))
+            
+            staged_listings = cursor.fetchall()
+            
+            # Convert to list of dicts
+            listings_list = []
+            for row in staged_listings:
+                listings_list.append({
+                    'id': row['id'],
+                    'listingName': row['listingName'],
+                    'producerID': row['producerID'],
+                    'producerName': row['producerName'],
+                    'bottler': row['bottler'],
+                    'bottlerID': row['bottlerID'],
+                    'bottlerName': row['bottlerName'],
+                    'originCountry': row['originCountry'],
+                    'drinkType': row['drinkType'],
+                    'typeCategory': row['typeCategory'],
+                    'drinkStyle': row['drinkStyle'],
+                    'age': row['age'],
+                    'abv': row['abv'],
+                    'reviewLink': row['reviewLink'],
+                    'officialDesc': row['officialDesc'],
+                    'sourceLink': row['sourceLink'],
+                    'photo': row['photo'],
+                    'stagedAt': row['stagedAt'].isoformat() if row['stagedAt'] else None,
+                    'rowNumber': row['rowNumber'],
+                    'validationErrors': row['validationErrors']
+                })
+        
+        return jsonify({
+            "code": 200,
+            "data": listings_list,
+            "count": len(listings_list)
+        }), 200
+    
+    except Exception as e:
+        print(f"Error in getStagedListings: {str(e)}")
+        return jsonify({
+            "code": 500,
+            "message": f"Error fetching staged listings: {str(e)}"
+        }), 500
+
+
+# -----------------------------------------------------------------------------------------
+# [PUT] Update a single staged listing
+# - Update a staged listing in tempListingsForImport
+# - Possible return codes: 200 (Updated), 404 (Not found), 500 (Error)
+@blueprint.route('/updateStagedListing/<int:id>', methods=['PUT'])
+def updateStagedListing(id):
+    try:
+        data = request.get_json()
+        
+        with db_manager.get_cursor() as cursor:
+            # Check if the staged listing exists
+            cursor.execute('SELECT id FROM "tempListingsForImport" WHERE id = %s', (id,))
+            existing = cursor.fetchone()
+            
+            if not existing:
+                return jsonify({
+                    "code": 404,
+                    "message": f"Staged listing with ID {id} not found"
+                }), 404
+            
+            # Build update query dynamically based on provided fields
+            allowed_fields = [
+                'listingName', 'producerID', 'producerName', 'bottler', 'bottlerID',
+                'bottlerName', 'originCountry', 'drinkType', 'typeCategory', 'drinkStyle',
+                'age', 'abv', 'reviewLink', 'officialDesc', 'sourceLink', 'photo'
+            ]
+            
+            update_parts = []
+            update_values = []
+            
+            for field in allowed_fields:
+                if field in data:
+                    update_parts.append(f'"{field}" = %s')
+                    update_values.append(data[field])
+            
+            if not update_parts:
+                return jsonify({
+                    "code": 400,
+                    "message": "No valid fields to update"
+                }), 400
+            
+            update_values.append(id)  # For WHERE clause
+            
+            update_query = f'''
+                UPDATE "tempListingsForImport"
+                SET {', '.join(update_parts)}
+                WHERE id = %s
+            '''
+            
+            cursor.execute(update_query, update_values)
+        
+        return jsonify({
+            "code": 200,
+            "message": f"Staged listing {id} updated successfully"
+        }), 200
+    
+    except Exception as e:
+        print(f"Error in updateStagedListing: {str(e)}")
+        return jsonify({
+            "code": 500,
+            "message": f"Error updating staged listing: {str(e)}"
+        }), 500
+
+
+# -----------------------------------------------------------------------------------------
+# [DELETE] Delete a single staged listing
+# - Remove a staged listing from tempListingsForImport
+# - Possible return codes: 200 (Deleted), 404 (Not found), 500 (Error)
+@blueprint.route('/deleteStagedListing/<int:id>', methods=['DELETE'])
+def deleteStagedListing(id):
+    try:
+        with db_manager.get_cursor() as cursor:
+            # Check if the staged listing exists
+            cursor.execute('SELECT id FROM "tempListingsForImport" WHERE id = %s', (id,))
+            existing = cursor.fetchone()
+            
+            if not existing:
+                return jsonify({
+                    "code": 404,
+                    "message": f"Staged listing with ID {id} not found"
+                }), 404
+            
+            cursor.execute('DELETE FROM "tempListingsForImport" WHERE id = %s', (id,))
+        
+        return jsonify({
+            "code": 200,
+            "message": f"Staged listing {id} deleted successfully"
+        }), 200
+    
+    except Exception as e:
+        print(f"Error in deleteStagedListing: {str(e)}")
+        return jsonify({
+            "code": 500,
+            "message": f"Error deleting staged listing: {str(e)}"
+        }), 500
+
+
+# -----------------------------------------------------------------------------------------
+# [POST] Commit selected staged listings to the listings table
+# - Move selected staged listings to listings table
+# - Create new producers/bottlers if they don't exist
+# - Delete committed listings from tempListingsForImport
+# - Possible return codes: 201 (Committed), 400 (Invalid), 500 (Error)
+@blueprint.route('/commitStagedListings', methods=['POST'])
+def commitStagedListings():
+    try:
+        data = request.get_json()
+        staged_ids = data.get('stagedIds', [])
+        
+        if not staged_ids:
+            return jsonify({
+                "code": 400,
+                "message": "No staged listing IDs provided"
+            }), 400
+        
+        with db_manager.get_cursor() as cursor:
+            # Fetch the staged listings
+            cursor.execute('''
+                SELECT * FROM "tempListingsForImport"
+                WHERE id = ANY(%s)
+            ''', (staged_ids,))
+            
+            staged_listings = cursor.fetchall()
+            
+            if not staged_listings:
+                return jsonify({
+                    "code": 404,
+                    "message": "No staged listings found with the provided IDs"
+                }), 404
+            
+            # Fetch existing producers
+            cursor.execute('SELECT "producerName", "id", "isIndependentBottler" FROM "producers"')
+            producers = cursor.fetchall()
+            producer_name_id_dict = {row['producerName']: row['id'] for row in producers}
+            
+            # Collect all producer and bottler names that need to be created
+            new_producers_to_create = set()
+            new_bottlers_to_create = set()
+            
+            for listing in staged_listings:
+                producer_name = listing['producerName']
+                if producer_name and producer_name not in producer_name_id_dict:
+                    new_producers_to_create.add(producer_name)
+                
+                bottler_name = listing['bottlerName']
+                if bottler_name and bottler_name not in producer_name_id_dict and bottler_name not in new_producers_to_create:
+                    new_bottlers_to_create.add(bottler_name)
+            
+            # Create new producers
+            if new_producers_to_create:
+                new_producer_data = [
+                    (
+                        name, "", "", [], "", hash_password_for_producer(name, "admin1234"),
+                        False, "", None, "", None, None, False
+                    )
+                    for name in new_producers_to_create
+                ]
+                
+                insert_query = """
+                    INSERT INTO producers (
+                        "producerName", "producerDesc", "originCountry", "mainDrinks", "photo", "hashedPassword",
+                        "claimStatus", "statusOB", "username", "producerLink", "stripeCustomerId", "claimStatusCheckDate",
+                        "isIndependentBottler"
+                    ) VALUES %s RETURNING "producerName", "id"
+                """
+                execute_values(cursor, insert_query, new_producer_data)
+                new_producers_with_ids = cursor.fetchall()
+                producer_name_id_dict.update({row["producerName"]: row["id"] for row in new_producers_with_ids})
+                print(f"Created {len(new_producers_with_ids)} new producers")
+            
+            # Create new bottlers (as independent bottlers)
+            if new_bottlers_to_create:
+                new_bottler_data = [
+                    (
+                        name, "", "", [], "", hash_password_for_producer(name, "admin1234"),
+                        False, "", None, "", None, None, True  # isIndependentBottler = True
+                    )
+                    for name in new_bottlers_to_create
+                ]
+                
+                insert_query = """
+                    INSERT INTO producers (
+                        "producerName", "producerDesc", "originCountry", "mainDrinks", "photo", "hashedPassword",
+                        "claimStatus", "statusOB", "username", "producerLink", "stripeCustomerId", "claimStatusCheckDate",
+                        "isIndependentBottler"
+                    ) VALUES %s RETURNING "producerName", "id"
+                """
+                execute_values(cursor, insert_query, new_bottler_data)
+                new_bottlers_with_ids = cursor.fetchall()
+                producer_name_id_dict.update({row["producerName"]: row["id"] for row in new_bottlers_with_ids})
+                print(f"Created {len(new_bottlers_with_ids)} new bottlers")
+            
+            # Prepare listings for insertion into listings table
+            listings_to_insert = []
+            current_time = datetime.now(pytz.timezone('Etc/GMT-8'))
+            
+            for listing in staged_listings:
+                producer_name = listing['producerName']
+                producer_id = producer_name_id_dict.get(producer_name)
+                
+                bottler_name = listing['bottlerName']
+                if bottler_name:
+                    bottler_id = producer_name_id_dict.get(bottler_name)
+                else:
+                    bottler_id = None
+                
+                listings_to_insert.append({
+                    'listingName': listing['listingName'],
+                    'producerID': producer_id,
+                    'bottler': listing['bottler'],
+                    'bottlerID': bottler_id,
+                    'originCountry': listing['originCountry'],
+                    'drinkType': listing['drinkType'],
+                    'typeCategory': listing['typeCategory'],
+                    'drinkStyle': listing['drinkStyle'],
+                    'age': listing['age'],
+                    'abv': listing['abv'],
+                    'reviewLink': listing['reviewLink'],
+                    'officialDesc': listing['officialDesc'],
+                    'sourceLink': listing['sourceLink'],
+                    'photo': listing['photo'],
+                    'allowMod': True,
+                    'addedDate': current_time
+                })
+            
+            # Bulk insert into listings table
+            if listings_to_insert:
+                listing_columns = listings_to_insert[0].keys()
+                listing_query = """
+                    INSERT INTO listings ({}) VALUES %s RETURNING id, "listingName"
+                """.format(', '.join(f'"{col}"' for col in listing_columns))
+                
+                listing_values = [tuple(listing.values()) for listing in listings_to_insert]
+                execute_values(cursor, listing_query, listing_values)
+                inserted_listings = cursor.fetchall()
+                
+                # Update the sequence to ensure future inserts don't conflict
+                cursor.execute("SELECT setval('listings_id_seq', COALESCE((SELECT MAX(id) FROM listings), 1), true)")
+                
+                print(f"Successfully committed {len(inserted_listings)} listings to database")
+            
+            # Delete committed listings from tempListingsForImport
+            cursor.execute('''
+                DELETE FROM "tempListingsForImport"
+                WHERE id = ANY(%s)
+            ''', (staged_ids,))
+            
+            print(f"Deleted {len(staged_ids)} staged listings after commit")
+        
+        return jsonify({
+            "code": 201,
+            "message": f"Successfully committed {len(listings_to_insert)} listings",
+            "data": {
+                "committedCount": len(listings_to_insert),
+                "newProducersCreated": len(new_producers_to_create),
+                "newBottlersCreated": len(new_bottlers_to_create)
+            }
+        }), 201
+    
+    except Exception as e:
+        print(f"Error in commitStagedListings: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({
+            "code": 500,
+            "message": f"Error committing staged listings: {str(e)}"
+        }), 500

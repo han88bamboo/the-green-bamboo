@@ -10,7 +10,7 @@ const routes = [
   {
     path: "/admin/importListings",
     name: "adminimportlistings",
-    component: () => import(/* webpackChunkName: "admin" */ "@/views/Admin/ImportListings.vue"),
+    component: () => import(/* webpackChunkName: "admin" */ "@/views/Admin/OldImportListings.vue"),
     // meta: { requiresAuth: true },
   },
 ];

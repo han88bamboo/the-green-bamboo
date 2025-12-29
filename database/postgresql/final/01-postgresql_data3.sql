@@ -911,6 +911,40 @@ CREATE TABLE "requestEdits" (
     "sourceLink" VARCHAR(255)
 );
 
+-- for import of tempListings
+-- ========= "tempListingsForImport" =========
+CREATE TABLE "tempListingsForImport" (
+    "id" SERIAL PRIMARY KEY,
+    "listingName" VARCHAR(500),
+    "producerID" INTEGER ,  -- No FK constraint to "producers"("id")(producer may not exist yet) 
+    "bottler" VARCHAR(255),
+    "bottlerID" INTEGER, -- No FK constraint to "producers"("id")(bottler may not exist yet)
+    "originCountry" VARCHAR(255),
+    "drinkType" VARCHAR(255),
+    "abv" FLOAT,
+    "officialDesc" TEXT,
+    "allowMod" BOOLEAN,
+    "addedDate" TIMESTAMP, -- placeholder only - shall be null all the time because the addedDate is only relevant to the final "listings" row
+    "typeCategory" VARCHAR(255),
+    "age" VARCHAR(500),
+    "reviewLink" VARCHAR(255),
+    "sourceLink" VARCHAR(255),
+    "photo" TEXT,
+    "drinkStyle" VARCHAR(255), 
+    "tags" TEXT,
+    "order" INTEGER DEFAULT NULL,
+    "varietyTags" TEXT[],
+
+    -- Additional columns for staging
+    "submitterID" INTEGER NOT NULL,
+    "submitterType" VARCHAR(50) NOT NULL,  -- 'user', 'producer', 'venue'
+    "stagedAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    "producerName" VARCHAR(255),      -- Store name for display (producer may not exist)
+    "bottlerName" VARCHAR(255),       -- Store name for display
+    "rowNumber" INTEGER,              -- Original CSV row number for reference
+    "validationErrors" TEXT           -- Any validation warnings
+);
+
 -- ========= "clubs" =========
 CREATE TABLE "clubs" (
     "id" SERIAL PRIMARY KEY,
