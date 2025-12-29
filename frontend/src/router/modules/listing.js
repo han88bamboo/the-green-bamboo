@@ -23,6 +23,12 @@ const routes = [
     component: () => import(/* webpackChunkName: "listing" */ "@/views/Producers/BulkCreateListing.vue"),
     // meta: { requiresAuth: true },
   },
+  {
+    path: "/listing/import",
+    name: "importListings",
+    component: () => import(/* webpackChunkName: "listing" */ "@/views/Users/ImportListings.vue"),
+    // meta: { requiresAuth: true },
+  },
 ];
 
 export default routes;

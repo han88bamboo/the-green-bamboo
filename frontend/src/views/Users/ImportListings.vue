@@ -114,9 +114,9 @@
                 <div v-if="commitComplete && commitSummary" class="mb-3">
                     <div class="alert" :class="getAlertClass()">
                         <h5 class="alert-heading mb-2">
-                            <span v-if="commitSummary.committedCount === 0">ℹ️ No items imported</span>
+                            <span v-if="commitSummary.committedCount === 0 && commitSummary.failCount === 0">ℹ️ No items imported</span>
                             <span v-else-if="commitSummary.failCount === 0">✓ All items imported successfully!</span>
-                            <span v-else-if="commitSummary.committedCount === 0 && commitSummary.failCount > 0">✗ Import failed</span>
+                            <span v-else-if="commitSummary.committedCount === 0">✗ Import failed</span>
                             <span v-else>⚠ Partial success</span>
                         </h5>
                         <p class="mb-1">
