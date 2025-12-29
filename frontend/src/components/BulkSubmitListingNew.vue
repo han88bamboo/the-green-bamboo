@@ -1493,7 +1493,7 @@
                     <!-- Submission Buttons -->
                     <div v-if="formType == 'req'">
                         <button type="button" class="btn btn-secondary mx-1 mb-3" @click="goBack">Return</button>
-                        <button type="submit" class="btn primary-square-btn-green mx-1 mb-3" v-if="formMode == 'new'">Submit Listing Request</button>  <!--tzh added -green-->
+                        <!--<button type="submit" class="btn primary-square-btn-green mx-1 mb-3" v-if="formMode == 'new'">Submit Listing Request</button>  tzh added -green-->
                          <button type="button" class="btn btn-outline-primary mx-1 mb-3" v-if="formMode == 'new'" @click="openStagingModal">Stage Listing(s) for Submission</button>
                         <button type="submit" class="btn primary-square-btn-green mx-1 mb-3" v-if="formMode == 'edit'">Submit Edit Request</button> <!--tzh added -green-->
                         <button type="submit" class="btn primary-square-btn-green mx-1 mb-3" v-if="formMode == 'dup'">Submit Duplicate Report</button> <!--tzh added -green-->
@@ -1501,7 +1501,7 @@
                     </div>
                     <div v-if="formType == 'power'">
                         <button type="button" class="btn btn-secondary mx-1 mb-3" @click="goBack">Return</button>
-                        <button type="submit" class="btn primary-square-btn-green mx-1 mb-3" v-if="formMode == 'new'">Create New Listing</button>  <!--tzh changed secondary-btn to primary-square-btn-green-->
+                        <!--<button type="submit" class="btn primary-square-btn-green mx-1 mb-3" v-if="formMode == 'new'">Create New Listing</button>  tzh changed secondary-btn to primary-square-btn-green-->
                         <button type="button" class="btn btn-outline-primary mx-1 mb-3" v-if="formMode == 'new'" @click="openStagingModal">Stage Listing(s) for Submission</button>
                         <button type="submit" class="btn primary-square-btn-green mx-1 mb-3" v-if="formMode == 'edit'">Save Listing Edits</button> <!--tzh changed secondary-btn to primary-square-btn-green-->
 
@@ -1703,13 +1703,13 @@
                                     <template v-else>
                                         <!-- Existing listing (skipped) -->
                                         <span v-if="getItemSubmissionStatus(index + 1)?.isExisting" class="badge bg-secondary">
-                                            ⏭️ Skipped - Already exists
+                                            ⏭️ Skipped - 
                                             <a v-if="getItemSubmissionStatus(index + 1)?.existingListingId" 
                                                :href="'/listing/view/' + getItemSubmissionStatus(index + 1).existingListingId + '/' + slugify(getItemSubmissionStatus(index + 1).existingListingName || '')"
                                                target="_blank"
                                                class="ms-1 text-white"
                                                @click.stop>
-                                                (ID: {{ getItemSubmissionStatus(index + 1).existingListingId }}) ↗
+                                                Already exists (ID: {{ getItemSubmissionStatus(index + 1).existingListingId }}) ↗
                                             </a>
                                         </span>
                                         <!-- Success -->
