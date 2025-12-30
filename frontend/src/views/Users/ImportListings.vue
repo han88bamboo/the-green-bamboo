@@ -1027,7 +1027,14 @@ export default {
         },
 
         getNewProducersCount() {
-            return this.stagedListings.filter(item => !item.producerID && this.selectedItems.has(item.id)).length;
+            // Get unique producer names for selected items that don't have a producerID
+            const uniqueProducers = new Set();
+            this.stagedListings.forEach(item => {
+                if (!item.producerID && this.selectedItems.has(item.id) && item.producerName) {
+                    uniqueProducers.add(item.producerName.toLowerCase().trim());
+                }
+            });
+            return uniqueProducers.size;
         },
 
         // ============ INLINE EDITING METHODS ============
