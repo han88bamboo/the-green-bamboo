@@ -12369,89 +12369,52 @@ def detectPotentialDuplicateListings():
         }), 500
 
 # ============================================================================
-# DUPLICATE DETECTION FOR CSV LISTING SUBMISSION
+# DUPLICATE DETECTION FOR CSV LISTING SUBMISSION (BATCH)
 # ============================================================================
 
-@blueprint.route("/detectPotentialDuplicateListingsCsvBatch", methods=['GET'])
-def detectPotentialDuplicateListings():
+def detect_duplicates_batch(listings, threshold=95, request_id='unknown'):
     """
-    Detect potential duplicate listings based on form input.
-    Uses fuzzy matching similar to cellar import duplicate detection.
+    Core duplicate detection logic - reusable helper function.
     
-    Query Parameters:
-        - listingName (required): The drink name being entered
-        - producerId (required): Selected producer's ID
-        - producerName (required): Selected producer's name
-        - drinkType (required): Selected drink type
-        - originCountry (required): Selected country
-        - bottlerId (optional): Bottler ID if independent bottler
-        - bottlerName (optional): Bottler name if independent bottler
-        - threshold (optional): Similarity threshold, default 85
+    Args:
+        listings: List of dicts with keys: id, listingName, producerId, producerName, 
+                  drinkType, originCountry, bottlerId (optional), bottlerName (optional)
+        threshold: Minimum similarity score to consider a duplicate (default 95)
+        request_id: Request ID for logging
     
     Returns:
-        JSON with matching listings sorted by similarity score
+        dict with keys: results, totalChecked, totalDuplicates
     """
-    request_id = getattr(g, 'request_id', 'unknown')
+    results = []
+    total_duplicates = 0
     
-    try:
-        # ====== STEP 1: Extract and validate parameters ======
-        listing_name = request.args.get('listingName', '').strip()
-        producer_id = request.args.get('producerId', '').strip()
-        producer_name = request.args.get('producerName', '').strip()
-        drink_type = request.args.get('drinkType', '').strip()
-        origin_country = request.args.get('originCountry', '').strip()
-        bottler_id = request.args.get('bottlerId', '').strip() or None
-        bottler_name = request.args.get('bottlerName', '').strip() or None
-        threshold = int(request.args.get('threshold', 85))
+    for listing_data in listings:
+        staged_id = listing_data.get('id')
+        listing_name = str(listing_data.get('listingName', '') or '').strip()
+        producer_id = str(listing_data.get('producerId', '') or '').strip()
+        producer_name = str(listing_data.get('producerName', '') or '').strip()
+        drink_type = str(listing_data.get('drinkType', '') or '').strip()
+        origin_country = str(listing_data.get('originCountry', '') or '').strip()
+        bottler_id = str(listing_data.get('bottlerId', '') or '').strip() or None
+        bottler_name = str(listing_data.get('bottlerName', '') or '').strip() or None
         
-        # Validate required fields
-        if not listing_name or len(listing_name) < 3:
-            logger.info(f"REQ-{request_id} detectPotentialDuplicateListings: listing name too short or missing")
-            return jsonify({
-                "code": 400,
-                "message": "Listing name must be at least 3 characters",
-                "data": {"matches": [], "totalMatches": 0}
-            }), 400
+        # Skip if required fields missing or too short
+        if not listing_name or len(listing_name) < 3 or not producer_name or not drink_type or not origin_country:
+            results.append({
+                "stagedListingId": staged_id,
+                "isDuplicate": False,
+                "matches": []
+            })
+            continue
         
-        if not producer_id or not producer_name:
-            logger.info(f"REQ-{request_id} detectPotentialDuplicateListings: producer not selected")
-            return jsonify({
-                "code": 400,
-                "message": "Producer must be selected",
-                "data": {"matches": [], "totalMatches": 0}
-            }), 400
-        
-        if not drink_type:
-            logger.info(f"REQ-{request_id} detectPotentialDuplicateListings: drink type missing")
-            return jsonify({
-                "code": 400,
-                "message": "Drink type is required",
-                "data": {"matches": [], "totalMatches": 0}
-            }), 400
-        
-        if not origin_country:
-            logger.info(f"REQ-{request_id} detectPotentialDuplicateListings: origin country missing")
-            return jsonify({
-                "code": 400,
-                "message": "Country of origin is required",
-                "data": {"matches": [], "totalMatches": 0}
-            }), 400
-        
-        logger.info(f"REQ-{request_id} detectPotentialDuplicateListings: searching for '{listing_name}' by producer '{producer_name}'")
-        
-        # ====== STEP 2: Normalize search terms ======
-        # This mirrors cellarImport.py lines 497-502
+        # Normalize search terms
         normalized_name = normalize_string(listing_name)
         normalized_producer = normalize_string(producer_name)
         normalized_bottler = normalize_string(bottler_name) if bottler_name else None
         
-        logger.info(f"REQ-{request_id} Normalized search: name='{normalized_name}', producer='{normalized_producer}'")
-        
-        # ====== STEP 3: Query database for candidates ======
-        # Using PostgreSQL trigram similarity (pg_trgm) for fuzzy matching at database level
-        # This catches typos like "benfiddic" vs "glenfiddich" that LIKE would miss
+        # Query database for candidates
         with db_manager.get_cursor() as cursor:
-            # Ensure pg_trgm extension is available (for trigram similarity)
+            # Ensure pg_trgm extension is available
             try:
                 cursor.execute("CREATE EXTENSION IF NOT EXISTS pg_trgm")
             except Exception as ext_err:
@@ -12461,10 +12424,7 @@ def detectPotentialDuplicateListings():
             normalize_listing = get_normalize_sql().format(field='l."listingName"')
             normalize_producer_sql = get_normalize_sql().format(field='p."producerName"')
             
-            # Use trigram similarity (%) for fuzzy matching instead of LIKE
-            # similarity() returns 0-1, we use 0.3 as minimum to cast a wide net
-            # The Python fuzzy matching in Step 4 will do the precise scoring
-            # IMPORTANT: Filter by drinkType and originCountry to only match relevant listings
+            # Use trigram similarity for fuzzy matching
             search_query = f"""
                 SELECT 
                     l."id",
@@ -12498,32 +12458,26 @@ def detectPotentialDuplicateListings():
                 LIMIT 50
             """
             
-            # Parameters: 2 for SELECT trigram scores, 2 for WHERE exact match, 2 for WHERE trigram, 2 for WHERE LIKE
             search_params = [
-                normalized_name, normalized_producer,  # For GREATEST() in SELECT
-                drink_type, origin_country,            # For WHERE exact match on drinkType and originCountry
-                normalized_name, normalized_producer,  # For WHERE similarity()
-                f'%{normalized_name}%', f'%{normalized_producer}%'  # For WHERE LIKE (fallback)
+                normalized_name, normalized_producer,
+                drink_type, origin_country,
+                normalized_name, normalized_producer,
+                f'%{normalized_name}%', f'%{normalized_producer}%'
             ]
             
             cursor.execute(search_query, search_params)
             potential_matches = cursor.fetchall()
-            
-            logger.info(f"REQ-{request_id} Found {len(potential_matches)} potential candidates from database (filtered by drinkType='{drink_type}', originCountry='{origin_country}')")
         
-        # ====== STEP 4: Calculate fuzzy match scores ======
-        # This mirrors cellarImport.py lines 553-610
+        # Calculate fuzzy match scores
         matches_with_scores = []
         
         for match in potential_matches:
             try:
-                # Normalize database values for comparison
                 match_name_normalized = normalize_string(match['listingName']) if match['listingName'] else ''
                 match_producer_normalized = normalize_string(match['producerName']) if match['producerName'] else ''
                 match_bottler_normalized = normalize_string(match['bottlerName']) if match.get('bottlerName') else ''
                 
                 # PRIMARY: Name similarity (0-100)
-                # Use token_sort_ratio to handle word order (e.g., "12 glenfiddich" vs "glenfiddich 12")
                 name_score = fuzz.token_sort_ratio(normalized_name, match_name_normalized)
                 
                 # BONUS: Producer match (+10 to +20 points)
@@ -12537,7 +12491,7 @@ def detectPotentialDuplicateListings():
                     elif producer_score >= 60:
                         producer_bonus = 10
                 
-                # BONUS: Bottler match (+10 to +20 points) - only if bottler was provided
+                # BONUS: Bottler match (+10 to +20 points)
                 bottler_bonus = 0
                 if normalized_bottler and match_bottler_normalized:
                     bottler_score = fuzz.token_sort_ratio(normalized_bottler, match_bottler_normalized)
@@ -12573,26 +12527,117 @@ def detectPotentialDuplicateListings():
                 logger.warning(f"REQ-{request_id} Error calculating score for match {match.get('id')}: {e}")
                 continue
         
-        # ====== STEP 5: Sort and return results ======
-        # Sort by similarity (highest first) and take top 10
+        # Sort by similarity (highest first) - return ALL matches above threshold
         matches_with_scores.sort(key=lambda x: x['similarity'], reverse=True)
-        top_matches = matches_with_scores[:10]
         
-        logger.info(f"REQ-{request_id} detectPotentialDuplicateListings: returning {len(top_matches)} matches above {threshold}% threshold")
+        # Add result for this listing
+        is_duplicate = len(matches_with_scores) > 0
+        if is_duplicate:
+            total_duplicates += 1
+        
+        results.append({
+            "stagedListingId": staged_id,
+            "isDuplicate": is_duplicate,
+            "matches": matches_with_scores  # All matches above threshold
+        })
+    
+    logger.info(f"REQ-{request_id} detect_duplicates_batch: checked {len(listings)} listings, found {total_duplicates} with potential duplicates")
+    
+    return {
+        "results": results,
+        "totalChecked": len(listings),
+        "totalDuplicates": total_duplicates
+    }
+
+
+@blueprint.route("/detectPotentialDuplicateListingsCsvBatch", methods=['POST'])
+def detectPotentialDuplicateListingsCsvBatch():
+    """
+    Detect potential duplicate listings for batch CSV import.
+    Takes an array of listings and checks each against existing database listings.
+    Uses fuzzy matching similar to cellar import duplicate detection.
+    
+    POST Body (JSON):
+        {
+            "listings": [
+                {
+                    "id": <staged_listing_id>,
+                    "listingName": "...",
+                    "producerId": "...",
+                    "producerName": "...",
+                    "drinkType": "...",
+                    "originCountry": "...",
+                    "bottlerId": "..." (optional),
+                    "bottlerName": "..." (optional)
+                },
+                ...
+            ],
+            "threshold": 95  (optional, default 95)
+        }
+    
+    Returns:
+        JSON with batch results:
+        {
+            "code": 200,
+            "message": "...",
+            "data": {
+                "results": [
+                    {
+                        "stagedListingId": <id>,
+                        "isDuplicate": true/false,
+                        "matches": [ {...}, {...} ]  // All matches above threshold
+                    },
+                    ...
+                ],
+                "totalChecked": <count>,
+                "totalDuplicates": <count>
+            }
+        }
+    """
+    request_id = getattr(g, 'request_id', 'unknown')
+    
+    try:
+        # Extract and validate POST body
+        data = request.get_json()
+        if not data:
+            return jsonify({
+                "code": 400,
+                "message": "No JSON body provided",
+                "data": {"results": [], "totalChecked": 0, "totalDuplicates": 0}
+            }), 400
+        
+        listings = data.get('listings', [])
+        threshold = int(data.get('threshold', 95))
+        
+        if not listings:
+            return jsonify({
+                "code": 400,
+                "message": "No listings provided in POST body",
+                "data": {"results": [], "totalChecked": 0, "totalDuplicates": 0}
+            }), 400
+        
+        if len(listings) > 500:
+            return jsonify({
+                "code": 400,
+                "message": "Too many listings. Maximum 500 allowed per batch.",
+                "data": {"results": [], "totalChecked": 0, "totalDuplicates": 0}
+            }), 400
+        
+        logger.info(f"REQ-{request_id} detectPotentialDuplicateListingsCsvBatch: checking {len(listings)} listings with threshold={threshold}%")
+        
+        # Call the reusable helper function
+        result_data = detect_duplicates_batch(listings, threshold, request_id)
         
         return jsonify({
             "code": 200,
-            "message": f"Found {len(top_matches)} potential duplicate(s)",
-            "data": {
-                "matches": top_matches,
-                "totalMatches": len(top_matches)
-            }
+            "message": f"Checked {result_data['totalChecked']} listings, found {result_data['totalDuplicates']} potential duplicate(s)",
+            "data": result_data
         }), 200
         
     except Exception as e:
-        logger.error(f"REQ-{request_id} detectPotentialDuplicateListings error: {str(e)}", exc_info=True)
+        logger.error(f"REQ-{request_id} detectPotentialDuplicateListingsCsvBatch error: {str(e)}", exc_info=True)
         return jsonify({
             "code": 500,
             "message": f"Error detecting duplicates: {str(e)}",
-            "data": {"matches": [], "totalMatches": 0}
+            "data": {"results": [], "totalChecked": 0, "totalDuplicates": 0}
         }), 500

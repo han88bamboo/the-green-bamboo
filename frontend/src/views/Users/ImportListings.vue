@@ -191,18 +191,18 @@
                                     <!-- Pre-commit: show status badges -->
                                     <template v-if="!commitComplete">
                                         <!-- Potential duplicate -->
-                                        <span v-if="item.isDuplicate" class="badge bg-warning text-dark me-1">
+                                        <span v-if="item?.isDuplicate" class="badge bg-warning text-dark me-1">
                                             ⚠️ Possible Duplicate
                                         </span>
                                         <!-- Producer doesn't exist -->
-                                        <span v-if="!item.producerID" class="badge bg-info me-1">
+                                        <span v-if="!item?.producerID" class="badge bg-info me-1">
                                             🆕 New Producer
                                         </span>
                                         <!-- New submission -->
-                                        <span v-if="!item.isDuplicate && item.producerID" class="badge bg-primary">
+                                        <span v-if="!item?.isDuplicate && item?.producerID" class="badge bg-primary">
                                             Ready to import
                                         </span>
-                                        <span v-else-if="!item.isDuplicate && !item.producerID" class="badge bg-primary">
+                                        <span v-else-if="!item?.isDuplicate && !item?.producerID" class="badge bg-primary">
                                             Ready (new producer)
                                         </span>
                                     </template>
@@ -487,6 +487,52 @@
                                     </button>
                                 </td>
                             </tr>
+                            
+                            <!-- Expandable duplicate matches row (light green) -->
+                            <tr v-if="item?.isDuplicate && (duplicateMatches[item.id]?.matches?.length || 0) > 0" 
+                                class="duplicate-matches-row">
+                                <td :colspan="commitComplete ? 12 : 13" class="p-0">
+                                    <div class="duplicate-matches-container">
+                                        <div class="duplicate-matches-header">
+                                            <i class="bi bi-exclamation-triangle-fill text-warning me-2"></i>
+                                            <strong>{{ duplicateMatches[item.id]?.matches?.length || 0 }} potential duplicate(s) found</strong>
+                                            <span class="text-muted ms-2">(95%+ similarity)</span>
+                                        </div>
+                                        <div class="duplicate-matches-content">
+                                            <div 
+                                                v-for="match in (duplicateMatches[item.id]?.matches || [])" 
+                                                :key="'match-' + match.id"
+                                                class="duplicate-match-item">
+                                                <div class="match-thumbnail">
+                                                    <img v-if="match.photo" :src="match.photo" alt="Match photo" />
+                                                    <div v-else class="no-photo">
+                                                        <i class="bi bi-image"></i>
+                                                    </div>
+                                                </div>
+                                                <div class="match-details">
+                                                    <div class="match-name">
+                                                        <a :href="`/listing/view/${match.id}/${slugify(match.listingName)}`" 
+                                                           target="_blank"
+                                                           class="text-decoration-none">
+                                                            {{ match.listingName }}
+                                                            <i class="bi bi-box-arrow-up-right ms-1 small"></i>
+                                                        </a>
+                                                    </div>
+                                                    <div class="match-producer text-muted small">
+                                                        by {{ match.producerName }}
+                                                    </div>
+                                                </div>
+                                                <div class="match-similarity">
+                                                    <span class="badge" 
+                                                          :class="match.similarity >= 98 ? 'bg-danger' : (match.similarity >= 96 ? 'bg-warning text-dark' : 'bg-info')">
+                                                        {{ match.similarity }}% match
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>
@@ -565,8 +611,8 @@ export default {
             // Inline editing
             editingCell: null, // { id, field }
 
-            // Existing listings for duplicate detection
-            existingListings: []
+            // Duplicate detection results (from staging response)
+            duplicateMatches: {} // Map of stagedListingId -> { isDuplicate, matches: [...] }
         }
     },
     mounted() {
@@ -626,15 +672,7 @@ export default {
                 return;
             }
 
-            // Load existing listings for duplicate detection
-            // TODO: This is a simple approach - in the future, implement server-side duplicate detection
-            try {
-                const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getListings`);
-                this.existingListings = response.data.data || [];
-            } catch (error) {
-                console.warn('Could not load existing listings for duplicate detection:', error);
-                this.existingListings = [];
-            }
+            // Duplicate detection is now server-side batch API
 
             // Set data loaded to true
             if (this.dataLoaded != null) {
@@ -704,11 +742,24 @@ export default {
                         return;
                     }
 
-                    // Check for duplicates
-                    this.checkForDuplicates();
-
-                    // Select all items by default
-                    this.selectedItems = new Set(this.stagedListings.map(item => item.id));
+                    // Process duplicate detection results from the response (already included)
+                    this.duplicateMatches = response.data.data.duplicateMatches || {};
+                    
+                    // Auto-deselect items marked as duplicates
+                    for (const listing of this.stagedListings) {
+                        if (listing.isDuplicate) {
+                            // Don't add to selectedItems (they come pre-flagged from backend)
+                        }
+                    }
+                    
+                    // Select all NON-duplicate items by default
+                    this.selectedItems = new Set(
+                        this.stagedListings
+                            .filter(item => item && !item.isDuplicate)
+                            .map(item => item.id)
+                    );
+                    
+                    console.log(`Duplicate check complete: ${response.data.data.totalDuplicates || 0} potential duplicates found`);
 
                     // Show staging modal
                     this.showStagingModal = true;
@@ -740,31 +791,6 @@ export default {
             }
         },
 
-        // Check for potential duplicates using LIKE match on listing name
-        // TODO: Develop more sophisticated duplicate detection in the future
-        checkForDuplicates() {
-            for (const staged of this.stagedListings) {
-                const listingNameLower = (staged.listingName || '').toLowerCase().trim();
-                const producerNameLower = (staged.producerName || '').toLowerCase().trim();
-
-                // Simple LIKE match: check if any existing listing has similar name
-                staged.isDuplicate = this.existingListings.some(existing => {
-                    const existingNameLower = (existing.listingName || '').toLowerCase().trim();
-                    const existingProducerLower = (existing.producerName || '').toLowerCase().trim();
-
-                    // Match if listing name contains or is contained by existing name
-                    // AND producer name matches (if both have producers)
-                    const nameMatch = existingNameLower.includes(listingNameLower) || 
-                                     listingNameLower.includes(existingNameLower);
-                    const producerMatch = !producerNameLower || !existingProducerLower || 
-                                         existingProducerLower.includes(producerNameLower) ||
-                                         producerNameLower.includes(existingProducerLower);
-
-                    return nameMatch && producerMatch && listingNameLower.length > 3;
-                });
-            }
-        },
-
         // Commit selected staged listings (Step 2)
         async commitStagedListings() {
             const selectedIds = Array.from(this.selectedItems);
@@ -775,7 +801,7 @@ export default {
 
             // Stage 4.4: Warn about duplicates if any are selected
             const selectedDuplicates = this.stagedListings.filter(
-                item => this.selectedItems.has(item.id) && item.isDuplicate
+                item => item && this.selectedItems.has(item.id) && item.isDuplicate
             );
             if (selectedDuplicates.length > 0) {
                 const proceed = confirm(
@@ -984,7 +1010,7 @@ export default {
         },
 
         getDuplicatesCount() {
-            return this.stagedListings.filter(item => item.isDuplicate).length;
+            return this.stagedListings.filter(item => item && item.isDuplicate).length;
         },
 
         getNewProducersCount() {
@@ -1022,6 +1048,7 @@ export default {
         // ============ UI HELPER METHODS ============
 
         getRowClass(item) {
+            if (!item) return 'row-pending';
             if (this.commitComplete) {
                 if (item.commitStatus === 'success') return 'row-success';
                 if (item.commitStatus === 'error') return 'row-error';
@@ -1044,6 +1071,17 @@ export default {
             if (!text) return '';
             if (text.length <= maxLength) return text;
             return text.substring(0, maxLength) + '...';
+        },
+
+        slugify(text) {
+            if (!text) return '';
+            return text
+                .toString()
+                .toLowerCase()
+                .trim()
+                .replace(/\s+/g, '-')
+                .replace(/[^\w-]+/g, '')
+                .replace(/--+/g, '-');
         },
 
         // ============ CSV TEMPLATE METHODS ============
@@ -1292,5 +1330,127 @@ export default {
 
 .staging-table .badge.bg-warning {
     color: #000;
+}
+
+/* ==================== DUPLICATE MATCH STYLES ==================== */
+
+.duplicate-matches-row {
+    background-color: rgba(25, 135, 84, 0.08) !important;
+}
+
+.duplicate-matches-row:hover {
+    background-color: rgba(25, 135, 84, 0.12) !important;
+}
+
+.duplicate-matches-row td {
+    border-top: none !important;
+}
+
+.duplicate-matches-container {
+    padding: 12px 16px;
+    background-color: rgba(25, 135, 84, 0.05);
+    border-left: 3px solid #198754;
+}
+
+.duplicate-matches-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #198754;
+}
+
+.duplicate-matches-header i {
+    font-size: 1rem;
+}
+
+.duplicate-matches-content {
+    max-height: 200px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.duplicate-match-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 12px;
+    background-color: white;
+    border-radius: 6px;
+    border: 1px solid rgba(25, 135, 84, 0.2);
+    transition: all 0.2s ease;
+}
+
+.duplicate-match-item:hover {
+    border-color: rgba(25, 135, 84, 0.4);
+    box-shadow: 0 2px 4px rgba(25, 135, 84, 0.15);
+}
+
+.match-thumbnail {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 4px;
+    border: 1px solid #dee2e6;
+    flex-shrink: 0;
+}
+
+.match-details {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.match-name {
+    font-weight: 600;
+    color: #0d6efd;
+    text-decoration: none;
+    font-size: 0.9rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.match-name:hover {
+    text-decoration: underline;
+    color: #0a58ca;
+}
+
+.match-producer {
+    font-size: 0.85rem;
+    color: #6c757d;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.match-similarity {
+    flex-shrink: 0;
+    margin-left: auto;
+}
+
+/* Scrollbar styling for duplicate matches */
+.duplicate-matches-content::-webkit-scrollbar {
+    width: 6px;
+}
+
+.duplicate-matches-content::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 3px;
+}
+
+.duplicate-matches-content::-webkit-scrollbar-thumb {
+    background: rgba(25, 135, 84, 0.3);
+    border-radius: 3px;
+}
+
+.duplicate-matches-content::-webkit-scrollbar-thumb:hover {
+    background: rgba(25, 135, 84, 0.5);
 }
 </style>

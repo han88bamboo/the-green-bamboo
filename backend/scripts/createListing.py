@@ -16,6 +16,7 @@ import s3Images
 from flask import Blueprint, g, request, jsonify
 from datetime import datetime, timedelta
 from scripts import notifications
+from scripts.getData import detect_duplicates_batch
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from psycopg2.extras import execute_values
 # Import the database manager for connection pooling
@@ -1209,12 +1210,48 @@ def stageListingsFromCSV():
                 
                 print(f"Successfully staged {len(staged_listings)} listings")
             
-            # Prepare response with staged listings and any validation errors
+            # ====== STEP: Detect duplicates for staged listings ======
+            # Prepare listings in the format expected by detect_duplicates_batch
+            listings_for_duplicate_check = [
+                {
+                    'id': listing['id'],
+                    'listingName': listing['listingName'],
+                    'producerId': listing.get('producerID', ''),
+                    'producerName': listing.get('producerName', ''),
+                    'drinkType': listing.get('drinkType', ''),
+                    'originCountry': listing.get('originCountry', ''),
+                    'bottlerId': listing.get('bottlerID', ''),
+                    'bottlerName': listing.get('bottlerName', '')
+                }
+                for listing in staged_listings
+            ]
+            
+            # Call duplicate detection with 95% threshold
+            duplicate_results = detect_duplicates_batch(listings_for_duplicate_check, threshold=95)
+            
+            # Build a map of stagedListingId -> duplicate info for easy lookup
+            duplicate_matches = {}
+            for result in duplicate_results.get('results', []):
+                duplicate_matches[result['stagedListingId']] = {
+                    'isDuplicate': result['isDuplicate'],
+                    'matches': result['matches']
+                }
+            
+            # Add isDuplicate flag to each staged listing
+            for listing in staged_listings:
+                dup_info = duplicate_matches.get(listing['id'], {})
+                listing['isDuplicate'] = dup_info.get('isDuplicate', False)
+            
+            print(f"Duplicate check complete: {duplicate_results.get('totalDuplicates', 0)} potential duplicates found")
+            
+            # Prepare response with staged listings, validation errors, and duplicate info
             response_data = {
                 "staged": staged_listings,
                 "stagedCount": len(staged_listings),
                 "validationErrors": validation_errors,
-                "errorCount": len(validation_errors)
+                "errorCount": len(validation_errors),
+                "duplicateMatches": duplicate_matches,
+                "totalDuplicates": duplicate_results.get('totalDuplicates', 0)
             }
             
             return jsonify({
