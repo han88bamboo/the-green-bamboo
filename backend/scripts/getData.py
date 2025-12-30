@@ -12469,41 +12469,110 @@ def detect_duplicates_batch(listings, threshold=95, request_id='unknown'):
             potential_matches = cursor.fetchall()
         
         # Calculate fuzzy match scores
+        # ======================================================
+        # DUPLICATE DETECTION ALGORITHM (Updated: Dec 2025)
+        # Approach: Combined string matching with producer & bottler gates
+        # 
+        # Step 1: Producer Gate (WRatio, threshold 70%)
+        #   - Ensures listings are from similar producers
+        #   - Prevents false positives from generic names
+        #   - WRatio handles typos and name variations
+        #
+        # Step 2: Bottler Gate (WRatio, threshold 70%)
+        #   - "No bottler" = OB, Original Bottling, empty, or same as producer
+        #   - Both no bottler → skip gate
+        #   - One has, one doesn't → 100% reject
+        #   - Both have → apply 70% gate
+        #
+        # Step 3: Combined Score (token_set_ratio)
+        #   - Compares "listingName producerName [bottlerName]" as one string
+        #   - Only includes bottler when both have bottlers
+        #   - token_set_ratio ignores duplicate words
+        # ======================================================
         matches_with_scores = []
+        producer_gate_threshold = 70  # Minimum producer similarity to consider
+        bottler_gate_threshold = 70   # Minimum bottler similarity to consider
+        
+        # Helper function to determine if bottler is effectively "no bottler"
+        # "No bottler" = OB, Original Bottling, empty, None, or exact same as producer name
+        def is_no_bottler(bottler_value, producer_value):
+            if not bottler_value:
+                return True
+            bottler_lower = bottler_value.lower().strip()
+            if bottler_lower in ['ob', 'original bottling', 'original bottler', '']:
+                return True
+            # Check if bottler is exact same as producer (case-insensitive)
+            if producer_value:
+                producer_lower = producer_value.lower().strip()
+                if bottler_lower == producer_lower:
+                    return True
+            return False
+        
+        # Determine if input has a bottler
+        input_has_bottler = not is_no_bottler(bottler_name, producer_name)
         
         for match in potential_matches:
             try:
                 match_name_normalized = normalize_string(match['listingName']) if match['listingName'] else ''
                 match_producer_normalized = normalize_string(match['producerName']) if match['producerName'] else ''
-                match_bottler_normalized = normalize_string(match['bottlerName']) if match.get('bottlerName') else ''
+                match_bottler_name = match.get('bottlerName') or ''
+                match_bottler_normalized = normalize_string(match_bottler_name) if match_bottler_name else ''
                 
-                # PRIMARY: Name similarity (0-100)
-                name_score = fuzz.token_sort_ratio(normalized_name, match_name_normalized)
+                # GATE 1: Check producer similarity first using WRatio
+                # WRatio is more robust than token_sort_ratio for handling:
+                # - Length differences ("Glenfiddich" vs "Glenfiddich Distillery")
+                # - Typos and partial matches
+                # - Different word orders
+                producer_gate_score = fuzz.WRatio(normalized_producer, match_producer_normalized) if normalized_producer and match_producer_normalized else 0
                 
-                # BONUS: Producer match (+10 to +20 points)
-                producer_bonus = 0
-                if normalized_producer and match_producer_normalized:
-                    producer_score = fuzz.token_sort_ratio(normalized_producer, match_producer_normalized)
-                    if producer_score >= 90:
-                        producer_bonus = 20
-                    elif producer_score >= 80:
-                        producer_bonus = 15
-                    elif producer_score >= 60:
-                        producer_bonus = 10
+                # If producer doesn't meet 70% threshold, skip this match entirely
+                if producer_gate_score < producer_gate_threshold:
+                    logger.debug(f"REQ-{request_id} Skipping match {match.get('id')}: producer gate failed ({producer_gate_score}% < {producer_gate_threshold}%)")
+                    continue
                 
-                # BONUS: Bottler match (+10 to +20 points)
-                bottler_bonus = 0
-                if normalized_bottler and match_bottler_normalized:
-                    bottler_score = fuzz.token_sort_ratio(normalized_bottler, match_bottler_normalized)
-                    if bottler_score >= 90:
-                        bottler_bonus = 20
-                    elif bottler_score >= 80:
-                        bottler_bonus = 15
-                    elif bottler_score >= 60:
-                        bottler_bonus = 10
+                # GATE 2: Check bottler compatibility
+                # Determine if match has a bottler
+                match_has_bottler = not is_no_bottler(match_bottler_name, match['producerName'])
                 
-                # Calculate total score (capped at 100)
-                total_score = min(100, name_score + producer_bonus + bottler_bonus)
+                # Bottler gate logic:
+                # - Both no bottler → skip gate (compatible)
+                # - One has, one doesn't → 100% reject (incompatible products)
+                # - Both have → apply 70% WRatio gate
+                if not input_has_bottler and not match_has_bottler:
+                    # Both are OB/no bottler - compatible, skip bottler gate
+                    include_bottler_in_combined = False
+                    logger.debug(f"REQ-{request_id} Match {match.get('id')}: both no bottler, skipping bottler gate")
+                elif input_has_bottler != match_has_bottler:
+                    # One has bottler, one doesn't - 100% reject
+                    logger.debug(f"REQ-{request_id} Skipping match {match.get('id')}: bottler mismatch (input_has={input_has_bottler}, match_has={match_has_bottler})")
+                    continue
+                else:
+                    # Both have bottlers - apply 70% WRatio gate
+                    bottler_gate_score = fuzz.WRatio(normalized_bottler, match_bottler_normalized) if normalized_bottler and match_bottler_normalized else 0
+                    if bottler_gate_score < bottler_gate_threshold:
+                        logger.debug(f"REQ-{request_id} Skipping match {match.get('id')}: bottler gate failed ({bottler_gate_score}% < {bottler_gate_threshold}%)")
+                        continue
+                    include_bottler_in_combined = True
+                    logger.debug(f"REQ-{request_id} Match {match.get('id')}: bottler gate passed ({bottler_gate_score}%)")
+                
+                # COMBINED: Name + Producer + [Bottler] similarity using token_set_ratio
+                # token_set_ratio is good for:
+                # - Ignoring duplicate words (when producer appears in name)
+                # - Handling different word orders
+                # - Finding subset matches
+                if include_bottler_in_combined:
+                    combined_input = f"{normalized_name} {normalized_producer} {normalized_bottler}".strip()
+                    combined_match = f"{match_name_normalized} {match_producer_normalized} {match_bottler_normalized}".strip()
+                else:
+                    combined_input = f"{normalized_name} {normalized_producer}".strip()
+                    combined_match = f"{match_name_normalized} {match_producer_normalized}".strip()
+                
+                combined_score = fuzz.token_set_ratio(combined_input, combined_match)
+                
+                # Use combined score as final similarity
+                total_score = combined_score
+                
+                logger.debug(f"REQ-{request_id} Match {match.get('id')}: producer_gate={producer_gate_score}%, combined={combined_score}%, bottler_included={include_bottler_in_combined}")
                 
                 # Only include matches above threshold
                 if total_score >= threshold:
