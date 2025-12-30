@@ -549,7 +549,7 @@
                                         <div class="duplicate-matches-header">
                                             <i class="bi bi-exclamation-triangle-fill text-warning me-2"></i>
                                             <strong>{{ getDuplicateInfo(item.id)?.matches?.length || 0 }} potential duplicate(s) found</strong>
-                                            <span class="text-muted ms-2">(95%+ similarity)</span>
+                                            <!-- <span class="text-muted ms-2">(95%+ similarity)</span> -->
                                         </div>
                                         <div class="duplicate-matches-content">
                                             <div 
@@ -581,7 +581,7 @@
                                                         <span v-if="match.drinkStyle"> · {{ match.drinkStyle }}</span>
                                                         <span v-if="match.originCountry"> · {{ match.originCountry }}</span>
                                                         <span v-if="match.abv"> · {{ match.abv }}%</span>
-                                                        <span v-if="match.age"> · {{ match.age }}</span>
+                                                        <span v-if="match.age"> · {{ match.age }} years</span>
                                                     </div>
                                                 </div>
                                                 <div class="match-similarity">

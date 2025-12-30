@@ -1276,7 +1276,9 @@ def stageListingsFromCSV():
                     'drinkType': listing.get('drinkType', ''),
                     'originCountry': listing.get('originCountry', ''),
                     'bottlerId': listing.get('bottlerID', ''),
-                    'bottlerName': listing.get('bottlerName', '')
+                    'bottlerName': listing.get('bottlerName', ''),
+                    'age': listing.get('age', ''),
+                    'abv': listing.get('abv')
                 }
                 for listing in staged_listings
             ]
