@@ -174,9 +174,8 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr v-for="(item, index) in stagedListings" 
-                                :key="'staged-' + item.id" 
-                                :class="getRowClass(item)">
+                            <template v-for="(item, index) in stagedListings" :key="'staged-' + item.id">
+                            <tr :class="getRowClass(item)">
                                 <!-- Checkbox column (hidden after commit) -->
                                 <td v-if="!commitComplete" class="text-center">
                                     <input 
@@ -489,22 +488,22 @@
                             </tr>
                             
                             <!-- Expandable duplicate matches row (light green) -->
-                            <tr v-if="item?.isDuplicate && (duplicateMatches[item.id]?.matches?.length || 0) > 0" 
+                            <tr v-if="item?.isDuplicate && (getDuplicateInfo(item.id)?.matches?.length || 0) > 0" 
                                 class="duplicate-matches-row">
                                 <td :colspan="commitComplete ? 12 : 13" class="p-0">
                                     <div class="duplicate-matches-container">
                                         <div class="duplicate-matches-header">
                                             <i class="bi bi-exclamation-triangle-fill text-warning me-2"></i>
-                                            <strong>{{ duplicateMatches[item.id]?.matches?.length || 0 }} potential duplicate(s) found</strong>
+                                            <strong>{{ getDuplicateInfo(item.id)?.matches?.length || 0 }} potential duplicate(s) found</strong>
                                             <span class="text-muted ms-2">(95%+ similarity)</span>
                                         </div>
                                         <div class="duplicate-matches-content">
                                             <div 
-                                                v-for="match in (duplicateMatches[item.id]?.matches || [])" 
+                                                v-for="match in (getDuplicateInfo(item.id)?.matches || [])" 
                                                 :key="'match-' + match.id"
                                                 class="duplicate-match-item">
-                                                <div class="match-thumbnail">
-                                                    <img v-if="match.photo" :src="match.photo" alt="Match photo" />
+                                                <div >
+                                                    <img class="match-thumbnail" v-if="match.photo" :src="match.photo" alt="Match photo" />
                                                     <div v-else class="no-photo">
                                                         <i class="bi bi-image"></i>
                                                     </div>
@@ -533,6 +532,7 @@
                                     </div>
                                 </td>
                             </tr>
+                            </template>
                         </tbody>
                     </table>
                 </div>
@@ -744,6 +744,10 @@ export default {
 
                     // Process duplicate detection results from the response (already included)
                     this.duplicateMatches = response.data.data.duplicateMatches || {};
+                    
+                    // Debug: log the duplicate matches to verify structure
+                    console.log('charsiucharlie_duplicate_check_debug: Duplicate matches from backend:', this.duplicateMatches);
+                    console.log('charsiucharlie_duplicate_check_debug: Staged listings IDs:', this.stagedListings.map(item => ({ id: item.id, type: typeof item.id, isDuplicate: item.isDuplicate })));
                     
                     // Auto-deselect items marked as duplicates
                     for (const listing of this.stagedListings) {
@@ -1071,6 +1075,13 @@ export default {
             if (!text) return '';
             if (text.length <= maxLength) return text;
             return text.substring(0, maxLength) + '...';
+        },
+
+        // Get duplicate match info for a staged listing (handles string/number key mismatch)
+        getDuplicateInfo(itemId) {
+            if (!itemId || !this.duplicateMatches) return null;
+            // Try both number and string keys since JSON serialization can change types
+            return this.duplicateMatches[itemId] || this.duplicateMatches[String(itemId)] || null;
         },
 
         slugify(text) {
