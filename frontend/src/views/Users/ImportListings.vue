@@ -519,6 +519,15 @@
                                                     </div>
                                                     <div class="match-producer text-muted small">
                                                         by {{ match.producerName }}
+                                                        <span v-if="shouldShowBottler(match)" class="ms-1">(Bottler: {{ match.bottlerName }})</span>
+                                                    </div>
+                                                    <div class="match-attributes text-muted small">
+                                                        <span v-if="match.drinkType">{{ match.drinkType }}</span>
+                                                        <span v-if="match.typeCategory"> · {{ match.typeCategory }}</span>
+                                                        <span v-if="match.drinkStyle"> · {{ match.drinkStyle }}</span>
+                                                        <span v-if="match.originCountry"> · {{ match.originCountry }}</span>
+                                                        <span v-if="match.abv"> · {{ match.abv }}%</span>
+                                                        <span v-if="match.age"> · {{ match.age }}</span>
                                                     </div>
                                                 </div>
                                                 <div class="match-similarity">
@@ -1084,6 +1093,21 @@ export default {
             return this.duplicateMatches[itemId] || this.duplicateMatches[String(itemId)] || null;
         },
 
+        // Determine if bottler name should be shown for a match
+        // Don't show if: empty, 'OB', 'Original Bottling', or same as producer name
+        shouldShowBottler(match) {
+            if (!match || !match.bottlerName) return false;
+            const bottler = match.bottlerName.toLowerCase().trim();
+            if (bottler === '' || bottler === 'ob' || bottler === 'original bottling' || bottler === 'original bottler') {
+                return false;
+            }
+            // Don't show if same as producer name
+            if (match.producerName && bottler === match.producerName.toLowerCase().trim()) {
+                return false;
+            }
+            return true;
+        },
+
         slugify(text) {
             if (!text) return '';
             return text
@@ -1439,6 +1463,15 @@ export default {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+}
+
+.match-attributes {
+    font-size: 0.8rem;
+    color: #6c757d;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-top: 2px;
 }
 
 .match-similarity {
