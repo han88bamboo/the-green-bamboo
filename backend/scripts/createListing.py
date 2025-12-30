@@ -1226,8 +1226,8 @@ def stageListingsFromCSV():
                 for listing in staged_listings
             ]
             
-            # Call duplicate detection with 95% threshold
-            duplicate_results = detect_duplicates_batch(listings_for_duplicate_check, threshold=95)
+            # Call duplicate detection (uses default threshold from detect_duplicates_batch)
+            duplicate_results = detect_duplicates_batch(listings_for_duplicate_check)
             
             # Build a map of stagedListingId -> duplicate info for easy lookup
             duplicate_matches = {}
