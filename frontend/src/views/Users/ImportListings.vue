@@ -193,8 +193,13 @@
                                         <span v-if="item?.isDuplicate" class="badge bg-warning text-dark me-1">
                                             ⚠️ Possible Duplicate
                                         </span>
+                                        <!-- Producer fuzzy matched (high confidence auto-link) -->
+                                        <span v-if="item?.producerFuzzyMatched && item?.producerID" class="badge bg-success me-1" 
+                                              :title="'Auto-matched: ' + item.producerName + ' → ' + item.producerMatchedName">
+                                            ✓ Producer matched
+                                        </span>
                                         <!-- Producer doesn't exist -->
-                                        <span v-if="!item?.producerID" class="badge bg-info me-1">
+                                        <span v-else-if="!item?.producerID" class="badge bg-info me-1">
                                             🆕 New Producer
                                         </span>
                                         <!-- New submission -->
@@ -248,28 +253,77 @@
                                         <span :class="{ 'text-muted': !item.listingName }">{{ truncateText(item.listingName, 20) || '-' }}</span>
                                     </template>
                                 </td>
-                                <!-- Producer - Editable -->
-                                <td class="editable-cell" 
-                                    :class="{ 'editing': isEditing(item.id, 'producerName'), 'not-editable': commitComplete, 'producer-warning': !item.producerID }"
-                                    @click="startEditing(item.id, 'producerName')">
-                                    <template v-if="isEditing(item.id, 'producerName')">
-                                        <input 
-                                            type="text" 
-                                            class="form-control form-control-sm inline-edit-input"
-                                            v-model="item.producerName"
-                                            @blur="stopEditing(item)"
-                                            @keyup.enter="stopEditing(item)"
-                                            @keyup.escape="cancelEditing()"
-                                            ref="editInput"
-                                            @click.stop
-                                        />
-                                    </template>
-                                    <template v-else>
-                                        <span :class="{ 'text-muted': !item.producerName, 'text-warning fw-bold': !item.producerID }">
-                                            {{ truncateText(item.producerName, 15) || '-' }}
-                                            <span v-if="!item.producerID" class="badge bg-warning text-dark ms-1" style="font-size: 0.65em;">NEW</span>
+                                <!-- Producer - Popover editable (supports fuzzy match override) -->
+                                <td class="editable-cell popover-cell" 
+                                    :class="{ 'not-editable': commitComplete, 'producer-warning': !item.producerID, 'producer-fuzzy': item.producerFuzzyMatched, 'popover-active': isPopoverActive(item.id, 'producer') }"
+                                    @click.stop="openPopover(item.id, 'producer', $event)">
+                                    <span :class="{ 'text-muted': !item.producerName }">
+                                        {{ truncateText(item.producerName, 15) || '-' }}
+                                        <!-- Fuzzy match badge (yellow) - can override -->
+                                        <span v-if="item.producerFuzzyMatched" 
+                                              class="badge bg-success text-white ms-1" 
+                                              style="font-size: 0.6em;"
+                                              :title="'Auto-matched to: ' + item.producerMatchedName + ' (' + item.producerMatchSimilarity + '% match)'">
+                                            ✓ {{ item.producerMatchSimilarity }}%
                                         </span>
-                                    </template>
+                                        <!-- New producer badge -->
+                                        <span v-else-if="!item.producerID" class="badge bg-warning text-dark ms-1" style="font-size: 0.65em;">NEW</span>
+                                    </span>
+                                    
+                                    <!-- Producer Popover -->
+                                    <div v-if="isPopoverActive(item.id, 'producer')" 
+                                         class="cell-popover" 
+                                         :style="{ top: popoverPosition.top + 'px', left: popoverPosition.left + 'px' }" 
+                                         ref="activePopoverContainer" 
+                                         @click.stop>
+                                        <div class="popover-header">
+                                            <span class="popover-title">
+                                                <span v-if="item.producerFuzzyMatched">Change Producer Match</span>
+                                                <span v-else>Select Producer</span>
+                                            </span>
+                                            <button type="button" class="btn-close btn-close-sm" @click.stop="closePopover"></button>
+                                        </div>
+                                        <div class="popover-body">
+                                            <!-- Show fuzzy match info if applicable -->
+                                            <div v-if="item.producerFuzzyMatched" class="fuzzy-match-info mb-2">
+                                                <small class="text-success">
+                                                    <strong>Auto-matched:</strong> "{{ item.producerName }}" → "{{ item.producerMatchedName }}" ({{ item.producerMatchSimilarity }}%)
+                                                </small>
+                                            </div>
+                                            
+                                            <input 
+                                                type="text" 
+                                                class="form-control form-control-sm"
+                                                v-model="popoverSearchQuery"
+                                                @input="onPopoverSearchInput"
+                                                placeholder="Search producer..."
+                                                ref="popoverInput"
+                                            />
+                                            <div v-if="popoverSearchResults.length > 0" class="popover-dropdown">
+                                                <div 
+                                                    v-for="result in popoverSearchResults.slice(0, 8)" 
+                                                    :key="result.id" 
+                                                    class="popover-dropdown-item"
+                                                    @click.stop="selectProducerFromPopover(item, result)"
+                                                >
+                                                    <span class="result-name">{{ result.producerName }}</span>
+                                                    <span class="result-id text-muted">#{{ result.id }}</span>
+                                                </div>
+                                            </div>
+                                            <div v-else-if="popoverSearchQuery && popoverSearchQuery.length >= 2" class="popover-no-results text-muted">
+                                                No producers found
+                                            </div>
+                                        </div>
+                                        <div class="popover-footer">
+                                            <button v-if="item.producerFuzzyMatched || item.producerID" 
+                                                    type="button" 
+                                                    class="btn btn-sm btn-outline-warning" 
+                                                    @click.stop="clearProducerMatch(item)">
+                                                Create New
+                                            </button>
+                                            <button type="button" class="btn btn-sm btn-secondary" @click.stop="closePopover">Close</button>
+                                        </div>
+                                    </div>
                                 </td>
                                 <!-- Bottler -->
                                 <td class="editable-cell" 
@@ -621,7 +675,15 @@ export default {
             editingCell: null, // { id, field }
 
             // Duplicate detection results (from staging response)
-            duplicateMatches: {} // Map of stagedListingId -> { isDuplicate, matches: [...] }
+            duplicateMatches: {}, // Map of stagedListingId -> { isDuplicate, matches: [...] }
+            
+            // Producer/Bottler popover state
+            activePopover: null, // { itemId, field } - field is 'producer' or 'bottler'
+            popoverPosition: { top: 0, left: 0 },
+            popoverSearchQuery: '',
+            popoverSearchResults: [],
+            popoverSearchDebounce: null,
+            producerList: [] // List of all producers for search
         }
     },
     mounted() {
@@ -633,6 +695,10 @@ export default {
         } else {
             this.loadData();
         }
+    },
+    beforeUnmount() {
+        // Cleanup popover event listener
+        document.removeEventListener('click', this.handlePopoverClickOutside);
     },
     methods: {
         async loadData() {
@@ -679,6 +745,15 @@ export default {
                 console.error('Error verifying user access:', error);
                 this.dataLoaded = null;
                 return;
+            }
+
+            // Fetch producer list for popover search
+            try {
+                const prodResponse = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getAllProducers`);
+                this.producerList = prodResponse.data || [];
+            } catch (error) {
+                console.error('Error fetching producers:', error);
+                this.producerList = [];
             }
 
             // Duplicate detection is now server-side batch API
@@ -1063,6 +1138,140 @@ export default {
 
         cancelEditing() {
             this.editingCell = null;
+        },
+
+        // ============ POPOVER METHODS (for producer/bottler override) ============
+        
+        isPopoverActive(itemId, field) {
+            return this.activePopover && 
+                   this.activePopover.itemId === itemId && 
+                   this.activePopover.field === field;
+        },
+
+        openPopover(itemId, field, event) {
+            // Don't allow popover if commit is complete or in progress
+            if (this.commitComplete || this.commitInProgress) return;
+            
+            // Close any active inline editing
+            this.editingCell = null;
+            
+            // Calculate popover position based on clicked cell
+            if (event && event.currentTarget) {
+                const rect = event.currentTarget.getBoundingClientRect();
+                this.popoverPosition = {
+                    top: rect.bottom + 4,
+                    left: Math.max(10, rect.left - 50) // Offset slightly left, but not off screen
+                };
+            }
+            
+            // Initialize search with current value
+            const item = this.stagedListings.find(l => l.id === itemId);
+            if (item) {
+                if (field === 'producer') {
+                    this.popoverSearchQuery = item.producerMatchedName || item.producerName || '';
+                } else if (field === 'bottler') {
+                    this.popoverSearchQuery = item.bottlerMatchedName || item.bottlerName || '';
+                }
+            }
+            this.popoverSearchResults = [];
+            
+            // Trigger initial search if there's a query
+            if (this.popoverSearchQuery && this.popoverSearchQuery.length >= 2) {
+                this.searchProducers();
+            }
+            
+            this.activePopover = { itemId, field };
+            
+            // Focus input after DOM updates
+            this.$nextTick(() => {
+                const input = this.$refs.popoverInput;
+                if (input) {
+                    const el = Array.isArray(input) ? input[0] : input;
+                    if (el) {
+                        el.focus();
+                        el.select();
+                    }
+                }
+            });
+            
+            // Add click outside listener
+            setTimeout(() => {
+                document.addEventListener('click', this.handlePopoverClickOutside);
+            }, 100);
+        },
+
+        closePopover() {
+            this.activePopover = null;
+            this.popoverSearchQuery = '';
+            this.popoverSearchResults = [];
+            document.removeEventListener('click', this.handlePopoverClickOutside);
+        },
+
+        handlePopoverClickOutside(event) {
+            if (!this.activePopover) return;
+            
+            const popoverRef = this.$refs.activePopoverContainer;
+            if (!popoverRef) {
+                this.closePopover();
+                return;
+            }
+            
+            // Handle both single element and array of elements
+            const popoverElements = Array.isArray(popoverRef) ? popoverRef : [popoverRef];
+            const isClickInside = popoverElements.some(el => el && el.contains && el.contains(event.target));
+            
+            if (!isClickInside) {
+                this.closePopover();
+            }
+        },
+
+        onPopoverSearchInput() {
+            // Debounce search
+            if (this.popoverSearchDebounce) {
+                clearTimeout(this.popoverSearchDebounce);
+            }
+            this.popoverSearchDebounce = setTimeout(() => {
+                this.searchProducers();
+            }, 200);
+        },
+
+        searchProducers() {
+            const query = (this.popoverSearchQuery || '').toLowerCase().trim();
+            if (query.length < 2) {
+                this.popoverSearchResults = [];
+                return;
+            }
+            
+            // Filter local producer list
+            this.popoverSearchResults = this.producerList.filter(p => 
+                p.producerName && p.producerName.toLowerCase().includes(query)
+            ).slice(0, 10);
+        },
+
+        selectProducerFromPopover(item, producer) {
+            // Update the item with selected producer
+            item.producerID = producer.id;
+            item.producerMatchedName = producer.producerName;
+            item.producerFuzzyMatched = true; // Mark as manually matched (same visual treatment)
+            item.producerMatchSimilarity = 100; // Manual selection = 100%
+            
+            // Update the staged item on server
+            this.updateStagedItem(item);
+            
+            this.closePopover();
+        },
+
+        clearProducerMatch(item) {
+            // Clear the producer match - will create new producer on commit
+            item.producerID = null;
+            item.producerMatchedName = null;
+            item.producerFuzzyMatched = false;
+            item.producerMatchSimilarity = null;
+            
+            // Update the staged item on server
+            this.updateStagedItem(item);
+            
+            this.closePopover();
         },
 
         // ============ UI HELPER METHODS ============
@@ -1503,5 +1712,132 @@ export default {
 
 .duplicate-matches-content::-webkit-scrollbar-thumb:hover {
     background: rgba(25, 135, 84, 0.5);
+}
+
+/* ==================== POPOVER STYLES (for producer/bottler override) ==================== */
+
+.popover-cell {
+    position: relative;
+}
+
+.popover-cell.popover-active {
+    background-color: rgba(13, 110, 253, 0.12);
+}
+
+.popover-cell.producer-fuzzy {
+    background-color: rgba(25, 135, 84, 0.1);
+}
+
+.cell-popover {
+    position: fixed;
+    z-index: 1100;
+    min-width: 280px;
+    background: #fff;
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    border-radius: 8px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+    margin-top: 4px;
+}
+
+.popover-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 12px;
+    background: #f8f9fa;
+    border-bottom: 1px solid #dee2e6;
+    border-radius: 8px 8px 0 0;
+}
+
+.popover-title {
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: #333;
+}
+
+.btn-close-sm {
+    font-size: 0.65rem;
+    padding: 4px;
+}
+
+.popover-body {
+    padding: 12px;
+}
+
+.popover-body input {
+    font-size: 0.9rem;
+}
+
+.fuzzy-match-info {
+    padding: 8px;
+    background: rgba(25, 135, 84, 0.1);
+    border-radius: 4px;
+    font-size: 0.85rem;
+    border-left: 3px solid #198754;
+}
+
+.popover-dropdown {
+    max-height: 200px;
+    overflow-y: auto;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    margin-top: 8px;
+    background: #fff;
+}
+
+.popover-dropdown-item {
+    padding: 8px 12px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #f0f0f0;
+    transition: background-color 0.15s ease;
+}
+
+.popover-dropdown-item:last-child {
+    border-bottom: none;
+}
+
+.popover-dropdown-item:hover {
+    background-color: #f8f9fa;
+}
+
+.popover-dropdown-item .result-name {
+    font-weight: 500;
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    margin-right: 8px;
+}
+
+.popover-dropdown-item .result-id {
+    font-size: 0.8rem;
+    flex-shrink: 0;
+}
+
+.popover-no-results {
+    padding: 12px;
+    text-align: center;
+    font-size: 0.85rem;
+    margin-top: 8px;
+    background: #f8f9fa;
+    border-radius: 4px;
+}
+
+.popover-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    padding: 10px 12px;
+    border-top: 1px solid #dee2e6;
+    background: #f8f9fa;
+    border-radius: 0 0 8px 8px;
+}
+
+.popover-footer .btn {
+    font-size: 0.85rem;
+    padding: 4px 12px;
 }
 </style>

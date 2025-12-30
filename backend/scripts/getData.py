@@ -12852,3 +12852,141 @@ def detectPotentialDuplicateListingsCsvBatch():
             "message": f"Error detecting duplicates: {str(e)}",
             "data": {"results": [], "totalChecked": 0, "totalDuplicates": 0}
         }), 500
+
+# ============================================================================
+# FUZZY PRODUCER MATCHING FOR CSV IMPORT
+# ============================================================================
+
+def fuzzy_match_producer_batch(producer_names, threshold=98, request_id='unknown'):
+    """
+    Fuzzy match producer names against existing producers in database.
+    Used during CSV staging to auto-link to existing producers with very high confidence.
+    
+    Args:
+        producer_names: List of producer name strings to match
+        threshold: Minimum similarity score for auto-matching (default 98% for high confidence)
+        request_id: Request ID for logging
+    
+    Returns:
+        dict mapping producer_name -> {
+            'matched': bool,
+            'producerID': int or None,
+            'matchedName': str or None,
+            'similarity': int or None
+        }
+    """
+    results = {}
+    
+    if not producer_names:
+        return results
+    
+    # Deduplicate producer names for efficiency
+    unique_names = list(set(name for name in producer_names if name and name.strip()))
+    
+    if not unique_names:
+        return results
+    
+    logger.info(f"REQ-{request_id} fuzzy_match_producer_batch: matching {len(unique_names)} unique producer names with {threshold}% threshold")
+    
+    try:
+        with db_manager.get_cursor() as cursor:
+            # Fetch all existing producers
+            cursor.execute('SELECT "id", "producerName", "isIndependentBottler" FROM "producers"')
+            existing_producers = cursor.fetchall()
+            
+            if not existing_producers:
+                logger.warning(f"REQ-{request_id} fuzzy_match_producer_batch: no existing producers in database")
+                # Return all as unmatched
+                for name in unique_names:
+                    results[name] = {
+                        'matched': False,
+                        'producerID': None,
+                        'matchedName': None,
+                        'similarity': None,
+                        'isIndependentBottler': None
+                    }
+                return results
+            
+            # Build lookup for quick exact match check
+            exact_match_dict = {p['producerName']: p for p in existing_producers}
+            
+            for input_name in unique_names:
+                # First check exact match (case-sensitive)
+                if input_name in exact_match_dict:
+                    producer = exact_match_dict[input_name]
+                    results[input_name] = {
+                        'matched': True,
+                        'producerID': producer['id'],
+                        'matchedName': producer['producerName'],
+                        'similarity': 100,
+                        'isIndependentBottler': producer.get('isIndependentBottler', False)
+                    }
+                    continue
+                
+                # Normalize input for fuzzy matching
+                normalized_input = normalize_string(input_name)
+                
+                if not normalized_input or len(normalized_input) < 2:
+                    results[input_name] = {
+                        'matched': False,
+                        'producerID': None,
+                        'matchedName': None,
+                        'similarity': None,
+                        'isIndependentBottler': None
+                    }
+                    continue
+                
+                # Find best fuzzy match
+                best_match = None
+                best_score = 0
+                
+                for producer in existing_producers:
+                    producer_name_db = producer['producerName']
+                    normalized_db = normalize_string(producer_name_db)
+                    
+                    if not normalized_db:
+                        continue
+                    
+                    # Use token_sort_ratio for consistency with listing duplicate detection
+                    score = fuzz.token_sort_ratio(normalized_input, normalized_db)
+                    
+                    if score > best_score:
+                        best_score = score
+                        best_match = producer
+                
+                # Check if best match meets threshold
+                if best_match and best_score >= threshold:
+                    results[input_name] = {
+                        'matched': True,
+                        'producerID': best_match['id'],
+                        'matchedName': best_match['producerName'],
+                        'similarity': best_score,
+                        'isIndependentBottler': best_match.get('isIndependentBottler', False)
+                    }
+                    logger.debug(f"REQ-{request_id} Fuzzy matched producer '{input_name}' -> '{best_match['producerName']}' ({best_score}%)")
+                else:
+                    results[input_name] = {
+                        'matched': False,
+                        'producerID': None,
+                        'matchedName': None,
+                        'similarity': best_score if best_match else None,
+                        'isIndependentBottler': None
+                    }
+            
+            matched_count = sum(1 for r in results.values() if r['matched'])
+            logger.info(f"REQ-{request_id} fuzzy_match_producer_batch: matched {matched_count}/{len(unique_names)} producers")
+            
+    except Exception as e:
+        logger.error(f"REQ-{request_id} fuzzy_match_producer_batch error: {str(e)}", exc_info=True)
+        # Return all as unmatched on error
+        for name in unique_names:
+            if name not in results:
+                results[name] = {
+                    'matched': False,
+                    'producerID': None,
+                    'matchedName': None,
+                    'similarity': None,
+                    'isIndependentBottler': None
+                }
+    
+    return results

@@ -16,7 +16,7 @@ import s3Images
 from flask import Blueprint, g, request, jsonify
 from datetime import datetime, timedelta
 from scripts import notifications
-from scripts.getData import detect_duplicates_batch
+from scripts.getData import detect_duplicates_batch, fuzzy_match_producer_batch
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from psycopg2.extras import execute_values
 # Import the database manager for connection pooling
@@ -1012,11 +1012,16 @@ def stageListingsFromCSV():
             cursor.execute('SELECT "producerName", "id", "isIndependentBottler" FROM "producers"')
             producers = cursor.fetchall()
             producer_name_id_dict = {row['producerName']: row['id'] for row in producers}
+            producer_ib_dict = {row['producerName']: row.get('isIndependentBottler', False) for row in producers}
             
             staged_listings = []
             validation_errors = []
             image_urls = []
             row_numbers = []
+            
+            # Collect producer names for fuzzy matching
+            producer_names_for_fuzzy = []
+            bottler_names_for_fuzzy = []
             
             for row_index, row in enumerate(rows):
                 row_number = row_index + 5  # Account for 4 skipped header rows + 1-based indexing
@@ -1081,8 +1086,12 @@ def stageListingsFromCSV():
                     })
                     continue
                 
-                # Check if producer exists
+                # Check if producer exists (exact match first)
                 producer_id = producer_name_id_dict.get(producer_name)
+                
+                # Track producer names that don't have exact match for fuzzy matching later
+                if not producer_id and producer_name:
+                    producer_names_for_fuzzy.append(producer_name)
                 
                 # Handle bottler scenarios
                 if bottler_name in ["OB", "Original Bottling", None, ""]:
@@ -1091,6 +1100,9 @@ def stageListingsFromCSV():
                 else:
                     bottler_id = producer_name_id_dict.get(bottler_name)
                     bottler_name_display = bottler_name
+                    # Track bottler names that don't have exact match for fuzzy matching
+                    if not bottler_id and bottler_name:
+                        bottler_names_for_fuzzy.append(bottler_name)
                 
                 # Store image URL for later S3 upload
                 image_urls.append(photo_url)
@@ -1100,9 +1112,15 @@ def stageListingsFromCSV():
                     'listingName': listing_name,
                     'producerID': producer_id,
                     'producerName': producer_name,
+                    'producerFuzzyMatched': False,  # Will be updated after fuzzy matching
+                    'producerMatchedName': None,     # Will be updated after fuzzy matching
+                    'producerMatchSimilarity': None, # Will be updated after fuzzy matching
                     'bottler': bottler_name_display,
                     'bottlerID': bottler_id,
                     'bottlerName': bottler_name if bottler_name not in ["OB", "Original Bottling", None, ""] else None,
+                    'bottlerFuzzyMatched': False,    # Will be updated after fuzzy matching
+                    'bottlerMatchedName': None,      # Will be updated after fuzzy matching
+                    'bottlerMatchSimilarity': None,  # Will be updated after fuzzy matching
                     'originCountry': origin_country,
                     'drinkType': drink_type,
                     'typeCategory': type_category,
@@ -1127,6 +1145,43 @@ def stageListingsFromCSV():
                     "message": "No valid rows found in CSV",
                     "validationErrors": validation_errors
                 }), 400
+            
+            # ====== STEP: Fuzzy match producers and bottlers that didn't have exact matches ======
+            # Combine producer and bottler names for batch fuzzy matching
+            all_names_for_fuzzy = list(set(producer_names_for_fuzzy + bottler_names_for_fuzzy))
+            
+            if all_names_for_fuzzy:
+                print(f"Fuzzy matching {len(all_names_for_fuzzy)} producer/bottler names...")
+                fuzzy_results = fuzzy_match_producer_batch(all_names_for_fuzzy, threshold=98, request_id=g.request_id if hasattr(g, 'request_id') else 'csv-staging')
+                
+                # Update staged listings with fuzzy match results
+                for listing in staged_listings:
+                    # Handle producer fuzzy match
+                    producer_name = listing.get('producerName')
+                    if producer_name and not listing.get('producerID'):
+                        fuzzy_match = fuzzy_results.get(producer_name, {})
+                        if fuzzy_match.get('matched'):
+                            listing['producerID'] = fuzzy_match['producerID']
+                            listing['producerFuzzyMatched'] = True
+                            listing['producerMatchedName'] = fuzzy_match['matchedName']
+                            listing['producerMatchSimilarity'] = fuzzy_match['similarity']
+                            print(f"  Producer '{producer_name}' -> '{fuzzy_match['matchedName']}' ({fuzzy_match['similarity']}%)")
+                    
+                    # Handle bottler fuzzy match
+                    bottler_name = listing.get('bottlerName')
+                    if bottler_name and not listing.get('bottlerID'):
+                        fuzzy_match = fuzzy_results.get(bottler_name, {})
+                        if fuzzy_match.get('matched'):
+                            listing['bottlerID'] = fuzzy_match['producerID']
+                            listing['bottlerFuzzyMatched'] = True
+                            listing['bottlerMatchedName'] = fuzzy_match['matchedName']
+                            listing['bottlerMatchSimilarity'] = fuzzy_match['similarity']
+                            print(f"  Bottler '{bottler_name}' -> '{fuzzy_match['matchedName']}' ({fuzzy_match['similarity']}%)")
+                
+                # Count fuzzy matches
+                producer_fuzzy_count = sum(1 for l in staged_listings if l.get('producerFuzzyMatched'))
+                bottler_fuzzy_count = sum(1 for l in staged_listings if l.get('bottlerFuzzyMatched'))
+                print(f"Fuzzy matched {producer_fuzzy_count} producers and {bottler_fuzzy_count} bottlers")
             
             # Parallelize S3 image uploads while maintaining order
             def upload_image_with_index(indexed_data):
