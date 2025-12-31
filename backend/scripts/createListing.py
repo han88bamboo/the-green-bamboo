@@ -1588,9 +1588,11 @@ def commitStagedListings():
             
             # Prepare listings for insertion into listings table
             listings_to_insert = []
+            staged_id_order = []  # Track order of staged IDs for mapping back
             current_time = datetime.now(pytz.timezone('Etc/GMT-8'))
             
             for listing in staged_listings:
+                staged_id_order.append(listing['id'])  # Store the staged ID
                 producer_name = listing['producerName']
                 producer_id = producer_name_id_dict.get(producer_name)
                 
@@ -1620,6 +1622,7 @@ def commitStagedListings():
                 })
             
             # Bulk insert into listings table
+            created_listings_map = []  # Map staged IDs to new listing IDs
             if listings_to_insert:
                 listing_columns = listings_to_insert[0].keys()
                 listing_query = """
@@ -1629,6 +1632,14 @@ def commitStagedListings():
                 listing_values = [tuple(listing.values()) for listing in listings_to_insert]
                 execute_values(cursor, listing_query, listing_values)
                 inserted_listings = cursor.fetchall()
+                
+                # Map staged IDs to new listing IDs (order is preserved)
+                for idx, inserted in enumerate(inserted_listings):
+                    created_listings_map.append({
+                        'stagedId': staged_id_order[idx],
+                        'listingId': inserted['id'],
+                        'listingName': inserted['listingName']
+                    })
                 
                 # Update the sequence to ensure future inserts don't conflict
                 cursor.execute("SELECT setval('listings_id_seq', COALESCE((SELECT MAX(id) FROM listings), 1), true)")
@@ -1649,7 +1660,8 @@ def commitStagedListings():
             "data": {
                 "committedCount": len(listings_to_insert),
                 "newProducersCreated": len(new_producers_to_create),
-                "newBottlersCreated": len(new_bottlers_to_create)
+                "newBottlersCreated": len(new_bottlers_to_create),
+                "createdListings": created_listings_map
             }
         }), 201
     

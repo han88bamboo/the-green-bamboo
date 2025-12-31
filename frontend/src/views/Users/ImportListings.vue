@@ -129,6 +129,22 @@
                             </span>
                         </p>
                     </div>
+                    
+                    <!-- Venue-specific: Add to Menu info banner -->
+                    <div v-if="userType === 'venue' && commitSummary.committedCount > 0" class="alert alert-success mb-3" style="border-left: 4px solid #28a745;">
+                        <div class="d-flex align-items-start">
+                            <i class="bi bi-journal-plus me-2 mt-1" style="font-size: 1.2rem;"></i>
+                            <div>
+                                <strong>Add to Your Menu</strong>
+                                <p class="mb-0 small">
+                                    You can now add imported listings to your venue's menu using the "Add to Menu" button in the Menu column.
+                                    <span v-if="!hasMenuSections" class="text-warning">
+                                        <br><i class="bi bi-exclamation-triangle me-1"></i>Note: You need to create menu sections in your venue profile first.
+                                    </span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Validation errors from staging (if any) -->
@@ -171,6 +187,8 @@
                                 <th>Source Link</th>
                                 <th>Review Link</th>
                                 <th v-if="!commitComplete" style="width: 60px;">Actions</th>
+                                <!-- Menu column - only for venues after commit -->
+                                <th v-if="commitComplete && userType === 'venue'" style="width: 120px;">Menu</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -539,12 +557,50 @@
                                         </svg>
                                     </button>
                                 </td>
+                                <!-- Add to Menu column - only for venues after commit -->
+                                <td v-if="commitComplete && userType === 'venue'" class="text-center">
+                                    <!-- Only show for successfully imported items -->
+                                    <template v-if="item.commitStatus === 'success' && item.newListingId">
+                                        <!-- Already on menu -->
+                                        <button 
+                                            v-if="isOnMenu(item.newListingId)"
+                                            type="button" 
+                                            class="btn btn-sm btn-secondary"
+                                            disabled
+                                            title="Already added to menu"
+                                        >
+                                            <i class="bi bi-check-circle me-1"></i>On Menu
+                                        </button>
+                                        <!-- No menu sections - blocked -->
+                                        <button 
+                                            v-else-if="!hasMenuSections"
+                                            type="button" 
+                                            class="btn btn-sm btn-outline-secondary"
+                                            disabled
+                                            title="Create menu sections in your venue profile first"
+                                        >
+                                            <i class="bi bi-exclamation-circle me-1"></i>No Sections
+                                        </button>
+                                        <!-- Can add to menu -->
+                                        <button 
+                                            v-else
+                                            type="button" 
+                                            class="btn btn-sm btn-success"
+                                            @click="openAddToMenuModal(item)"
+                                            title="Add this listing to your menu"
+                                        >
+                                            <i class="bi bi-plus-circle me-1"></i>Add to Menu
+                                        </button>
+                                    </template>
+                                    <!-- Not applicable for non-success items -->
+                                    <span v-else class="text-muted">-</span>
+                                </td>
                             </tr>
                             
                             <!-- Expandable duplicate matches row (light green) -->
                             <tr v-if="item?.isDuplicate && (getDuplicateInfo(item.id)?.matches?.length || 0) > 0" 
                                 class="duplicate-matches-row">
-                                <td :colspan="commitComplete ? 12 : 13" class="p-0">
+                                <td :colspan="getDuplicateRowColspan()" class="p-0">
                                     <div class="duplicate-matches-container">
                                         <div class="duplicate-matches-header">
                                             <i class="bi bi-exclamation-triangle-fill text-warning me-2"></i>
@@ -633,10 +689,164 @@
             </div>
         </div>
     </div>
+
+    <!-- ==================== ADD TO MENU MODAL (Venues Only) ==================== -->
+    <div v-if="showAddToMenuModal && userType === 'venue'" class="menu-modal-overlay" @click.self="closeAddToMenuModal">
+        <div class="menu-modal-content">
+            <div class="menu-modal-header">
+                <h5 class="modal-title mb-0">
+                    <i class="bi bi-journal-plus me-2"></i>Add To Menu
+                </h5>
+                <button type="button" class="btn-close" @click="closeAddToMenuModal" :disabled="addingToMenu"></button>
+            </div>
+            <div class="menu-modal-body">
+                <!-- Loading state -->
+                <div v-if="loadingMenuSections" class="text-center py-4">
+                    <div class="spinner-border text-success" role="status">
+                        <span class="visually-hidden">Loading menu data...</span>
+                    </div>
+                    <p class="mt-2 text-muted">Loading menu data...</p>
+                </div>
+                
+                <!-- No menu sections warning -->
+                <div v-else-if="!hasMenuSections" class="alert alert-warning">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    <strong>No menu sections found.</strong>
+                    <p class="mb-0 mt-2">You need to create menu sections in your venue profile before adding items to your menu.</p>
+                    <router-link :to="'/profile/venue/' + userID" class="btn btn-sm btn-outline-primary mt-2">
+                        Go to Venue Profile
+                    </router-link>
+                </div>
+                
+                <!-- Menu form -->
+                <div v-else>
+                    <!-- Listing preview -->
+                    <div v-if="selectedListingForMenu" class="listing-preview mb-4 p-3 border rounded" style="background-color: #f8f9fa;">
+                        <h6 class="fw-bold mb-2"><i class="bi bi-info-circle me-2"></i>Adding to Menu:</h6>
+                        <div class="d-flex align-items-center gap-3">
+                            <img 
+                                v-if="selectedListingForMenu.photo" 
+                                :src="selectedListingForMenu.photo" 
+                                class="rounded"
+                                style="width: 60px; height: 60px; object-fit: cover;"
+                            />
+                            <div>
+                                <strong>{{ selectedListingForMenu.listingName }}</strong>
+                                <div class="text-muted small">{{ selectedListingForMenu.producerName }}</div>
+                                <div class="text-muted small">
+                                    {{ selectedListingForMenu.drinkType }}
+                                    <span v-if="selectedListingForMenu.originCountry"> · {{ selectedListingForMenu.originCountry }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Info notice -->
+                    <div class="alert alert-info mb-3" style="border-left: 4px solid #0d6efd;">
+                        <small>
+                            <i class="bi bi-info-circle me-1"></i>
+                            <strong>Note:</strong> Items added via this quick-add feature won't trigger notifications to users following these listings.
+                        </small>
+                    </div>
+                    
+                    <form @submit.prevent="addToVenueMenu">
+                        <!-- Target Menu Section -->
+                        <div class="form-group mb-4 p-3 border" style="background-color: #f8f9fa; border-radius: 8px;">
+                            <p class="text-start mb-1 fw-bold">Target Menu Section <span class="text-danger">*</span></p>
+                            <select 
+                                class="form-select" 
+                                v-model="menuItemForm.targetSection"
+                                required
+                            >
+                                <option :value="{}" disabled>Select a menu section...</option>
+                                <option 
+                                    v-for="sectionOption in menuSectionOptions"
+                                    :key="sectionOption.id" 
+                                    :value="sectionOption.section"
+                                    :disabled="!sectionOption.section.id"
+                                >
+                                    {{ sectionOption.name }}{{ !sectionOption.section.id ? ' (Not Saved)' : '' }}
+                                </option>
+                            </select>
+                            <small class="text-muted">Choose which section of your menu to add this item to.</small>
+                        </div>
+
+                        <!-- Menu item price -->
+                        <div class="form-group mb-3">
+                            <p class="text-start mb-1 fw-bold">Menu Item Price</p>
+                            <div class="input-group">
+                                <span class="input-group-text">$</span>
+                                <input 
+                                    type="number" 
+                                    class="form-control"
+                                    v-model="menuItemForm.price" 
+                                    min="-1" 
+                                    step="0.01"
+                                    placeholder="0.00"
+                                >
+                            </div>
+                            <small class="text-muted">Enter -1 if there is no price to display.</small>
+                        </div>
+
+                        <!-- Menu serving type -->
+                        <div class="form-group mb-3">
+                            <p class="text-start mb-1 fw-bold">Menu Item Serving Type <span class="text-danger">*</span></p>
+                            <select class="form-select" v-model="menuItemForm.servingType" required>
+                                <option value="" disabled>Select serving type...</option>
+                                <option 
+                                    v-for="servingType in servingTypes"
+                                    :key="servingType.id" 
+                                    :value="servingType.id"
+                                >
+                                    {{ servingType.servingType }}
+                                </option>
+                            </select>
+                            <small class="text-muted">Choose how this item will be served.</small>
+                        </div>
+                        
+                        <!-- Preview -->
+                        <div v-if="isValidToSubmitMenu" class="mt-4 p-3 border rounded" style="background-color: #e8f5e9;">
+                            <h6 class="fw-bold mb-2"><i class="bi bi-eye me-2"></i>Preview:</h6>
+                            <div class="d-flex align-items-center justify-content-between">
+                                <span>{{ selectedListingForMenu?.listingName }}</span>
+                                <span class="badge bg-success">
+                                    ${{ menuItemForm.price === -1 ? 'No Price' : menuItemForm.price }} / 
+                                    {{ servingTypes.find(s => s.id == menuItemForm.servingType)?.servingType || 'Serving' }}
+                                </span>
+                            </div>
+                            <small class="text-muted">
+                                Adding to: {{ menuItemForm.targetSection?.sectionName || 'Unknown Section' }}
+                            </small>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <div class="menu-modal-footer">
+                <button type="button" class="btn btn-secondary" @click="closeAddToMenuModal" :disabled="addingToMenu">
+                    Cancel
+                </button>
+                <button 
+                    type="button" 
+                    class="btn btn-success"
+                    @click="addToVenueMenu"
+                    :disabled="!isValidToSubmitMenu || addingToMenu || !hasMenuSections"
+                >
+                    <span v-if="addingToMenu">
+                        <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                        Adding...
+                    </span>
+                    <span v-else>
+                        <i class="bi bi-plus-circle me-2"></i>Add to Menu
+                    </span>
+                </button>
+            </div>
+        </div>
+    </div>
 </template>
 
 <script>
 import NavBar from '@/components/NavBar.vue';
+import { useToast } from "vue-toastification";
 
 export default {
     name: 'ImportListings',
@@ -683,7 +893,29 @@ export default {
             popoverSearchQuery: '',
             popoverSearchResults: [],
             popoverSearchDebounce: null,
-            producerList: [] // List of all producers for search
+            producerList: [], // List of all producers for search
+
+            // ============ MENU FUNCTIONALITY (Venues Only) ============
+            // Menu data
+            servingTypes: [],
+            venueMenuSections: [],
+            menuDataLoaded: false,
+            loadingMenuSections: false,
+            
+            // Add to Menu modal state
+            showAddToMenuModal: false,
+            selectedListingForMenu: null, // The listing item being added to menu
+            addingToMenu: false,
+            
+            // Menu item form data
+            menuItemForm: {
+                targetSection: {},
+                price: -1,
+                servingType: 1
+            },
+            
+            // Track which listings have been added to menu
+            addedToMenuIds: new Set()
         }
     },
     mounted() {
@@ -699,6 +931,54 @@ export default {
     beforeUnmount() {
         // Cleanup popover event listener
         document.removeEventListener('click', this.handlePopoverClickOutside);
+    },
+    computed: {
+        // ============ MENU FUNCTIONALITY COMPUTED PROPERTIES ============
+        
+        // Check if venue has menu sections
+        hasMenuSections() {
+            return this.venueMenuSections.length > 0 && this.venueMenuSections.some(s => s.id);
+        },
+        
+        // Format menu sections for dropdown
+        menuSectionOptions() {
+            const options = [];
+            this.venueMenuSections.forEach(section => {
+                options.push({
+                    id: section.id || section.sectionOrder,
+                    name: section.sectionName,
+                    type: 'section',
+                    level: 0,
+                    section: section
+                });
+                
+                // Add subsections if they exist
+                if (section.subsections && Array.isArray(section.subsections)) {
+                    section.subsections.forEach(subsection => {
+                        options.push({
+                            id: subsection.id || `${section.sectionOrder}-${subsection.sectionOrder}`,
+                            name: `  └─ ${subsection.sectionName}`,
+                            type: 'subsection',
+                            level: 1,
+                            section: subsection,
+                            parentSection: section
+                        });
+                    });
+                }
+            });
+            return options;
+        },
+        
+        // Validate menu form
+        isValidToSubmitMenu() {
+            const hasTargetSection = this.menuItemForm.targetSection && Object.keys(this.menuItemForm.targetSection).length > 0;
+            const sectionHasId = this.menuItemForm.targetSection && this.menuItemForm.targetSection.id;
+            const hasValidPrice = this.menuItemForm.price !== null && this.menuItemForm.price !== '';
+            const hasValidServingType = this.menuItemForm.servingType && this.menuItemForm.servingType > 0;
+            const hasListing = this.selectedListingForMenu && this.selectedListingForMenu.newListingId;
+            
+            return hasTargetSection && sectionHasId && hasValidPrice && hasValidServingType && hasListing;
+        }
     },
     methods: {
         async loadData() {
@@ -931,6 +1211,11 @@ export default {
                     }
 
                     console.log(`Successfully committed ${this.commitSummary.committedCount} listings`);
+                    
+                    // Load menu data for venues after successful commit
+                    if (this.userType === 'venue') {
+                        await this.loadMenuDataForVenue();
+                    }
                 } else {
                     alert(`Error committing listings: ${response.data.message || 'Unknown error'}`);
                 }
@@ -1062,6 +1347,12 @@ export default {
             this.commitComplete = false;
             this.commitSummary = null;
             this.editingCell = null;
+            
+            // Reset menu-related state
+            this.showAddToMenuModal = false;
+            this.selectedListingForMenu = null;
+            this.addedToMenuIds = new Set();
+            this.menuDataLoaded = false;
         },
 
         // ============ SELECTION METHODS ============
@@ -1333,6 +1624,176 @@ export default {
                 .replace(/\s+/g, '-')
                 .replace(/[^\w-]+/g, '')
                 .replace(/--+/g, '-');
+        },
+
+        // Calculate colspan for duplicate matches row based on visible columns
+        getDuplicateRowColspan() {
+            // Base columns: #, Status, Photo, Listing Name, Producer, Bottler, Drink Type, Category, Style, Country, ABV, Age, Description, Source Link, Review Link = 15
+            // Pre-commit: add checkbox column and actions column = 17
+            // Post-commit: remove checkbox and actions = 15, but if venue add Menu column = 16
+            if (!this.commitComplete) {
+                return 17; // Pre-commit: all columns including checkbox and actions
+            } else if (this.userType === 'venue') {
+                return 16; // Post-commit for venues: includes Menu column
+            } else {
+                return 15; // Post-commit for non-venues: no Menu column
+            }
+        },
+
+        // ============ MENU FUNCTIONALITY METHODS (Venues Only) ============
+        
+        // Check if a listing is already on the menu
+        isOnMenu(listingId) {
+            return this.addedToMenuIds.has(listingId);
+        },
+        
+        // Load menu data (sections and serving types) for venues
+        async loadMenuDataForVenue() {
+            if (this.userType !== 'venue' || this.menuDataLoaded) return;
+            
+            this.loadingMenuSections = true;
+            
+            try {
+                // Load serving types
+                const servingTypesResponse = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getServingTypes`);
+                if (Array.isArray(servingTypesResponse.data)) {
+                    this.servingTypes = servingTypesResponse.data;
+                } else {
+                    this.servingTypes = [];
+                }
+                
+                // Load venue menu sections
+                const menuResponse = await this.$axios.get(`${process.env.VUE_APP_API_URL}/menu/${this.userID}`);
+                if (menuResponse.data && menuResponse.data.length > 0) {
+                    this.venueMenuSections = menuResponse.data;
+                } else {
+                    this.venueMenuSections = [];
+                }
+                
+                this.menuDataLoaded = true;
+                console.log(`Menu data loaded: ${this.servingTypes.length} serving types, ${this.venueMenuSections.length} sections`);
+            } catch (error) {
+                console.error('Error loading menu data:', error);
+                this.servingTypes = [];
+                this.venueMenuSections = [];
+            } finally {
+                this.loadingMenuSections = false;
+            }
+        },
+        
+        // Initialize menu form with defaults
+        initializeMenuFormDefaults() {
+            const defaultServingType = this.servingTypes.find(type => type.servingType === "-") || this.servingTypes[0];
+            this.menuItemForm = {
+                targetSection: {},
+                price: -1,
+                servingType: defaultServingType ? defaultServingType.id : 1
+            };
+        },
+        
+        // Open Add to Menu modal for a specific listing
+        async openAddToMenuModal(item) {
+            if (!item || !item.newListingId) {
+                console.error('Cannot open menu modal: No listing ID');
+                return;
+            }
+            
+            // Load menu data if not already loaded
+            if (!this.menuDataLoaded) {
+                await this.loadMenuDataForVenue();
+            }
+            
+            // Check if venue has menu sections
+            if (!this.hasMenuSections) {
+                const toast = useToast();
+                toast.warning('You need to create menu sections in your venue profile first.');
+                return;
+            }
+            
+            this.selectedListingForMenu = item;
+            this.initializeMenuFormDefaults();
+            this.showAddToMenuModal = true;
+        },
+        
+        // Close Add to Menu modal
+        closeAddToMenuModal() {
+            if (this.addingToMenu) return;
+            this.showAddToMenuModal = false;
+            this.selectedListingForMenu = null;
+        },
+        
+        // Add listing to venue menu
+        async addToVenueMenu() {
+            if (!this.isValidToSubmitMenu) {
+                const toast = useToast();
+                toast.error('Please fill in all required fields.');
+                return;
+            }
+            
+            // Check if the selected section has an ID (exists in database)
+            if (!this.menuItemForm.targetSection.id) {
+                const toast = useToast();
+                toast.error('Selected section does not exist in the database. Please create menu sections first.');
+                return;
+            }
+            
+            this.addingToMenu = true;
+            
+            try {
+                const menuItemData = {
+                    venueID: this.userID,
+                    menuOrder: this.menuItemForm.targetSection.sectionMenu ? this.menuItemForm.targetSection.sectionMenu.length : 0,
+                    listingID: this.selectedListingForMenu.newListingId,
+                    itemPrice: this.menuItemForm.price,
+                    servingType: this.menuItemForm.servingType,
+                    sectionName: this.menuItemForm.targetSection.sectionName,
+                    sectionOrder: this.menuItemForm.targetSection.sectionOrder,
+                    isSubSection: this.menuItemForm.targetSection.isSubSection || false,
+                    parentSectionId: this.menuItemForm.targetSection.parentSectionId || null,
+                    itemVintage: null // Skip vintage as per requirements
+                };
+                
+                console.log('Submitting menu item data:', menuItemData);
+                
+                const response = await this.$axios.post(
+                    `${process.env.VUE_APP_API_URL}/editVenueProfile/addListingToMenu`,
+                    menuItemData,
+                    {
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    }
+                );
+                
+                if (response.status === 201) {
+                    // Track that this listing was added to menu
+                    this.addedToMenuIds.add(this.selectedListingForMenu.newListingId);
+                    // Force reactivity
+                    this.addedToMenuIds = new Set(this.addedToMenuIds);
+                    
+                    const toast = useToast();
+                    toast.success("Successfully added to menu!");
+                    
+                    // Close modal
+                    this.showAddToMenuModal = false;
+                    this.selectedListingForMenu = null;
+                }
+            } catch (error) {
+                console.error('Error adding to menu:', error);
+                
+                let errorMessage = 'An error occurred while adding to menu. Please try again.';
+                if (error.response?.data?.message) {
+                    errorMessage = error.response.data.message;
+                    if (errorMessage.includes('Menu section not found')) {
+                        errorMessage = 'Selected menu section not found. Please save your menu sections first.';
+                    }
+                }
+                
+                const toast = useToast();
+                toast.error(`❌ ${errorMessage}`);
+            } finally {
+                this.addingToMenu = false;
+            }
         },
 
         // ============ CSV TEMPLATE METHODS ============
@@ -1839,5 +2300,83 @@ export default {
 .popover-footer .btn {
     font-size: 0.85rem;
     padding: 4px 12px;
+}
+
+/* ==================== ADD TO MENU MODAL STYLES ==================== */
+
+.menu-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.6);
+    z-index: 1070;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.menu-modal-content {
+    background: white;
+    border-radius: 12px;
+    width: 95%;
+    max-width: 550px;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    overflow: hidden;
+}
+
+.menu-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 24px;
+    background: linear-gradient(135deg, #28a745, #1e7e34);
+    color: white;
+    flex-shrink: 0;
+}
+
+.menu-modal-header .modal-title {
+    font-weight: bold;
+    font-size: 1.1rem;
+}
+
+.menu-modal-header .btn-close {
+    filter: brightness(0) invert(1);
+}
+
+.menu-modal-body {
+    padding: 20px 24px;
+    overflow-y: auto;
+    flex: 1;
+}
+
+.menu-modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    padding: 16px 24px;
+    border-top: 1px solid #dee2e6;
+    flex-shrink: 0;
+    background: #f8f9fa;
+}
+
+.listing-preview {
+    border-left: 4px solid #28a745;
+}
+
+/* ==================== MENU BUTTON STYLES IN TABLE ==================== */
+
+.staging-table .btn-success {
+    white-space: nowrap;
+}
+
+.staging-table .btn-secondary:disabled {
+    opacity: 0.8;
+    cursor: not-allowed;
 }
 </style>
