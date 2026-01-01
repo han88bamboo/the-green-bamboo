@@ -12388,23 +12388,23 @@ def detectPotentialDuplicateListings():
                     logger.debug(f"REQ-{request_id} Skipping match {match.get('id')}: producer gate failed ({producer_gate_score}% < {producer_gate_threshold}%)")
                     continue
                 
-                # GATE 2: Bottler Gate
+                # GATE 2: Bottler Gate (COMMENTED OUT - bottler now only used in combined string matching)
                 match_has_bottler = not is_no_bottler(match_bottler_name, match['producerName'])
                 
-                if not input_has_bottler and not match_has_bottler:
-                    # Both are OB/no bottler - compatible
-                    logger.debug(f"REQ-{request_id} Match {match.get('id')}: both no bottler, skipping bottler gate")
-                elif input_has_bottler != match_has_bottler:
-                    # One has bottler, one doesn't - 100% reject
-                    logger.debug(f"REQ-{request_id} Skipping match {match.get('id')}: bottler mismatch (input_has={input_has_bottler}, match_has={match_has_bottler})")
-                    continue
-                else:
-                    # Both have bottlers - apply 70% WRatio gate
-                    bottler_gate_score = fuzz.WRatio(normalized_bottler, match_bottler_normalized) if normalized_bottler and match_bottler_normalized else 0
-                    if bottler_gate_score < bottler_gate_threshold:
-                        logger.debug(f"REQ-{request_id} Skipping match {match.get('id')}: bottler gate failed ({bottler_gate_score}% < {bottler_gate_threshold}%)")
-                        continue
-                    logger.debug(f"REQ-{request_id} Match {match.get('id')}: bottler gate passed ({bottler_gate_score}%)")
+                # if not input_has_bottler and not match_has_bottler:
+                #     # Both are OB/no bottler - compatible
+                #     logger.debug(f"REQ-{request_id} Match {match.get('id')}: both no bottler, skipping bottler gate")
+                # elif input_has_bottler != match_has_bottler:
+                #     # One has bottler, one doesn't - 100% reject
+                #     logger.debug(f"REQ-{request_id} Skipping match {match.get('id')}: bottler mismatch (input_has={input_has_bottler}, match_has={match_has_bottler})")
+                #     continue
+                # else:
+                #     # Both have bottlers - apply 70% WRatio gate
+                #     bottler_gate_score = fuzz.WRatio(normalized_bottler, match_bottler_normalized) if normalized_bottler and match_bottler_normalized else 0
+                #     if bottler_gate_score < bottler_gate_threshold:
+                #         logger.debug(f"REQ-{request_id} Skipping match {match.get('id')}: bottler gate failed ({bottler_gate_score}% < {bottler_gate_threshold}%)")
+                #         continue
+                #     logger.debug(f"REQ-{request_id} Match {match.get('id')}: bottler gate passed ({bottler_gate_score}%)")
                 
                 # GATE 3: Age Gate
                 match_age = match.get('age')
@@ -12447,14 +12447,31 @@ def detectPotentialDuplicateListings():
                             continue
                         logger.debug(f"REQ-{request_id} Match {match.get('id')}: ABV gate passed (both={input_abv_normalized}%)")
                 
-                # COMBINED SCORE: 70% name + 30% producer - penalties
-                name_score = fuzz.token_sort_ratio(normalized_name, match_name_normalized)
-                producer_score = producer_gate_score
-                total_score = (name_score * 0.70) + (producer_score * 0.30)
-                total_penalty = age_penalty + abv_penalty
-                total_score -= total_penalty
+                # COMBINED STRING SIMILARITY (matches detect_duplicates_batch)
+                # Build combined string: "name producer [bottler]"
+                # Include bottler if EITHER input OR match has bottler
+                input_combined = f"{normalized_name} {normalized_producer}"
+                match_combined = f"{match_name_normalized} {match_producer_normalized}"
                 
-                logger.debug(f"REQ-{request_id} Match {match.get('id')}: name={name_score}%, producer={producer_score}%, penalties={total_penalty}%, final={total_score:.1f}%")
+                # Include bottler if input has bottler
+                if input_has_bottler and normalized_bottler:
+                    input_combined += f" {normalized_bottler}"
+                
+                # Include bottler if match has bottler
+                if match_has_bottler and match_bottler_normalized:
+                    match_combined += f" {match_bottler_normalized}"
+                
+                # Calculate similarity on combined strings
+                combined_score = fuzz.token_sort_ratio(input_combined, match_combined)
+                
+                # Apply penalties
+                total_penalty = age_penalty + abv_penalty
+                total_score = combined_score - total_penalty
+                
+                # Producer gate score is NOT used in final calculation (gate only)
+                # producer_score = producer_gate_score  # Commented out: gate only, not weighted
+                
+                logger.debug(f"REQ-{request_id} Match {match.get('id')}: combined_score={combined_score}%, producer_gate={producer_gate_score}% (gate only), penalties={total_penalty}%, final={total_score:.1f}%")
                 
                 if total_score >= threshold:
                     matches_with_scores.append({
@@ -12733,7 +12750,6 @@ def detect_duplicates_batch(listings, threshold=70, request_id='unknown'):
                 # - Both have → apply 70% WRatio gate
                 if not input_has_bottler and not match_has_bottler:
                     # Both are OB/no bottler - compatible, skip bottler gate
-                    include_bottler_in_combined = False
                     logger.debug(f"REQ-{request_id} Match {match.get('id')}: both no bottler, skipping bottler gate")
                 elif input_has_bottler != match_has_bottler:
                     # One has bottler, one doesn't - 100% reject
@@ -12745,7 +12761,6 @@ def detect_duplicates_batch(listings, threshold=70, request_id='unknown'):
                     if bottler_gate_score < bottler_gate_threshold:
                         logger.debug(f"REQ-{request_id} Skipping match {match.get('id')}: bottler gate failed ({bottler_gate_score}% < {bottler_gate_threshold}%)")
                         continue
-                    include_bottler_in_combined = True
                     logger.debug(f"REQ-{request_id} Match {match.get('id')}: bottler gate passed ({bottler_gate_score}%)")
                 
                 # GATE 3: Age gate (100% exact match required when both have age)
@@ -12818,36 +12833,45 @@ def detect_duplicates_batch(listings, threshold=70, request_id='unknown'):
                     # Drink type not in ABV gate list - skip ABV gate entirely
                     logger.debug(f"REQ-{request_id} Match {match.get('id')}: drink type '{drink_type}' not in ABV gate list, skipping ABV gate")
                 
-                # COMBINED: Name + Producer + [Bottler] similarity
+                # COMBINED STRING SIMILARITY
                 # 
-                # UPDATED ALGORITHM (Dec 2025):
-                # The previous approach using token_set_ratio gave false positives because
-                # it returns 100% when one string's tokens are a complete subset of another.
-                # Example: "Test 30 Dec 3" by "Tiger Beer" matched "Tiger Beer" by "Tiger Beer" at 100%
+                # ALGORITHM (Updated Jan 2026):
+                # Build combined string: "name producer [bottler]"
+                # - Include bottler in combined string if EITHER input OR match has bottler
+                # - Use token_sort_ratio on the full combined string
+                # - Producer acts as gate only (not weighted component)
                 #
-                # NEW APPROACH: Use token_sort_ratio for name comparison
-                # - token_sort_ratio: sorts tokens alphabetically, then does Levenshtein ratio
-                # - "test 30 dec 3" → "3 30 dec test" vs "tiger beer" → "beer tiger" = ~25%
-                # - This properly penalizes when names are different strings
-                #
-                # Weighted scoring:
-                # - Listing Name similarity: 70% weight (most important)
-                # - Producer similarity: 30% weight (already gated at 70%)
+                # Why token_sort_ratio?
+                # - Sorts tokens alphabetically, then compares character-by-character
+                # - Avoids token_set_ratio false positives (100% when one is subset of other)
+                # - Example: "test 30 dec 3 tiger beer" vs "tiger beer" = ~40% (correct)
+                #   But token_set_ratio would give 100% (incorrect)
                 
-                # Use token_sort_ratio - NOT token_set_ratio
-                # token_sort_ratio does character comparison after sorting tokens
-                # So "3 30 dec test" vs "beer tiger" will be low (~25%), not 100%
-                name_score = fuzz.token_sort_ratio(normalized_name, match_name_normalized)
-                producer_score = producer_gate_score  # Already calculated above
+                # Build combined strings
+                input_combined = f"{normalized_name} {normalized_producer}"
+                match_combined = f"{match_name_normalized} {match_producer_normalized}"
                 
-                # Weighted final score: 70% name, 30% producer
-                total_score = (name_score * 0.70) + (producer_score * 0.30)
+                # Include bottler if input has bottler
+                if input_has_bottler and normalized_bottler:
+                    input_combined += f" {normalized_bottler}"
+                
+                # Include bottler if match has bottler
+                if match_has_bottler and match_bottler_normalized:
+                    match_combined += f" {match_bottler_normalized}"
+                
+                # Calculate similarity on combined strings
+                combined_score = fuzz.token_sort_ratio(input_combined, match_combined)
                 
                 # Apply age and ABV penalties if input is missing but match has them
                 total_penalty = age_penalty + abv_penalty
-                total_score -= total_penalty
+                total_score = combined_score - total_penalty
                 
-                logger.debug(f"REQ-{request_id} Match {match.get('id')}: name_score(token_sort)={name_score}%, producer={producer_score}%, age_penalty={age_penalty}%, abv_penalty={abv_penalty}%, final_total={total_score:.1f}%")
+                # Producer gate score is NOT used in final calculation
+                # It only acts as a gate (already filtered above at 70% threshold)
+                # Commented out to make clear it's not part of the final score:
+                # producer_score = producer_gate_score  # Gate only, not weighted
+                
+                logger.debug(f"REQ-{request_id} Match {match.get('id')}: combined_score(token_sort)={combined_score}%, producer_gate={producer_gate_score}% (gate only), penalties={total_penalty}%, final={total_score:.1f}%")
                 
                 # Only include matches above threshold
                 if total_score >= threshold:
