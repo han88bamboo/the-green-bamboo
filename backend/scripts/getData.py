@@ -12147,7 +12147,7 @@ def random_pick_respondent_for_one_poll(poll_id):
 def detectPotentialDuplicateListings():
     """
     Detect potential duplicate listings based on form input.
-    Uses fuzzy matching similar to cellar import duplicate detection.
+    Uses the same rigorous gate-based fuzzy matching as detect_duplicates_batch.
     
     Query Parameters:
         - listingName (required): The drink name being entered
@@ -12157,7 +12157,9 @@ def detectPotentialDuplicateListings():
         - originCountry (required): Selected country
         - bottlerId (optional): Bottler ID if independent bottler
         - bottlerName (optional): Bottler name if independent bottler
-        - threshold (optional): Similarity threshold, default 85
+        - age (optional): Age statement (e.g., "18", "NAS")
+        - abv (optional): ABV percentage (e.g., "43.0")
+        - threshold (optional): Similarity threshold, default 70
     
     Returns:
         JSON with matching listings sorted by similarity score
@@ -12173,7 +12175,15 @@ def detectPotentialDuplicateListings():
         origin_country = request.args.get('originCountry', '').strip()
         bottler_id = request.args.get('bottlerId', '').strip() or None
         bottler_name = request.args.get('bottlerName', '').strip() or None
-        threshold = int(request.args.get('threshold', 85))
+        input_age = request.args.get('age', '').strip() or None
+        input_abv_str = request.args.get('abv', '').strip() or None
+        input_abv = None
+        if input_abv_str:
+            try:
+                input_abv = float(input_abv_str)
+            except ValueError:
+                input_abv = None
+        threshold = int(request.args.get('threshold', 70))
         
         # Validate required fields
         if not listing_name or len(listing_name) < 3:
@@ -12246,6 +12256,7 @@ def detectPotentialDuplicateListings():
                     b."producerName" as "bottlerName",
                     l."drinkType",
                     l."typeCategory",
+                    l."drinkStyle",
                     l."originCountry",
                     l."abv",
                     l."age",
@@ -12283,46 +12294,168 @@ def detectPotentialDuplicateListings():
             logger.info(f"REQ-{request_id} Found {len(potential_matches)} potential candidates from database (filtered by drinkType='{drink_type}', originCountry='{origin_country}')")
         
         # ====== STEP 4: Calculate fuzzy match scores ======
-        # This mirrors cellarImport.py lines 553-610
+        # Using the same rigorous gate-based algorithm as detect_duplicates_batch
+        # ======================================================
+        # DUPLICATE DETECTION ALGORITHM (Updated: Dec 2025)
+        # Approach: Combined string matching with producer & bottler gates
+        # 
+        # Step 1: Producer Gate (WRatio, threshold 70%)
+        # Step 2: Bottler Gate (WRatio, threshold 70% + hard reject logic)
+        # Step 3: Age Gate (exact match required when both have age)
+        # Step 4: ABV Gate (exact match for spirits when both have ABV)
+        # Step 5: Combined Score (70% name + 30% producer - penalties)
+        # ======================================================
         matches_with_scores = []
+        producer_gate_threshold = 70
+        bottler_gate_threshold = 70
+        
+        # Helper function to determine if bottler is effectively "no bottler"
+        def is_no_bottler(bottler_value, producer_value):
+            if not bottler_value:
+                return True
+            bottler_lower = bottler_value.lower().strip()
+            if bottler_lower in ['ob', 'original bottling', 'original bottler', '']:
+                return True
+            if producer_value:
+                producer_lower = producer_value.lower().strip()
+                if bottler_lower == producer_lower:
+                    return True
+            return False
+        
+        # Helper function to determine if age is "no age"
+        def is_no_age(age_value):
+            if not age_value:
+                return True
+            age_lower = str(age_value).lower().strip()
+            if age_lower in ['', 'nas', 'n/a', 'na', 'no age', 'no age statement', 'none']:
+                return True
+            return False
+        
+        # Extract normalized age value for comparison
+        def normalize_age(age_value):
+            if is_no_age(age_value):
+                return None
+            age_str = str(age_value).strip()
+            match = re.search(r'(\d+)', age_str)
+            if match:
+                return match.group(1)
+            return age_str.lower().strip()
+        
+        # Helper function to determine if ABV is "no ABV"
+        def is_no_abv(abv_value):
+            if abv_value is None:
+                return True
+            try:
+                abv_float = float(abv_value)
+                if abv_float <= 0:
+                    return True
+                return False
+            except (ValueError, TypeError):
+                return True
+        
+        # Extract normalized ABV value for comparison
+        def normalize_abv(abv_value):
+            if is_no_abv(abv_value):
+                return None
+            try:
+                return float(abv_value)
+            except (ValueError, TypeError):
+                return None
+        
+        # Determine input characteristics
+        input_has_bottler = not is_no_bottler(bottler_name, producer_name)
+        input_has_age = not is_no_age(input_age)
+        input_age_normalized = normalize_age(input_age) if input_has_age else None
+        input_has_abv = not is_no_abv(input_abv)
+        input_abv_normalized = normalize_abv(input_abv) if input_has_abv else None
+        
+        # Define drink types where ABV gate applies (spirits only)
+        abv_gate_drink_types = {
+            'Whisky', 'Rum', 'Mezcal', 'Tequila', 'Brandy', 
+            'Baijiu', 'Gin', 'Shochu', 'Vodka'
+        }
         
         for match in potential_matches:
             try:
-                # Normalize database values for comparison
                 match_name_normalized = normalize_string(match['listingName']) if match['listingName'] else ''
                 match_producer_normalized = normalize_string(match['producerName']) if match['producerName'] else ''
-                match_bottler_normalized = normalize_string(match['bottlerName']) if match.get('bottlerName') else ''
+                match_bottler_name = match.get('bottlerName') or ''
+                match_bottler_normalized = normalize_string(match_bottler_name) if match_bottler_name else ''
                 
-                # PRIMARY: Name similarity (0-100)
-                # Use token_sort_ratio to handle word order (e.g., "12 glenfiddich" vs "glenfiddich 12")
+                # GATE 1: Producer Gate (70% WRatio threshold)
+                producer_gate_score = fuzz.WRatio(normalized_producer, match_producer_normalized) if normalized_producer and match_producer_normalized else 0
+                if producer_gate_score < producer_gate_threshold:
+                    logger.debug(f"REQ-{request_id} Skipping match {match.get('id')}: producer gate failed ({producer_gate_score}% < {producer_gate_threshold}%)")
+                    continue
+                
+                # GATE 2: Bottler Gate
+                match_has_bottler = not is_no_bottler(match_bottler_name, match['producerName'])
+                
+                if not input_has_bottler and not match_has_bottler:
+                    # Both are OB/no bottler - compatible
+                    logger.debug(f"REQ-{request_id} Match {match.get('id')}: both no bottler, skipping bottler gate")
+                elif input_has_bottler != match_has_bottler:
+                    # One has bottler, one doesn't - 100% reject
+                    logger.debug(f"REQ-{request_id} Skipping match {match.get('id')}: bottler mismatch (input_has={input_has_bottler}, match_has={match_has_bottler})")
+                    continue
+                else:
+                    # Both have bottlers - apply 70% WRatio gate
+                    bottler_gate_score = fuzz.WRatio(normalized_bottler, match_bottler_normalized) if normalized_bottler and match_bottler_normalized else 0
+                    if bottler_gate_score < bottler_gate_threshold:
+                        logger.debug(f"REQ-{request_id} Skipping match {match.get('id')}: bottler gate failed ({bottler_gate_score}% < {bottler_gate_threshold}%)")
+                        continue
+                    logger.debug(f"REQ-{request_id} Match {match.get('id')}: bottler gate passed ({bottler_gate_score}%)")
+                
+                # GATE 3: Age Gate
+                match_age = match.get('age')
+                match_has_age = not is_no_age(match_age)
+                match_age_normalized = normalize_age(match_age) if match_has_age else None
+                age_penalty = 0
+                
+                if not input_has_age and not match_has_age:
+                    logger.debug(f"REQ-{request_id} Match {match.get('id')}: both no age, skipping age gate")
+                elif input_has_age and not match_has_age:
+                    logger.debug(f"REQ-{request_id} Skipping match {match.get('id')}: input has age but match doesn't")
+                    continue
+                elif not input_has_age and match_has_age:
+                    age_penalty = 3
+                    logger.debug(f"REQ-{request_id} Match {match.get('id')}: input missing age (match has {match_age_normalized}), applying {age_penalty}% penalty")
+                else:
+                    if input_age_normalized != match_age_normalized:
+                        logger.debug(f"REQ-{request_id} Skipping match {match.get('id')}: age values differ (input={input_age_normalized}, match={match_age_normalized})")
+                        continue
+                    logger.debug(f"REQ-{request_id} Match {match.get('id')}: age gate passed (both={input_age_normalized})")
+                
+                # GATE 4: ABV Gate (spirits only)
+                abv_penalty = 0
+                if drink_type in abv_gate_drink_types:
+                    match_abv = match.get('abv')
+                    match_has_abv = not is_no_abv(match_abv)
+                    match_abv_normalized = normalize_abv(match_abv) if match_has_abv else None
+                    
+                    if not input_has_abv and not match_has_abv:
+                        logger.debug(f"REQ-{request_id} Match {match.get('id')}: both no ABV, skipping ABV gate")
+                    elif input_has_abv and not match_has_abv:
+                        logger.debug(f"REQ-{request_id} Skipping match {match.get('id')}: input has ABV but match doesn't")
+                        continue
+                    elif not input_has_abv and match_has_abv:
+                        abv_penalty = 3
+                        logger.debug(f"REQ-{request_id} Match {match.get('id')}: input missing ABV (match has {match_abv_normalized}%), applying {abv_penalty}% penalty")
+                    else:
+                        if input_abv_normalized != match_abv_normalized:
+                            logger.debug(f"REQ-{request_id} Skipping match {match.get('id')}: ABV values differ (input={input_abv_normalized}%, match={match_abv_normalized}%)")
+                            continue
+                        logger.debug(f"REQ-{request_id} Match {match.get('id')}: ABV gate passed (both={input_abv_normalized}%)")
+                
+                # COMBINED SCORE: 70% name + 30% producer - penalties
                 name_score = fuzz.token_sort_ratio(normalized_name, match_name_normalized)
+                producer_score = producer_gate_score
+                total_score = (name_score * 0.70) + (producer_score * 0.30)
+                total_penalty = age_penalty + abv_penalty
+                total_score -= total_penalty
                 
-                # BONUS: Producer match (+10 to +20 points)
-                producer_bonus = 0
-                if normalized_producer and match_producer_normalized:
-                    producer_score = fuzz.token_sort_ratio(normalized_producer, match_producer_normalized)
-                    if producer_score >= 90:
-                        producer_bonus = 20
-                    elif producer_score >= 80:
-                        producer_bonus = 15
-                    elif producer_score >= 60:
-                        producer_bonus = 10
+                logger.debug(f"REQ-{request_id} Match {match.get('id')}: name={name_score}%, producer={producer_score}%, penalties={total_penalty}%, final={total_score:.1f}%")
                 
-                # BONUS: Bottler match (+10 to +20 points) - only if bottler was provided
-                bottler_bonus = 0
-                if normalized_bottler and match_bottler_normalized:
-                    bottler_score = fuzz.token_sort_ratio(normalized_bottler, match_bottler_normalized)
-                    if bottler_score >= 90:
-                        bottler_bonus = 20
-                    elif bottler_score >= 80:
-                        bottler_bonus = 15
-                    elif bottler_score >= 60:
-                        bottler_bonus = 10
-                
-                # Calculate total score (capped at 100)
-                total_score = min(100, name_score + producer_bonus + bottler_bonus)
-                
-                # Only include matches above threshold
                 if total_score >= threshold:
                     matches_with_scores.append({
                         "id": match['id'],
@@ -12333,6 +12466,7 @@ def detectPotentialDuplicateListings():
                         "bottlerName": match.get('bottlerName'),
                         "drinkType": match['drinkType'],
                         "typeCategory": match['typeCategory'],
+                        "drinkStyle": match.get('drinkStyle'),
                         "originCountry": match['originCountry'],
                         "abv": float(match['abv']) if match['abv'] else None,
                         "age": match['age'],

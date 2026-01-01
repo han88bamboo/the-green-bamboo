@@ -5609,6 +5609,14 @@
                         params.append('bottlerName', this.selectedBottler.producerName || this.form['bottler']);
                     }
                     
+                    // Add optional age and abv params for more accurate duplicate detection
+                    if (this.form['age'] !== null && this.form['age'] !== undefined && this.form['age'] !== '') {
+                        params.append('age', this.form['age'].toString());
+                    }
+                    if (this.form['abv'] !== null && this.form['abv'] !== undefined && this.form['abv'] !== '') {
+                        params.append('abv', this.form['abv'].toString());
+                    }
+                    
                     const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/detectPotentialDuplicateListings?${params.toString()}`);
                     
                     if (response.data && response.data.data && response.data.data.matches) {
@@ -5651,6 +5659,14 @@
                     if (item.indOperator && item.selectedBottler && item.selectedBottler.id) {
                         params.append('bottlerId', item.selectedBottler.id.toString());
                         params.append('bottlerName', item.selectedBottler.producerName || item.bottler);
+                    }
+                    
+                    // Add optional age and abv params for more accurate duplicate detection
+                    if (item.age !== null && item.age !== undefined && item.age !== '') {
+                        params.append('age', item.age.toString());
+                    }
+                    if (item.abv !== null && item.abv !== undefined && item.abv !== '') {
+                        params.append('abv', item.abv.toString());
                     }
                     
                     const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/detectPotentialDuplicateListings?${params.toString()}`);
