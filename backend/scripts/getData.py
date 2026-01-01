@@ -12463,8 +12463,39 @@ def detectPotentialDuplicateListings():
                 if match_has_bottler and match_bottler_normalized:
                     match_combined += f" {match_bottler_normalized}"
                 
-                # Calculate similarity on combined strings
-                combined_score = fuzz.token_sort_ratio(input_combined, match_combined)
+                # Deduplicate tokens (remove repeated words) before comparison
+                # This prevents inflated scores from repeated tokens
+                # Exception words (legitimate repeated terms) are never deduplicated
+                # e.g., "glenfiddich glenfiddich 12" -> "glenfiddich 12"
+                #       "single malt single cask" -> "single malt single cask" (exception preserved)
+                def deduplicate_tokens(text):
+                    # Words that should NOT be deduplicated (common legitimate repeated terms)
+                    exceptions = {'single', 'cask', 'barrel', 'finish'}
+                    
+                    seen = set()
+                    result = []
+                    for token in text.split():
+                        token_lower = token.lower()
+                        
+                        # Always include exception words (don't deduplicate)
+                        if token_lower in exceptions:
+                            result.append(token)
+                        # Only deduplicate tokens that are 4+ characters
+                        elif len(token) >= 4:
+                            if token not in seen:
+                                seen.add(token)
+                                result.append(token)
+                        else:
+                            # Short tokens (< 4 chars) are always included
+                            result.append(token)
+                    
+                    return ' '.join(result)
+                
+                input_combined_deduped = deduplicate_tokens(input_combined)
+                match_combined_deduped = deduplicate_tokens(match_combined)
+                
+                # Calculate similarity on deduplicated combined strings
+                combined_score = fuzz.token_sort_ratio(input_combined_deduped, match_combined_deduped)
                 
                 # Apply penalties
                 total_penalty = age_penalty + abv_penalty
@@ -12862,8 +12893,39 @@ def detect_duplicates_batch(listings, threshold=CSV_DUPLICATE_DETECTION_THRESHOL
                 if match_has_bottler and match_bottler_normalized:
                     match_combined += f" {match_bottler_normalized}"
                 
-                # Calculate similarity on combined strings
-                combined_score = fuzz.token_sort_ratio(input_combined, match_combined)
+                # Deduplicate tokens (remove repeated words) before comparison
+                # This prevents inflated scores from repeated tokens
+                # Exception words (legitimate repeated terms) are never deduplicated
+                # e.g., "glenfiddich glenfiddich 12" -> "glenfiddich 12"
+                #       "single malt single cask" -> "single malt single cask" (exception preserved)
+                def deduplicate_tokens(text):
+                    # Words that should NOT be deduplicated (common legitimate repeated terms)
+                    exceptions = {'single', 'cask', 'barrel', 'finish'}
+                    
+                    seen = set()
+                    result = []
+                    for token in text.split():
+                        token_lower = token.lower()
+                        
+                        # Always include exception words (don't deduplicate)
+                        if token_lower in exceptions:
+                            result.append(token)
+                        # Only deduplicate tokens that are 4+ characters
+                        elif len(token) >= 4:
+                            if token not in seen:
+                                seen.add(token)
+                                result.append(token)
+                        else:
+                            # Short tokens (< 4 chars) are always included
+                            result.append(token)
+                    
+                    return ' '.join(result)
+                
+                input_combined_deduped = deduplicate_tokens(input_combined)
+                match_combined_deduped = deduplicate_tokens(match_combined)
+                
+                # Calculate similarity on deduplicated combined strings
+                combined_score = fuzz.token_sort_ratio(input_combined_deduped, match_combined_deduped)
                 
                 # Apply age and ABV penalties if input is missing but match has them
                 total_penalty = age_penalty + abv_penalty
