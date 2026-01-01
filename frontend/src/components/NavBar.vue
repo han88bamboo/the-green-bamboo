@@ -236,17 +236,17 @@
                 </li>
                 <!-- Add New Product (Producers)-->
                 <li v-if="onCreate && accType == 'producer'">
-                  <span class="dropdown-item" @click="forceLoad('/listing/create')">Add A Product</span>
+                  <span class="dropdown-item" @click="forceLoad('/listing/create-bulk')">Add A Product</span>
                 </li>
                 <li v-if="!onCreate && accType == 'producer'">
-                  <router-link :to="'/listing/create'" class="dropdown-item">Add A Product</router-link>
+                  <router-link :to="'/listing/create-bulk'" class="dropdown-item">Add A Product</router-link>
                 </li>
                 <!-- Request New Listing (Users / Venues)-->
                 <li v-if="onRequest && ((accType === 'user' && !isAdmin && !isModerator) || accType === 'venue')">
-                  <span class="dropdown-item" @click="forceLoad('/request/new')">Submit A Drink</span>
+                  <span class="dropdown-item" @click="forceLoad('/request/new-bulk')">Submit A Drink</span>
                 </li>
                 <li v-if="!onRequest && ((accType === 'user' && !isAdmin && !isModerator) || accType === 'venue')">
-                  <router-link :to="'/request/new'" class="dropdown-item">Submit A Drink</router-link>
+                  <router-link :to="'/request/new-bulk'" class="dropdown-item">Submit A Drink</router-link>
                 </li>
                 <li v-if="isAdmin">
                   <hr class="dropdown-divider" />
@@ -255,12 +255,12 @@
                 <li v-if="
                   onCreate && (accType == isAdmin || isModerator)
                 ">
-                  <span class="dropdown-item" @click="forceLoad('/listing/create')">Create New Listing</span>
+                  <span class="dropdown-item" @click="forceLoad('/listing/create-bulk')">Create New Listing</span>
                 </li>
                 <li v-if="
                   !onCreate && (accType == isAdmin || isModerator)
                 ">
-                  <router-link :to="'/listing/create'" class="dropdown-item">Create New Listing</router-link>
+                  <router-link :to="'/listing/create-bulk'" class="dropdown-item">Create New Listing</router-link>
                 </li>
                 <!-- View Requests -->
                 <li v-if="isAdmin || isModerator || accType == 'producer'">
@@ -289,22 +289,22 @@
                     <span @click="externalURL('https://88bamboo.co/')" class="dropdown-item">Latest News</span>
                   </li>
                   <li v-if="onRequest && accType == 'user'">
-                    <span style="color: #d58d2d !important" @click="forceLoad('/request/new')"
+                    <span style="color: #d58d2d !important" @click="forceLoad('/request/new-bulk')"
                       class="dropdown-item">Submit A Drink</span>
                   </li>
                   <li v-if="!onRequest && accType == 'user'">
-                    <router-link :to="'/request/new'"><span class="dropdown-item"
+                    <router-link :to="'/request/new-bulk'"><span class="dropdown-item"
                         style="color: #d58d2d !important">Submit A Drink</span></router-link>
                   </li>
                   <li v-if="
                     onCreate && (accType == 'producer' || isAdmin || isModerator)
                   ">
                     <span style="color: #d58d2d !important" class="dropdown-item"
-                      @click="forceLoad('/listing/create')">Add A New Drink</span>
+                      @click="forceLoad('/listing/create-bulk')">Add A New Drink</span>
                   </li>
                   <li v-if="
                     !onCreate && (accType == 'producer' || isAdmin || isModerator)
-                  " :to="'/listing/create'">
+                  " :to="'/listing/create-bulk'">
                     <span style="color: #d58d2d !important" class="dropdown-item">Add A New Drink</span>
                   </li>
                   <li>
@@ -433,7 +433,7 @@
                   <span style="margin-left: 8px;">{{ showAdmin ? '▾' : '▸' }}</span>
                 </li>
                 <li v-show="showAdmin" v-if="(accType == isAdmin || isModerator)" class="text-start pt-1"><router-link
-                    :to="'/listing/create'" style="text-decoration: none; font-weight: normal">Create New
+                    :to="'/listing/create-bulk'" style="text-decoration: none; font-weight: normal">Create New
                     Drink</router-link></li>
                 <li v-show="showAdmin" v-if="(accType == isAdmin || isModerator)" class="text-start"><router-link
                     :to="'/request/view'" style="text-decoration: none; font-weight: normal">View Requests</router-link>
@@ -449,14 +449,14 @@
 
                 <!-- Submit / Add a Drink -->
                 <li v-if="((accType === 'user' && !isAdmin && !isModerator) || accType === 'venue')" class="text-start">
-                  <router-link to="/request/new" style="text-decoration: none; ">Submit A Drink</router-link>
+                  <router-link to="/request/new-bulk" style="text-decoration: none; ">Submit A Drink</router-link>
                 </li>
                 <li v-if="accType === 'producer'" class="text-start">
-                  <router-link to="/listing/create" style="text-decoration: none;">Add New Product</router-link>
+                  <router-link to="/listing/create-bulk" style="text-decoration: none;">Add New Product</router-link>
                 </li>
                 
                 <li v-if="accType === 'isAdmin || isModerator'" class="text-start">
-                  <router-link to="/listing/create" style="text-decoration: none;">Add New Drink</router-link>
+                  <router-link to="/listing/create-bulk" style="text-decoration: none;">Add New Drink</router-link>
                 </li>
 
                 <li v-if="accType === 'user'" class="drawer-section-title pt-2 text-start">
@@ -589,14 +589,14 @@
         </button>
 
 
-        <button @click="forceLoad('/request/new')"
+        <button @click="forceLoad('/request/new-bulk')"
           v-if="onRequest && ((accType === 'user' && !isAdmin && !isModerator) || accType === 'venue')"
           class="btn primary-btn border-0" style="color:#027562; font-weight: 900" type="button">
           <!-- class="text-warning" style="color:#D58D2D !important;" -->
           Submit A Drink
         </button>
         <router-link v-if="!onRequest && ((accType === 'user' && !isAdmin && !isModerator) || accType === 'venue')"
-          :to="'/request/new'">
+          :to="'/request/new-bulk'">
           <button class="btn primary-btn border-0" style="color:#027562; font-weight: 900" type="button">
             <!-- class="text-warning" style="color:#D58D2D !important;" -->
             Submit A Drink
@@ -604,24 +604,24 @@
         </router-link>
 
         <!-- Producers see "Add a Product" -->
-        <button @click="forceLoad('/listing/create')" v-if="onCreate && accType === 'producer'"
+        <button @click="forceLoad('/listing/create-bulk')" v-if="onCreate && accType === 'producer'"
           class="btn primary-btn border-0" style="color:#027562; font-weight: 900" type="button">
           Add a Product
         </button>
 
-        <router-link v-if="!onCreate && accType === 'producer'" :to="'/listing/create'">
+        <router-link v-if="!onCreate && accType === 'producer'" :to="'/listing/create-bulk'">
           <button class="btn primary-btn border-0" style="color:#027562; font-weight: 900" type="button">
             Add a Product
           </button>
         </router-link>
 
         <!-- Admins & Moderators see "Add a New Drink" -->
-        <button @click="forceLoad('/listing/create')" v-if="onCreate && (isAdmin || isModerator)"
+        <button @click="forceLoad('/listing/create-bulk')" v-if="onCreate && (isAdmin || isModerator)"
           class="btn primary-btn border-0" style="color:#027562; font-weight: 900" type="button">
            + Add a New Drink
         </button>
 
-        <router-link v-if="!onCreate && (isAdmin || isModerator)" :to="'/listing/create'">
+        <router-link v-if="!onCreate && (isAdmin || isModerator)" :to="'/listing/create-bulk'">
           <button class="btn primary-btn border-0" style="color:#027562; font-weight: 900" type="button">
             + Add a New Drink
           </button>

@@ -115,7 +115,7 @@
                 onCreate && (accType == 'producer' || isAdmin || isModerator)
               "
             >
-              <span class="dropdown-item" @click="forceLoad('/listing/create')"
+              <span class="dropdown-item" @click="forceLoad('/listing/create-bulk')"
                 >Create New Listing</span
               >
             </li>
@@ -124,18 +124,18 @@
                 !onCreate && (accType == 'producer' || isAdmin || isModerator)
               "
             >
-              <router-link :to="'/listing/create'" class="dropdown-item"
+              <router-link :to="'/listing/create-bulk'" class="dropdown-item"
                 >Create New Listing</router-link
               >
             </li>
 
             <li v-if="onRequest && accType == 'user'">
-              <span class="dropdown-item" @click="forceLoad('/request/new')"
+              <span class="dropdown-item" @click="forceLoad('/request/new-bulk')"
                 >Request New Listing</span
               >
             </li>
             <li v-if="!onRequest && accType == 'user'">
-              <router-link :to="'/request/new'" class="dropdown-item"
+              <router-link :to="'/request/new-bulk'" class="dropdown-item"
                 >Request New Listing</router-link
               >
             </li>
@@ -182,13 +182,13 @@
               </li>
               <li v-if="onRequest && accType == 'user'">
                 <span
-                  @click="forceLoad('/request/new')"
+                  @click="forceLoad('/request/new-bulk')"
                   class="dropdown-item text-decoration-none"
                   >Submit A Drink</span
                 >
               </li>
               <li v-if="!onRequest && accType == 'user'">
-                <router-link :to="'/request/new'" class="text-decoration-none"
+                <router-link :to="'/request/new-bulk'" class="text-decoration-none"
                   ><span class="dropdown-item"
                     >Submit A Drink</span
                   ></router-link
@@ -201,7 +201,7 @@
               >
                 <span
                   class="dropdown-item"
-                  @click="forceLoad('/listing/create')"
+                  @click="forceLoad('/listing/create-bulk')"
                   >Add A New Drink</span
                 >
               </li>
@@ -209,7 +209,7 @@
                 v-if="
                   !onCreate && (accType == 'producer' || isAdmin || isModerator)
                 "
-                :to="'/listing/create'"
+                :to="'/listing/create-bulk'"
               >
                 <span class="dropdown-item">Add A New Drink</span>
               </li>
@@ -278,7 +278,7 @@
         </router-link>
 
         <button
-          @click="forceLoad('/request/new')"
+          @click="forceLoad('/request/new-bulk')"
           v-if="onRequest && accType == 'user'"
           class="btn primary-btn border-0 fw-bold"
           type="button"
@@ -289,7 +289,7 @@
 
         <router-link
           v-if="!onRequest && accType == 'user'"
-          :to="'/request/new'"
+          :to="'/request/new-bulk'"
         >
           <button class="btn primary-btn border-0 fw-bold" type="button">
             <!-- class="text-warning" style="color:#D58D2D !important;" -->
@@ -298,7 +298,7 @@
         </router-link>
 
         <button
-          @click="forceLoad('/listing/create')"
+          @click="forceLoad('/listing/create-bulk')"
           v-if="onCreate && (accType == 'producer' || isAdmin || isModerator)"
           class="btn primary-btn border-0 fw-bold"
           type="button"
@@ -309,7 +309,7 @@
 
         <router-link
           v-if="!onCreate && (accType == 'producer' || isAdmin || isModerator)"
-          :to="'/listing/create'"
+          :to="'/listing/create-bulk'"
         >
           <button class="btn primary-btn border-0 fw-bold" type="button">
             <!-- class="text-warning" style="color:#D58D2D !important;" -->

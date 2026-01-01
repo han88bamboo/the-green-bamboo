@@ -60,7 +60,7 @@
                                     looking for? Create a new listing here!</p>
                             </router-link>
                             <router-link class="text-decoration-none" v-if="role == 'user'"
-                                :to="{ path: '/request/new/' }">
+                                :to="{ path: '/request/new-bulk/' }">
                                 <p class="mobile-rating-smaller-text-2 fst-italic text-center">Don't see what you're
                                     looking for? Request a new listing here!</p>
                             </router-link>

@@ -432,7 +432,7 @@
                       <button
                         type="button"
                         class="btn tertiary-btn-blue-outline rounded-0 reverse-clickable-text"
-                        v-on:click="window.location.href = '/listing/create'"
+                        v-on:click="window.location.href = '/listing/create-bulk'"
                       >
                         Add Listing
                       </button>
@@ -2256,13 +2256,13 @@
                     class="btn tertiary-btn-blue-outline reverse-clickable-text Xprimary-btn-outline-thick rounded-0 mobile-pe-2 mobile-ps-2"
                   >
                     <router-link
-                      :to="`/listing/create`"
+                      :to="`/listing/create-bulk`"
                       class="Xdefault-clickable-text mobile-fs-7 mobile-view-hide"
                     >
                       Add Listing
                     </router-link>
                     <router-link
-                      :to="`/listing/create`"
+                      :to="`/listing/create-bulk`"
                       class="Xdefault-clickable-text mobile-fs-7 mobile-view-show"
                     >
                       Add

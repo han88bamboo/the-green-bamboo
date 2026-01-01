@@ -97,10 +97,10 @@
                                     <li class="list-group-item"><span class="fw-bold">Requested By: </span>{{ requestNew["requesterUsername"] }}</li>
                                 </ul>
                                 <div class="card-footer">
-                                    <router-link v-if="role == 'producer' || isAdmin || types.includes(requestNew['drinkType'])" :to="{ path: '/listing/create/' + requestNew.id }">
+                                    <router-link v-if="role == 'producer' || isAdmin || types.includes(requestNew['drinkType'])" :to="{ path: '/listing/create-bulk/' + requestNew.id }">
                                         <button class="border btn btn-warning btn-sm align-bottom">Review Request</button>
                                     </router-link>
-                                    <router-link v-if="role == 'user' && requestNew['userID'] == accID" :to="{ path: '/request/new/' + requestNew.id }">
+                                    <router-link v-if="role == 'user' && requestNew['userID'] == accID" :to="{ path: '/request/new-bulk/' + requestNew.id }">
                                         <button class="border btn btn-warning btn-sm align-bottom">Modify Request</button>
                                     </router-link>
                                 </div>

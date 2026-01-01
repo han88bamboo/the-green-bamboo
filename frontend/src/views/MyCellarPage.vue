@@ -1192,7 +1192,7 @@
                     <div class="form-group mb-3">
                       <label class="form-label text-start">
                         <b>Drink Name </b><span class="text-danger">*</span>
-                        <small class="text-muted d-block text-start">Search by drink name. If you can't find your drink on Drink-X, <router-link to="/request/new" class="text-decoration-none"> submit a new drink to the database!</router-link></small>
+                        <small class="text-muted d-block text-start">Search by drink name. If you can't find your drink on Drink-X, <router-link to="/request/new-bulk" class="text-decoration-none"> submit a new drink to the database!</router-link></small>
                         <small 
                           v-if="addDrinkForm.selectedProducer && addDrinkForm.selectedProducer.id" 
                           class="text-info fw-bold d-block text-start"
@@ -2915,7 +2915,7 @@
                 <label class="form-label text-start">
                   <b> Drink Name </b><span class="text-danger">*</span>
                   <small class="text-muted d-block text-start">Search by drink name. If you can't find your drink on Drink-X, 
-                    <router-link to="/request/new" class="text-decoration-none">
+                    <router-link to="/request/new-bulk" class="text-decoration-none">
                       submit a new drink to the database!
                     </router-link></small>                   
                     <small 

@@ -54,7 +54,7 @@ x<!-- Search page from navigation bar. Globally available, and should still use 
                         <router-link class="col-12 text-decoration-none" v-if="role == 'producer'" :to="{ path: '/Producer/Producer-Create-Listing/' }">
                             <p class="fs-6 fst-italic text-start">Don't see what you're looking for? Create a new listing here!</p>
                         </router-link>
-                        <router-link class="col-12 text-decoration-none" v-if="role == 'user'" :to="{ path: '/request/new/' }">
+                        <router-link class="col-12 text-decoration-none" v-if="role == 'user'" :to="{ path: '/request/new-bulk/' }">
                             <p class="fs-6 fst-italic text-start">Don't see what you're looking for? Request a new listing here!</p>
                         </router-link>
                         <router-link class="col-12 text-decoration-none" v-if="role != 'producer' && role != 'user'" :to="{ path: '/login' }">
@@ -72,7 +72,7 @@ x<!-- Search page from navigation bar. Globally available, and should still use 
                             <router-link class=" text-decoration-none" v-if="role == 'producer'" :to="{ path: '/Producer/Producer-Create-Listing/' }">
                                 <p class="mobile-rating-smaller-text-2 fst-italic text-start">Don't see what you're looking for? Create a new listing here!</p>
                             </router-link>
-                            <router-link class="text-decoration-none" v-if="role == 'user'" :to="{ path: '/request/new/' }">
+                            <router-link class="text-decoration-none" v-if="role == 'user'" :to="{ path: '/request/new-bulk/' }">
                                 <p class="mobile-rating-smaller-text-2 fst-italic text-start">Don't see what you're looking for? Request a new listing here!</p>
                             </router-link>
                             <router-link class="text-decoration-none" v-if="role != 'producer' && role != 'user'" :to="{ path: '/login' }">
