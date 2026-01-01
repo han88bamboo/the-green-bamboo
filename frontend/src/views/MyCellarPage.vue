@@ -1531,7 +1531,7 @@
                         <div class="form-section mb-4">
                           <hr>
                           <!-- Row 1: Vintage -->
-                          <div class="row g-3 mb-3" v-if="addDrinkForm.selectedDrink && ['Wine', 'Sake'].includes(addDrinkForm.selectedDrink.drinkType)">
+                          <div class="row g-3 mb-3" v-if="addDrinkForm.selectedDrink && ['Wine', 'Sake', 'Beer'].includes(addDrinkForm.selectedDrink.drinkType)">
                             <div class="col-md-12">
                               <label class="form-label text-start">Vintage</label>
                               <input 
@@ -3226,7 +3226,7 @@
                     </h6>
 
                     <!-- Row 1: Vintage -->
-                    <div class="row g-3 mb-3" v-if="addDrinkForm.selectedDrink && ['Wine', 'Sake'].includes(addDrinkForm.selectedDrink.drinkType)">
+                    <div class="row g-3 mb-3" v-if="addDrinkForm.selectedDrink && ['Wine', 'Sake', 'Beer'].includes(addDrinkForm.selectedDrink.drinkType)">
                       <div class="col-md-12">
                         <label class="form-label text-start">Vintage</label>
                         <input 
