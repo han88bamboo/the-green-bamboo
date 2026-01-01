@@ -7556,6 +7556,7 @@ def getCellarData(ownerType, ownerID):
                     ci."purchaseCurrency",
                     ci."purchaseDate",
                     ci."deliveryDate",
+                    ci."productionDate",
                     ci."noteToSelf",
                     ci."variant",
                     ci."addedDate",

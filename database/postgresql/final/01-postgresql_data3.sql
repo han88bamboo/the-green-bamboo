@@ -1226,6 +1226,7 @@ CREATE TABLE "myCellarItems" (
     -- INDIVIDUAL BOTTLE PROPERTIES (stored for each bottle including master)
     "purchaseDate" DATE DEFAULT NULL,
     "deliveryDate" DATE DEFAULT NULL,
+    "productionDate" DATE DEFAULT NULL, -- Date the drink was produced/manufactured
     "purchasePrice" DECIMAL(10,2) DEFAULT NULL,
     "purchaseCurrency" VARCHAR(3) DEFAULT 'USD', -- ISO currency code
     "purchaseVenueID" INTEGER REFERENCES "venues"("id") ON DELETE SET NULL, -- If purchased from a known venue

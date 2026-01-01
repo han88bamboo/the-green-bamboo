@@ -182,10 +182,11 @@ def addToCellar():
             print("TZHBackendLog: Parsing dates...")
             purchase_date = parse_date(data.get('purchaseDate'))
             delivery_date = parse_date(data.get('deliveryDate'))
+            production_date = parse_date(data.get('productionDate'))
             drink_onwards_date = parse_date(data.get('drinkOnwardsDate'))
             drink_by_date = parse_date(data.get('drinkByDate'))
             
-            print(f"TZHBackendLog: Parsed dates - purchase: {purchase_date}, delivery: {delivery_date}, drink_onwards: {drink_onwards_date}, drink_by: {drink_by_date}")
+            print(f"TZHBackendLog: Parsed dates - purchase: {purchase_date}, delivery: {delivery_date}, production: {production_date}, drink_onwards: {drink_onwards_date}, drink_by: {drink_by_date}")
             
             # Parse and validate prices
             def parse_price(price_str):
@@ -313,6 +314,7 @@ def addToCellar():
                     # Individual properties for the first bottle (not defaults!)
                     purchase_date,
                     delivery_date,
+                    production_date,
                     purchase_price,
                     data.get('purchaseCurrency', 'USD'),
                     data.get('purchaseVenueId'),
@@ -335,12 +337,12 @@ def addToCellar():
                         "listingID", "collectionID", "variant", "quantityVariantID", "variantGroupID",
                         "drinkFormat", "volumeNumber", "volumeUnit", "drinkByDate", "drinkOnwardsDate",
                         "currentValueEstimation", "currentValueCurrency", "suggestedFoodPairing",
-                        "purchaseDate", "deliveryDate", "purchasePrice", "purchaseCurrency",
+                        "purchaseDate", "deliveryDate", "productionDate", "purchasePrice", "purchaseCurrency",
                         "purchaseVenueID", "purchasePlaceName", "purchaseAddress",
                         "status", "consumption", "currentLocation", "subLocation",
                         "noteToSelf", "archiveStatus", "addedDate", "updatedDate"
                     ) VALUES (
-                        %s, %s, %s, %s, NULL, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
+                        %s, %s, %s, %s, NULL, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
                     ) RETURNING "id"
                 """, master_insert_data)
                 master_id = cursor.fetchone()['id']
@@ -459,6 +461,7 @@ def addToCellar():
                             group_variant_id,  # Reference to master record's ID
                             purchase_date,
                             delivery_date,
+                            production_date,
                             purchase_price,
                             data.get('purchaseCurrency', 'USD'),
                             data.get('purchaseVenueId'),  # If provided
@@ -479,12 +482,12 @@ def addToCellar():
                         cursor.execute("""
                             INSERT INTO "myCellarItems" (
                                 "listingID", "collectionID", "variant", "quantityVariantID", "variantGroupID",
-                                "purchaseDate", "deliveryDate", "purchasePrice", "purchaseCurrency",
+                                "purchaseDate", "deliveryDate", "productionDate", "purchasePrice", "purchaseCurrency",
                                 "purchaseVenueID", "purchasePlaceName", "purchaseAddress",
                                 "status", "consumption", "currentLocation", "subLocation",
                                 "noteToSelf", "archiveStatus", "addedDate", "updatedDate"
                             ) VALUES (
-                                %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
+                                %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
                             ) RETURNING "id"
                         """, bottle_insert_data)
                         
@@ -507,6 +510,7 @@ def addToCellar():
                         group_variant_id,  # Reference to master record's ID
                         purchase_date,
                         delivery_date,
+                        production_date,
                         purchase_price,
                         data.get('purchaseCurrency', 'USD'),
                         data.get('purchaseVenueId'),  # If provided
@@ -527,12 +531,12 @@ def addToCellar():
                     cursor.execute("""
                         INSERT INTO "myCellarItems" (
                             "listingID", "collectionID", "variant", "quantityVariantID", "variantGroupID",
-                            "purchaseDate", "deliveryDate", "purchasePrice", "purchaseCurrency",
+                            "purchaseDate", "deliveryDate", "productionDate", "purchasePrice", "purchaseCurrency",
                             "purchaseVenueID", "purchasePlaceName", "purchaseAddress",
                             "status", "consumption", "currentLocation", "subLocation",
                             "noteToSelf", "archiveStatus", "addedDate", "updatedDate"
                         ) VALUES (
-                            %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
+                            %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
                         ) RETURNING "id"
                     """, bottle_insert_data)
                     
@@ -932,6 +936,7 @@ def editCellar():
                         'purchaseAddress': 'purchaseAddress',
                         'purchaseDate': 'purchaseDate',
                         'deliveryDate': 'deliveryDate',
+                        'productionDate': 'productionDate',
                         'purchasePrice': 'purchasePrice',
                         'purchaseCurrency': 'purchaseCurrency'
                     }
@@ -985,7 +990,7 @@ def editCellar():
                                     }), 400
                             
                             # Validate date fields
-                            if field_key in ['purchaseDate', 'deliveryDate'] and value is not None:
+                            if field_key in ['purchaseDate', 'deliveryDate', 'productionDate'] and value is not None:
                                 try:
                                     if isinstance(value, str) and value.strip():
                                         # Validate date format YYYY-MM-DD

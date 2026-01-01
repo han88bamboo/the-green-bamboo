@@ -1857,7 +1857,21 @@
                             </div>
                           </div>
 
-                          <!-- Row 6: Personal Notes -->
+                          <!-- Row 6: Production Date -->
+                          <div class="row g-3 mb-3">
+                            <div class="col-md-12">
+                              <label class="form-label text-start">Production Date</label>
+                              <input 
+                                type="date" 
+                                class="form-control"
+                                v-model="addDrinkForm.productionDate"
+                                :max="todayDate"
+                              />
+                              <small class="text-muted">The date when this drink was produced/manufactured.</small>
+                            </div>
+                          </div>
+
+                          <!-- Row 7: Personal Notes -->
                           <div class="row g-3 mb-3">
                             <div class="col-md-12">
                               <label class="form-label text-start">Personal Notes</label>
@@ -2522,6 +2536,32 @@
                           placeholder="0.00"
                         >
                       </div>
+                    </div>
+                  </div>
+
+                  <!-- Row 3: Production Date -->
+                  <div class="row g-3 mb-3">
+                    <div class="col-md-3">
+                      <label class="form-label small">Production Date</label>
+                      <div class="input-group input-group-sm">
+                        <input 
+                          type="date" 
+                          class="form-control" 
+                          :value="getBottleFieldValue(bottle.cellarItemId, 'productionDate')"
+                          @change="onBottleFieldChange(bottle.cellarItemId, 'productionDate', $event.target.value)"
+                          :max="todayDate"
+                          :ref="`bottleProductionDate${index}`"
+                        >
+                        <span 
+                          class="input-group-text date-picker-trigger"
+                          @click="$refs[`bottleProductionDate${index}`][0].showPicker()"
+                          role="button"
+                          title="Open calendar"
+                        >
+                          <i class="bi bi-calendar3"></i>
+                        </span>
+                      </div>
+                      <small class="text-muted">Date drink was produced/manufactured</small>
                     </div>
                   </div>
 
@@ -3520,7 +3560,32 @@
                       </div>
                     </div>
 
-                    <!-- Row 6: Personal Notes -->
+                    <!-- Row 6: Production Date -->
+                    <div class="row g-3 mb-3">
+                      <div class="col-md-12">
+                        <label class="form-label text-start">Production Date</label>
+                        <div class="input-group">
+                          <input 
+                            type="date" 
+                            class="form-control"
+                            v-model="addDrinkForm.productionDate"
+                            :max="todayDate"
+                            ref="mobileProductionDateInput"
+                          />
+                          <span 
+                            class="input-group-text date-picker-trigger"
+                            @click="$refs.mobileProductionDateInput.showPicker()"
+                            role="button"
+                            title="Open calendar"
+                          >
+                            <i class="bi bi-calendar3"></i>
+                          </span>
+                        </div>
+                        <small class="text-muted">The date when this drink was produced/manufactured.</small>
+                      </div>
+                    </div>
+
+                    <!-- Row 7: Personal Notes -->
                     <div class="row g-3 mb-3">
                       <div class="col-md-12">
                         <label class="form-label text-start">Personal Notes</label>
@@ -3782,6 +3847,7 @@ export default {
         
         purchaseDate: null,
         deliveryDate: null,
+        productionDate: null,
         purchasePrice: null,
         purchaseCurrency: 'USD',
         personalNotes: '',
@@ -3847,6 +3913,11 @@ export default {
     }
   },
   computed: {
+    // Today's date for production date validation (cannot be in the future)
+    todayDate() {
+      return new Date().toISOString().split('T')[0];
+    },
+    
     // Debug computed for delete button visibility
     showDeleteButton() {
       const isNotSpecialTab = this.activeTab !== 'all' && this.activeTab !== 'history' && this.activeTab !== 'dashboard';
@@ -6040,6 +6111,7 @@ export default {
         console.log('TZHFrontendLog:   - purchaseLocationInputValue:', this.addDrinkForm.purchaseLocationInputValue);
         console.log('TZHFrontendLog:   - purchaseDate:', this.addDrinkForm.purchaseDate);
         console.log('TZHFrontendLog:   - deliveryDate:', this.addDrinkForm.deliveryDate);
+        console.log('TZHFrontendLog:   - productionDate:', this.addDrinkForm.productionDate);
         console.log('TZHFrontendLog:   - purchasePrice:', this.addDrinkForm.purchasePrice);
         console.log('TZHFrontendLog:   - purchaseCurrency:', this.addDrinkForm.purchaseCurrency);
         console.log('TZHFrontendLog:   - personalNotes:', this.addDrinkForm.personalNotes);
@@ -6077,6 +6149,7 @@ export default {
           
           ...(this.addDrinkForm.purchaseDate && { purchaseDate: this.addDrinkForm.purchaseDate }),
           ...(this.addDrinkForm.deliveryDate && { deliveryDate: this.addDrinkForm.deliveryDate }),
+          ...(this.addDrinkForm.productionDate && { productionDate: this.addDrinkForm.productionDate }),
           ...(this.addDrinkForm.purchasePrice && { purchasePrice: parseFloat(this.addDrinkForm.purchasePrice) }),
           ...(this.addDrinkForm.purchaseCurrency && { purchaseCurrency: this.addDrinkForm.purchaseCurrency }),
           ...(this.addDrinkForm.personalNotes && this.addDrinkForm.personalNotes.trim() && { personalNotes: this.addDrinkForm.personalNotes.trim() }),
@@ -6205,6 +6278,7 @@ export default {
         
         purchaseDate: null,
         deliveryDate: null,
+        productionDate: null,
         purchasePrice: null,
         purchaseCurrency: 'USD',
         personalNotes: '',
