@@ -12143,6 +12143,8 @@ def random_pick_respondent_for_one_poll(poll_id):
 # DUPLICATE DETECTION FOR LISTING SUBMISSION FORM
 # ============================================================================
 
+FORM_DUPLICATE_DETECTION_THRESHOLD = 75
+
 @blueprint.route("/detectPotentialDuplicateListings", methods=['GET'])
 def detectPotentialDuplicateListings():
     """
@@ -12183,7 +12185,7 @@ def detectPotentialDuplicateListings():
                 input_abv = float(input_abv_str)
             except ValueError:
                 input_abv = None
-        threshold = int(request.args.get('threshold', 70))
+        threshold = int(request.args.get('threshold', FORM_DUPLICATE_DETECTION_THRESHOLD))
         
         # Validate required fields
         if not listing_name or len(listing_name) < 3:
@@ -12523,7 +12525,10 @@ def detectPotentialDuplicateListings():
 # DUPLICATE DETECTION FOR CSV LISTING SUBMISSION (BATCH)
 # ============================================================================
 
-def detect_duplicates_batch(listings, threshold=70, request_id='unknown'):
+# Single source of truth for CSV duplicate detection threshold
+CSV_DUPLICATE_DETECTION_THRESHOLD = 75
+
+def detect_duplicates_batch(listings, threshold=CSV_DUPLICATE_DETECTION_THRESHOLD, request_id='unknown'):
     """
     Core duplicate detection logic - reusable helper function.
     
@@ -12632,20 +12637,18 @@ def detect_duplicates_batch(listings, threshold=70, request_id='unknown'):
         #   - Prevents false positives from generic names
         #   - WRatio handles typos and name variations
         #
-        # Step 2: Bottler Gate (WRatio, threshold 70%)
-        #   - "No bottler" = OB, Original Bottling, empty, or same as producer
-        #   - Both no bottler → skip gate
-        #   - One has, one doesn't → 100% reject
-        #   - Both have → apply 70% gate
+        # Step 2: Bottler Gate (DISABLED - bottler only used in combined string)
+        #   - Previously enforced strict bottler matching
+        #   - Now bottler is only included in combined string similarity
         #
-        # Step 3: Combined Score (token_set_ratio)
+        # Step 3: Combined Score (token_sort_ratio)
         #   - Compares "listingName producerName [bottlerName]" as one string
-        #   - Only includes bottler when both have bottlers
-        #   - token_set_ratio ignores duplicate words
+        #   - Includes bottler if EITHER input OR match has bottler
+        #   - token_sort_ratio properly penalizes different strings
         # ======================================================
         matches_with_scores = []
         producer_gate_threshold = 70  # Minimum producer similarity to consider
-        bottler_gate_threshold = 70   # Minimum bottler similarity to consider
+        # bottler_gate_threshold = 70   # COMMENTED OUT - bottler gate disabled
         
         # Helper function to determine if bottler is effectively "no bottler"
         # "No bottler" = OB, Original Bottling, empty, None, or exact same as producer name
@@ -12740,28 +12743,28 @@ def detect_duplicates_batch(listings, threshold=70, request_id='unknown'):
                     logger.debug(f"REQ-{request_id} Skipping match {match.get('id')}: producer gate failed ({producer_gate_score}% < {producer_gate_threshold}%)")
                     continue
                 
-                # GATE 2: Check bottler compatibility
+                # GATE 2: Bottler Gate (COMMENTED OUT - bottler now only used in combined string matching)
                 # Determine if match has a bottler
                 match_has_bottler = not is_no_bottler(match_bottler_name, match['producerName'])
                 
-                # Bottler gate logic:
+                # Bottler gate logic (DISABLED):
                 # - Both no bottler → skip gate (compatible)
                 # - One has, one doesn't → 100% reject (incompatible products)
                 # - Both have → apply 70% WRatio gate
-                if not input_has_bottler and not match_has_bottler:
-                    # Both are OB/no bottler - compatible, skip bottler gate
-                    logger.debug(f"REQ-{request_id} Match {match.get('id')}: both no bottler, skipping bottler gate")
-                elif input_has_bottler != match_has_bottler:
-                    # One has bottler, one doesn't - 100% reject
-                    logger.debug(f"REQ-{request_id} Skipping match {match.get('id')}: bottler mismatch (input_has={input_has_bottler}, match_has={match_has_bottler})")
-                    continue
-                else:
-                    # Both have bottlers - apply 70% WRatio gate
-                    bottler_gate_score = fuzz.WRatio(normalized_bottler, match_bottler_normalized) if normalized_bottler and match_bottler_normalized else 0
-                    if bottler_gate_score < bottler_gate_threshold:
-                        logger.debug(f"REQ-{request_id} Skipping match {match.get('id')}: bottler gate failed ({bottler_gate_score}% < {bottler_gate_threshold}%)")
-                        continue
-                    logger.debug(f"REQ-{request_id} Match {match.get('id')}: bottler gate passed ({bottler_gate_score}%)")
+                # if not input_has_bottler and not match_has_bottler:
+                #     # Both are OB/no bottler - compatible, skip bottler gate
+                #     logger.debug(f"REQ-{request_id} Match {match.get('id')}: both no bottler, skipping bottler gate")
+                # elif input_has_bottler != match_has_bottler:
+                #     # One has bottler, one doesn't - 100% reject
+                #     logger.debug(f"REQ-{request_id} Skipping match {match.get('id')}: bottler mismatch (input_has={input_has_bottler}, match_has={match_has_bottler})")
+                #     continue
+                # else:
+                #     # Both have bottlers - apply 70% WRatio gate
+                #     bottler_gate_score = fuzz.WRatio(normalized_bottler, match_bottler_normalized) if normalized_bottler and match_bottler_normalized else 0
+                #     if bottler_gate_score < bottler_gate_threshold:
+                #         logger.debug(f"REQ-{request_id} Skipping match {match.get('id')}: bottler gate failed ({bottler_gate_score}% < {bottler_gate_threshold}%)")
+                #         continue
+                #     logger.debug(f"REQ-{request_id} Match {match.get('id')}: bottler gate passed ({bottler_gate_score}%)")
                 
                 # GATE 3: Age gate (100% exact match required when both have age)
                 # - Both no age → skip gate (compatible)
@@ -12976,7 +12979,7 @@ def detectPotentialDuplicateListingsCsvBatch():
             }), 400
         
         listings = data.get('listings', [])
-        threshold = int(data.get('threshold', 95))
+        threshold = int(data.get('threshold', CSV_DUPLICATE_DETECTION_THRESHOLD))
         
         if not listings:
             return jsonify({
