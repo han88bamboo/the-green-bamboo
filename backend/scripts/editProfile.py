@@ -319,21 +319,22 @@ def updateBookmark():
                 # Delete existing items in the list (to avoid duplicates)
                 cursor.execute('DELETE FROM "usersDrinkListItems" WHERE "listId" = %s', (list_id,))
 
-                # Insert new drinks with their addedDate and note, using NOW() if missing
+                # Insert new drinks with their addedDate, note, and vintage, using NOW() if missing
                 for item in listItems:
                     added_date = item.get("addedDate", None)  # Get addedDate, default to None
                     note = item.get("note", "")  # Get note, default to empty string
                     drink_id = item.get("drinkId") or item  # Handle both old format (direct ID) and new format (object with drinkId)
+                    vintage = item.get("vintage", None)  # Get vintage, default to None
                     
                     if added_date:
                         cursor.execute(
-                            'INSERT INTO "usersDrinkListItems" ("listId", "drinkId", "addedDate", "note") VALUES (%s, %s, %s, %s)',
-                            (list_id, drink_id, added_date, note)
+                            'INSERT INTO "usersDrinkListItems" ("listId", "drinkId", "addedDate", "note", "vintage") VALUES (%s, %s, %s, %s, %s)',
+                            (list_id, drink_id, added_date, note, vintage)
                         )
                     else:
                         cursor.execute(
-                            'INSERT INTO "usersDrinkListItems" ("listId", "drinkId", "addedDate", "note") VALUES (%s, %s, NOW(), %s)',
-                            (list_id, drink_id, note)
+                            'INSERT INTO "usersDrinkListItems" ("listId", "drinkId", "addedDate", "note", "vintage") VALUES (%s, %s, NOW(), %s, %s)',
+                            (list_id, drink_id, note, vintage)
                         )
 
             # Initialize variables for points and badge processing
