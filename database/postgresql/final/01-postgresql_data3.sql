@@ -590,8 +590,12 @@ CREATE TABLE "usersDrinkListItems" (
     "drinkId" INTEGER REFERENCES "listings"("id") ON DELETE CASCADE,
     "addedDate" TIMESTAMP,
     "note" TEXT DEFAULT '',
-    UNIQUE ("listId", "drinkId")
+    "vintage" SMALLINT DEFAULT NULL -- Vintage year (e.g., 2020). NULL if drink has no vintage. Copied from menuItems.variant when bookmarking from festival menus.
 );
+
+-- Unique constraint: same drink can be added multiple times with different vintages
+CREATE UNIQUE INDEX "unique_drink_per_list_with_vintage" 
+ON "usersDrinkListItems" ("listId", "drinkId", COALESCE("vintage", -1));
 
 -- ========= "usersDrinkListUpvotes" =========
 CREATE TABLE IF NOT EXISTS "usersDrinkListUpvotes" (

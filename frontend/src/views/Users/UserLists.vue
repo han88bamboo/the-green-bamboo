@@ -549,7 +549,7 @@
                             <a :href="'/listing/view/' + listing?.drinkId + '/' + encodeURIComponent(bookedMarkedListings[listing?.drinkId]?.listingName || 'unknown-listing')"
                               class="text-decoration-none" style="color: #223957">
                               <h6 class="card-title mb-2 fw-bold">
-                                {{ bookedMarkedListings[listing?.drinkId]?.listingName || 'Loading...' }}
+                                {{ formatDrinkNameWithVintage(listing) }}
                               </h6>
                             </a>
 
@@ -604,7 +604,7 @@
                             <a :href="'/listing/view/' + listing?.drinkId + '/' + encodeURIComponent(bookedMarkedListings[listing?.drinkId]?.listingName || 'unknown-listing')"
                               class="fw-bold text-decoration-none"
                               style="color:#223957; font-size:16px;">
-                              {{ bookedMarkedListings[listing?.drinkId]?.listingName || 'Loading...' }}
+                              {{ formatDrinkNameWithVintage(listing) }}
                             </a>
                           </div>
                           
@@ -669,7 +669,7 @@
                               <a :href="'/listing/view/' + listing?.drinkId + '/' + encodeURIComponent(bookedMarkedListings[listing?.drinkId]?.listingName || 'unknown-listing')"
                                 class="text-decoration-none" style="color:#223957">
                                 <h5 class="fw-bold mb-0" style="color:#223957">
-                                  {{ bookedMarkedListings[listing?.drinkId]?.listingName || 'Loading...' }}
+                                  {{ formatDrinkNameWithVintage(listing) }}
                                 </h5>
                               </a>
                               <button v-if="ownProfile"
@@ -725,7 +725,7 @@
                           <div class="modal-content">
                             <div class="modal-header">
                               <h5 class="modal-title" :id="`noteModalLabel${index}`">
-                                {{ listing.note ? 'Edit Note' : 'Add Note' }} - {{ bookedMarkedListings[listing?.drinkId]?.listingName || 'Loading...' }}
+                                {{ listing.note ? 'Edit Note' : 'Add Note' }} - {{ formatDrinkNameWithVintage(listing) }}
                               </h5>
                               <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                             </div>
@@ -780,7 +780,7 @@
                               <br />
                               <p>
                                 Do you really want to delete
-                                <b><i>{{ bookedMarkedListings[listing?.drinkId]?.listingName || 'this item' }}</i></b>
+                                <b><i>{{ formatDrinkNameWithVintage(listing) }}</i></b>
                                 from <b><i>{{ currentList }}</i></b>?
                               </p>
                             </div>
@@ -1787,6 +1787,19 @@ export default {
   },
 
   methods: {
+    /**
+     * Format drink name with vintage suffix if present
+     * @param {Object} listing - The list item with drinkId and optional vintage
+     * @returns {String} - The formatted name like "Drink Name" or "Drink Name [2020 Vintage]"
+     */
+    formatDrinkNameWithVintage(listing) {
+      const baseName = this.bookedMarkedListings[listing?.drinkId]?.listingName || 'Loading...';
+      if (listing?.vintage) {
+        return `${baseName} [${listing.vintage} Vintage]`;
+      }
+      return baseName;
+    },
+
     // Central load
     async loadData() {
       try {

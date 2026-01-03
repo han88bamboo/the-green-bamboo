@@ -185,7 +185,7 @@ def get_og_image(url):
 def fetch_drink_lists(cursor, user_id):
     result = {}
     try: 
-        # Updated query to include createdAt, updatedAt, and upvotes
+        # Updated query to include createdAt, updatedAt, upvotes, and vintage
         cursor.execute("""
             SELECT 
                 udl."id" as list_id,
@@ -197,7 +197,8 @@ def fetch_drink_lists(cursor, user_id):
                 COALESCE(udl."upvotes", 0) as upvotes,
                 udli."drinkId",
                 udli."addedDate",
-                udli."note"
+                udli."note",
+                udli."vintage"
             FROM "usersDrinkLists" udl
             LEFT JOIN "usersDrinkListItems" udli ON udl."id" = udli."listId"
             WHERE udl."userId" = %s
@@ -227,7 +228,8 @@ def fetch_drink_lists(cursor, user_id):
                 result[list_name]["listItems"].append({
                     "drinkId": row["drinkId"],
                     "addedDate": row["addedDate"],
-                    "note": row["note"] or ""
+                    "note": row["note"] or "",
+                    "vintage": row["vintage"]  # Include vintage (can be NULL)
                 })
 
         return result
@@ -6742,7 +6744,8 @@ def getFestivalTastings(user_id, venue_id):
 def getFestivalBookmarks(user_id, venue_name):
     """
     Get all bookmarked items for a specific user from their "Favourites from <venue_name>" list.
-    Returns a simple array of itemIDs to allow the frontend to show filled bookmark icons.
+    Returns items with their vintage info to allow the frontend to show filled bookmark icons
+    and match specific vintages.
     
     Args:
         user_id (int): The ID of the user
@@ -6750,7 +6753,7 @@ def getFestivalBookmarks(user_id, venue_name):
         
     Returns:
         JSON object with:
-        - bookmarkedItems: Array of itemIDs that the user has bookmarked for this venue
+        - bookmarkedItems: Array of objects with itemID and vintage for each bookmarked drink
         - count: Total number of items bookmarked by this user for this venue
     """
     
@@ -6781,9 +6784,9 @@ def getFestivalBookmarks(user_id, venue_name):
             
             list_id = list_result['id']
             
-            # Query to get all bookmarked itemIDs from this list
+            # Query to get all bookmarked items with vintage from this list
             items_sql = '''
-                SELECT "drinkId" as "itemID"
+                SELECT "drinkId" as "itemID", "vintage"
                 FROM "usersDrinkListItems"
                 WHERE "listId" = %s
                 ORDER BY "addedDate" DESC
@@ -6792,8 +6795,11 @@ def getFestivalBookmarks(user_id, venue_name):
             cursor.execute(items_sql, (list_id,))
             bookmarks = cursor.fetchall()
             
-            # Extract simple array of itemIDs
-            bookmarked_items = [bookmark['itemID'] for bookmark in bookmarks]
+            # Return array of objects with itemID and vintage
+            bookmarked_items = [
+                {'itemID': bookmark['itemID'], 'vintage': bookmark['vintage']}
+                for bookmark in bookmarks
+            ]
             
             return jsonify({
                 'bookmarkedItems': bookmarked_items,

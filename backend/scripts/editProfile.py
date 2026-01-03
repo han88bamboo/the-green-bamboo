@@ -901,6 +901,7 @@ def remove_upvote():
 # -----------------------------------------------------------------------------------------
 # [POST] Create and add to festival favourites list
 # - Check if "Favourites from <Venue Name>" list exists, create if needed, and add drink
+# - Supports optional vintage parameter for drinks with vintage years
 # - Possible return codes: 200 (Already exists), 201 (Added), 500 (Error)
 @blueprint.route('/createAndAddToFestivalFavouriteList', methods=['POST'])
 def create_and_add_to_festival_favourite_list():
@@ -909,6 +910,10 @@ def create_and_add_to_festival_favourite_list():
     userID = int(data['userId'])
     listName = data['listName'] 
     drinkId = int(data['drinkId'])
+    # Vintage is optional - NULL for drinks without vintage
+    vintage = data.get('vintage')
+    if vintage is not None:
+        vintage = int(vintage)
     
     try:
         with db_manager.get_cursor() as cursor:
@@ -923,10 +928,11 @@ def create_and_add_to_festival_favourite_list():
             if existing_list:
                 list_id = existing_list['id']
                 
-                # Check if the drink is already in the list
+                # Check if the drink (with same vintage) is already in the list
+                # Use COALESCE to handle NULL vintage comparison
                 cursor.execute(
-                    'SELECT "id" FROM "usersDrinkListItems" WHERE "listId" = %s AND "drinkId" = %s',
-                    (list_id, drinkId)
+                    'SELECT "id" FROM "usersDrinkListItems" WHERE "listId" = %s AND "drinkId" = %s AND COALESCE("vintage", -1) = COALESCE(%s, -1)',
+                    (list_id, drinkId, vintage)
                 )
                 
                 existing_item = cursor.fetchone()
@@ -937,6 +943,7 @@ def create_and_add_to_festival_favourite_list():
                         "data": {
                             "listName": listName,
                             "drinkId": drinkId,
+                            "vintage": vintage,
                             "alreadyExists": True
                         },
                         "message": "Drink is already in your favourites list."
@@ -951,10 +958,10 @@ def create_and_add_to_festival_favourite_list():
                 )
                 list_id = cursor.fetchone()["id"]
             
-            # Add the drink to the list
+            # Add the drink to the list with optional vintage
             cursor.execute(
-                'INSERT INTO "usersDrinkListItems" ("listId", "drinkId", "addedDate") VALUES (%s, %s, NOW())',
-                (list_id, drinkId)
+                'INSERT INTO "usersDrinkListItems" ("listId", "drinkId", "addedDate", "vintage") VALUES (%s, %s, NOW(), %s)',
+                (list_id, drinkId, vintage)
             )
             
             return jsonify({
@@ -962,6 +969,7 @@ def create_and_add_to_festival_favourite_list():
                 "data": {
                     "listName": listName,
                     "drinkId": drinkId,
+                    "vintage": vintage,
                     "listId": list_id,
                     "alreadyExists": False
                 },
@@ -1150,6 +1158,7 @@ def bulk_add_to_festival_favour_list():
 # -----------------------------------------------------------------------------------------
 # [POST] Remove from festival favourites list
 # - Remove drink from "Favourites from <Venue Name>" list
+# - Supports optional vintage parameter to remove specific vintage
 # - Possible return codes: 200 (Removed), 404 (Not found), 500 (Error)
 @blueprint.route('/removeFromFestivalFavouriteList', methods=['POST'])
 def remove_from_festival_favourite_list():
@@ -1158,6 +1167,10 @@ def remove_from_festival_favourite_list():
     userID = int(data['userId'])
     listName = data['listName'] 
     drinkId = int(data['drinkId'])
+    # Vintage is optional - NULL for drinks without vintage
+    vintage = data.get('vintage')
+    if vintage is not None:
+        vintage = int(vintage)
     
     try:
         with db_manager.get_cursor() as cursor:
@@ -1175,6 +1188,7 @@ def remove_from_festival_favourite_list():
                     "data": {
                         "listName": listName,
                         "drinkId": drinkId,
+                        "vintage": vintage,
                         "found": False
                     },
                     "message": "Favourites list not found."
@@ -1182,10 +1196,10 @@ def remove_from_festival_favourite_list():
             
             list_id = existing_list['id']
             
-            # Check if the drink is in the list
+            # Check if the drink (with same vintage) is in the list
             cursor.execute(
-                'SELECT "id" FROM "usersDrinkListItems" WHERE "listId" = %s AND "drinkId" = %s',
-                (list_id, drinkId)
+                'SELECT "id" FROM "usersDrinkListItems" WHERE "listId" = %s AND "drinkId" = %s AND COALESCE("vintage", -1) = COALESCE(%s, -1)',
+                (list_id, drinkId, vintage)
             )
             
             existing_item = cursor.fetchone()
@@ -1196,15 +1210,16 @@ def remove_from_festival_favourite_list():
                     "data": {
                         "listName": listName,
                         "drinkId": drinkId,
+                        "vintage": vintage,
                         "found": False
                     },
                     "message": "Drink not found in your favourites list."
                 }), 404
             
-            # Remove the drink from the list
+            # Remove the drink (with specific vintage) from the list
             cursor.execute(
-                'DELETE FROM "usersDrinkListItems" WHERE "listId" = %s AND "drinkId" = %s',
-                (list_id, drinkId)
+                'DELETE FROM "usersDrinkListItems" WHERE "listId" = %s AND "drinkId" = %s AND COALESCE("vintage", -1) = COALESCE(%s, -1)',
+                (list_id, drinkId, vintage)
             )
             
             # Check if the list is now empty

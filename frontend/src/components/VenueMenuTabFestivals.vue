@@ -10317,16 +10317,19 @@ export default {
             return this.userTastings.get(key);
         },
 
-        // Check if an item is bookmarked
+        // Check if an item is bookmarked (matches by itemID + vintage)
         isBookmarked(menuItem) {
-            // Use simple itemID as key instead of complex tracking key
-            const result = this.userBookmarks.has(menuItem.itemID);
+            // Use composite key: itemID + vintage
+            const bookmarkKey = this.generateBookmarkTrackingKey(menuItem);
+            const result = this.userBookmarks.has(bookmarkKey);
             
             // Enhanced debug logging for filter debugging
             if (this.showOnlyBookmarkedItems) {
                 console.log('charsiucharlie_filter_debug: 🔖 isBookmarked check:', {
                     itemName: menuItem.itemDetails?.itemName || 'No name',
                     itemID: menuItem.itemID,
+                    vintage: menuItem.itemVintage,
+                    bookmarkKey: bookmarkKey,
                     result: result,
                     userBookmarksSize: this.userBookmarks.size,
                     sampleBookmarks: Array.from(this.userBookmarks.keys()).slice(0, 3)
@@ -10343,8 +10346,9 @@ export default {
 
         // Get bookmark record
         getBookmarkRecord(menuItem) {
-            // Use simple itemID as key
-            return this.userBookmarks.get(menuItem.itemID);
+            // Use composite key: itemID + vintage
+            const bookmarkKey = this.generateBookmarkTrackingKey(menuItem);
+            return this.userBookmarks.get(bookmarkKey);
         },
 
         // Toggle tasting status when checkbox is clicked
@@ -10627,27 +10631,31 @@ export default {
             try {
                 console.log('🔖 Loading user bookmarks for venue:', venueName, 'user:', this.currentUserId);
                 
-                // Use the new simplified endpoint that returns just itemIDs
+                // Endpoint returns array of {itemID, vintage} objects
                 const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getFestivalBookmarks/${this.currentUserId}/${venueName}`);
 
                 if (response.status === 200 && response.data) {
                     const responseData = response.data;
                     console.log('🔖 Raw response data:', responseData);
                     
-                    // Get the simple array of itemIDs
+                    // Get the array of bookmark objects with itemID and vintage
                     const bookmarkedItems = responseData.bookmarkedItems || [];
-                    console.log('🔖 Bookmarked itemIDs:', bookmarkedItems);
+                    console.log('🔖 Bookmarked items:', bookmarkedItems);
                     
-                    // Populate local bookmarks map with simple itemID keys
+                    // Populate local bookmarks map with composite key: itemID-vintage
                     this.userBookmarks.clear();
-                    bookmarkedItems.forEach(itemID => {
-                        // Use simple itemID as key instead of complex tracking key
-                        this.userBookmarks.set(itemID, {
-                            itemID: itemID,
+                    bookmarkedItems.forEach(item => {
+                        // Create composite key matching generateBookmarkTrackingKey format
+                        const vintage = item.vintage ?? 'null';
+                        const bookmarkKey = `${item.itemID}-${vintage}`;
+                        
+                        this.userBookmarks.set(bookmarkKey, {
+                            itemID: item.itemID,
+                            vintage: item.vintage,
                             venueName: venueName,
                             listName: responseData.listName
                         });
-                        console.log('🔖 Adding bookmark to map:', itemID);
+                        console.log('🔖 Adding bookmark to map:', bookmarkKey);
                     });
                     
                     console.log(`🔖 Loaded ${bookmarkedItems.length} existing bookmarks for venue ${venueName}`);
@@ -10758,9 +10766,12 @@ export default {
         // ===== FESTIVAL BOOKMARK METHODS =====
 
         // Helper method to generate bookmark tracking key consistently
+        // Uses itemID + vintage to uniquely identify a bookmarked drink
         generateBookmarkTrackingKey(menuItem) {
-            // Include venue and variant for proper state tracking
-            return `${menuItem.itemID}-${menuItem.variant || 'default'}-${this.venue_id}`;
+            // Use itemVintage (from menu) for vintage identification
+            // NULL/undefined vintage becomes 'null' string for consistent key generation
+            const vintage = menuItem.itemVintage ?? 'null';
+            return `${menuItem.itemID}-${vintage}`;
         },
 
         // Toggle bookmark status when bookmark icon is clicked
@@ -10818,11 +10829,14 @@ export default {
         async addToFavourites(menuItem) {
             const venueName = this.targetVenue?.venueName || this.targetVenue?.name;
             const listName = `Favourites from ${venueName}`;
+            // Get vintage from menu item (null if no vintage)
+            const vintage = menuItem.itemVintage ?? null;
             
             const payload = {
                 userId: this.currentUserId,
                 listName: listName,
-                drinkId: menuItem.itemID
+                drinkId: menuItem.itemID,
+                vintage: vintage
             };
 
             // Debug logging to verify payload format
@@ -10830,6 +10844,7 @@ export default {
                 userId: payload.userId,
                 listName: payload.listName,
                 drinkId: payload.drinkId,
+                vintage: payload.vintage,
                 menuItemName: menuItem.listingName || menuItem.name || 'Unknown',
                 venueName: venueName,
                 finalPayloadString: JSON.stringify(payload)
@@ -10849,21 +10864,26 @@ export default {
                 if (response.status >= 200 && response.status < 300) {
                     console.log('🔖 Successfully added to favourites:', response.data);
                     
-                    // Update local bookmark state for both new additions and existing items
-                    // This handles cases where local state might be out of sync
+                    // Update local bookmark state using composite key: itemID-vintage
+                    const bookmarkKey = this.generateBookmarkTrackingKey(menuItem);
                     const bookmarkRecord = {
                         itemID: menuItem.itemID,
+                        vintage: vintage,
                         venueName: venueName,
                         listName: listName,
                         addedAt: new Date().toISOString()
                     };
-                    this.userBookmarks.set(menuItem.itemID, bookmarkRecord);
-                    console.log('🔖 Updated local bookmark state for itemID:', menuItem.itemID);
+                    this.userBookmarks.set(bookmarkKey, bookmarkRecord);
+                    console.log('🔖 Updated local bookmark state for key:', bookmarkKey);
                     
                     // Show success toast
                     const toast = useToast();
                     
-                    const itemName = menuItem.listingName || menuItem.name || 'Drink';
+                    // Build item name with vintage if present
+                    let itemName = menuItem.itemDetails?.itemName || menuItem.listingName || menuItem.name || 'Drink';
+                    if (vintage) {
+                        itemName += ` [${vintage} Vintage]`;
+                    }
                     
                     // Check if item already existed (200 response) or was newly added (201 response)
                     if (response.status === 200 && response.data.data?.alreadyExists) {
@@ -10888,11 +10908,14 @@ export default {
         async removeFromFavourites(menuItem) {
             const venueName = this.targetVenue?.venueName || this.targetVenue?.name;
             const listName = `Favourites from ${venueName}`;
+            // Get vintage from menu item (null if no vintage)
+            const vintage = menuItem.itemVintage ?? null;
             
             const payload = {
                 userId: this.currentUserId,
                 listName: listName,
-                drinkId: menuItem.itemID
+                drinkId: menuItem.itemID,
+                vintage: vintage
             };
 
             // Debug logging to verify payload format
@@ -10900,6 +10923,7 @@ export default {
                 userId: payload.userId,
                 listName: payload.listName,
                 drinkId: payload.drinkId,
+                vintage: payload.vintage,
                 menuItemName: menuItem.listingName || menuItem.name || 'Unknown',
                 venueName: venueName,
                 finalPayloadString: JSON.stringify(payload)
@@ -10919,14 +10943,19 @@ export default {
                 if (response.status >= 200 && response.status < 300) {
                     console.log('🔖 Successfully removed from favourites:', response.data);
                     
-                    // Update local bookmark state - remove from local state
-                    this.userBookmarks.delete(menuItem.itemID);
-                    console.log('🔖 Updated local bookmark state - removed itemID:', menuItem.itemID);
+                    // Update local bookmark state - remove using composite key
+                    const bookmarkKey = this.generateBookmarkTrackingKey(menuItem);
+                    this.userBookmarks.delete(bookmarkKey);
+                    console.log('🔖 Updated local bookmark state - removed key:', bookmarkKey);
                     
                     // Show success toast
                     const toast = useToast();
                     
-                    const itemName = menuItem.listingName || menuItem.name || 'Drink';
+                    // Build item name with vintage if present
+                    let itemName = menuItem.itemDetails?.itemName || menuItem.listingName || menuItem.name || 'Drink';
+                    if (vintage) {
+                        itemName += ` [${vintage} Vintage]`;
+                    }
                     toast.success(`${itemName} has been removed from your Favourites list!`);
                     
                 } else {
@@ -10939,7 +10968,8 @@ export default {
                 // Handle 404 errors specifically (item not found)
                 if (error.response && error.response.status === 404) {
                     // Still remove from local state in case of sync issues
-                    this.userBookmarks.delete(menuItem.itemID);
+                    const bookmarkKey = this.generateBookmarkTrackingKey(menuItem);
+                    this.userBookmarks.delete(bookmarkKey);
                     console.log('🔖 Item not found on server, removed from local state anyway');
                     
                     const toast = useToast();
