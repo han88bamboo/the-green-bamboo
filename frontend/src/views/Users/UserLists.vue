@@ -821,7 +821,7 @@
                               aria-label="Close"
                             ></button>
                           </div>
-                          <div class="modal-body" style="height: 400px">
+                          <div class="modal-body">
                             <!-- search -->
                             <div>
                               <!-- search bar  -->
@@ -846,13 +846,13 @@
                               >
                                 <div
                                   class="form-check"
-                                  v-for="(drinkName, index) in drinkSearchResults"
+                                  v-for="(drink, index) in drinkSearchResults"
                                   :key="index"
                                 >
                                   <input
                                     class="form-check-input"
                                     type="checkbox"
-                                    :value="drinkName"
+                                    :value="drink"
                                     :id="'drinkCheckbox' + index"
                                     v-model="drinksToAdd"
                                   />
@@ -860,17 +860,36 @@
                                     class="form-check-label"
                                     :for="'drinkCheckbox' + index"
                                   >
-                                    {{ drinkName }}
+                                    {{ drink.listingName || drink }}
                                   </label>
                                 </div>
                               </div>
                             </div>
-                            <!-- selected results -->
+                            <!-- selected results with vintage inputs -->
                             <div v-if="drinksToAdd.length > 0" class="mt-2">
                               <hr />
-                              <div class="overflow-auto" style="height: 75px">
-                                <b>Selected Drinks: </b>
-                                {{ drinksToAdd.join(", ") }}
+                              <div class="overflow-auto" >
+                                <b>Selected Drinks:</b>
+                                <div v-for="(drink, index) in drinksToAdd" :key="'selected-' + index" class="d-flex align-items-center mb-2">
+                                  <span class="me-2">{{ drink.listingName || drink }}</span>
+                                  <!-- Vintage input for Wine, Sake, Beer -->
+                                  <div v-if="['Wine', 'Sake', 'Beer'].includes(drink.drinkType)" class="d-flex align-items-center">
+                                    <input
+                                      type="number"
+                                      class="form-control form-control-sm"
+                                      style="width: 90px;"
+                                      placeholder="Year"
+                                      :value="drinkVintages[drink.listingName]"
+                                      @input="drinkVintages[drink.listingName] = $event.target.value ? parseInt($event.target.value) : null"
+                                      @blur="validateVintage(drink.listingName)"
+                                      min="1800"
+                                      max="2026"
+                                    />
+                                    <small v-if="drinkVintageErrors[drink.listingName]" class="text-danger ms-2">
+                                      {{ drinkVintageErrors[drink.listingName] }}
+                                    </small>
+                                  </div>
+                                </div>
                               </div>
                             </div>
                           </div>
@@ -879,6 +898,7 @@
                               type="button"
                               class="btn btn-primary"
                               @click="addDrinkToList(currentList)"
+                              :disabled="hasVintageErrors"
                             >
                               Add to List
                             </button>
@@ -890,7 +910,7 @@
                 </div>
 
                 <!-- Producers Lists Content -->
-                <div v-if="currentListType === 'producers' && (activeTab === 'lists' || activeTab === 'producer_lists' || activeTab === 'producer_list')">
+                <div v-if="currentListType === 'producers' && (activeTab === 'lists' || activeTab === 'producer_lists' || activeTab === 'producer_list')">>
                   <!-- Show list overview when activeTab is 'lists' or 'producer_lists' -->
                   <div v-if="activeTab === 'lists' || activeTab === 'producer_lists'"  >
                     <div class="d-flex justify-content-end mb-3">
@@ -1677,7 +1697,9 @@ export default {
       // Add drink modal state
       drinkSearch: '',
       drinkSearchResults: [],
-      drinksToAdd: [],
+      drinksToAdd: [],  // Now stores objects: { listingName, drinkType }
+      drinkVintages: {},  // Map of listingName -> vintage value
+      drinkVintageErrors: {},  // Map of listingName -> error message
 
       // Producers state
       newProducerListName: '',
@@ -1786,7 +1808,37 @@ export default {
     await this.loadData();
   },
 
+  computed: {
+    /**
+     * Check if there are any vintage validation errors
+     */
+    hasVintageErrors() {
+      return Object.values(this.drinkVintageErrors).some(error => error !== null && error !== '');
+    }
+  },
+
   methods: {
+    /**
+     * Validate vintage year input (1800-2026)
+     * @param {String} listingName - The drink's listing name
+     */
+    validateVintage(listingName) {
+      const vintage = this.drinkVintages[listingName];
+      
+      // Clear error if empty (vintage is optional)
+      if (vintage === null || vintage === undefined || vintage === '') {
+        this.drinkVintageErrors[listingName] = '';
+        return;
+      }
+      
+      const year = parseInt(vintage);
+      if (isNaN(year) || year < 1800 || year > 2026) {
+        this.drinkVintageErrors[listingName] = 'Are you sure? Please enter a valid year!';
+      } else {
+        this.drinkVintageErrors[listingName] = '';
+      }
+    },
+
     /**
      * Format drink name with vintage suffix if present
      * @param {Object} listing - The list item with drinkId and optional vintage
@@ -2076,14 +2128,30 @@ export default {
     async addDrinkToList(listName) {
       for (const drink of this.drinksToAdd) {
         try {
+          // drink is now an object with listingName and drinkType
+          const drinkName = drink.listingName || drink;
           const response = await this.$axios.get(
-            `${process.env.VUE_APP_API_URL}/getData/getListingByName/${encodeURIComponent(drink)}`
+            `${process.env.VUE_APP_API_URL}/getData/getListingByName/${encodeURIComponent(drinkName)}`
           );
-          this.userBookmarks[listName].listItems.push({ date: new Date(), drinkId: response.data.id, note: null });
+          
+          // Get vintage if applicable (Wine, Sake, Beer)
+          const vintage = this.drinkVintages[drinkName] || null;
+          
+          this.userBookmarks[listName].listItems.push({ 
+            date: new Date(), 
+            drinkId: response.data.id, 
+            note: null,
+            vintage: vintage
+          });
         } catch (error) {
-          console.error(`Error adding drink ${drink}:`, error);
+          console.error(`Error adding drink ${drink.listingName || drink}:`, error);
         }
       }
+
+      // Clear the vintage data after adding
+      this.drinkVintages = {};
+      this.drinkVintageErrors = {};
+      this.drinksToAdd = [];
 
       try {
         const response = await this.$axios.post(
@@ -2132,7 +2200,7 @@ export default {
       } catch (error) {
         console.error(error);
         if (error.response && error.response.status === 404) {
-          this.drinkSearchResults = ['No results found'];
+          this.drinkSearchResults = [{ listingName: 'No results found', drinkType: null }];
         }
       }
     },

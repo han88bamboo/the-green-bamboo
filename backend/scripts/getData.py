@@ -3246,9 +3246,9 @@ def getListingsNames(search_term):
 
     try:
         with db_manager.get_cursor() as cursor:
-            # Fetch 20 listings names based on the search term
+            # Fetch 20 listings names and drinkType based on the search term
             cursor.execute("""
-                SELECT "listingName"
+                SELECT "listingName", "drinkType"
                 FROM "listings"
                 WHERE "listingName" ILIKE %s
                 LIMIT 20
@@ -3260,8 +3260,11 @@ def getListingsNames(search_term):
             logger.info(f"Charsiucharlie_debug REQ-{request_id} getListingsNames success count=0")
             return jsonify([]), 200
 
-        # Convert into a list
-        listings_data = [listing['listingName'] for listing in listings_data]
+        # Convert into a list of objects with listingName and drinkType
+        listings_data = [
+            {"listingName": listing['listingName'], "drinkType": listing['drinkType']}
+            for listing in listings_data
+        ]
 
         # Log success with result count
         logger.info(f"Charsiucharlie_debug REQ-{request_id} getListingsNames success count={len(listings_data)}")
