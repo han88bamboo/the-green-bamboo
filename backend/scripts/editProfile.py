@@ -1,5 +1,5 @@
 # Port: 5100
-# Routes: /editDetails (POST), /editBio (POST), /updateBookmark (POST), /updateFollowLists (POST), /updateModType (POST), /removeModType (POST)
+# Routes: /editDetails (POST), /editBio (POST), /updateDrinkTypeContentPreference (POST), /updateBookmark (POST), /updateFollowLists (POST), /updateModType (POST), /removeModType (POST)
 # /updateListPrivacy (POST), /updateListItemNote (POST), /upvoteList (POST), /removeUpvote (POST)
 # -----------------------------------------------------------------------------------------
 
@@ -104,6 +104,62 @@ def editBio():
                 "userID": userID
             },
             "message": "An error occurred updating user bio."
+        }), 500
+
+# -----------------------------------------------------------------------------------------
+# [POST] Update user drink type content preferences
+# - Update which drink types are hidden for a user
+# - Receives array of drinkTypeIds to hide (empty array = all visible)
+# - Deletes all existing preferences and inserts new hidden ones
+# - Possible return codes: 201 (Updated), 400 (Bad request), 500 (Error during update)
+@blueprint.route('/updateDrinkTypeContentPreference', methods=['POST'])
+def updateDrinkTypeContentPreference():
+    data = request.get_json()
+    userID = data.get('userID')
+    hiddenDrinkTypeIds = data.get('hiddenDrinkTypeIds', [])
+    
+    if not userID:
+        return jsonify({
+            "code": 400,
+            "message": "userID is required."
+        }), 400
+    
+    try:
+        with db_manager.get_cursor() as cursor:
+            # Step 1: Delete all existing preferences for this user
+            cursor.execute(
+                'DELETE FROM "userDrinkTypePreferences" WHERE "userId" = %s',
+                (userID,)
+            )
+            
+            # Step 2: Insert new rows for each hidden drinkTypeId
+            if hiddenDrinkTypeIds and len(hiddenDrinkTypeIds) > 0:
+                for drinkTypeId in hiddenDrinkTypeIds:
+                    cursor.execute(
+                        '''
+                        INSERT INTO "userDrinkTypePreferences" ("userId", "drinkTypeId", "isHidden")
+                        VALUES (%s, %s, TRUE)
+                        ''',
+                        (userID, drinkTypeId)
+                    )
+        
+        return jsonify({
+            "code": 201,
+            "data": {
+                "userID": userID,
+                "hiddenDrinkTypeIds": hiddenDrinkTypeIds
+            },
+            "message": "Content preferences updated successfully."
+        }), 201
+    
+    except Exception as e:
+        print(str(e))
+        return jsonify({
+            "code": 500,
+            "data": {
+                "userID": userID
+            },
+            "message": "An error occurred updating content preferences."
         }), 500
 
 # -----------------------------------------------------------------------------------------
