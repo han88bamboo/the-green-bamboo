@@ -41,6 +41,13 @@
           <!-- Page Header -->
           <div class="d-flex justify-content-between align-items-center mb-4">
             <h4 class="fw-bold mb-0">Personal Wall</h4>
+            <router-link 
+              :to="`/profile/user/${displayUserID}/${routeUsername}`"
+              class="small text-muted text-decoration-underline" 
+              style="background-color: transparent; border: none;"
+            >
+              <i class="bi bi-arrow-left me-2"></i> Back To Profile Page
+            </router-link>
           </div>
 
           <!-- Write Post Section (only for profile owner) -->
