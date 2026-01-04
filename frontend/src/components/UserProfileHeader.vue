@@ -35,7 +35,16 @@
                     >
                       <i class="bi bi-pencil"></i>
                     </button>
-
+                    <!-- content settings -->
+                    <button
+                      v-if="ownProfile && user"
+                      type="button"
+                      class="btn btn-sm p-0 text-secondary"
+                      data-bs-toggle="modal"
+                      data-bs-target="#contentSettingsModal"
+                    >
+                      <i class="bi bi-gear-fill"></i>
+                    </button>
                     <!-- edit password -->
                     <button
                       v-if="ownProfile && user"
@@ -1454,6 +1463,93 @@
               </div>
             </div>
             <!-- Change password end -->
+
+            <!-- Content Settings Modal start -->
+            <div
+              v-if="ownProfile && user"
+              class="modal fade"
+              id="contentSettingsModal"
+              tabindex="-1"
+              aria-labelledby="contentSettingsModalLabel"
+              aria-hidden="true"
+            >
+              <div class="modal-dialog modal-dialog-centered modal-lg mobile-ps-0">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="contentSettingsModalLabel">
+                      Content Settings
+                    </h1>
+                    <button
+                      type="button"
+                      class="btn-close"
+                      data-bs-dismiss="modal"
+                      aria-label="Close"
+                    ></button>
+                  </div>
+                  <div class="modal-body">
+                    <!-- Show All message when all toggles are ON -->
+                    <div v-if="allDrinkTypesVisible" class="alert alert-success mb-3" role="alert">
+                      <i class="bi bi-check-circle-fill me-2"></i>
+                      You're seeing all content
+                    </div>
+                    <div v-else class="alert alert-warning mb-3" role="alert">
+                      <i class="bi bi-eye-slash-fill me-2"></i>
+                      Some content types are hidden
+                    </div>
+
+                    <!-- Show All Button -->
+                    <div class="d-flex justify-content-end mb-3">
+                      <button
+                        type="button"
+                        class="btn btn-outline-secondary btn-sm"
+                        @click="showAllDrinkTypes"
+                        :disabled="allDrinkTypesVisible"
+                      >
+                        <i class="bi bi-eye-fill me-1"></i>
+                        Show All
+                      </button>
+                    </div>
+
+                    <!-- Drink Type Toggles -->
+                    <div class="content-preferences-list">
+                      <div
+                        v-for="(type, index) in drinkType"
+                        :key="'content-pref-' + index"
+                        class="d-flex justify-content-between align-items-center py-2 border-bottom"
+                      >
+                        <div class="d-flex align-items-center">
+                          <div class="form-check form-switch mb-0">
+                            <input
+                              class="form-check-input"
+                              type="checkbox"
+                              role="switch"
+                              :id="'drinkTypeToggle-' + index"
+                              v-model="contentPreferences[type]"
+                              @change="onContentPreferenceChange(type)"
+                            />
+                            <label
+                              class="form-check-label fw-medium"
+                              :for="'drinkTypeToggle-' + index"
+                            >
+                              {{ type }}
+                            </label>
+                          </div>
+                        </div>
+                        <div>
+                          <small
+                            v-if="!contentPreferences[type]"
+                            class="text-muted fst-italic"
+                          >
+                            You won't see {{ type }} content.
+                          </small>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- Content Settings Modal end -->
     
 </template>
 
@@ -1550,9 +1646,17 @@ export default {
       isButtonDisabled: false,
       verifyErrorMessage: "",
       resettingPassword: false,
+      
+      // Content Settings Variables
+      contentPreferences: {}, // Object to store visibility state for each drinkType (true = visible, false = hidden)
     };
   },
   computed: {
+    allDrinkTypesVisible() {
+      // Check if all drink types are set to visible (true)
+      if (this.drinkType.length === 0) return true;
+      return this.drinkType.every(type => this.contentPreferences[type] !== false);
+    },
     formattedModTypes() {
       if (!this.displayUser || !this.displayUser.modType || this.displayUser.modType.length === 0) {
         return "None";
@@ -1712,6 +1816,9 @@ export default {
         
         // Extract drink type strings for the modal
         this.drinkType = this.drinkTypes.map((category) => category.drinkType);
+
+        // Initialize content preferences - all drink types visible by default
+        this.initializeContentPreferences();
 
         console.log("Drink Types:", this.drinkTypes);
         console.log("Drink Type Strings:", this.drinkType);
@@ -2285,10 +2392,64 @@ export default {
       // This would need to be implemented if producer bookmarks are needed in the header
       return { photo: this.defaultDrinkImage };
     },
+
+    // ------------------- Content Settings Methods -------------------
+    initializeContentPreferences() {
+      // Initialize all drink types as visible (true) by default
+      const preferences = {};
+      this.drinkType.forEach(type => {
+        preferences[type] = true;
+      });
+      this.contentPreferences = preferences;
+    },
+
+    onContentPreferenceChange(drinkType) {
+      // This method is called when a toggle is changed
+      // Currently just logs the change - API logic will be added later
+      console.log(`Content preference changed for ${drinkType}:`, this.contentPreferences[drinkType]);
+      
+      // TODO: Add API call to save preference to userDrinkTypePreferences table
+      // If contentPreferences[drinkType] === false, insert/update row with isHidden = true
+      // If contentPreferences[drinkType] === true, delete row or set isHidden = false
+    },
+
+    showAllDrinkTypes() {
+      // Reset all drink type preferences to visible
+      this.drinkType.forEach(type => {
+        this.contentPreferences[type] = true;
+      });
+      console.log("All drink types set to visible");
+      
+      // TODO: Add API call to clear all hidden preferences for this user
+    },
   }
 };
 </script>
 
 <style scoped>
-/* We'll add styles here if needed */
+/* Content Settings Modal Styles */
+.content-preferences-list {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.content-preferences-list .form-check-input {
+  width: 2.5em;
+  height: 1.25em;
+  cursor: pointer;
+}
+
+.content-preferences-list .form-check-input:checked {
+  background-color: #f0b358;
+  border-color: #f0b358;
+}
+
+.content-preferences-list .form-check-input:focus {
+  border-color: #f0b358;
+  box-shadow: 0 0 0 0.25rem rgba(240, 179, 88, 0.25);
+}
+
+.content-preferences-list .form-check-label {
+  cursor: pointer;
+}
 </style>
