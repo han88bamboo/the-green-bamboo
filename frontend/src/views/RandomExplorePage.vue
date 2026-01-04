@@ -3019,174 +3019,177 @@ methods: {
     // },
 
 
-    // Sort features
-    // Handle select of drink type filter option like sake, gin, whiskey
-    selectDrinkType(drinkType) {
-      // reset most reviews and recently added arrays so that can repeatedly filter
-      // this.getMostReviews();
-      this.moreListings = true;
-      // Determine selected drink type, and corresponding drink categories
-      this.selectedCategory = null;
-      this.selectedDrinkType = drinkType;
-      for (let drinks of this.drinkTypes) {
-        if (drinks["drinkType"] == drinkType["drinkType"]) {
-          this.selectedTypeCategory = drinks["typeCategory"];
-          
-        }
-      }
+    // charsiucharlie_out_not_in_use - selectDrinkType() filters mostReviews/filteredListings but template renders 'contents' array instead
+    // // Sort features
+    // // Handle select of drink type filter option like sake, gin, whiskey
+    // selectDrinkType(drinkType) {
+    //   // reset most reviews and recently added arrays so that can repeatedly filter
+    //   // this.getMostReviews();
+    //   this.moreListings = true;
+    //   // Determine selected drink type, and corresponding drink categories
+    //   this.selectedCategory = null;
+    //   this.selectedDrinkType = drinkType;
+    //   for (let drinks of this.drinkTypes) {
+    //     if (drinks["drinkType"] == drinkType["drinkType"]) {
+    //       this.selectedTypeCategory = drinks["typeCategory"];
+    //       
+    //     }
+    //   }
 
-      // Determine the drinkType searched, might not be neccessary
-      const drinkTypeSearch =
-        this.selectedDrinkType["drinkType"]?.toLowerCase();
+    //   // Determine the drinkType searched, might not be neccessary
+    //   const drinkTypeSearch =
+    //     this.selectedDrinkType["drinkType"]?.toLowerCase();
 
-      // Search listings for when input is in the searchbar
-      // if(this.search){
-      //     this.searchListings()
-      //     const searchResults = this.filteredListings.filter((listing) => {
-      //         const drinkTypeListing = listing["drinkType"].toLowerCase();
-      //         return drinkTypeListing.includes(drinkTypeSearch);
-      //     });
-      //     this.filterSearchResult=searchResults
-      //     // to set filter message together with search terms when searched listings
-      //     this.isFilterType = true
-      // }
+    //   // Search listings for when input is in the searchbar
+    //   // if(this.search){
+    //   //     this.searchListings()
+    //   //     const searchResults = this.filteredListings.filter((listing) => {
+    //   //         const drinkTypeListing = listing["drinkType"].toLowerCase();
+    //   //         return drinkTypeListing.includes(drinkTypeSearch);
+    //   //     });
+    //   //     this.filterSearchResult=searchResults
+    //   //     // to set filter message together with search terms when searched listings
+    //   //     this.isFilterType = true
+    //   // }
 
-      // Filter listings for when discovery mode
-      if (this.discovery) {
-        const searchResults = this.mostReviews.filter((listing) => {
-          const drinkTypeListing = listing["drinkType"].toLowerCase();
-          return drinkTypeListing.includes(drinkTypeSearch);
-        });
-        // if nothing found
-        if (searchResults.length == 0 || searchResults == null) {
-          this.mostReviews = [];
-          this.filteredListings = [];
-          this.retrieveListings();
-        } else {
-          this.mostReviews = searchResults;
-          this.filteredListings = searchResults;
-          if (this.filteredListings.length < 30) {
-            this.retrieveListings();
-          }
-        }
-      }
+    //   // Filter listings for when discovery mode
+    //   if (this.discovery) {
+    //     const searchResults = this.mostReviews.filter((listing) => {
+    //       const drinkTypeListing = listing["drinkType"].toLowerCase();
+    //       return drinkTypeListing.includes(drinkTypeSearch);
+    //     });
+    //     // if nothing found
+    //     if (searchResults.length == 0 || searchResults == null) {
+    //       this.mostReviews = [];
+    //       this.filteredListings = [];
+    //       this.retrieveListings();
+    //     } else {
+    //       this.mostReviews = searchResults;
+    //       this.filteredListings = searchResults;
+    //       if (this.filteredListings.length < 30) {
+    //         this.retrieveListings();
+    //       }
+    //     }
+    //   }
 
-      // Filter listings for when following mode
-      else if (this.following) {
-        const searchResults = this.recentlyAdded.filter((listing) => {
-          const drinkTypeListing = listing["drinkType"].toLowerCase();
-          return drinkTypeListing.includes(drinkTypeSearch);
-        });
+    //   // Filter listings for when following mode
+    //   else if (this.following) {
+    //     const searchResults = this.recentlyAdded.filter((listing) => {
+    //       const drinkTypeListing = listing["drinkType"].toLowerCase();
+    //       return drinkTypeListing.includes(drinkTypeSearch);
+    //     });
 
-        // if nothing found
-        if (searchResults == null) {
-          this.filteredRecentlyAdded = [];
-        } else {
-          this.filteredRecentlyAdded = searchResults;
-        }
-      }
-    },
+    //     // if nothing found
+    //     if (searchResults == null) {
+    //       this.filteredRecentlyAdded = [];
+    //     } else {
+    //       this.filteredRecentlyAdded = searchResults;
+    //     }
+    //   }
+    // },
 
-    // Function to sort results based on selected category
-    sortResults() {
-      let category = this.sortSelection.category;
+    // charsiucharlie_out_not_in_use - sortResults() and sortByCategory() sort filteredListings but template renders 'contents' array instead
+    // // Function to sort results based on selected category
+    // sortResults() {
+    //   let category = this.sortSelection.category;
 
-      // ------ SORT LISTINGS --------
-      // #1: Alphabetical (A - Z)
-      if (category == "Alphabetical (A - Z)") {
-        this.filteredListings.sort((a, b) => {
-          return a.listingName.localeCompare(b.listingName);
-        });
-      }
-      // #2: Alphabetical (Z - A)
-      else if (category == "Alphabetical (Z - A)") {
-        this.filteredListings.sort((a, b) => {
-          return b.listingName.localeCompare(a.listingName);
-        });
-      }
-      // #3: Date (Newest - Oldest)
-      else if (category == "Date (Newest - Oldest)") {
-        this.filteredListings.sort((a, b) => {
-          return new Date(b.addedDate) - new Date(a.addedDate);
-        });
-      }
-      // [DEFAULT] #4: Date (Oldest - Newest)
-      else if (category == "" || category == "Date (Oldest - Newest)") {
-        this.filteredListings.sort((a, b) => {
-          return new Date(a.addedDate) - new Date(b.addedDate);
-        });
-      }
-      // #5: Ratings (Highest - Lowest)
-      else if (category == "Ratings (Highest - Lowest)") {
-        this.filteredListings.sort((a, b) => {
-          return b.rating - a.rating;
-        });
-      }
-      // #6: Ratings (Lowest - Highest)
-      else if (category == "Ratings (Lowest - Highest)") {
-        this.filteredListings.sort((a, b) => {
-          return a.rating - b.rating;
-        });
-      }
-    },
+    //   // ------ SORT LISTINGS --------
+    //   // #1: Alphabetical (A - Z)
+    //   if (category == "Alphabetical (A - Z)") {
+    //     this.filteredListings.sort((a, b) => {
+    //       return a.listingName.localeCompare(b.listingName);
+    //     });
+    //   }
+    //   // #2: Alphabetical (Z - A)
+    //   else if (category == "Alphabetical (Z - A)") {
+    //     this.filteredListings.sort((a, b) => {
+    //       return b.listingName.localeCompare(a.listingName);
+    //     });
+    //   }
+    //   // #3: Date (Newest - Oldest)
+    //   else if (category == "Date (Newest - Oldest)") {
+    //     this.filteredListings.sort((a, b) => {
+    //       return new Date(b.addedDate) - new Date(a.addedDate);
+    //     });
+    //   }
+    //   // [DEFAULT] #4: Date (Oldest - Newest)
+    //   else if (category == "" || category == "Date (Oldest - Newest)") {
+    //     this.filteredListings.sort((a, b) => {
+    //       return new Date(a.addedDate) - new Date(b.addedDate);
+    //     });
+    //   }
+    //   // #5: Ratings (Highest - Lowest)
+    //   else if (category == "Ratings (Highest - Lowest)") {
+    //     this.filteredListings.sort((a, b) => {
+    //       return b.rating - a.rating;
+    //     });
+    //   }
+    //   // #6: Ratings (Lowest - Highest)
+    //   else if (category == "Ratings (Lowest - Highest)") {
+    //     this.filteredListings.sort((a, b) => {
+    //       return a.rating - b.rating;
+    //     });
+    //   }
+    // },
 
-    // Sort Support Function (Category)
-    sortByCategory(category) {
-      // Check if the selected filter is the same as the current filter
-      if (this.sortSelection.category == category) {
-        return;
-      } else {
-        this.sortSelection.category = category;
-        this.sortResults();
-      }
-    },
+    // // Sort Support Function (Category)
+    // sortByCategory(category) {
+    //   // Check if the selected filter is the same as the current filter
+    //   if (this.sortSelection.category == category) {
+    //     return;
+    //   } else {
+    //     this.sortSelection.category = category;
+    //     this.sortResults();
+    //   }
+    // },
 
-    //Select drink category like Blended for whiskey
-    selectDrinkCategory(drinkCategory) {
-      this.selectDrinkType(this.selectedDrinkType);
-      this.selectedCategory = drinkCategory;
-      const drinkCategorySearch = this.selectedCategory.toLowerCase();
+    // charsiucharlie_out_not_in_use - selectDrinkCategory() filters mostReviews/filteredListings but template renders 'contents' array instead
+    // //Select drink category like Blended for whiskey
+    // selectDrinkCategory(drinkCategory) {
+    //   this.selectDrinkType(this.selectedDrinkType);
+    //   this.selectedCategory = drinkCategory;
+    //   const drinkCategorySearch = this.selectedCategory.toLowerCase();
 
-      if (this.discovery) {
-        const searchResults = this.mostReviews.filter((listing) => {
-          const drinkCategory = listing["typeCategory"].toLowerCase();
-          return drinkCategory.includes(drinkCategorySearch);
-        });
-        if (searchResults.length == 0) {
-          this.errorFound = true;
-          this.errorMessage = "No results found, please try again.";
-          this.mostReviews = [];
-          this.filteredListings = [];
-          this.retrieveListings();
-        } else {
-          this.errorFound = false;
-          this.errorMessage = "";
-          this.mostReviews = searchResults;
-          this.filteredListings = searchResults;
-          if (this.filteredListings.length < 30) {
-            this.retrieveListings();
-          }
-        }
-      } else if (this.following) {
-        const searchResults = this.filteredRecentlyAdded.filter((listing) => {
-          const drinkCategory = listing["typeCategory"].toLowerCase();
-          return drinkCategory.includes(drinkCategorySearch);
-        });
-        if (searchResults.length == 0 || searchResults == null) {
-          this.errorFound = true;
-          this.errorMessage = "No results found, please try again.";
-          this.filteredRecentlyAdded = [];
-          this.retrieveListings();
-        } else {
-          this.errorFound = false;
-          this.errorMessage = "";
-          this.filteredRecentlyAdded = searchResults;
-          if (this.filteredRecentlyAdded.length < 30) {
-            this.retrieveListings();
-          }
-        }
-      }
-    },
+    //   if (this.discovery) {
+    //     const searchResults = this.mostReviews.filter((listing) => {
+    //       const drinkCategory = listing["typeCategory"].toLowerCase();
+    //       return drinkCategory.includes(drinkCategorySearch);
+    //     });
+    //     if (searchResults.length == 0) {
+    //       this.errorFound = true;
+    //       this.errorMessage = "No results found, please try again.";
+    //       this.mostReviews = [];
+    //       this.filteredListings = [];
+    //       this.retrieveListings();
+    //     } else {
+    //       this.errorFound = false;
+    //       this.errorMessage = "";
+    //       this.mostReviews = searchResults;
+    //       this.filteredListings = searchResults;
+    //       if (this.filteredListings.length < 30) {
+    //         this.retrieveListings();
+    //       }
+    //     }
+    //   } else if (this.following) {
+    //     const searchResults = this.filteredRecentlyAdded.filter((listing) => {
+    //       const drinkCategory = listing["typeCategory"].toLowerCase();
+    //       return drinkCategory.includes(drinkCategorySearch);
+    //     });
+    //     if (searchResults.length == 0 || searchResults == null) {
+    //       this.errorFound = true;
+    //       this.errorMessage = "No results found, please try again.";
+    //       this.filteredRecentlyAdded = [];
+    //       this.retrieveListings();
+    //     } else {
+    //       this.errorFound = false;
+    //       this.errorMessage = "";
+    //       this.filteredRecentlyAdded = searchResults;
+    //       if (this.filteredRecentlyAdded.length < 30) {
+    //         this.retrieveListings();
+    //       }
+    //     }
+    //   }
+    // },
 
     clearSelection() {
       // Handle the click event here
