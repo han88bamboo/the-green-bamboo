@@ -1546,6 +1546,16 @@
                       </div>
                     </div>
                   </div>
+                  <div class="modal-footer">
+                    <button
+                      type="button"
+                      class="btn btn-read-more btn-sm"
+                      @click="saveContentPreferences"
+                      data-bs-dismiss="modal"
+                    >
+                      Save
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -2437,22 +2447,59 @@ export default {
 
     onContentPreferenceChange(drinkType) {
       // This method is called when a toggle is changed
-      // Currently just logs the change - API logic will be added later
-      console.log(`Content preference changed for ${drinkType}:`, this.contentPreferences[drinkType]);
-      
-      // TODO: Add API call to save preference to userDrinkTypePreferences table
-      // If contentPreferences[drinkType] === false, insert/update row with isHidden = true
-      // If contentPreferences[drinkType] === true, delete row or set isHidden = false
+      // No API call here - changes are saved when user clicks "Save" button
+      console.log(`Content preference toggled for ${drinkType}:`, this.contentPreferences[drinkType]);
     },
 
     showAllDrinkTypes() {
-      // Reset all drink type preferences to visible
+      // Reset all drink type preferences to visible (local state only)
+      // Changes will be saved when user clicks "Save" button
       this.drinkType.forEach(type => {
         this.contentPreferences[type] = true;
       });
-      console.log("All drink types set to visible");
+      console.log("All drink types set to visible (not saved yet)");
+    },
+
+    async saveContentPreferences() {
+      // Collect all drinkTypeIds where the preference is hidden (false)
+      const hiddenDrinkTypeIds = [];
       
-      // TODO: Add API call to clear all hidden preferences for this user
+      this.drinkType.forEach(typeName => {
+        if (this.contentPreferences[typeName] === false) {
+          // Find the drinkTypeId from drinkTypes array
+          const drinkTypeObj = this.drinkTypes.find(dt => dt.drinkType === typeName);
+          if (drinkTypeObj) {
+            hiddenDrinkTypeIds.push(drinkTypeObj.id);
+          }
+        }
+      });
+      
+      try {
+        const response = await this.$axios.post(
+          `${process.env.VUE_APP_API_URL}/editProfile/updateDrinkTypeContentPreference`,
+          {
+            userID: this.userID,
+            hiddenDrinkTypeIds: hiddenDrinkTypeIds
+          },
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+        
+        const toast = useToast();
+        if (response.data.code === 201) {
+          toast.success("Content preferences updated successfully!");
+        }
+        
+        console.log("Content preferences saved:", hiddenDrinkTypeIds);
+        
+      } catch (error) {
+        console.error("Error saving content preferences:", error);
+        const toast = useToast();
+        toast.error("Failed to update content preferences. Please try again.");
+      }
     },
   }
 };
