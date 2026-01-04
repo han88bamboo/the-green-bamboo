@@ -2431,7 +2431,7 @@ export default {
         // Apply hidden preferences - set matching drink types to false (hidden)
         hiddenDrinkTypes.forEach(item => {
           // item has { drinkTypeId, drinkType }
-          if (this.contentPreferences.hasOwnProperty(item.drinkType)) {
+          if (Object.prototype.hasOwnProperty.call(this.contentPreferences, item.drinkType)) {
             this.contentPreferences[item.drinkType] = false;
           }
         });
