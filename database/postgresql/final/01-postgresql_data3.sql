@@ -198,17 +198,6 @@ CREATE TABLE "typeCategories" (
     UNIQUE("drinkType_id", "typeCategory") 
 );
 
--- ========= "userDrinkTypePreferences" =========
--- Stores drinkTypes that a user wants to HIDE from their content feed
--- If no row exists for a user, they see all content by default
-CREATE TABLE "userDrinkTypePreferences" (
-    "id" SERIAL PRIMARY KEY,
-    "userId" INT NOT NULL REFERENCES "users"(id) ON DELETE CASCADE,
-    "drinkTypeId" INT NOT NULL REFERENCES "drinkTypes"(id) ON DELETE CASCADE,
-    "isHidden" BOOLEAN DEFAULT TRUE,
-    UNIQUE("userId", "drinkTypeId")
-);
-
 -- ========= "languages" =========
 CREATE TABLE "languages" (
     "id" SERIAL PRIMARY KEY,
@@ -432,6 +421,17 @@ CREATE TABLE "users" (
 
 -- Create a GIN index on username for trigram fuzzy search
 CREATE INDEX idx_users_username_trgm ON "users" USING gin ("username" gin_trgm_ops);
+
+-- ========= "userDrinkTypePreferences" =========
+-- Stores drinkTypes that a user wants to HIDE from their content feed
+-- If no row exists for a user, they see all content by default
+CREATE TABLE "userDrinkTypePreferences" (
+    "id" SERIAL PRIMARY KEY,
+    "userId" INT NOT NULL REFERENCES "users"(id) ON DELETE CASCADE,
+    "drinkTypeId" INT NOT NULL REFERENCES "drinkTypes"(id) ON DELETE CASCADE,
+    "isHidden" BOOLEAN DEFAULT TRUE,
+    UNIQUE("userId", "drinkTypeId")
+);
 
 -- ========= "userBadges" =========
 CREATE TABLE "userBadges" (
