@@ -9,6 +9,10 @@ DROP TABLE IF EXISTS "clubPostComments" CASCADE;
 DROP TABLE IF EXISTS "clubPostsLikes" CASCADE;
 DROP TABLE IF EXISTS "clubPostsDislikes" CASCADE;
 DROP TABLE IF EXISTS "clubPosts" CASCADE;
+DROP TABLE IF EXISTS "userWallPostComments" CASCADE;
+DROP TABLE IF EXISTS "userWallPostLikes" CASCADE;
+DROP TABLE IF EXISTS "userWallPostDislikes" CASCADE;
+DROP TABLE IF EXISTS "userWallPosts" CASCADE;
 DROP TABLE IF EXISTS "clubRequests" CASCADE;
 DROP TABLE IF EXISTS "clubInvites" CASCADE;
 DROP TABLE IF EXISTS "clubMembers" CASCADE;
@@ -1054,6 +1058,41 @@ CREATE TABLE "clubPostCommentsDislikes" (
     "postID" INTEGER REFERENCES "clubPosts"("id") ON DELETE CASCADE, -- Automatically delete when clubPosts record is deleted
     "commentID" INTEGER REFERENCES "clubPostComments"("id") ON DELETE SET NULL, -- Keep as SET NULL if needed
     "memberID" INTEGER REFERENCES "clubMembers"("id") ON DELETE SET NULL -- Keep as SET NULL if needed
+);
+
+-- ========= "userWallPosts" =========
+CREATE TABLE "userWallPosts" (
+    "id" SERIAL PRIMARY KEY,
+    "wallOwnerID" INTEGER REFERENCES "users"("id") ON DELETE SET NULL, -- [!] References users FK - the user whose wall this is
+    "posterUserID" INTEGER REFERENCES "users"("id") ON DELETE SET NULL, -- [!] References users FK - the user who made this post
+    "postDate" TIMESTAMP,
+    "postContent" TEXT,
+    "postPhotos" TEXT[],
+    "taggedUsers" INTEGER[], -- Array of user IDs who are tagged in this post
+    "location" INTEGER REFERENCES "venues"("id") ON DELETE SET NULL -- [!] References venues FK
+);
+
+-- ========= "userWallPostLikes" =========
+CREATE TABLE "userWallPostLikes" (
+    "id" SERIAL PRIMARY KEY,
+    "postID" INTEGER REFERENCES "userWallPosts"("id") ON DELETE SET NULL, -- [!] References userWallPosts FK
+    "userID" INTEGER REFERENCES "users"("id") ON DELETE SET NULL -- [!] References users FK
+);
+
+-- ========= "userWallPostDislikes" =========
+CREATE TABLE "userWallPostDislikes" (
+    "id" SERIAL PRIMARY KEY,
+    "postID" INTEGER REFERENCES "userWallPosts"("id") ON DELETE SET NULL, -- [!] References userWallPosts FK
+    "userID" INTEGER REFERENCES "users"("id") ON DELETE SET NULL -- [!] References users FK
+);
+
+-- ========= "userWallPostComments" =========
+CREATE TABLE "userWallPostComments" (
+    "id" SERIAL PRIMARY KEY,
+    "postID" INTEGER REFERENCES "userWallPosts"("id") ON DELETE SET NULL, -- [!] References userWallPosts FK
+    "commentDate" TIMESTAMP,
+    "commentContent" TEXT,
+    "commenterID" INTEGER REFERENCES "users"("id") ON DELETE SET NULL -- [!] References users FK
 );
 
 -- ========= "events" =========
