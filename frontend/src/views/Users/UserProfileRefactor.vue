@@ -45,6 +45,32 @@
     class="userprofile mt-5 mobile-mt-3"
   >
     <div class="container text-start">
+      <!-- Personal Wall Section -->
+      <div class="row mb-3">
+        <div class="col-12">
+          <div 
+            class="personal-wall-container"
+            style="
+              border: 1px solid #e0e0e0;
+              border-radius: 8px;
+              padding: 16px;
+              background-color: #ffffff;
+            "
+          >
+            <div class="d-flex justify-content-between align-items-center">
+              <h5 class="text-body-secondary fw-bold mb-0 mobile-fs-6">Personal Wall</h5>
+              <span class="text-end text-muted text-decoration-none mobile-rating-smaller-text-2" style="cursor: pointer;">
+                View All Posts →
+              </span>
+            </div>
+            <hr />
+            <div class="text-muted text-center py-3">
+              Personal Wall content coming soon...
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div class="row">
         <div class="col-12 col-md-8 mb-0 pb-2">
             
