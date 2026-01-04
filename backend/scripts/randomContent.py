@@ -311,6 +311,54 @@ def get_commenter_info(user_id, user_type):
     return {"username": None, "photo": None}
 
 
+# -----------------------------------------------------------------------------------------
+# Helper function to get hidden drink types for a user (for content filtering)
+# Returns a list of drinkType names (strings) that the user has hidden
+# Returns empty list if: user_id is None, user has no hidden preferences, or on error (graceful fallback)
+def get_hidden_drink_types(user_id, cursor):
+    """
+    Internal function that mirrors getUserDrinkTypeContentPreferences endpoint logic.
+    Used to filter Listings and Reviews content based on user's drink type preferences.
+    
+    Args:
+        user_id: The user ID (can be None for non-logged-in users)
+        cursor: Database cursor to use for the query
+        
+    Returns:
+        List of drinkType names (strings) that should be excluded from content
+        Empty list means no filtering should be applied
+    """
+    # Skip filter for non-logged-in users
+    if user_id is None:
+        return []
+    
+    try:
+        user_id = int(user_id)
+        
+        sql = """
+            SELECT dt."drinkType"
+            FROM "userDrinkTypePreferences" udp
+            JOIN "drinkTypes" dt ON udp."drinkTypeId" = dt."id"
+            WHERE udp."userId" = %s AND udp."isHidden" = TRUE
+        """
+        
+        cursor.execute(sql, (user_id,))
+        hidden_preferences = cursor.fetchall()
+        
+        # Return empty list if no hidden preferences (all visible by default)
+        if not hidden_preferences:
+            return []
+        
+        # Extract just the drinkType names into a list
+        return [row['drinkType'] for row in hidden_preferences]
+    
+    except (ValueError, TypeError):
+        # Invalid user ID format - graceful fallback
+        return []
+    except Exception as e:
+        # Database error or other exception - graceful fallback (show all content)
+        print(f"Error fetching hidden drink types for user {user_id}: {str(e)}")
+        return []
 
 
 # -----------------------------------------------------------------------------------------
@@ -322,13 +370,22 @@ def getRandomListings(user_id, user_type):
     if user_type == "null":
         user_type = None
 
+    # Initialize variables that may be conditionally assigned
+    additional_listings = []
+    reviews = []
+
     try:
         with db_manager.get_cursor() as cursor:
+            # Get hidden drink types for the user (for content filtering)
+            hidden_drink_types = get_hidden_drink_types(user_id, cursor)
+            print(f"charsiucharlie_debug: user_id={user_id}, hidden_drink_types={hidden_drink_types}")
+            
             # Fetch distinct dates by converting timestamps to dates
             cursor.execute('SELECT DISTINCT "addedDate"::DATE FROM "listings" WHERE "addedDate" != CURRENT_DATE')
             date_results = cursor.fetchall()
 
             if not date_results:
+                print("charsiucharlie_debug: No dates found in listings table at all")
                 return jsonify({"error": "No dates found in listings"}), 400
 
             try:
@@ -338,7 +395,31 @@ def getRandomListings(user_id, user_type):
                 if not date_list:
                     return jsonify({"error": "Date extraction failed (empty list)"}), 400
 
-                random_date = random.choice(date_list)  # Select a random date
+                # Shuffle the date list to try multiple dates if needed
+                random.shuffle(date_list)
+                random_date = None
+                listings_data = []
+                
+                # Try up to 3 different dates to find listings that pass the filter
+                for attempt_date in date_list[:3]:
+                    limit = random.randint(8, 15)
+                    if hidden_drink_types:
+                        cursor.execute('SELECT * FROM "listings" WHERE "addedDate"::DATE = %s AND "drinkType" NOT IN %s LIMIT %s', (attempt_date, tuple(hidden_drink_types), limit))
+                    else:
+                        cursor.execute('SELECT * FROM "listings" WHERE "addedDate"::DATE = %s LIMIT %s', (attempt_date, limit))
+                    listings_data = cursor.fetchall()
+                    
+                    print(f"charsiucharlie_debug: Tried date={attempt_date}, found {len(listings_data)} listings after filtering")
+                    
+                    if listings_data:
+                        random_date = attempt_date
+                        break
+                
+                # If still no listings found after trying multiple dates, use first date for consistency
+                if random_date is None:
+                    print(f"charsiucharlie_debug: NO LISTINGS FOUND after trying 3 dates! All filtered out by hidden_drink_types={hidden_drink_types}")
+                    random_date = date_list[0]
+                    
             except Exception as e:
                 return jsonify({"error": f"Random selection failed: {str(e)}"}), 500
 
@@ -349,18 +430,15 @@ def getRandomListings(user_id, user_type):
             # Number of records to retrieve per call
             num_records = 30
 
-            # Fetch listings from the selected random date 
-            # Set random limit
-            limit = random.randint(8, 15)
-            cursor.execute('SELECT * FROM "listings" WHERE "addedDate"::DATE = %s LIMIT %s', (random_date, limit))
-            listings_data = cursor.fetchall()
-
             if len(listings_data) < num_records:
 
                 # Get listings that have been created today
                 # Set random limit
                 limit = random.randint(4, 10)
-                cursor.execute('SELECT * FROM "listings" WHERE "addedDate"::DATE = CURRENT_DATE LIMIT %s', (limit,))
+                if hidden_drink_types:
+                    cursor.execute('SELECT * FROM "listings" WHERE "addedDate"::DATE = CURRENT_DATE AND "drinkType" NOT IN %s LIMIT %s', (tuple(hidden_drink_types), limit,))
+                else:
+                    cursor.execute('SELECT * FROM "listings" WHERE "addedDate"::DATE = CURRENT_DATE LIMIT %s', (limit,))
                 additional_listings = cursor.fetchall()
                 listings_data.extend(additional_listings)
 
@@ -399,13 +477,24 @@ def getRandomListings(user_id, user_type):
             # Set random limit
             limit = random.randint(5, 8)
             if len(listings_data) < num_records:
-                cursor.execute("""
-                    SELECT * FROM "reviews"
-                    WHERE "createdDate" >= NOW() - INTERVAL '14 days'
-                    AND "isPublic" = true
-                    ORDER BY "createdDate" DESC
-                    LIMIT %s
-                """, (limit,))
+                if hidden_drink_types:
+                    cursor.execute("""
+                        SELECT r.* FROM "reviews" r
+                        JOIN "listings" l ON r."reviewTarget" = l."id"
+                        WHERE r."createdDate" >= NOW() - INTERVAL '14 days'
+                        AND r."isPublic" = true
+                        AND l."drinkType" NOT IN %s
+                        ORDER BY r."createdDate" DESC
+                        LIMIT %s
+                    """, (tuple(hidden_drink_types), limit,))
+                else:
+                    cursor.execute("""
+                        SELECT * FROM "reviews"
+                        WHERE "createdDate" >= NOW() - INTERVAL '14 days'
+                        AND "isPublic" = true
+                        ORDER BY "createdDate" DESC
+                        LIMIT %s
+                    """, (limit,))
 
                 reviews = cursor.fetchall()
 
@@ -525,8 +614,13 @@ def getRandomListings(user_id, user_type):
                         # Get total number of comments
                         update['totalComments'] = get_total_comments(update['id'], 'vUpdate')
 
-        if not listings_data:
-            return jsonify({"error": "No listings found for selected date"}), 400
+        # If no content found (possibly due to content filtering), return a message asking user to refresh
+        if not listings_data and not reviews and not producers_updates and not venues_updates:
+            print("charsiucharlie_debug: No content available after all filtering - returning refresh message")
+            return jsonify({
+                "error": "No content available for this selection. Please refresh the page to try again.",
+                "shouldRefresh": True
+            }), 204
         
         listings_likes = []
         reviews_likes = []
@@ -611,6 +705,9 @@ def getNext30():
 
     try:
         with db_manager.get_cursor() as cursor:
+            # Get hidden drink types for the user (for content filtering)
+            hidden_drink_types = get_hidden_drink_types(user_id, cursor)
+            
             # Fetch distinct dates by converting timestamps to dates
             cursor.execute(
                 """
@@ -643,11 +740,19 @@ def getNext30():
 
             # Get dated listings 
             random_records = random.randint(5, 12)
-            cursor.execute("""
-                SELECT * FROM "listings"
-                WHERE "addedDate" = %s
-                LIMIT %s
-            """, (random_date, random_records,))
+            if hidden_drink_types:
+                cursor.execute("""
+                    SELECT * FROM "listings"
+                    WHERE "addedDate" = %s
+                    AND "drinkType" NOT IN %s
+                    LIMIT %s
+                """, (random_date, tuple(hidden_drink_types), random_records,))
+            else:
+                cursor.execute("""
+                    SELECT * FROM "listings"
+                    WHERE "addedDate" = %s
+                    LIMIT %s
+                """, (random_date, random_records,))
             listings_data = cursor.fetchall()
             limit -= len(listings_data)
             
@@ -655,11 +760,19 @@ def getNext30():
             random_records = random.randint(5, 10)
             
             if newListingsLastID and newListingsLastID != '':
-                cursor.execute("""
-                    SELECT * FROM "listings"
-                    WHERE "addedDate" = CURRENT_DATE AND "id" > %s
-                    LIMIT %s
-                """, (newListingsLastID, random_records,))
+                if hidden_drink_types:
+                    cursor.execute("""
+                        SELECT * FROM "listings"
+                        WHERE "addedDate" = CURRENT_DATE AND "id" > %s
+                        AND "drinkType" NOT IN %s
+                        LIMIT %s
+                    """, (newListingsLastID, tuple(hidden_drink_types), random_records,))
+                else:
+                    cursor.execute("""
+                        SELECT * FROM "listings"
+                        WHERE "addedDate" = CURRENT_DATE AND "id" > %s
+                        LIMIT %s
+                    """, (newListingsLastID, random_records,))
                 todays_listings = cursor.fetchall()
                 listings_data.extend(todays_listings)
                 newListingsLastID = todays_listings[-1]['id'] if todays_listings else None
@@ -696,14 +809,26 @@ def getNext30():
 
             # Get reviews by users within the last 2 weeks after reviewsLastID
             random_records = random.randint(8, 12)
-            cursor.execute("""
-                SELECT * FROM "reviews"
-                WHERE "createdDate" >= NOW() - INTERVAL '14 days'
-                AND "id" > %s
-                AND "isPublic" = true
-                ORDER BY "createdDate" DESC
-                LIMIT %s
-            """, (reviewsLastID, random_records))
+            if hidden_drink_types:
+                cursor.execute("""
+                    SELECT r.* FROM "reviews" r
+                    JOIN "listings" l ON r."reviewTarget" = l."id"
+                    WHERE r."createdDate" >= NOW() - INTERVAL '14 days'
+                    AND r."id" > %s
+                    AND r."isPublic" = true
+                    AND l."drinkType" NOT IN %s
+                    ORDER BY r."createdDate" DESC
+                    LIMIT %s
+                """, (reviewsLastID, tuple(hidden_drink_types), random_records))
+            else:
+                cursor.execute("""
+                    SELECT * FROM "reviews"
+                    WHERE "createdDate" >= NOW() - INTERVAL '14 days'
+                    AND "id" > %s
+                    AND "isPublic" = true
+                    ORDER BY "createdDate" DESC
+                    LIMIT %s
+                """, (reviewsLastID, random_records))
             recent_reviews = cursor.fetchall()
             reviewsLastID = recent_reviews[-1]['id'] if recent_reviews else None
             limit -= len(recent_reviews)

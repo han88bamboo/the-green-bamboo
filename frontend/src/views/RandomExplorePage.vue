@@ -176,6 +176,8 @@
     </button>
   </div>
 
+
+
   <!-- [if] no search input -->
   <div v-if="search == false && dataLoaded == true">
     <!-- header -->
@@ -1116,7 +1118,19 @@
                   class="mobile-ps-0 mobile-pe-0"
                 >
                   <!-- Display error message when no results for filter-->
-
+  <!-- Display when no content available due to filtering -->
+  <div
+    class="fst-italic fw-bold fs-4 pt-5 text-center"
+    v-if="showRefreshMessage"
+  >
+    <span>No content available for this selection.</span>
+    <br />
+    <span class="fs-5 fw-normal">This can happen when the random selection doesn't find matching content. Please refresh to try again!</span>
+    <br />
+    <button class="btn primary-btn btn-sm mt-3" @click="refreshPage">
+      <span class="fs-5 fst-italic"> Refresh Page </span>
+    </button>
+  </div>
                   <!-- Displays Message if there are no listing available  -->
                   <h5
                     v-if="
@@ -2432,6 +2446,7 @@ export default {
   data() {
     return {
       dataLoaded: false,
+      showRefreshMessage: false,
       // data from database
       // countries: [],
       contents: [],
@@ -2635,13 +2650,29 @@ methods: {
                     .replace(/\s+/g, '-')                 // Replace spaces with hyphens
                     .replace(/[^\w]/g, ''); // Remove non-word characters
             },
+    // Refresh page to reload content
+    refreshPage() {
+      this.showRefreshMessage = false;
+      this.dataLoaded = false;
+      this.loadData();
+    },
     // load data from database
     async loadData() {
+      // Reset refresh message state
+      this.showRefreshMessage = false;
 
       try {
         const response = await this.$axios.get(
           `${process.env.VUE_APP_API_URL}/randomContent/getRandomListings/${this.userID}/${this.userType}`
         );
+        
+        // Check if response indicates no content available (204 status)
+        if (response.status === 204 || response.data.shouldRefresh) {
+          this.showRefreshMessage = true;
+          this.dataLoaded = true;
+          return;
+        }
+        
         this.contents = response.data.content;
         // originally, make filteredContent the entire collection of content
         this.filteredContent = this.contents;
@@ -2660,6 +2691,12 @@ methods: {
         this.venuesUpdatesLikes = response.data.venuesUpdatesLikes || [];
 
       } catch (error) {
+        // Check if error response indicates no content available
+        if (error.response && (error.response.status === 204 || error.response.data?.shouldRefresh)) {
+          this.showRefreshMessage = true;
+          this.dataLoaded = true;
+          return;
+        }
         console.error(error);
         this.dataLoaded = null;
       }
