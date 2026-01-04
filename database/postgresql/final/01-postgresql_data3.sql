@@ -54,6 +54,7 @@ DROP TABLE IF EXISTS "usersDrinkListUpvotes" CASCADE;
 DROP TABLE IF EXISTS "userProducerLists" CASCADE;
 DROP TABLE IF EXISTS "userProducerListItems" CASCADE;
 DROP TABLE IF EXISTS "usersFollowLists" CASCADE;
+DROP TABLE IF EXISTS "userDrinkTypePreferences" CASCADE;
 DROP TABLE IF EXISTS "venueUpdateLikes" CASCADE;
 DROP TABLE IF EXISTS "venues" CASCADE;
 DROP TABLE IF EXISTS "venueAmenities" CASCADE;
@@ -195,6 +196,17 @@ CREATE TABLE "typeCategories" (
     "typeCategory" VARCHAR(255) NOT NULL,
     "drinkStyle" TEXT[],
     UNIQUE("drinkType_id", "typeCategory") 
+);
+
+-- ========= "userDrinkTypePreferences" =========
+-- Stores drinkTypes that a user wants to HIDE from their content feed
+-- If no row exists for a user, they see all content by default
+CREATE TABLE "userDrinkTypePreferences" (
+    "id" SERIAL PRIMARY KEY,
+    "userId" INT NOT NULL REFERENCES "users"(id) ON DELETE CASCADE,
+    "drinkTypeId" INT NOT NULL REFERENCES "drinkTypes"(id) ON DELETE CASCADE,
+    "isHidden" BOOLEAN DEFAULT TRUE,
+    UNIQUE("userId", "drinkTypeId")
 );
 
 -- ========= "languages" =========
