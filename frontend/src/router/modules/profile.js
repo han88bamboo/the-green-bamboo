@@ -26,6 +26,11 @@ const routes = [
     component: () => import(/* webpackChunkName: "profile" */ "@/views/Users/AllReviews.vue"),
   },
   {
+    path: "/profile/user/:userID/:username/all-wall-posts",
+    name: "userPersonalWall",
+    component: () => import(/* webpackChunkName: "profile" */ "@/views/Users/UserPersonalWall.vue"),
+  },
+  {
     path: "/profile/user/:userID/:username/allfollowingfollowers",
     name: "allFollowingFollowers",
     component: () => import(/* webpackChunkName: "profile" */ "@/views/Users/AllFollowingFollowers.vue"),

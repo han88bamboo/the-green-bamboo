@@ -59,9 +59,12 @@
           >
             <div class="d-flex justify-content-between align-items-center">
               <h5 class="text-body-secondary fw-bold mb-0 mobile-fs-6">Personal Wall</h5>
-              <span class="text-end text-muted text-decoration-none mobile-rating-smaller-text-2" style="cursor: pointer;">
+              <router-link
+                :to="`/profile/user/${displayUserID}/${routeUsername}/all-wall-posts`"
+                class="text-end text-muted text-decoration-none mobile-rating-smaller-text-2"
+              >
                 View All Posts →
-              </span>
+              </router-link>
             </div>
             <hr />
             <div class="text-muted text-center py-3">
