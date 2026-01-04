@@ -1818,7 +1818,13 @@ export default {
         this.drinkType = this.drinkTypes.map((category) => category.drinkType);
 
         // Initialize content preferences - all drink types visible by default
+        // Then fetch user's hidden preferences and apply them
         this.initializeContentPreferences();
+        
+        // Fetch user's hidden drink type preferences (only for own profile)
+        if (this.ownProfile && this.userID) {
+          await this.fetchUserDrinkTypePreferences();
+        }
 
         console.log("Drink Types:", this.drinkTypes);
         console.log("Drink Type Strings:", this.drinkType);
@@ -2401,6 +2407,32 @@ export default {
         preferences[type] = true;
       });
       this.contentPreferences = preferences;
+    },
+
+    async fetchUserDrinkTypePreferences() {
+      // Fetch user's hidden drink type preferences from the API
+      try {
+        const response = await this.$axios.get(
+          `${process.env.VUE_APP_API_URL}/getData/getUserDrinkTypeContentPreferences/${this.userID}`
+        );
+        
+        const hiddenDrinkTypes = response.data || [];
+        
+        // Apply hidden preferences - set matching drink types to false (hidden)
+        hiddenDrinkTypes.forEach(item => {
+          // item has { drinkTypeId, drinkType }
+          if (this.contentPreferences.hasOwnProperty(item.drinkType)) {
+            this.contentPreferences[item.drinkType] = false;
+          }
+        });
+        
+        console.log("Hidden drink types loaded:", hiddenDrinkTypes);
+        console.log("Content preferences after applying hidden:", this.contentPreferences);
+        
+      } catch (error) {
+        console.error("Error fetching user drink type preferences:", error);
+        // On error, keep all drink types visible (default state)
+      }
     },
 
     onContentPreferenceChange(drinkType) {

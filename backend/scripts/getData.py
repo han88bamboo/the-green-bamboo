@@ -65,6 +65,7 @@
 
 #           [Others]
 #           /getDrinkTypes (GET), /getTypeCategories (GET), /getModRequests (GET),
+#           /getUserDrinkTypeContentPreferences/<userId> (GET),
 #           /getFlavourTags (GET), /getSubTags (GET), /getObservationTags (GET),
 #           /getVenueMainTypes (GET), /getVenueSubTypes (GET),
 #           /getColours (GET), /getSpecialColours (GET), /getLanguages (GET),
@@ -6305,6 +6306,38 @@ def getDrinkTypes():
         return jsonify([])
 
     return jsonify(drink_types_data)
+
+# -----------------------------------------------------------------------------------------
+# [GET] User Drink Type Content Preferences (hidden drink types for a user)
+# Returns list of hidden drinkTypes with both ID and name
+# Empty array means all drink types are visible (default state)
+@blueprint.route("/getUserDrinkTypeContentPreferences/<userId>")
+def getUserDrinkTypeContentPreferences(userId):
+    try:
+        userId = int(userId)
+        
+        sql = """
+            SELECT udp."drinkTypeId", dt."drinkType"
+            FROM "userDrinkTypePreferences" udp
+            JOIN "drinkTypes" dt ON udp."drinkTypeId" = dt."id"
+            WHERE udp."userId" = %s AND udp."isHidden" = TRUE
+        """
+        
+        with db_manager.get_cursor() as cursor:
+            cursor.execute(sql, (userId,))
+            hidden_preferences = cursor.fetchall()
+        
+        # Return empty array if no hidden preferences (all visible by default)
+        if not hidden_preferences:
+            return jsonify([])
+        
+        return jsonify(hidden_preferences)
+    
+    except ValueError:
+        return jsonify({"code": 400, "message": "Invalid user ID format."}), 400
+    except Exception as e:
+        print(str(e))
+        return jsonify({"code": 500, "message": "An error occurred while fetching user drink type preferences."}), 500
 
 # -----------------------------------------------------------------------------------------
 # [GET] DrinkCategories
