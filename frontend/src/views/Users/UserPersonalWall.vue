@@ -124,27 +124,11 @@
                     <p class="fw-bold mb-1 mobile-rating-smaller-text-2">{{ post.posterInfo.displayName }}</p>
                   </router-link> -->
                   <img
-                    v-if="post.posterInfo.photo"
-                    :src="post.posterInfo.photo"
+                    :src="post.posterInfo.photo || defaultProfilePhoto"
                     class="img-fluid rounded-circle"
                     style="width: 40px; height: 40px; object-fit: cover;"
                     alt="Poster Photo"
                   />
-                  <svg
-                    v-else
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="40"
-                    height="40"
-                    fill="currentColor"
-                    class="bi bi-person-circle"
-                    viewBox="0 0 16 16"
-                  >
-                    <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0" />
-                    <path
-                      fill-rule="evenodd"
-                      d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1"
-                    />
-                  </svg>
                 </div>
                 <!-- Column 2: Post Details -->
                 <div class="col-11 mobile-col-10 d-flex flex-wrap align-items-center text-start">
@@ -416,27 +400,12 @@
                     >
                       <!-- Commenter Photo -->
                       <img
-                        v-if="comment.commenterInfo && comment.commenterInfo.photo"
-                        :src="comment.commenterInfo.photo"
+                        v-if="comment.commenterInfo"
+                        :src="comment.commenterInfo.photo || defaultProfilePhoto"
                         class="rounded-circle me-2"
                         style="width: 32px; height: 32px; object-fit: cover;"
                         alt="Commenter Photo"
                       />
-                      <svg
-                        v-else
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="32"
-                        height="32"
-                        fill="currentColor"
-                        class="bi bi-person-circle me-2"
-                        viewBox="0 0 16 16"
-                      >
-                        <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0" />
-                        <path
-                          fill-rule="evenodd"
-                          d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1"
-                        />
-                      </svg>
                       <!-- Comment Content -->
                       <div class="flex-grow-1">
                         <div class="d-flex align-items-center flex-wrap">

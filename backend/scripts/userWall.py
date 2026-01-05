@@ -21,6 +21,10 @@ file_name = os.path.basename(__file__)
 blueprint = Blueprint(file_name[:-3], __name__)
 
 
+# Default profile photo URL
+DEFAULT_PROFILE_PHOTO = "https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultProfilePhoto.png?v=1748434288"
+
+
 # -----------------------------------------------------------------------------------------
 # Helper function to retrieve user information by user ID
 def getUserInfoByID(cur, user_id):
@@ -35,7 +39,7 @@ def getUserInfoByID(cur, user_id):
         return {
             'id': user_info['id'],
             'displayName': user_info['displayName'],
-            'photo': user_info['photo'],
+            'photo': user_info['photo'] if user_info['photo'] else DEFAULT_PROFILE_PHOTO,
             'username': user_info['username']
         }
     return None
