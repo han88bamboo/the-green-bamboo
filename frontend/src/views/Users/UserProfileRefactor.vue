@@ -45,8 +45,8 @@
     class="userprofile mt-5 mobile-mt-3"
   >
     <div class="container text-start">
-      <!-- Personal Wall Section -->
-      <div class="row mb-3">
+      <!-- Personal Wall Section - Only show if own profile OR there's a post from wall owner -->
+      <div v-if="ownProfile || latestWallOwnerPost" class="row mb-3">
         <div class="col-12">
           <div 
             class="personal-wall-container"
@@ -67,8 +67,99 @@
               </router-link>
             </div>
             <hr />
-            <div class="text-muted text-center py-3">
-              Personal Wall content coming soon...
+
+            <!-- Write Post Section (only for own profile) -->
+            <div v-if="ownProfile && userType === 'user'" class="mb-3">
+              <div 
+                class="d-flex align-items-center gap-3 p-3"
+                style="
+                  border: 1px solid #e0e0e0;
+                  border-radius: 8px;
+                  background-color: #ffffff;
+                "
+              >
+                <img 
+                  :src="photo || defaultProfilePhoto" 
+                  alt="Profile" 
+                  class="rounded-circle"
+                  style="width: 40px; height: 40px; object-fit: cover;"
+                />
+                <input 
+                  type="text" 
+                  class="form-control"
+                  placeholder="What's on your mind?"
+                  style="border-radius: 20px; background-color: #f0f2f5;"
+                  readonly
+                  data-bs-toggle="modal"
+                  data-bs-target="#addWallPostModal"
+                />
+                <button 
+                  class="btn fw-bold primary-btn-green"
+                  style="white-space: nowrap;"
+                  data-bs-toggle="modal"
+                  data-bs-target="#addWallPostModal"
+                >
+                  + Write Post
+                </button>
+              </div>
+            </div>
+
+            <!-- Display Latest Post from Wall Owner -->
+            <div v-if="latestWallOwnerPost" class="mt-2">
+              <div
+                class="row justify-content-center"
+                style="
+                  background-color: #f8f9fa;
+                  border-radius: 5px;
+                  padding: 15px;
+                "
+              >
+                <!-- Poster Photo -->
+                <div class="row mb-2 mx-0 px-0 justify-content-center">
+                  <div class="col-1 mobile-col-2 d-flex flex-column justify-content-center align-items-center">
+                    <img
+                      :src="latestWallOwnerPost.posterInfo.photo || defaultProfilePhoto"
+                      class="img-fluid rounded-circle"
+                      style="width: 40px; height: 40px; object-fit: cover;"
+                      alt="Poster Photo"
+                    />
+                  </div>
+                  <!-- Post Details -->
+                  <div class="col-11 mobile-col-10 d-flex flex-wrap align-items-center text-start">
+                    <router-link
+                      :to="`/profile/user/${latestWallOwnerPost.posterInfo.id}/${latestWallOwnerPost.posterInfo.username}`"
+                      class="text-black text-decoration-none fw-bold mobile-rating-smaller-text-2"
+                    >
+                      {{ latestWallOwnerPost.posterInfo.displayName }}&nbsp;
+                    </router-link>
+                    <p class="mb-0 mobile-rating-smaller-text-2 ms-2">posted on {{ new Date(latestWallOwnerPost.postDate).toLocaleDateString() }}.</p>
+                  </div>
+                </div>
+
+                <!-- Post photo -->
+                <div class="row mt-2 mx-0 px-0" v-if="latestWallOwnerPost.postPhotos && latestWallOwnerPost.postPhotos.length > 0">
+                  <div class="col-md-12 text-center">
+                    <img
+                      :src="latestWallOwnerPost.postPhotos[0]"
+                      class="img-fluid mx-auto"
+                      style="max-height: 250px; object-fit: contain;"
+                      alt="Post Photo"
+                    />
+                  </div>
+                </div>
+
+                <!-- Post content -->
+                <div class="row mt-2 text-start px-0 mobile-rating-smaller-text-2">
+                  <div class="col-md-12">
+                    <p class="mb-0">{{ latestWallOwnerPost.postContent }}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- No posts message (only shown if own profile and no posts) -->
+            <div v-else-if="ownProfile && wallPostsLoaded" class="text-muted text-center py-2">
+              <small>No posts yet. Share something on your wall!</small>
             </div>
           </div>
         </div>
@@ -1051,6 +1142,121 @@
     :show="showBadgePopup" 
     @close="closeBadgePopup"
   />
+
+  <!-- Add Wall Post Modal -->
+  <div
+    class="modal fade"
+    id="addWallPostModal"
+    tabindex="-1"
+    aria-labelledby="addWallPostModalLabel"
+    aria-hidden="true"
+  >
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <!-- Modal header -->
+        <div class="modal-header d-flex justify-content-between">
+          <h5 class="modal-title" id="addWallPostModalLabel">Add A New Post</h5>
+          <button
+            type="button"
+            class="custom-close-btn"
+            data-bs-dismiss="modal"
+            aria-label="Close"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              fill="currentColor"
+              class="bi bi-x"
+              viewBox="0 0 16 16"
+            >
+              <path
+                d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"
+              />
+            </svg>
+          </button>
+        </div>
+
+        <!-- Modal body -->
+        <div class="modal-body">
+          <div class="container">
+            <div class="row">
+              <div class="col-md-12">
+                <textarea
+                  class="form-control"
+                  rows="5"
+                  placeholder="What's on your mind?"
+                  v-model="newWallPostContent"
+                ></textarea>
+              </div>
+            </div>
+            <div class="row mt-3">
+              <div class="col-md-12">
+                <!-- Upload image input field (max 1 photo) -->
+                <input
+                  type="file"
+                  class="form-control"
+                  id="newWallPostPhotoInputField"
+                  accept="image/*"
+                  @change="wallPostImageUpload"
+                />
+
+                <!-- Display the uploaded image -->
+                <div v-if="newWallPostPhoto" class="mt-3">
+                  <div class="position-relative d-inline-block m-2">
+                    <img
+                      :src="newWallPostPhoto"
+                      class="img-fluid"
+                      style="max-height: 300px"
+                      alt="Post Photo"
+                    />
+                    <button
+                      class="btn primary-btn-red btn-sm position-absolute top-0 end-0 mt-3 me-3"
+                      @click="removeWallPostPhoto"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="16"
+                        height="16"
+                        fill="currentColor"
+                        class="bi bi-trash-fill"
+                        viewBox="0 0 16 16"
+                      >
+                        <path
+                          d="M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1zm3 4a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5M8 5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7A.5.5 0 0 1 8 5m3 .5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 1 0"
+                        />
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Modal footer -->
+        <div class="modal-footer">
+          <button
+            type="button"
+            class="btn btn-secondary"
+            data-bs-dismiss="modal"
+            :disabled="disableWallPostButton"
+          >
+            Close
+          </button>
+          <button
+            type="button"
+            class="btn primary-btn-green"
+            :disabled="disableWallPostButton || !newWallPostContent"
+            @click="addWallPost"
+            data-bs-dismiss="modal"
+          >
+            Post
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script>
@@ -1124,6 +1330,13 @@ export default {
       subTagsDataLoaded: false,
       flavorTagsDataLoaded: false,
       drinkTypesDataLoaded: false,
+      wallPostsLoaded: false,
+
+      // Personal Wall Data
+      wallPosts: [],
+      newWallPostContent: null,
+      newWallPostPhoto: null,
+      disableWallPostButton: false,
 
       // Page Data
       //listingNames: [], // list of listing names
@@ -1395,6 +1608,13 @@ export default {
     };
   },
   computed: {
+    // Get the latest post from the wall owner (not posts from other users)
+    latestWallOwnerPost() {
+      if (!this.wallPosts || this.wallPosts.length === 0) return null;
+      // Find posts where the poster is the wall owner
+      const ownerPosts = this.wallPosts.filter(post => post.posterUserID === post.wallOwnerID);
+      return ownerPosts.length > 0 ? ownerPosts[0] : null;
+    },
     // NOTE: This computed property is kept as a fallback but no longer used in template
     // Template now uses totalReviewsCount (data property) which comes from /getReviews endpoint
     totalReviews() {
@@ -1718,6 +1938,7 @@ export default {
           this.getTotalReviewsCount(), // Get total reviews count
           this.getReviewStats(), // Get rating and monthly distribution for charts
           this.getUpcomingEvents(), // Get upcoming events based on user location
+          this.getWallPosts(), // Get wall posts for Personal Wall section
         ]);
 
         await this.getReviewsSummary();
@@ -2221,6 +2442,91 @@ export default {
           this.upcomingEventsLoaded = true;
           console.warn("Upcoming events could not be loaded, using empty state");
         }
+      }
+    },
+
+    // Personal Wall Methods
+    async getWallPosts() {
+      try {
+        const response = await this.$axios.get(
+          `${process.env.VUE_APP_API_URL}/userWall/getWallPosts/${this.displayUserID}/0`
+        );
+        this.wallPosts = response.data.data || [];
+        this.wallPostsLoaded = true;
+      } catch (error) {
+        if (error.response && error.response.status === 404) {
+          // No posts yet - this is fine
+          this.wallPosts = [];
+        } else {
+          console.error("Error fetching wall posts:", error);
+        }
+        this.wallPostsLoaded = true;
+      }
+    },
+
+    // Image upload for new wall post
+    wallPostImageUpload(event) {
+      const file = event.target.files[0];
+      if (file && file.type.match("image.*")) {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => {
+          this.newWallPostPhoto = reader.result;
+        };
+      }
+    },
+
+    // Remove photo from new wall post
+    removeWallPostPhoto() {
+      this.newWallPostPhoto = null;
+      const input = document.getElementById('newWallPostPhotoInputField');
+      if (input) input.value = '';
+    },
+
+    // Add a new wall post
+    async addWallPost() {
+      const toast = useToast();
+      
+      if (!this.newWallPostContent || this.newWallPostContent.trim() === '') {
+        toast.error("Please enter some content for your post.");
+        return;
+      }
+
+      try {
+        this.disableWallPostButton = true;
+
+        let postData = {
+          wallOwnerID: this.displayUserID,
+          posterUserID: this.userID,
+          postContent: this.newWallPostContent,
+        };
+
+        if (this.newWallPostPhoto) {
+          postData.images = [this.newWallPostPhoto];
+        }
+
+        const response = await this.$axios.post(
+          `${process.env.VUE_APP_API_URL}/userWall/addWallPost`,
+          postData
+        );
+
+        if (response.status === 201) {
+          // Reset form
+          this.newWallPostContent = null;
+          this.newWallPostPhoto = null;
+          const input = document.getElementById('newWallPostPhotoInputField');
+          if (input) input.value = '';
+
+          // Reload wall posts
+          await this.getWallPosts();
+
+          toast.success("Post added successfully!");
+        }
+      } catch (error) {
+        console.error("Error adding wall post:", error);
+        toast.error("An error occurred while adding the post. Please try again!");
+      } finally {
+        this.disableWallPostButton = false;
       }
     },
 
