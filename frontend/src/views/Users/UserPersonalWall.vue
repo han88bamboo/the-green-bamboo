@@ -404,6 +404,59 @@
                     </div>
                   </div>
                 </div>
+
+                <!-- Display latest 3 comments -->
+                <div v-if="postComments[post.id] && postComments[post.id].length > 0" class="row mt-3 mx-0 px-0">
+                  <div class="col-12">
+                    <div 
+                      v-for="comment in postComments[post.id].slice(0, 3)" 
+                      :key="comment.id"
+                      class="d-flex align-items-start mb-2 p-2"
+                      style="background-color: #f8f9fa; border-radius: 8px;"
+                    >
+                      <!-- Commenter Photo -->
+                      <img
+                        v-if="comment.commenterInfo && comment.commenterInfo.photo"
+                        :src="comment.commenterInfo.photo"
+                        class="rounded-circle me-2"
+                        style="width: 32px; height: 32px; object-fit: cover;"
+                        alt="Commenter Photo"
+                      />
+                      <svg
+                        v-else
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="32"
+                        height="32"
+                        fill="currentColor"
+                        class="bi bi-person-circle me-2"
+                        viewBox="0 0 16 16"
+                      >
+                        <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0" />
+                        <path
+                          fill-rule="evenodd"
+                          d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1"
+                        />
+                      </svg>
+                      <!-- Comment Content -->
+                      <div class="flex-grow-1">
+                        <div class="d-flex align-items-center flex-wrap">
+                          <router-link
+                            v-if="comment.commenterInfo"
+                            :to="`/profile/user/${comment.commenterInfo.id}/${comment.commenterInfo.username}`"
+                            class="fw-bold text-decoration-none me-2 mobile-rating-smaller-text-2"
+                            style="color: rgb(2, 117, 98);"
+                          >
+                            {{ comment.commenterInfo.displayName }}
+                          </router-link>
+                          <span class="text-muted mobile-rating-smaller-text-2">
+                            {{ new Date(comment.commentDate).toLocaleDateString() }}
+                          </span>
+                        </div>
+                        <p class="mb-0 mobile-rating-smaller-text-2">{{ comment.commentContent }}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -784,6 +837,7 @@ export default {
 
       // Comment data (keyed by post ID)
       newComments: {},
+      postComments: {},  // Stores comments for each post, keyed by post ID
 
       // Button disable state
       disableButton: false,
@@ -864,6 +918,9 @@ export default {
         if (this.posts.length < 10) {
           this.showLoadMoreButton = false;
         }
+
+        // Fetch comments for each post
+        await this.fetchCommentsForPosts(this.posts);
       } catch (error) {
         if (error.response && error.response.status === 404) {
           // No posts yet - this is fine
@@ -882,12 +939,16 @@ export default {
           `${process.env.VUE_APP_API_URL}/userWall/getWallPosts/${this.displayUserID}/${lastPostId}`
         );
         
-        this.posts = this.posts.concat(response.data.data);
+        const newPosts = response.data.data;
+        this.posts = this.posts.concat(newPosts);
         
         // Hide load more if less than 10 posts returned
-        if (response.data.data.length < 10) {
+        if (newPosts.length < 10) {
           this.showLoadMoreButton = false;
         }
+
+        // Fetch comments for new posts
+        await this.fetchCommentsForPosts(newPosts);
       } catch (error) {
         if (error.response && error.response.status === 404) {
           this.showLoadMoreButton = false;
@@ -1183,12 +1244,35 @@ export default {
             post.totalComments += 1;
           }
 
+          // Refresh comments for this post
+          await this.getPostComments(postID);
+
           toast.success("Comment added successfully!");
         }
       } catch (error) {
         console.error("Error adding comment:", error);
         toast.error("An error occurred while adding the comment. Please try again!");
       }
+    },
+
+    // Fetch comments for a single post
+    async getPostComments(postID) {
+      try {
+        const response = await this.$axios.get(
+          `${process.env.VUE_APP_API_URL}/userWall/getWallPostComments/${postID}/0`
+        );
+        // Store comments for this post (Vue 3 reactivity)
+        this.postComments[postID] = response.data.data || [];
+      } catch (error) {
+        console.error(`Error fetching comments for post ${postID}:`, error);
+        this.postComments[postID] = [];
+      }
+    },
+
+    // Fetch comments for multiple posts
+    async fetchCommentsForPosts(posts) {
+      const promises = posts.map(post => this.getPostComments(post.id));
+      await Promise.all(promises);
     },
 
     // Check if current user can edit a post
