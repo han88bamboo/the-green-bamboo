@@ -272,7 +272,10 @@
                 </li>
                 <!-- Bulk Import Listings - ADMIN ONLY -->
                 <li v-if="isAdmin">
-                  <router-link :to="'/admin/importListings'" class="dropdown-item">Import Listings</router-link>
+                  <router-link :to="'/admin/importListings'" class="dropdown-item">Admin Import Listings</router-link>
+                </li>
+                <li v-if="!isAdmin">
+                  <router-link :to="'/listing/import'" class="dropdown-item">Import Listings</router-link>
                 </li>
                 <div class="mobile-view-show">
                   <li>
@@ -441,8 +444,10 @@
                 <li v-show="showAdmin" v-if="isAdmin" class="text-start"><router-link :to="'/admin/dashboard'"
                     style="text-decoration: none; font-weight: normal">Admin Controls</router-link></li>
                 <li v-show="showAdmin" v-if="isAdmin" class="text-start"><router-link :to="'/admin/importListings'"
-                    style="text-decoration: none; font-weight: normal">Import Listings</router-link></li>
-
+                    style="text-decoration: none; font-weight: normal">Admin Import Listings</router-link></li>
+                <li v-if="!isAdmin">
+                  <router-link :to="'/listing/import'" class="dropdown-item">Import Listings</router-link>
+                </li>
               </ul>
               <hr class="m-0 mb-3" />
               <ul class="list-unstyled ps-4">

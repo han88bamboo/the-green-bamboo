@@ -12284,13 +12284,13 @@ def detectPotentialDuplicateListings():
                 logger.warning(f"REQ-{request_id} Could not enable pg_trgm: {ext_err}")
             
             # Build normalized SQL expressions
-            normalize_listing = get_normalize_sql().format(field='l."listingName"')
-            normalize_producer_sql = get_normalize_sql().format(field='p."producerName"')
+            # normalize_listing = get_normalize_sql().format(field='l."listingName"')
+            # normalize_producer_sql = get_normalize_sql().format(field='p."producerName"')
             
-            # Use trigram similarity (%) for fuzzy matching instead of LIKE
-            # similarity() returns 0-1, we use 0.3 as minimum to cast a wide net
-            # The Python fuzzy matching in Step 4 will do the precise scoring
-            # IMPORTANT: Filter by drinkType and originCountry to only match relevant listings
+            # UPDATED: Removed trigram pre-filtering to ensure no duplicates are missed.
+            # drinkType + originCountry filtering significantly reduces the candidate pool.
+            # Python fuzz.token_sort_ratio will do precise scoring on all candidates.
+            # (trigram similarity != fuzz.token_sort_ratio, so pre-filtering by trigram could miss true duplicates)
             search_query = f"""
                 SELECT 
                     l."id",
@@ -12305,32 +12305,17 @@ def detectPotentialDuplicateListings():
                     l."originCountry",
                     l."abv",
                     l."age",
-                    l."photo",
-                    GREATEST(
-                        similarity({normalize_listing}, %s),
-                        similarity({normalize_producer_sql}, %s)
-                    ) as trigram_score
+                    l."photo"
                 FROM "listings" l
                 LEFT JOIN "producers" p ON l."producerID" = p."id"
                 LEFT JOIN "producers" b ON l."bottlerID" = b."id"
                 WHERE l."drinkType" = %s
                   AND l."originCountry" = %s
-                  AND (
-                      similarity({normalize_listing}, %s) > 0.3
-                      OR similarity({normalize_producer_sql}, %s) > 0.3
-                      OR {normalize_listing} LIKE %s
-                      OR {normalize_producer_sql} LIKE %s
-                  )
-                ORDER BY trigram_score DESC
-                LIMIT 50
             """
             
-            # Parameters: 2 for SELECT trigram scores, 2 for WHERE exact match, 2 for WHERE trigram, 2 for WHERE LIKE
+            # Parameters: drinkType and originCountry for WHERE clause filtering
             search_params = [
-                normalized_name, normalized_producer,  # For GREATEST() in SELECT
-                drink_type, origin_country,            # For WHERE exact match on drinkType and originCountry
-                normalized_name, normalized_producer,  # For WHERE similarity()
-                f'%{normalized_name}%', f'%{normalized_producer}%'  # For WHERE LIKE (fallback)
+                drink_type, origin_country
             ]
             
             cursor.execute(search_query, search_params)
@@ -12656,7 +12641,9 @@ def detect_duplicates_batch(listings, threshold=CSV_DUPLICATE_DETECTION_THRESHOL
             normalize_listing = get_normalize_sql().format(field='l."listingName"')
             normalize_producer_sql = get_normalize_sql().format(field='p."producerName"')
             
-            # Use trigram similarity for fuzzy matching
+            # Query candidates filtered by drinkType + originCountry only
+            # Trigram similarity removed - Python fuzz scoring handles matching
+            # (drinkType + originCountry already narrows pool to ~5-20k max)
             search_query = f"""
                 SELECT 
                     l."id",
@@ -12671,31 +12658,29 @@ def detect_duplicates_batch(listings, threshold=CSV_DUPLICATE_DETECTION_THRESHOL
                     l."originCountry",
                     l."abv",
                     l."age",
-                    l."photo",
-                    GREATEST(
-                        similarity({normalize_listing}, %s),
-                        similarity({normalize_producer_sql}, %s)
-                    ) as trigram_score
+                    l."photo"
                 FROM "listings" l
                 LEFT JOIN "producers" p ON l."producerID" = p."id"
                 LEFT JOIN "producers" b ON l."bottlerID" = b."id"
                 WHERE l."drinkType" = %s
                   AND l."originCountry" = %s
-                  AND (
-                      similarity({normalize_listing}, %s) > 0.3
-                      OR similarity({normalize_producer_sql}, %s) > 0.3
-                      OR {normalize_listing} LIKE %s
-                      OR {normalize_producer_sql} LIKE %s
-                  )
-                ORDER BY trigram_score DESC
-                LIMIT 50
             """
+            # COMMENTED OUT: Trigram similarity pre-filtering and LIMIT
+            # The drinkType + originCountry filters already reduce candidates significantly.
+            # Python fuzz.token_sort_ratio handles actual matching with producer gate, 
+            # age gate, ABV gate for accuracy.
+            # Old trigram-based filtering:
+            #   AND (
+            #       similarity({normalize_listing}, %s) > 0.3
+            #       OR similarity({normalize_producer_sql}, %s) > 0.3
+            #       OR {normalize_listing} LIKE %s
+            #       OR {normalize_producer_sql} LIKE %s
+            #   )
+            # ORDER BY trigram_score DESC
+            # LIMIT 50
             
             search_params = [
-                normalized_name, normalized_producer,
-                drink_type, origin_country,
-                normalized_name, normalized_producer,
-                f'%{normalized_name}%', f'%{normalized_producer}%'
+                drink_type, origin_country
             ]
             
             cursor.execute(search_query, search_params)
