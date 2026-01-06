@@ -204,7 +204,7 @@
 
                       <!-- Red Add Review Button for regular users -->
                       <template v-else-if="userType == 'user'">
-                        <!-- Logged-In User XYZ-->
+                        <!-- Logged-In User -->
                         <button class="btn text-white fw-semibold px-2" @click="showMobileBlueBox = true"
                           style="border-radius: 0; height: 40px; background-color: #FF3E31;">
                           {{ !inEdit ? 'Review' : 'Reviewed' }}
@@ -564,6 +564,41 @@
                             <div class="py-2"></div>
                           </div>
                         </div>
+
+                        <!-- Similar Drinks Section (Mobile) -->
+                        <div class="row" v-if="similarDrinks.length > 0">
+                          <div class="p-3 text-start">
+                            <div class="py-2 text-start">
+                              <h5 class="fw-bold">Similar Drinks</h5>
+                              <hr class="color: black">
+                              <div class="row g-2">
+                                <div 
+                                  v-for="drink in similarDrinks" 
+                                  :key="drink.id" 
+                                  class="col-6"
+                                >
+                                  <router-link :to="{ path: '/listing/view/' + drink.id }">
+                                    <div class="similar-drink-card">
+                                      <img 
+                                        :src="drink.photo" 
+                                        :alt="drink.listingName"
+                                        class="similar-drink-image"
+                                        loading="lazy"
+                                      />
+                                      <div class="similar-drink-overlay">
+                                        <p class="similar-drink-name mb-0">{{ drink.listingName }}</p>
+                                        <p class="similar-drink-producer mb-0">{{ drink.producerName }}</p>
+                                        <p class="similar-drink-reviews mb-0">{{ drink.reviewCount }} {{ drink.reviewCount === 1 ? 'review' : 'reviews' }}</p>
+                                      </div>
+                                    </div>
+                                  </router-link>
+                                </div>
+                              </div>
+                            </div>
+                            <div class="py-2"></div>
+                          </div>
+                        </div>
+                        
                       </div>
                     </div>
                   </div>
@@ -3691,6 +3726,41 @@
                             <div class="py-2"></div>
                           </div>
                         </div>
+
+                        <!-- Similar Drinks Section (Desktop) -->
+                        <div class="row" v-if="similarDrinks.length > 0">
+                          <div class="text-start">
+                            <div class="py-2 text-start">
+                              <h5 class="fw-bold">Similar Drinks</h5>
+                              <hr class="color: black">
+                              <div class="row g-2">
+                                <div 
+                                  v-for="drink in similarDrinks" 
+                                  :key="drink.id" 
+                                  class="col-6"
+                                >
+                                  <router-link :to="{ path: '/listing/view/' + drink.id }">
+                                    <div class="similar-drink-card">
+                                      <img 
+                                        :src="drink.photo" 
+                                        :alt="drink.listingName"
+                                        class="similar-drink-image"
+                                        loading="lazy"
+                                      />
+                                      <div class="similar-drink-overlay">
+                                        <p class="similar-drink-name mb-0">{{ drink.listingName }}</p>
+                                        <p class="similar-drink-producer mb-0">{{ drink.producerName }}</p>
+                                        <p class="similar-drink-reviews mb-0">{{ drink.reviewCount }} {{ drink.reviewCount === 1 ? 'review' : 'reviews' }}</p>
+                                      </div>
+                                    </div>
+                                  </router-link>
+                                </div>
+                              </div>
+                            </div>
+                            <div class="py-2"></div>
+                          </div>
+                        </div>
+                        
       </div>
     </div>
     <BookmarkModal v-if="user" :user="user" :listingID="listingIDAsInt"
@@ -4116,6 +4186,9 @@ export default {
       requestEdits: [],
       modRequests: [],
       acctype: null,
+
+      // Similar drinks for 2x2 grid
+      similarDrinks: [],
 
       // search
       search: false,
@@ -5532,6 +5605,8 @@ export default {
       // comments
       this.loadComments(); 
 
+      // Load similar drinks for the 2x2 grid
+      this.loadSimilarDrinks();
 
       // venuesAPI
       // _id, venueName, venueDesc, originCountry
@@ -7627,6 +7702,20 @@ export default {
         
       } catch (error) {
         console.error("Error loading comments:", error);
+      }
+    },
+
+    // Load similar drinks for 2x2 grid
+    async loadSimilarDrinks() {
+      try {
+        const response = await this.$axios.get(
+          `${process.env.VUE_APP_API_URL}/getData/getSimilarDrinks/${this.listing_id}`
+        );
+        this.similarDrinks = response.data;
+        console.log('Similar drinks loaded:', this.similarDrinks);
+      } catch (error) {
+        console.error("Error loading similar drinks:", error);
+        this.similarDrinks = [];
       }
     },
 
@@ -9816,6 +9905,83 @@ input[type="range"].form-range::-webkit-slider-thumb {
 
 .mobile-where-to-buy-trigger:active {
   transform: translateY(0);
+}
+
+/* Similar Drinks 2x2 Grid Styles */
+.similar-drink-card {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  border-radius: 8px;
+  overflow: hidden;
+  background-color: #f8f9fa;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.similar-drink-card:hover {
+  transform: scale(1.02);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.similar-drink-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.similar-drink-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
+  padding: 8px;
+  color: white;
+}
+
+.similar-drink-name {
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1.2;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.similar-drink-producer {
+  font-size: 0.65rem;
+  opacity: 0.85;
+  line-height: 1.2;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.similar-drink-reviews {
+  font-size: 0.6rem;
+  opacity: 0.7;
+  line-height: 1.2;
+}
+
+/* Responsive adjustments for Similar Drinks */
+@media (max-width: 768px) {
+  .similar-drink-name {
+    font-size: 0.7rem;
+  }
+  
+  .similar-drink-producer {
+    font-size: 0.6rem;
+  }
+  
+  .similar-drink-reviews {
+    font-size: 0.55rem;
+  }
 }
 
 </style>

@@ -13241,3 +13241,116 @@ def fuzzy_match_producer_batch(producer_names, threshold=98, request_id='unknown
                 }
     
     return results
+
+
+# [GET] Get similar drinks for a listing based on drinkType
+# Returns up to 4 unique listings with same drinkType that have at least one review and a photo
+# If less than 4 found, fills remaining slots with drinks from same producer
+@blueprint.route("/getSimilarDrinks/<int:listing_id>", methods=['GET'])
+def getSimilarDrinks(listing_id):
+    request_id = getattr(g, 'request_id', 'unknown')
+    
+    logger.info(f"Charsiucharlie_debug REQ-{request_id} getSimilarDrinks listing_id={listing_id}")
+    
+    try:
+        with db_manager.get_cursor() as cursor:
+            # First, get the drinkType and producerID of the current listing
+            cursor.execute("""
+                SELECT "drinkType", "producerID"
+                FROM "listings"
+                WHERE "id" = %s
+            """, (listing_id,))
+            
+            current_listing = cursor.fetchone()
+            
+            if not current_listing:
+                logger.warning(f"REQ-{request_id} getSimilarDrinks: listing {listing_id} not found")
+                return jsonify([]), 200
+            
+            drink_type = current_listing['drinkType']
+            producer_id = current_listing['producerID']
+            
+            if not drink_type:
+                logger.warning(f"REQ-{request_id} getSimilarDrinks: listing {listing_id} has no drinkType")
+                return jsonify([]), 200
+            
+            # Get up to 4 random listings with:
+            # - Same drinkType
+            # - At least one review
+            # - Has a photo
+            # - Not the current listing
+            cursor.execute("""
+                SELECT 
+                    l."id",
+                    l."listingName",
+                    l."photo",
+                    l."drinkType",
+                    l."producerID",
+                    p."producerName",
+                    COUNT(r."id") as "reviewCount"
+                FROM "listings" l
+                LEFT JOIN "producers" p ON l."producerID" = p."id"
+                INNER JOIN "reviews" r ON r."reviewTarget" = l."id"
+                WHERE l."drinkType" = %s
+                  AND l."id" != %s
+                  AND l."photo" IS NOT NULL
+                  AND l."photo" != ''
+                GROUP BY l."id", l."listingName", l."photo", l."drinkType", l."producerID", p."producerName"
+                HAVING COUNT(r."id") >= 1
+                ORDER BY RANDOM()
+                LIMIT 4
+            """, (drink_type, listing_id))
+            
+            similar_drinks = cursor.fetchall()
+            results = [dict(row) for row in similar_drinks]
+            
+            # If we have less than 4 results, fill remaining slots with drinks from same producer
+            if len(results) < 4 and producer_id:
+                existing_ids = [listing_id] + [r['id'] for r in results]
+                remaining_slots = 4 - len(results)
+                
+                # Get drinks from same producer (regardless of drinkType)
+                # Must have at least one review and a photo
+                cursor.execute("""
+                    SELECT 
+                        l."id",
+                        l."listingName",
+                        l."photo",
+                        l."drinkType",
+                        l."producerID",
+                        p."producerName",
+                        COUNT(r."id") as "reviewCount"
+                    FROM "listings" l
+                    LEFT JOIN "producers" p ON l."producerID" = p."id"
+                    INNER JOIN "reviews" r ON r."reviewTarget" = l."id"
+                    WHERE l."producerID" = %s
+                      AND l."id" != ALL(%s)
+                      AND l."photo" IS NOT NULL
+                      AND l."photo" != ''
+                    GROUP BY l."id", l."listingName", l."photo", l."drinkType", l."producerID", p."producerName"
+                    HAVING COUNT(r."id") >= 1
+                    ORDER BY RANDOM()
+                    LIMIT %s
+                """, (producer_id, existing_ids, remaining_slots))
+                
+                producer_drinks = cursor.fetchall()
+                results.extend([dict(row) for row in producer_drinks])
+            
+            logger.info(f"Charsiucharlie_debug REQ-{request_id} getSimilarDrinks success count={len(results)}")
+            return jsonify(results), 200
+            
+    except psycopg2.Error as db_error:
+        logger.error(f"Charsiucharlie_debug REQ-{request_id} DB_ERROR getSimilarDrinks listing_id={listing_id} error={str(db_error)}")
+        return jsonify({
+            "code": 500,
+            "message": "An error occurred while fetching similar drinks.",
+            "request_id": request_id
+        }), 500
+        
+    except Exception as e:
+        logger.error(f"Charsiucharlie_debug REQ-{request_id} ERROR getSimilarDrinks listing_id={listing_id} error={str(e)}", exc_info=True)
+        return jsonify({
+            "code": 500,
+            "message": "An error occurred while fetching similar drinks.",
+            "request_id": request_id
+        }), 500
