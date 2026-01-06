@@ -452,16 +452,47 @@
               <hr class="m-0 mb-3" />
               <ul class="list-unstyled ps-4">
 
-                <!-- Submit / Add a Drink -->
-                <li v-if="((accType === 'user' && !isAdmin && !isModerator) || accType === 'venue')" class="text-start">
-                  <router-link to="/request/new-bulk" style="text-decoration: none; ">Submit A Drink</router-link>
+                <!-- Submit / Add a Drink (Collapsible) -->
+                <li v-if="accType !== ''" class="drawer-section-title d-flex align-items-center text-start" @click="toggleSubmitDrink">
+                  <span>{{ accType === 'producer' ? 'List New Product' : 'List New Drink' }}</span>
+                  <span style="margin-left: 8px;">{{ showSubmitDrink ? '▾' : '▸' }}</span>
                 </li>
-                <li v-if="accType === 'producer'" class="text-start">
-                  <router-link to="/listing/create-bulk" style="text-decoration: none;">Add New Product</router-link>
+                <!-- Regular users (not admin/moderator) -->
+                <li v-show="showSubmitDrink" v-if="accType === 'user' && !isAdmin && !isModerator" class="text-start pt-1">
+                  <router-link to="/request/new" style="text-decoration: none; font-weight: normal">Submit One Drink</router-link>
                 </li>
-                
-                <li v-if="accType === 'isAdmin || isModerator'" class="text-start">
-                  <router-link to="/listing/create-bulk" style="text-decoration: none;">Add New Drink</router-link>
+                <li v-show="showSubmitDrink" v-if="accType === 'user' && !isAdmin && !isModerator" class="text-start">
+                  <router-link to="/request/new-bulk" style="text-decoration: none; font-weight: normal">Submit Multiple Drinks</router-link>
+                </li>
+                <!-- Admin or Moderator users -->
+                <li v-show="showSubmitDrink" v-if="accType === 'user' && (isAdmin || isModerator)" class="text-start pt-1">
+                  <router-link to="/listing/create" style="text-decoration: none; font-weight: normal">Submit One Drink</router-link>
+                </li>
+                <li v-show="showSubmitDrink" v-if="accType === 'user' && (isAdmin || isModerator)" class="text-start">
+                  <router-link to="/listing/create-bulk" style="text-decoration: none; font-weight: normal">Submit Multiple Drinks</router-link>
+                </li>
+                <li v-show="showSubmitDrink" v-if="accType === 'user' && (isAdmin || isModerator)" class="text-start">
+                  <router-link to="/listing/import" style="text-decoration: none; font-weight: normal">Import from CSV</router-link>
+                </li>
+                <!-- Producers -->
+                <li v-show="showSubmitDrink" v-if="accType === 'producer'" class="text-start pt-1">
+                  <router-link to="/listing/create" style="text-decoration: none; font-weight: normal">Submit One Product</router-link>
+                </li>
+                <li v-show="showSubmitDrink" v-if="accType === 'producer'" class="text-start">
+                  <router-link to="/listing/create-bulk" style="text-decoration: none; font-weight: normal">Submit Multiple Products</router-link>
+                </li>
+                <li v-show="showSubmitDrink" v-if="accType === 'producer'" class="text-start">
+                  <router-link to="/listing/import" style="text-decoration: none; font-weight: normal">Import from CSV</router-link>
+                </li>
+                <!-- Venues -->
+                <li v-show="showSubmitDrink" v-if="accType === 'venue'" class="text-start pt-1">
+                  <router-link to="/request/new" style="text-decoration: none; font-weight: normal">Submit One Drink</router-link>
+                </li>
+                <li v-show="showSubmitDrink" v-if="accType === 'venue'" class="text-start">
+                  <router-link to="/request/new-bulk" style="text-decoration: none; font-weight: normal">Submit Multiple Drinks</router-link>
+                </li>
+                <li v-show="showSubmitDrink" v-if="accType === 'venue'" class="text-start">
+                  <router-link to="/listing/import" style="text-decoration: none; font-weight: normal">Import from CSV</router-link>
                 </li>
 
                 <li v-if="accType === 'user'" class="drawer-section-title pt-2 text-start">
@@ -594,43 +625,71 @@
         </button>
 
 
-        <button @click="forceLoad('/request/new-bulk')"
-          v-if="onRequest && ((accType === 'user' && !isAdmin && !isModerator) || accType === 'venue')"
-          class="btn primary-btn border-0" style="color:#027562; font-weight: 900" type="button">
-          <!-- class="text-warning" style="color:#D58D2D !important;" -->
-          Submit A Drink
+        <!-- List New Drink/Product Dropdown -->
+        <button
+          v-if="accType !== ''"
+          type="button"
+          class="btn primary-btn border-0 dropdown-toggle position-relative"
+          style="color:#027562; font-weight: 900"
+          aria-expanded="false"
+          @click="submitDrinkDropdownOpen = !submitDrinkDropdownOpen"
+          @keydown.enter.prevent="submitDrinkDropdownOpen = !submitDrinkDropdownOpen"
+          @mouseleave="startSubmitDrinkCloseTimer"
+          @mouseenter="cancelSubmitDrinkCloseTimer"
+        >
+          {{ accType === 'producer' ? 'List New Product' : 'List New Drink' }}
+          
+          <!-- Dropdown menu -->
+          <ul class="list-group submit-drink-dropdown" v-if="submitDrinkDropdownOpen"
+              @mouseenter="cancelSubmitDrinkCloseTimer"
+              @mouseleave="startSubmitDrinkCloseTimer">
+            <!-- Regular users (not admin/moderator) -->
+            <template v-if="accType === 'user' && !isAdmin && !isModerator">
+              <li class="list-group-item list-group-item-action text-start">
+                <router-link to="/request/new" style="text-decoration: none; color: inherit; display: block;">Submit One Drink</router-link>
+              </li>
+              <li class="list-group-item list-group-item-action text-start">
+                <router-link to="/request/new-bulk" style="text-decoration: none; color: inherit; display: block;">Submit Multiple Drinks</router-link>
+              </li>
+            </template>
+            <!-- Admin or Moderator users -->
+            <template v-if="accType === 'user' && (isAdmin || isModerator)">
+              <li class="list-group-item list-group-item-action text-start">
+                <router-link to="/listing/create" style="text-decoration: none; color: inherit; display: block;">Submit One Drink</router-link>
+              </li>
+              <li class="list-group-item list-group-item-action text-start">
+                <router-link to="/listing/create-bulk" style="text-decoration: none; color: inherit; display: block;">Submit Multiple Drinks</router-link>
+              </li>
+              <li class="list-group-item list-group-item-action text-start">
+                <router-link to="/listing/import" style="text-decoration: none; color: inherit; display: block;">Import from CSV</router-link>
+              </li>
+            </template>
+            <!-- Producers -->
+            <template v-if="accType === 'producer'">
+              <li class="list-group-item list-group-item-action text-start">
+                <router-link to="/listing/create" style="text-decoration: none; color: inherit; display: block;">Submit One Product</router-link>
+              </li>
+              <li class="list-group-item list-group-item-action text-start">
+                <router-link to="/listing/create-bulk" style="text-decoration: none; color: inherit; display: block;">Submit Multiple Products</router-link>
+              </li>
+              <li class="list-group-item list-group-item-action text-start">
+                <router-link to="/listing/import" style="text-decoration: none; color: inherit; display: block;">Import from CSV</router-link>
+              </li>
+            </template>
+            <!-- Venues -->
+            <template v-if="accType === 'venue'">
+              <li class="list-group-item list-group-item-action text-start">
+                <router-link to="/request/new" style="text-decoration: none; color: inherit; display: block;">Submit One Drink</router-link>
+              </li>
+              <li class="list-group-item list-group-item-action text-start">
+                <router-link to="/request/new-bulk" style="text-decoration: none; color: inherit; display: block;">Submit Multiple Drinks</router-link>
+              </li>
+              <li class="list-group-item list-group-item-action text-start">
+                <router-link to="/listing/import" style="text-decoration: none; color: inherit; display: block;">Import from CSV</router-link>
+              </li>
+            </template>
+          </ul>
         </button>
-        <router-link v-if="!onRequest && ((accType === 'user' && !isAdmin && !isModerator) || accType === 'venue')"
-          :to="'/request/new-bulk'">
-          <button class="btn primary-btn border-0" style="color:#027562; font-weight: 900" type="button">
-            <!-- class="text-warning" style="color:#D58D2D !important;" -->
-            Submit A Drink
-          </button>
-        </router-link>
-
-        <!-- Producers see "Add a Product" -->
-        <button @click="forceLoad('/listing/create-bulk')" v-if="onCreate && accType === 'producer'"
-          class="btn primary-btn border-0" style="color:#027562; font-weight: 900" type="button">
-          Add a Product
-        </button>
-
-        <router-link v-if="!onCreate && accType === 'producer'" :to="'/listing/create-bulk'">
-          <button class="btn primary-btn border-0" style="color:#027562; font-weight: 900" type="button">
-            Add a Product
-          </button>
-        </router-link>
-
-        <!-- Admins & Moderators see "Add a New Drink" -->
-        <button @click="forceLoad('/listing/create-bulk')" v-if="onCreate && (isAdmin || isModerator)"
-          class="btn primary-btn border-0" style="color:#027562; font-weight: 900" type="button">
-           + Add a New Drink
-        </button>
-
-        <router-link v-if="!onCreate && (isAdmin || isModerator)" :to="'/listing/create-bulk'">
-          <button class="btn primary-btn border-0" style="color:#027562; font-weight: 900" type="button">
-            + Add a New Drink
-          </button>
-        </router-link>
 
 
         <router-link v-if="accType === 'venue'" :to="profileURL">
@@ -863,8 +922,11 @@
           showStats: false,
           showClubsEvents:false,
           showAdmin: false,
+          showSubmitDrink: false,
           dropdownOpen: false,
           dropdownTimer: null,
+          submitDrinkDropdownOpen: false,
+          submitDrinkDropdownTimer: null,
 
           notifications: {
             forYou: [],
@@ -1081,6 +1143,24 @@
         },
         toggleClubsEvents() {
           this.showClubsEvents = !this.showClubsEvents;
+        },
+
+        toggleSubmitDrink() {
+          this.showSubmitDrink = !this.showSubmitDrink;
+        },
+
+        // Desktop dropdown timer methods for Submit Drink
+        startSubmitDrinkCloseTimer() {
+          this.submitDrinkDropdownTimer = setTimeout(() => {
+            this.submitDrinkDropdownOpen = false;
+          }, 300);
+        },
+
+        cancelSubmitDrinkCloseTimer() {
+          if (this.submitDrinkDropdownTimer) {
+            clearTimeout(this.submitDrinkDropdownTimer);
+            this.submitDrinkDropdownTimer = null;
+          }
         },
 
         toggleAdmin() {
@@ -1618,6 +1698,37 @@
   overflow: hidden;
   animation: slideDown 0.2s ease-out;
   min-width: 200px;
+}
+
+/* Submit Drink Dropdown Styling */
+.submit-drink-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 1060;
+  max-height: 300px;
+  overflow: hidden;
+  animation: slideDown 0.2s ease-out;
+  min-width: 200px;
+}
+
+.submit-drink-dropdown .list-group-item {
+  padding: 10px 15px;
+  border: none;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.submit-drink-dropdown .list-group-item:last-child {
+  border-bottom: none;
+}
+
+.submit-drink-dropdown .list-group-item:hover {
+  background-color: #f8f9fa;
 }
 
 @keyframes slideDown {
