@@ -603,7 +603,7 @@
                         <div class="row" v-if="peopleAlsoDrank.length > 0">
                           <div class="p-3 text-start">
                             <div class="py-2 text-start">
-                              <h5 class="fw-bold">People Who Drank This Also Drank...</h5>
+                              <h5 class="fw-bold">You May Also Like...</h5>
                               <hr class="color: black">
                               <div class="row g-2">
                                 <div 
@@ -3799,7 +3799,7 @@
                         <div class="row" v-if="peopleAlsoDrank.length > 0">
                           <div class="text-start">
                             <div class="py-2 text-start">
-                              <h5 class="fw-bold">People Who Drank This Also Drank...</h5>
+                              <h5 class="fw-bold">You May Also Like...</h5>
                               <hr class="color: black">
                               <div class="row g-2">
                                 <div 
