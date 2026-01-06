@@ -42,6 +42,34 @@ def get_top_comments(content_id, content_type):
         # Get unique field 
         unique_field = get_unique_field(content_type)
 
+        # Special handling for WallPost comments (different schema)
+        if content_type == "WallPost":
+            cursor.execute(f"""
+                SELECT * FROM "{table_name}"
+                WHERE "{unique_field}" = %s
+                ORDER BY "commentDate" DESC
+                LIMIT 3
+            """, (content_id,))
+            comments = cursor.fetchall()
+
+            if comments:
+                for comment in comments:
+                    # WallPost comments only have commenterID (users only)
+                    commenter_info = get_commenter_info(comment['commenterID'], 'user')
+                    comment['username'] = commenter_info['username']
+                    comment['userPhoto'] = commenter_info['photo']
+                    # Normalize field names for frontend consistency
+                    comment['comment'] = comment.get('commentContent', '')
+                    comment['createdAt'] = comment.get('commentDate')
+                    comment['userId'] = comment.get('commenterID')
+                    comment['userType'] = 'user'
+                    # No nested replies for WallPost
+                    comment['replyCount'] = 0
+                    comment['replies'] = []
+
+            return comments
+
+        # Standard handling for other content types
         cursor.execute(f"""
             SELECT * FROM "{table_name}"
             WHERE "{unique_field}" = %s AND "parentId" IS NULL
@@ -152,6 +180,17 @@ def get_likes_count(content_id, content_type):
             if not upvotes or not upvotes.get("count"):   # <-- safe check
                 return 0
             return upvotes["count"]
+
+        # If table name is userWallPostLikes
+        if table_name == "userWallPostLikes":
+            cursor.execute(f"""
+                           SELECT COUNT(*) FROM "{table_name}"
+                           WHERE "{unique_field}" = %s
+                       """, (content_id,))
+            likes = cursor.fetchone()
+            if not likes or not likes.get("count"):
+                return 0
+            return likes["count"]
         
 
 
@@ -198,6 +237,17 @@ def get_liked_content_ids(user_id, user_type, content_type, content_ids):
                 SELECT "{unique_field}"
                 FROM "{table_name}"
                 WHERE "userId" = %s
+                AND "{unique_field}" = ANY(%s)
+            """, (user_id, content_ids))
+            rows = cursor.fetchall()
+            return [row[unique_field] for row in rows] if rows else []
+
+        # ---------- userWallPostLikes ----------
+        if table_name == "userWallPostLikes":
+            cursor.execute(f"""
+                SELECT "{unique_field}"
+                FROM "{table_name}"
+                WHERE "userID" = %s
                 AND "{unique_field}" = ANY(%s)
             """, (user_id, content_ids))
             rows = cursor.fetchall()
@@ -254,6 +304,12 @@ def get_table_name(content_type, feature):
         elif feature == "comment":
             return "88BContentComments"
 
+    elif content_type == "WallPost":
+        if feature == "like" or feature == "unlike":
+            return "userWallPostLikes"
+        elif feature == "comment":
+            return "userWallPostComments"
+
     return None
 
 
@@ -273,6 +329,9 @@ def get_unique_field(content_type):
 
     elif content_type == "88B":
         return "contentId"
+
+    elif content_type == "WallPost":
+        return "postID"
 
     return None
 
@@ -614,8 +673,52 @@ def getRandomListings(user_id, user_type):
                         # Get total number of comments
                         update['totalComments'] = get_total_comments(update['id'], 'vUpdate')
 
+            # Fetch wall posts (0-3 random from last 14 days, unique posters only)
+            wall_posts = []
+            wall_posts_limit = random.randint(0, 3)
+            if wall_posts_limit > 0:
+                # Use DISTINCT ON to get only one post per unique poster
+                cursor.execute("""
+                    SELECT DISTINCT ON ("posterUserID") * FROM "userWallPosts"
+                    WHERE "postDate" >= NOW() - INTERVAL '14 days'
+                    ORDER BY "posterUserID", "postDate" DESC
+                    LIMIT %s
+                """, (wall_posts_limit,))
+                wall_posts = cursor.fetchall()
+
+                # Enrich each wall post
+                for post in wall_posts:
+                    post['contentType'] = 'WallPost'
+
+                    # Get poster info
+                    poster_info = get_commenter_info(post['posterUserID'], 'user')
+                    post['posterInfo'] = {
+                        'id': post['posterUserID'],
+                        'username': poster_info['username'],
+                        'photo': poster_info['photo']
+                    }
+
+                    # Get wall owner info
+                    wall_owner_info = get_commenter_info(post['wallOwnerID'], 'user')
+                    post['wallOwnerInfo'] = {
+                        'id': post['wallOwnerID'],
+                        'username': wall_owner_info['username'],
+                        'photo': wall_owner_info['photo']
+                    }
+
+                    # Get top 3 comments
+                    post['topComments'] = get_top_comments(post['id'], 'WallPost')
+
+                    # Get number of likes
+                    post['totalLikes'] = get_likes_count(post['id'], 'WallPost')
+
+                    # Get total number of comments
+                    post['totalComments'] = get_total_comments(post['id'], 'WallPost')
+
+            wall_posts_last_id = wall_posts[-1]['id'] if wall_posts else None
+
         # If no content found (possibly due to content filtering), return a message asking user to refresh
-        if not listings_data and not reviews and not producers_updates and not venues_updates:
+        if not listings_data and not reviews and not producers_updates and not venues_updates and not wall_posts:
             print("charsiucharlie_debug: No content available after all filtering - returning refresh message")
             return jsonify({
                 "error": "No content available for this selection. Please refresh the page to try again.",
@@ -626,6 +729,7 @@ def getRandomListings(user_id, user_type):
         reviews_likes = []
         producers_updates_likes = []
         venues_updates_likes = []
+        wall_posts_likes = []
         
         # Get current user's likes for the content
         if user_id not in (None, '') and user_type not in (None, ''):
@@ -633,8 +737,9 @@ def getRandomListings(user_id, user_type):
             reviews_likes = get_liked_content_ids(user_id, user_type, "Review", [row["id"] for row in reviews])
             producers_updates_likes = get_liked_content_ids(user_id, user_type, "pUpdate", [row["id"] for row in producers_updates])
             venues_updates_likes = get_liked_content_ids(user_id, user_type, "vUpdate", [row["id"] for row in venues_updates])
+            wall_posts_likes = get_liked_content_ids(user_id, user_type, "WallPost", [row["id"] for row in wall_posts])
 
-        content = listings_data + reviews + producers_updates + venues_updates
+        content = listings_data + reviews + producers_updates + venues_updates + wall_posts
         random.shuffle(content)
 
         return jsonify({
@@ -644,10 +749,12 @@ def getRandomListings(user_id, user_type):
             "reviewsLastID": reviews_last_id,
             "pUpdateLastID": producers_updates[-1]['id'] if producers_updates else None,
             "vUpdateLastID": venues_updates[-1]['id'] if venues_updates else None,
+            "wallPostLastID": wall_posts_last_id,
             "listingsLikes": listings_likes,
             "reviewsLikes": reviews_likes,
             "producersUpdatesLikes": producers_updates_likes,
-            "venuesUpdatesLikes": venues_updates_likes
+            "venuesUpdatesLikes": venues_updates_likes,
+            "wallPostLikes": wall_posts_likes
         })
     except Exception as e:
         print(f"Error occurred: {str(e)}")
@@ -695,6 +802,12 @@ def getNext30():
     else:
         vReviewLastID = None
 
+    wallPostLastID = data.get('wallPostLastID')
+    if wallPostLastID:
+        wallPostLastID = int(wallPostLastID)
+    else:
+        wallPostLastID = None
+
     # Initialize list
     listings_data = []
     recent_reviews = []
@@ -702,6 +815,7 @@ def getNext30():
     venues_updates = []
     producer_reviews = []
     venue_reviews = []
+    wall_posts = []
 
     try:
         with db_manager.get_cursor() as cursor:
@@ -1021,7 +1135,51 @@ def getNext30():
                     # Get total number of comments
                     update['totalComments'] = get_total_comments(update['id'], 'vUpdate')
 
-        if len(listings_data) + len(recent_reviews) + len(producers_updates) + len(venues_updates) + len(producer_reviews) + len(venue_reviews) == 0:
+            # Fetch wall posts (0-3 random from last 14 days, unique posters only)
+            wall_posts_limit = random.randint(0, 3)
+            if wall_posts_limit > 0:
+                # Use DISTINCT ON to get only one post per unique poster
+                cursor.execute("""
+                    SELECT DISTINCT ON ("posterUserID") * FROM "userWallPosts"
+                    WHERE "postDate" >= NOW() - INTERVAL '14 days'
+                    AND (%s IS NULL OR "id" > %s)
+                    ORDER BY "posterUserID", "postDate" DESC
+                    LIMIT %s
+                """, (wallPostLastID, wallPostLastID, wall_posts_limit,))
+                wall_posts = cursor.fetchall()
+
+                # Enrich each wall post
+                for post in wall_posts:
+                    post['contentType'] = 'WallPost'
+
+                    # Get poster info
+                    poster_info = get_commenter_info(post['posterUserID'], 'user')
+                    post['posterInfo'] = {
+                        'id': post['posterUserID'],
+                        'username': poster_info['username'],
+                        'photo': poster_info['photo']
+                    }
+
+                    # Get wall owner info
+                    wall_owner_info = get_commenter_info(post['wallOwnerID'], 'user')
+                    post['wallOwnerInfo'] = {
+                        'id': post['wallOwnerID'],
+                        'username': wall_owner_info['username'],
+                        'photo': wall_owner_info['photo']
+                    }
+
+                    # Get top 3 comments
+                    post['topComments'] = get_top_comments(post['id'], 'WallPost')
+
+                    # Get number of likes
+                    post['totalLikes'] = get_likes_count(post['id'], 'WallPost')
+
+                    # Get total number of comments
+                    post['totalComments'] = get_total_comments(post['id'], 'WallPost')
+
+                wallPostLastID = wall_posts[-1]['id'] if wall_posts else wallPostLastID
+
+        if len(listings_data) + len(recent_reviews) + len(producers_updates) + len(venues_updates) + len(producer_reviews) + len(venue_reviews) + len(wall_posts) == 0:
             return jsonify([])
         
         listings_likes = []
@@ -1030,6 +1188,7 @@ def getNext30():
         venues_updates_likes = []
         producer_reviews_likes = []
         venue_reviews_likes = []
+        wall_posts_likes = []
 
         # Get current user's likes for the content
         if user_id not in (None, '', 0) and user_type not in (None, '', 'public'):
@@ -1040,9 +1199,10 @@ def getNext30():
 
             producer_reviews_likes = get_liked_content_ids(user_id, user_type, "pReview", [row["id"] for row in producer_reviews])
             venue_reviews_likes = get_liked_content_ids(user_id, user_type, "vReview", [row["id"] for row in venue_reviews])
+            wall_posts_likes = get_liked_content_ids(user_id, user_type, "WallPost", [row["id"] for row in wall_posts])
 
         # Shuffle data 
-        content = listings_data + recent_reviews + producers_updates + venues_updates + producer_reviews + venue_reviews
+        content = listings_data + recent_reviews + producers_updates + venues_updates + producer_reviews + venue_reviews + wall_posts
         random.shuffle(content)
 
         print(f"Total content fetched: {len(content)}")
@@ -1054,12 +1214,14 @@ def getNext30():
             "pUpdateLastID": pUpdateLastID,
             "reviewsLastID": reviewsLastID,
             "vUpdateLastID": vUpdateLastID,
+            "wallPostLastID": wallPostLastID,
             "listingsLikes": listings_likes,
             "reviewsLikes": reviews_likes,
             "producersUpdatesLikes": producers_updates_likes,
             "venuesUpdatesLikes": venues_updates_likes,
             "producerReviewsLikes": producer_reviews_likes,
             "venueReviewsLikes": venue_reviews_likes,
+            "wallPostLikes": wall_posts_likes,
             "pReviewLastID": pReviewLastID,
             "vReviewLastID": vReviewLastID
         })

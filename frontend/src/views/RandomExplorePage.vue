@@ -1542,7 +1542,7 @@
                                   <!-- For WallPost -->
                                   <div v-else-if="content.contentType == 'WallPost'">
                                     <!-- Poster username, photo, and posted date -->
-                                    <div v-if="content.posterInfo" class="d-flex align-items-center">
+                                    <div v-if="content.posterInfo" class="d-flex align-items-center flex-wrap">
                                       <router-link
                                         :to="{ path: '/profile/user/' + content.posterInfo.id + '/' + content.posterInfo.username }"
                                         class="primary-clickable-text text-decoration-none"
@@ -1561,6 +1561,17 @@
                                           <h6 class="d-block d-md-none mobile-mt-2 mb-0 ms-2">@<b>{{ content.posterInfo.username }}</b></h6>
                                         </div>
                                       </router-link>
+                                      <!-- Show "said to @wallOwner" when posting on someone else's wall -->
+                                      <span v-if="content.wallOwnerInfo && content.posterUserID !== content.wallOwnerID" class="ms-1">
+                                        <span class="text-muted">said to</span>
+                                        <router-link
+                                          :to="{ path: '/profile/user/' + content.wallOwnerInfo.id + '/' + content.wallOwnerInfo.username }"
+                                          class="primary-clickable-text text-decoration-none ms-1"
+                                          style="color: #027562"
+                                        >
+                                          @<b>{{ content.wallOwnerInfo.username }}</b>
+                                        </router-link>
+                                      </span>
                                       <span class="text-muted ms-2" style="font-size: 0.9em;">
                                         posted on {{ new Date(content.postDate).toLocaleDateString() }}.
                                       </span>
@@ -1568,8 +1579,8 @@
 
                                     <!-- Post Content -->
                                     <router-link
-                                      v-if="content.posterInfo"
-                                      :to="{ path: '/profile/user/' + content.posterInfo.id + '/' + content.posterInfo.username + '/all-wall-posts' }"
+                                      v-if="content.wallOwnerInfo"
+                                      :to="{ path: '/profile/user/' + content.wallOwnerInfo.id + '/' + content.wallOwnerInfo.username + '/all-wall-posts' }"
                                       class="primary-clickable-text text-decoration-none"
                                     >
                                       <p class="homepage-bottle-listing-description">
@@ -1656,8 +1667,8 @@
                                   <div v-else-if="content.contentType == 'WallPost'">
                                     <div class="d-grid">
                                       <router-link
-                                        v-if="content.posterInfo"
-                                        :to="{ path: '/profile/user/' + content.posterInfo.id + '/' + content.posterInfo.username + '/all-wall-posts' }"
+                                        v-if="content.wallOwnerInfo"
+                                        :to="{ path: '/profile/user/' + content.wallOwnerInfo.id + '/' + content.wallOwnerInfo.username + '/all-wall-posts' }"
                                         class="primary-clickable-text"
                                       >
                                         <button class="btn secondary-btn-border fw-bold btn-sm py-2 px-3">
@@ -2789,6 +2800,7 @@ export default {
       vUpdateLastID: null,
       pReviewLastID: null,
       vReviewLastID: null,
+      wallPostLastID: null,
       moreContent: true,
 
       // Contains ids of content which the user has liked for the 4 categories
@@ -2924,6 +2936,7 @@ methods: {
         this.pUpdateLastID = response.data.pUpdateLastID;
         this.reviewsLastID = response.data.reviewsLastID;
         this.vUpdateLastID = response.data.vUpdateLastID;
+        this.wallPostLastID = response.data.wallPostLastID;
 
         // Map the likes to their respective categories
         this.listingsLikes = response.data.listingsLikes || [];
@@ -3727,7 +3740,8 @@ methods: {
             reviewsLastID: this.reviewsLastID,
             vUpdateLastID: this.vUpdateLastID,
             pReviewLastID: this.pReviewLastID,
-            vReviewLastID: this.vReviewLastID
+            vReviewLastID: this.vReviewLastID,
+            wallPostLastID: this.wallPostLastID
           }
         );
 
@@ -3744,6 +3758,7 @@ methods: {
           this.vUpdateLastID = response.data.vUpdateLastID;
           this.pReviewLastID = response.data.pReviewLastID;
           this.vReviewLastID = response.data.vReviewLastID;
+          this.wallPostLastID = response.data.wallPostLastID;
 
           // Update likes for each category
           this.listingsLikes =  this.listingsLikes.concat(response.data.listingsLikes || []);
@@ -3752,6 +3767,7 @@ methods: {
           this.venuesUpdatesLikes = this.venuesUpdatesLikes.concat(response.data.venuesUpdatesLikes || []);
           this.producerReviewsLikes = this.producerReviewsLikes.concat(response.data.producerReviewsLikes || []);
           this.venueReviewsLikes = this.venueReviewsLikes.concat(response.data.venueReviewsLikes || []);
+          this.wallPostLikes = this.wallPostLikes.concat(response.data.wallPostLikes || []);
         }
         
       }
