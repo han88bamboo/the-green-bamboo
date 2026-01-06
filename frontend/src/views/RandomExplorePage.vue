@@ -2417,8 +2417,9 @@
     tabindex="-1"
     aria-labelledby="addExploreWallPostModalLabel"
     aria-hidden="true"
+    ref="addExploreWallPostModal"
   >
-    <div class="modal-dialog modal-lg">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
       <div class="modal-content">
         <!-- Modal header -->
         <div class="modal-header d-flex justify-content-between">
@@ -2454,6 +2455,7 @@
                   rows="5"
                   placeholder="What's on your mind?"
                   v-model="newWallPostContent"
+                  ref="wallPostTextarea"
                 ></textarea>
               </div>
             </div>
@@ -2889,6 +2891,16 @@ export default {
   }
 
   this.loadData();
+
+  // Auto-focus textarea when wall post modal opens
+  const wallPostModal = document.getElementById('addExploreWallPostModal');
+  if (wallPostModal) {
+    wallPostModal.addEventListener('shown.bs.modal', () => {
+      if (this.$refs.wallPostTextarea) {
+        this.$refs.wallPostTextarea.focus();
+      }
+    });
+  }
 },
 
 methods: {
