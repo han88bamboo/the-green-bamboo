@@ -13461,3 +13461,121 @@ def getPeopleAlsoDrank(listing_id):
             "message": "An error occurred while fetching recommendations.",
             "request_id": request_id
         }), 500
+
+
+# [GET] Get "You May Also Like" recommendations based on user's most reviewed drinkType
+# Returns up to 6 listings of user's top reviewed drinkType, or random from 3+ drinkTypes if no reviews
+# All must have at least one review and a photo
+@blueprint.route("/getUserMayAlsoLike/<int:user_id>/<int:listing_id>", methods=['GET'])
+def getUserMayAlsoLike(user_id, listing_id):
+    request_id = getattr(g, 'request_id', 'unknown')
+    
+    logger.info(f"Charsiucharlie_debug REQ-{request_id} getUserMayAlsoLike user_id={user_id} listing_id={listing_id}")
+    
+    try:
+        with db_manager.get_cursor() as cursor:
+            # Step 1: Find user's most reviewed drinkType
+            cursor.execute("""
+                SELECT l."drinkType", COUNT(*) as review_count
+                FROM "reviews" r
+                INNER JOIN "listings" l ON r."reviewTarget" = l."id"
+                WHERE r."userID" = %s
+                  AND l."drinkType" IS NOT NULL
+                GROUP BY l."drinkType"
+                ORDER BY review_count DESC
+                LIMIT 1
+            """, (user_id,))
+            
+            top_drinktype_result = cursor.fetchone()
+            
+            results = []
+            
+            if top_drinktype_result:
+                # User has reviews - get drinks from their top drinkType
+                top_drinktype = top_drinktype_result['drinkType']
+                
+                cursor.execute("""
+                    SELECT 
+                        l."id",
+                        l."listingName",
+                        l."photo",
+                        l."drinkType",
+                        l."producerID",
+                        p."producerName",
+                        COUNT(r."id") as "reviewCount"
+                    FROM "listings" l
+                    LEFT JOIN "producers" p ON l."producerID" = p."id"
+                    INNER JOIN "reviews" r ON r."reviewTarget" = l."id"
+                    WHERE l."drinkType" = %s
+                      AND l."id" != %s
+                      AND l."photo" IS NOT NULL
+                      AND l."photo" != ''
+                    GROUP BY l."id", l."listingName", l."photo", l."drinkType", l."producerID", p."producerName"
+                    HAVING COUNT(r."id") >= 1
+                    ORDER BY RANDOM()
+                    LIMIT 6
+                """, (top_drinktype, listing_id))
+                
+                results = [dict(row) for row in cursor.fetchall()]
+            
+            # Fallback: If user has no reviews OR not enough results, get random from 3+ drinkTypes
+            if len(results) < 6:
+                existing_ids = [listing_id] + [r['id'] for r in results]
+                remaining_slots = 6 - len(results)
+                
+                # Get random drinks ensuring at least 3 different drinkTypes in final result
+                cursor.execute("""
+                    WITH ranked_drinks AS (
+                        SELECT 
+                            l."id",
+                            l."listingName",
+                            l."photo",
+                            l."drinkType",
+                            l."producerID",
+                            p."producerName",
+                            COUNT(r."id") as "reviewCount",
+                            ROW_NUMBER() OVER (PARTITION BY l."drinkType" ORDER BY RANDOM()) as rn
+                        FROM "listings" l
+                        LEFT JOIN "producers" p ON l."producerID" = p."id"
+                        INNER JOIN "reviews" r ON r."reviewTarget" = l."id"
+                        WHERE l."id" != ALL(%s)
+                          AND l."photo" IS NOT NULL
+                          AND l."photo" != ''
+                        GROUP BY l."id", l."listingName", l."photo", l."drinkType", l."producerID", p."producerName"
+                        HAVING COUNT(r."id") >= 1
+                    )
+                    SELECT "id", "listingName", "photo", "drinkType", "producerID", "producerName", "reviewCount"
+                    FROM ranked_drinks
+                    WHERE rn <= 2
+                    ORDER BY RANDOM()
+                    LIMIT %s
+                """, (existing_ids, remaining_slots))
+                
+                fallback_drinks = [dict(row) for row in cursor.fetchall()]
+                results.extend(fallback_drinks)
+            
+            # Verify we have at least 3 different drinkTypes if this is fallback-only
+            if top_drinktype_result is None and len(results) > 0:
+                unique_types = set(r['drinkType'] for r in results if r.get('drinkType'))
+                if len(unique_types) < 3 and len(results) < 6:
+                    # Not enough variety - this is acceptable, we'll show what we have
+                    pass
+            
+            logger.info(f"Charsiucharlie_debug REQ-{request_id} getUserMayAlsoLike success count={len(results)}")
+            return jsonify(results), 200
+            
+    except psycopg2.Error as db_error:
+        logger.error(f"Charsiucharlie_debug REQ-{request_id} DB_ERROR getUserMayAlsoLike user_id={user_id} listing_id={listing_id} error={str(db_error)}")
+        return jsonify({
+            "code": 500,
+            "message": "An error occurred while fetching recommendations.",
+            "request_id": request_id
+        }), 500
+        
+    except Exception as e:
+        logger.error(f"Charsiucharlie_debug REQ-{request_id} ERROR getUserMayAlsoLike user_id={user_id} listing_id={listing_id} error={str(e)}", exc_info=True)
+        return jsonify({
+            "code": 500,
+            "message": "An error occurred while fetching recommendations.",
+            "request_id": request_id
+        }), 500

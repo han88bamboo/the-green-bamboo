@@ -603,7 +603,7 @@
                         <div class="row" v-if="peopleAlsoDrank.length > 0">
                           <div class="p-3 text-start">
                             <div class="py-2 text-start">
-                              <h5 class="fw-bold">You May Also Like...</h5>
+                              <h5 class="fw-bold">People Also Drink</h5>
                               <hr class="color: black">
                               <div class="row g-2">
                                 <div 
@@ -3799,7 +3799,7 @@
                         <div class="row" v-if="peopleAlsoDrank.length > 0">
                           <div class="text-start">
                             <div class="py-2 text-start">
-                              <h5 class="fw-bold">You May Also Like...</h5>
+                              <h5 class="fw-bold">People Also Drink</h5>
                               <hr class="color: black">
                               <div class="row g-2">
                                 <div 
@@ -3833,6 +3833,40 @@
     </div>
     <BookmarkModal v-if="user" :user="user" :listingID="listingIDAsInt"
       :key="bookmarkListingID ? 'modal-' + bookmarkListingID : 'modal-default'" />
+
+      <!-- You May Also Like Section (Full Width, User-Based) -->
+      <div class="container mt-4" v-if="userID !== 'defaultUser' && userMayAlsoLike.length >= 3">
+        <div class="row">
+          <div class="col-12">
+            <h5 class="fw-bold text-start">You May Also Like</h5>
+            <hr>
+            <div class="user-may-also-like-grid">
+              <div 
+                v-for="drink in userMayAlsoLike" 
+                :key="'user-also-' + drink.id" 
+                class="user-may-also-like-item"
+              >
+                <router-link :to="{ path: '/listing/view/' + drink.id + '/' + slugify(drink.listingName) }">
+                  <div class="similar-drink-card">
+                    <img 
+                      :src="drink.photo" 
+                      :alt="drink.listingName"
+                      class="similar-drink-image"
+                      loading="lazy"
+                    />
+                    <div class="similar-drink-overlay">
+                      <p class="similar-drink-name mb-0">{{ drink.listingName }}</p>
+                      <p class="similar-drink-producer mb-0">{{ drink.producerName }}</p>
+                      <p class="similar-drink-reviews mb-0">{{ drink.reviewCount }} {{ drink.reviewCount === 1 ? 'review' : 'reviews' }}</p>
+                    </div>
+                  </div>
+                </router-link>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
   </div>
 
 
@@ -4260,6 +4294,9 @@ export default {
 
       // People also drank for 2x2 grid
       peopleAlsoDrank: [],
+
+      // User-based "You May Also Like" for 1x6 grid
+      userMayAlsoLike: [],
 
       // search
       search: false,
@@ -5681,6 +5718,9 @@ export default {
 
       // Load people also drank for the 2x2 grid
       this.loadPeopleAlsoDrank();
+
+      // Load user-based "You May Also Like" for the 1x6 grid
+      this.loadUserMayAlsoLike();
 
       // venuesAPI
       // _id, venueName, venueDesc, originCountry
@@ -7804,6 +7844,25 @@ export default {
       } catch (error) {
         console.error("Error loading people also drank:", error);
         this.peopleAlsoDrank = [];
+      }
+    },
+
+    async loadUserMayAlsoLike() {
+      // Skip for defaultUser (not logged in)
+      if (this.userID === 'defaultUser') {
+        this.userMayAlsoLike = [];
+        return;
+      }
+      
+      try {
+        const response = await this.$axios.get(
+          `${process.env.VUE_APP_API_URL}/getData/getUserMayAlsoLike/${this.userID}/${this.listing_id}`
+        );
+        this.userMayAlsoLike = response.data;
+        console.log('User may also like loaded:', this.userMayAlsoLike);
+      } catch (error) {
+        console.error("Error loading user may also like:", error);
+        this.userMayAlsoLike = [];
       }
     },
 
@@ -10069,6 +10128,42 @@ input[type="range"].form-range::-webkit-slider-thumb {
   
   .similar-drink-reviews {
     font-size: 0.55rem;
+  }
+}
+
+/* User May Also Like 1x6 Horizontal Grid */
+.user-may-also-like-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 12px;
+}
+
+.user-may-also-like-item {
+  min-width: 0;
+}
+
+/* Responsive: On mobile, make it horizontally scrollable */
+@media (max-width: 992px) {
+  .user-may-also-like-grid {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    gap: 10px;
+    padding-bottom: 8px;
+  }
+  
+  .user-may-also-like-item {
+    flex: 0 0 calc(33.333% - 7px);
+    min-width: calc(33.333% - 7px);
+    scroll-snap-align: start;
+  }
+}
+
+@media (max-width: 576px) {
+  .user-may-also-like-item {
+    flex: 0 0 calc(50% - 5px);
+    min-width: calc(50% - 5px);
   }
 }
 
