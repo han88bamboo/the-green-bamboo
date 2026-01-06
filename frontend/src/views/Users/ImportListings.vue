@@ -92,6 +92,9 @@
                         <span v-else-if="stagedListings.length > 0" class="text-warning">
                             <strong>0</strong> items selected for import
                         </span>
+                        <span v-if="getConfirmedDuplicatesCount() > 0" class="text-success ms-2">
+                            (<strong>{{ getConfirmedDuplicatesCount() }}</strong> linked to existing listing(s))
+                        </span>
                         <span v-if="getDuplicatesCount() > 0" class="text-secondary ms-2">
                             (<strong>{{ getDuplicatesCount() }}</strong> potential duplicate(s) detected)
                         </span>
@@ -114,13 +117,16 @@
                 <div v-if="commitComplete && commitSummary" class="mb-3">
                     <div class="alert" :class="getAlertClass()">
                         <h5 class="alert-heading mb-2">
-                            <span v-if="commitSummary.committedCount === 0 && commitSummary.failCount === 0">ℹ️ No items imported</span>
-                            <span v-else-if="commitSummary.failCount === 0">✓ All items imported successfully!</span>
-                            <span v-else-if="commitSummary.committedCount === 0">✗ Import failed</span>
+                            <span v-if="commitSummary.committedCount === 0 && commitSummary.failCount === 0 && !commitSummary.linkedCount">ℹ️ No items imported</span>
+                            <span v-else-if="commitSummary.failCount === 0">✓ All items processed successfully!</span>
+                            <span v-else-if="commitSummary.committedCount === 0 && !commitSummary.linkedCount">✗ Import failed</span>
                             <span v-else>⚠ Partial success</span>
                         </h5>
                         <p class="mb-1">
                             <strong>{{ commitSummary.committedCount }}</strong> listing(s) imported successfully
+                            <span v-if="commitSummary.linkedCount > 0">,
+                                <strong>{{ commitSummary.linkedCount }}</strong> linked to existing listing(s)
+                            </span>
                             <span v-if="commitSummary.newProducersCreated > 0">,
                                 <strong>{{ commitSummary.newProducersCreated }}</strong> new producer(s) created
                             </span>
@@ -131,13 +137,13 @@
                     </div>
                     
                     <!-- Venue-specific: Add to Menu info banner -->
-                    <div v-if="userType === 'venue' && commitSummary.committedCount > 0" class="alert alert-success mb-3" style="border-left: 4px solid #28a745;">
+                    <div v-if="userType === 'venue' && (commitSummary.committedCount > 0 || commitSummary.linkedCount > 0)" class="alert alert-success mb-3" style="border-left: 4px solid #28a745;">
                         <div class="d-flex align-items-start">
                             <i class="bi bi-journal-plus me-2 mt-1" style="font-size: 1.2rem;"></i>
                             <div>
                                 <strong>Add to Your Menu</strong>
                                 <p class="mb-0 small">
-                                    You can now add imported listings to your venue's menu using the "Add to Menu" button in the Menu column.
+                                    You can now add imported or linked listings to your venue's menu using the "Add to Menu" button in the Menu column.
                                     <span v-if="!hasMenuSections" class="text-warning">
                                         <br><i class="bi bi-exclamation-triangle me-1"></i>Note: You need to create menu sections in your venue profile first.
                                     </span>
@@ -201,30 +207,37 @@
                                         class="form-check-input staging-checkbox"
                                         :checked="isItemSelected(item.id)"
                                         @change="toggleItemSelection(item.id)"
+                                        :disabled="isConfirmedDuplicate(item.id)"
+                                        :title="isConfirmedDuplicate(item.id) ? 'Linked to existing listing - cannot import' : ''"
                                     />
                                 </td>
                                 <td>{{ index + 1 }}</td>
                                 <td>
                                     <!-- Pre-commit: show status badges -->
                                     <template v-if="!commitComplete">
-                                        <!-- Potential duplicate -->
-                                        <span v-if="item?.isDuplicate" class="badge bg-warning text-dark me-1">
+                                        <!-- Confirmed duplicate - user linked to existing listing -->
+                                        <span v-if="isConfirmedDuplicate(item.id)" class="badge bg-success me-1">
+                                            🔗 Existing Listing
+                                            <span v-if="getConfirmedDuplicate(item.id)?.linkedListingId"> (ID: {{ getConfirmedDuplicate(item.id).linkedListingId }})</span>
+                                        </span>
+                                        <!-- Potential duplicate (not yet confirmed) -->
+                                        <span v-else-if="item?.isDuplicate" class="badge bg-warning text-dark me-1">
                                             ⚠️ Possible Duplicate
                                         </span>
                                         <!-- Producer fuzzy matched (high confidence auto-link) -->
-                                        <span v-if="item?.producerFuzzyMatched && item?.producerID" class="badge bg-success me-1" 
+                                        <span v-if="!isConfirmedDuplicate(item.id) && item?.producerFuzzyMatched && item?.producerID" class="badge bg-success me-1" 
                                               :title="'Auto-matched: ' + item.producerName + ' → ' + item.producerMatchedName">
                                             ✓ Producer matched
                                         </span>
                                         <!-- Producer doesn't exist -->
-                                        <span v-else-if="!item?.producerID" class="badge bg-info me-1">
+                                        <span v-else-if="!isConfirmedDuplicate(item.id) && !item?.producerID" class="badge bg-info me-1">
                                             🆕 New Producer
                                         </span>
                                         <!-- New submission -->
-                                        <span v-if="!item?.isDuplicate && item?.producerID" class="badge bg-primary">
+                                        <span v-if="!isConfirmedDuplicate(item.id) && !item?.isDuplicate && item?.producerID" class="badge bg-primary">
                                             Ready to import
                                         </span>
-                                        <span v-else-if="!item?.isDuplicate && !item?.producerID" class="badge bg-primary">
+                                        <span v-else-if="!isConfirmedDuplicate(item.id) && !item?.isDuplicate && !item?.producerID" class="badge bg-primary">
                                             Ready (new producer)
                                         </span>
                                     </template>
@@ -233,6 +246,10 @@
                                         <span v-if="item.commitStatus === 'success'" class="badge bg-success">
                                             ✓ Imported
                                             <span v-if="item.newListingId"> (ID: {{ item.newListingId }})</span>
+                                        </span>
+                                        <span v-else-if="item.commitStatus === 'linked'" class="badge bg-success">
+                                            🔗 Existing Listing
+                                            <span v-if="item.linkedListingId"> (ID: {{ item.linkedListingId }})</span>
                                         </span>
                                         <span v-else-if="item.commitStatus === 'skipped'" class="badge bg-secondary">
                                             ⏭️ Skipped
@@ -559,11 +576,11 @@
                                 </td>
                                 <!-- Add to Menu column - only for venues after commit -->
                                 <td v-if="commitComplete && userType === 'venue'" class="text-center">
-                                    <!-- Only show for successfully imported items -->
-                                    <template v-if="item.commitStatus === 'success' && item.newListingId">
+                                    <!-- Show for successfully imported items OR linked existing listings -->
+                                    <template v-if="(item.commitStatus === 'success' && item.newListingId) || (item.commitStatus === 'linked' && item.linkedListingId)">
                                         <!-- Already on menu -->
                                         <button 
-                                            v-if="isOnMenu(item.newListingId)"
+                                            v-if="isOnMenu(getMenuListingId(item))"
                                             type="button" 
                                             class="btn btn-sm btn-secondary"
                                             disabled
@@ -592,27 +609,82 @@
                                             <i class="bi bi-plus-circle me-1"></i>Add to Menu
                                         </button>
                                     </template>
-                                    <!-- Not applicable for non-success items -->
+                                    <!-- Not applicable for non-success/non-linked items -->
                                     <span v-else class="text-muted">-</span>
                                 </td>
                             </tr>
                             
                             <!-- Expandable duplicate matches row (light green) -->
-                            <tr v-if="item?.isDuplicate && (getDuplicateInfo(item.id)?.matches?.length || 0) > 0" 
-                                class="duplicate-matches-row">
+                            <tr v-if="item?.isDuplicate && (getDuplicateInfo(item.id)?.matches?.length || 0) > 0 && !commitComplete" 
+                                class="duplicate-matches-row"
+                                :class="{ 'collapsed': isConfirmedDuplicate(item.id) }">
                                 <td :colspan="getDuplicateRowColspan()" class="p-0">
-                                    <div class="duplicate-matches-container">
-                                        <div class="duplicate-matches-header">
-                                            <i class="bi bi-exclamation-triangle-fill text-warning me-2"></i>
-                                            <strong>{{ getDuplicateInfo(item.id)?.matches?.length || 0 }} potential duplicate(s) found</strong>
-                                            <!-- <span class="text-muted ms-2">(95%+ similarity)</span> -->
+                                    <div class="duplicate-matches-container" :class="{ 'confirmed': isConfirmedDuplicate(item.id) }">
+                                        <!-- Header - clickable to expand/collapse when confirmed -->
+                                        <div class="duplicate-matches-header" 
+                                             :class="{ 'clickable': isConfirmedDuplicate(item.id) }"
+                                             @click="isConfirmedDuplicate(item.id) && toggleDuplicateMatchesExpand(item.id)">
+                                            <div class="d-flex align-items-center flex-grow-1">
+                                                <i v-if="isConfirmedDuplicate(item.id)" class="bi bi-check-circle-fill text-success me-2"></i>
+                                                <i v-else class="bi bi-exclamation-triangle-fill text-warning me-2"></i>
+                                                <strong v-if="isConfirmedDuplicate(item.id)">
+                                                    Linked to: {{ getConfirmedDuplicate(item.id)?.linkedListing?.listingName }}
+                                                </strong>
+                                                <strong v-else>{{ getDuplicateInfo(item.id)?.matches?.length || 0 }} potential duplicate(s) found</strong>
+                                            </div>
+                                            <div v-if="isConfirmedDuplicate(item.id)" class="d-flex align-items-center gap-2">
+                                                <button type="button" 
+                                                        class="btn btn-sm btn-outline-secondary"
+                                                        @click.stop="clearConfirmedDuplicate(item.id)"
+                                                        title="Clear selection and choose different match">
+                                                    <i class="bi bi-x-circle me-1"></i>Clear Selection
+                                                </button>
+                                                <i class="bi" :class="isDuplicateMatchesExpanded(item.id) ? 'bi-chevron-up' : 'bi-chevron-down'"></i>
+                                            </div>
                                         </div>
-                                        <div class="duplicate-matches-content">
+                                        <!-- Content - show confirmed match at top, then others -->
+                                        <div class="duplicate-matches-content" v-show="!isConfirmedDuplicate(item.id) || isDuplicateMatchesExpanded(item.id)">
+                                            <!-- Confirmed match displayed first with highlight -->
+                                            <div v-if="isConfirmedDuplicate(item.id)" 
+                                                 class="duplicate-match-item confirmed-match">
+                                                <div>
+                                                    <img class="match-thumbnail" v-if="getConfirmedDuplicate(item.id)?.linkedListing?.photo" :src="getConfirmedDuplicate(item.id).linkedListing.photo" alt="Match photo" />
+                                                    <div v-else class="no-photo">
+                                                        <i class="bi bi-image"></i>
+                                                    </div>
+                                                </div>
+                                                <div class="match-details">
+                                                    <div class="match-name">
+                                                        <a :href="`/listing/view/${getConfirmedDuplicate(item.id).linkedListingId}/${slugify(getConfirmedDuplicate(item.id).linkedListing.listingName)}`" 
+                                                           target="_blank"
+                                                           class="text-decoration-none">
+                                                            {{ getConfirmedDuplicate(item.id).linkedListing.listingName }}
+                                                            <i class="bi bi-box-arrow-up-right ms-1 small"></i>
+                                                        </a>
+                                                    </div>
+                                                    <div class="match-producer text-muted small">
+                                                        by {{ getConfirmedDuplicate(item.id).linkedListing.producerName }}
+                                                        <span v-if="shouldShowBottler(getConfirmedDuplicate(item.id).linkedListing)" class="ms-1">(Bottler: {{ getConfirmedDuplicate(item.id).linkedListing.bottlerName }})</span>
+                                                    </div>
+                                                    <div class="match-attributes text-muted small">
+                                                        <span v-if="getConfirmedDuplicate(item.id).linkedListing.drinkType">{{ getConfirmedDuplicate(item.id).linkedListing.drinkType }}</span>
+                                                        <span v-if="getConfirmedDuplicate(item.id).linkedListing.typeCategory"> · {{ getConfirmedDuplicate(item.id).linkedListing.typeCategory }}</span>
+                                                        <span v-if="getConfirmedDuplicate(item.id).linkedListing.drinkStyle"> · {{ getConfirmedDuplicate(item.id).linkedListing.drinkStyle }}</span>
+                                                        <span v-if="getConfirmedDuplicate(item.id).linkedListing.originCountry"> · {{ getConfirmedDuplicate(item.id).linkedListing.originCountry }}</span>
+                                                        <span v-if="getConfirmedDuplicate(item.id).linkedListing.abv"> · {{ getConfirmedDuplicate(item.id).linkedListing.abv }}%</span>
+                                                        <span v-if="getConfirmedDuplicate(item.id).linkedListing.age"> · {{ getConfirmedDuplicate(item.id).linkedListing.age }} years</span>
+                                                    </div>
+                                                </div>
+                                                <div class="match-actions d-flex flex-column align-items-end gap-1">
+                                                    <span class="badge bg-success">✓ Selected</span>
+                                                </div>
+                                            </div>
+                                            <!-- Other matches (not the confirmed one) -->
                                             <div 
-                                                v-for="match in (getDuplicateInfo(item.id)?.matches || [])" 
+                                                v-for="match in getFilteredDuplicateMatches(item.id)" 
                                                 :key="'match-' + match.id"
                                                 class="duplicate-match-item">
-                                                <div >
+                                                <div>
                                                     <img class="match-thumbnail" v-if="match.photo" :src="match.photo" alt="Match photo" />
                                                     <div v-else class="no-photo">
                                                         <i class="bi bi-image"></i>
@@ -640,11 +712,17 @@
                                                         <span v-if="match.age"> · {{ match.age }} years</span>
                                                     </div>
                                                 </div>
-                                                <div class="match-similarity">
+                                                <div class="match-actions d-flex flex-column align-items-end gap-1">
                                                     <span class="badge" 
                                                           :class="match.similarity >= 98 ? 'bg-danger' : (match.similarity >= 96 ? 'bg-warning text-dark' : 'bg-info')">
                                                         {{ match.similarity }}% match
                                                     </span>
+                                                    <button type="button" 
+                                                            class="btn btn-sm btn-success"
+                                                            @click="confirmDuplicateMatch(item.id, match)"
+                                                            title="Link to this existing listing">
+                                                        Yes, this is it
+                                                    </button>
                                                 </div>
                                             </div>
                                         </div>
@@ -887,6 +965,12 @@ export default {
             // Duplicate detection results (from staging response)
             duplicateMatches: {}, // Map of stagedListingId -> { isDuplicate, matches: [...] }
             
+            // Confirmed duplicates - user explicitly linked to existing listing
+            confirmedDuplicates: {}, // Map of stagedItemId -> { linkedListingId, linkedListing: {...} }
+            
+            // Expand/collapse state for confirmed duplicate match sections
+            duplicateMatchesExpandedState: {},
+            
             // Producer/Bottler popover state
             activePopover: null, // { itemId, field } - field is 'producer' or 'bottler'
             popoverPosition: { top: 0, left: 0 },
@@ -975,7 +1059,8 @@ export default {
             const sectionHasId = this.menuItemForm.targetSection && this.menuItemForm.targetSection.id;
             const hasValidPrice = this.menuItemForm.price !== null && this.menuItemForm.price !== '';
             const hasValidServingType = this.menuItemForm.servingType && this.menuItemForm.servingType > 0;
-            const hasListing = this.selectedListingForMenu && this.selectedListingForMenu.newListingId;
+            // Support both newly imported listings and linked existing listings
+            const hasListing = this.selectedListingForMenu && (this.selectedListingForMenu.newListingId || this.selectedListingForMenu.linkedListingId);
             
             return hasTargetSection && sectionHasId && hasValidPrice && hasValidServingType && hasListing;
         }
@@ -1162,14 +1247,19 @@ export default {
         // Commit selected staged listings (Step 2)
         async commitStagedListings() {
             const selectedIds = Array.from(this.selectedItems);
-            if (selectedIds.length === 0) {
-                alert('Please select at least one listing to import');
+            
+            // Check if there are any items to import (excluding confirmed duplicates which are just linked)
+            const hasItemsToImport = selectedIds.length > 0;
+            const hasConfirmedDuplicates = Object.keys(this.confirmedDuplicates).length > 0;
+            
+            if (!hasItemsToImport && !hasConfirmedDuplicates) {
+                alert('Please select at least one listing to import or link to an existing listing');
                 return;
             }
 
-            // Stage 4.4: Warn about duplicates if any are selected
+            // Stage 4.4: Warn about duplicates if any are selected (not confirmed ones)
             const selectedDuplicates = this.stagedListings.filter(
-                item => item && this.selectedItems.has(item.id) && item.isDuplicate
+                item => item && this.selectedItems.has(item.id) && item.isDuplicate && !this.isConfirmedDuplicate(item.id)
             );
             if (selectedDuplicates.length > 0) {
                 const proceed = confirm(
@@ -1182,19 +1272,39 @@ export default {
             this.commitInProgress = true;
 
             try {
-                const response = await this.$axios.post(
-                    `${process.env.VUE_APP_API_URL}/createListing/commitStagedListings`,
-                    { stagedIds: selectedIds },
-                    { timeout: 120000 } // 2 minute timeout
-                );
+                let commitResponse = null;
+                
+                // Only call API if there are items to actually import
+                if (hasItemsToImport) {
+                    const response = await this.$axios.post(
+                        `${process.env.VUE_APP_API_URL}/createListing/commitStagedListings`,
+                        { stagedIds: selectedIds },
+                        { timeout: 120000 } // 2 minute timeout
+                    );
+                    commitResponse = response;
+                }
 
-                if (response.data.code === 201) {
-                    this.commitSummary = response.data.data;
+                if (!hasItemsToImport || commitResponse.data.code === 201) {
+                    this.commitSummary = commitResponse ? commitResponse.data.data : {
+                        committedCount: 0,
+                        failCount: 0,
+                        newProducersCreated: 0,
+                        newBottlersCreated: 0,
+                        createdListings: []
+                    };
                     this.commitComplete = true;
 
-                    // Mark committed items as successful
+                    // Mark items with their appropriate status
                     for (const item of this.stagedListings) {
-                        if (this.selectedItems.has(item.id)) {
+                        // Check if this item was confirmed as duplicate (linked to existing)
+                        const confirmedDup = this.getConfirmedDuplicate(item.id);
+                        if (confirmedDup) {
+                            item.commitStatus = 'linked';
+                            item.linkedListingId = confirmedDup.linkedListingId;
+                            // Use the linked listing's name and photo for display
+                            item.displayListingName = confirmedDup.linkedListing.listingName;
+                            item.displayPhoto = confirmedDup.linkedListing.photo;
+                        } else if (this.selectedItems.has(item.id)) {
                             item.commitStatus = 'success';
                             // Store the new listing ID if returned
                             if (this.commitSummary.createdListings) {
@@ -1210,14 +1320,20 @@ export default {
                         }
                     }
 
-                    console.log(`Successfully committed ${this.commitSummary.committedCount} listings`);
+                    // Add count of linked items to summary for display
+                    const linkedCount = Object.keys(this.confirmedDuplicates).length;
+                    if (linkedCount > 0) {
+                        this.commitSummary.linkedCount = linkedCount;
+                    }
+
+                    console.log(`Successfully committed ${this.commitSummary.committedCount} listings, linked ${linkedCount} to existing`);
                     
                     // Load menu data for venues after successful commit
                     if (this.userType === 'venue') {
                         await this.loadMenuDataForVenue();
                     }
                 } else {
-                    alert(`Error committing listings: ${response.data.message || 'Unknown error'}`);
+                    alert(`Error committing listings: ${commitResponse.data.message || 'Unknown error'}`);
                 }
             } catch (error) {
                 console.error('Error committing listings:', error);
@@ -1234,9 +1350,16 @@ export default {
                 
                 alert(`Error committing listings: ${errorMsg}`);
 
-                // Mark selected items as failed
+                // Mark selected items as failed, but confirmed duplicates as linked
                 for (const item of this.stagedListings) {
-                    if (this.selectedItems.has(item.id)) {
+                    const confirmedDup = this.getConfirmedDuplicate(item.id);
+                    if (confirmedDup) {
+                        // Linked items still succeed even if import fails
+                        item.commitStatus = 'linked';
+                        item.linkedListingId = confirmedDup.linkedListingId;
+                        item.displayListingName = confirmedDup.linkedListing.listingName;
+                        item.displayPhoto = confirmedDup.linkedListing.photo;
+                    } else if (this.selectedItems.has(item.id)) {
                         item.commitStatus = 'error';
                     }
                 }
@@ -1245,7 +1368,8 @@ export default {
                     committedCount: 0,
                     failCount: this.selectedItems.size,
                     newProducersCreated: 0,
-                    newBottlersCreated: 0
+                    newBottlersCreated: 0,
+                    linkedCount: Object.keys(this.confirmedDuplicates).length
                 };
             } finally {
                 this.commitInProgress = false;
@@ -1389,7 +1513,12 @@ export default {
         },
 
         getDuplicatesCount() {
-            return this.stagedListings.filter(item => item && item.isDuplicate).length;
+            // Count duplicates that are NOT yet confirmed (still need review)
+            return this.stagedListings.filter(item => item && item.isDuplicate && !this.isConfirmedDuplicate(item.id)).length;
+        },
+
+        getConfirmedDuplicatesCount() {
+            return Object.keys(this.confirmedDuplicates).length;
         },
 
         getNewProducersCount() {
@@ -1571,9 +1700,12 @@ export default {
             if (!item) return 'row-pending';
             if (this.commitComplete) {
                 if (item.commitStatus === 'success') return 'row-success';
+                if (item.commitStatus === 'linked') return 'row-linked';
                 if (item.commitStatus === 'error') return 'row-error';
                 if (item.commitStatus === 'skipped') return 'row-skipped';
             }
+            // Pre-commit: check for confirmed duplicate
+            if (this.isConfirmedDuplicate(item.id)) return 'row-linked';
             if (!this.selectedItems.has(item.id)) return 'row-unchecked';
             if (item.isDuplicate) return 'row-warning';
             if (!item.producerID) return 'row-new-producer';
@@ -1640,6 +1772,82 @@ export default {
             }
         },
 
+        // ============ CONFIRMED DUPLICATE METHODS ============
+        
+        // Check if a staged item has been confirmed as a duplicate (linked to existing listing)
+        isConfirmedDuplicate(itemId) {
+            return !!this.confirmedDuplicates[itemId] || !!this.confirmedDuplicates[String(itemId)];
+        },
+        
+        // Get the confirmed duplicate info for an item
+        getConfirmedDuplicate(itemId) {
+            return this.confirmedDuplicates[itemId] || this.confirmedDuplicates[String(itemId)] || null;
+        },
+        
+        // Confirm a duplicate match - user clicks "Yes, this is it"
+        confirmDuplicateMatch(itemId, match) {
+            // Store the confirmed duplicate with all the match info
+            this.confirmedDuplicates[itemId] = {
+                linkedListingId: match.id,
+                linkedListing: { ...match } // Copy the match object with all its properties
+            };
+            // Force reactivity
+            this.confirmedDuplicates = { ...this.confirmedDuplicates };
+            
+            // Uncheck the item from selectedItems since it won't be imported
+            this.selectedItems.delete(itemId);
+            this.selectedItems = new Set(this.selectedItems);
+            
+            const toast = useToast();
+            toast.success(`Linked to existing listing: ${match.listingName}`);
+        },
+        
+        // Clear a confirmed duplicate selection
+        clearConfirmedDuplicate(itemId) {
+            delete this.confirmedDuplicates[itemId];
+            delete this.confirmedDuplicates[String(itemId)];
+            // Force reactivity
+            this.confirmedDuplicates = { ...this.confirmedDuplicates };
+            
+            const toast = useToast();
+            toast.info('Selection cleared. You can now select a different match or import as new.');
+        },
+        
+        // Toggle expand/collapse for duplicate matches when confirmed
+        toggleDuplicateMatchesExpand(itemId) {
+            if (!this.duplicateMatchesExpandedState) {
+                this.duplicateMatchesExpandedState = {};
+            }
+            this.duplicateMatchesExpandedState[itemId] = !this.duplicateMatchesExpandedState[itemId];
+            // Force reactivity
+            this.duplicateMatchesExpandedState = { ...this.duplicateMatchesExpandedState };
+        },
+        
+        // Check if duplicate matches section is expanded
+        isDuplicateMatchesExpanded(itemId) {
+            return this.duplicateMatchesExpandedState && this.duplicateMatchesExpandedState[itemId];
+        },
+        
+        // Get duplicate matches excluding the confirmed one (if any)
+        getFilteredDuplicateMatches(itemId) {
+            const duplicateInfo = this.getDuplicateInfo(itemId);
+            if (!duplicateInfo || !duplicateInfo.matches) return [];
+            
+            const confirmedDup = this.getConfirmedDuplicate(itemId);
+            if (!confirmedDup) {
+                // No confirmed duplicate, return all matches
+                return duplicateInfo.matches;
+            }
+            
+            // Filter out the confirmed match from the list
+            return duplicateInfo.matches.filter(match => match.id !== confirmedDup.linkedListingId);
+        },
+        
+        // Get the listing ID to use for menu (supports both new and linked)
+        getMenuListingId(item) {
+            return item.newListingId || item.linkedListingId;
+        },
+
         // ============ MENU FUNCTIONALITY METHODS (Venues Only) ============
         
         // Check if a listing is already on the menu
@@ -1693,7 +1901,9 @@ export default {
         
         // Open Add to Menu modal for a specific listing
         async openAddToMenuModal(item) {
-            if (!item || !item.newListingId) {
+            // Support both newly imported listings and linked existing listings
+            const listingId = item.newListingId || item.linkedListingId;
+            if (!item || !listingId) {
                 console.error('Cannot open menu modal: No listing ID');
                 return;
             }
@@ -1739,11 +1949,14 @@ export default {
             
             this.addingToMenu = true;
             
+            // Get the listing ID - support both newly imported and linked existing listings
+            const listingId = this.selectedListingForMenu.newListingId || this.selectedListingForMenu.linkedListingId;
+            
             try {
                 const menuItemData = {
                     venueID: this.userID,
                     menuOrder: this.menuItemForm.targetSection.sectionMenu ? this.menuItemForm.targetSection.sectionMenu.length : 0,
-                    listingID: this.selectedListingForMenu.newListingId,
+                    listingID: listingId,
                     itemPrice: this.menuItemForm.price,
                     servingType: this.menuItemForm.servingType,
                     sectionName: this.menuItemForm.targetSection.sectionName,
@@ -1767,7 +1980,7 @@ export default {
                 
                 if (response.status === 201) {
                     // Track that this listing was added to menu
-                    this.addedToMenuIds.add(this.selectedListingForMenu.newListingId);
+                    this.addedToMenuIds.add(listingId);
                     // Force reactivity
                     this.addedToMenuIds = new Set(this.addedToMenuIds);
                     
@@ -1922,6 +2135,14 @@ export default {
 
 .staging-table tr.row-success:hover {
     background-color: rgba(25, 135, 84, 0.15) !important;
+}
+
+.staging-table tr.row-linked {
+    background-color: rgba(13, 110, 253, 0.1) !important;
+}
+
+.staging-table tr.row-linked:hover {
+    background-color: rgba(13, 110, 253, 0.15) !important;
 }
 
 .staging-table tr.row-error {
@@ -2154,6 +2375,56 @@ export default {
 .match-similarity {
     flex-shrink: 0;
     margin-left: auto;
+}
+
+.match-actions {
+    flex-shrink: 0;
+    margin-left: auto;
+}
+
+/* Confirmed duplicate styling */
+.duplicate-matches-container.confirmed {
+    background-color: rgba(25, 135, 84, 0.12);
+    border-left: 3px solid #198754;
+}
+
+.duplicate-matches-header.clickable {
+    cursor: pointer;
+    user-select: none;
+}
+
+.duplicate-matches-header.clickable:hover {
+    background-color: rgba(25, 135, 84, 0.1);
+    border-radius: 4px;
+    margin: -4px;
+    padding: 4px;
+}
+
+.duplicate-match-item.confirmed-match {
+    background-color: rgba(25, 135, 84, 0.15);
+    border: 2px solid #198754;
+    box-shadow: 0 2px 6px rgba(25, 135, 84, 0.2);
+}
+
+.duplicate-matches-row.collapsed .duplicate-matches-content {
+    display: none;
+}
+
+.no-photo {
+    width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f8f9fa;
+    border-radius: 4px;
+    border: 1px solid #dee2e6;
+    color: #adb5bd;
+    flex-shrink: 0;
+}
+
+.no-photo i {
+    font-size: 1.5rem;
 }
 
 /* Scrollbar styling for duplicate matches */
