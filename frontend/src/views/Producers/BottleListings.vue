@@ -598,6 +598,40 @@
                             <div class="py-2"></div>
                           </div>
                         </div>
+
+                        <!-- People Who Drank This Also Drank Section (Mobile) -->
+                        <div class="row" v-if="peopleAlsoDrank.length > 0">
+                          <div class="p-3 text-start">
+                            <div class="py-2 text-start">
+                              <h5 class="fw-bold">People Who Drank This Also Drank...</h5>
+                              <hr class="color: black">
+                              <div class="row g-2">
+                                <div 
+                                  v-for="drink in peopleAlsoDrank" 
+                                  :key="'also-' + drink.id" 
+                                  class="col-6"
+                                >
+                                  <router-link :to="{ path: '/listing/view/' + drink.id }">
+                                    <div class="similar-drink-card">
+                                      <img 
+                                        :src="drink.photo" 
+                                        :alt="drink.listingName"
+                                        class="similar-drink-image"
+                                        loading="lazy"
+                                      />
+                                      <div class="similar-drink-overlay">
+                                        <p class="similar-drink-name mb-0">{{ drink.listingName }}</p>
+                                        <p class="similar-drink-producer mb-0">{{ drink.producerName }}</p>
+                                        <p class="similar-drink-reviews mb-0">{{ drink.reviewCount }} {{ drink.reviewCount === 1 ? 'review' : 'reviews' }}</p>
+                                      </div>
+                                    </div>
+                                  </router-link>
+                                </div>
+                              </div>
+                            </div>
+                            <div class="py-2"></div>
+                          </div>
+                        </div>
                         
                       </div>
                     </div>
@@ -3760,6 +3794,40 @@
                             <div class="py-2"></div>
                           </div>
                         </div>
+
+                        <!-- People Who Drank This Also Drank Section (Desktop) -->
+                        <div class="row" v-if="peopleAlsoDrank.length > 0">
+                          <div class="text-start">
+                            <div class="py-2 text-start">
+                              <h5 class="fw-bold">People Who Drank This Also Drank...</h5>
+                              <hr class="color: black">
+                              <div class="row g-2">
+                                <div 
+                                  v-for="drink in peopleAlsoDrank" 
+                                  :key="'also-' + drink.id" 
+                                  class="col-6"
+                                >
+                                  <router-link :to="{ path: '/listing/view/' + drink.id }">
+                                    <div class="similar-drink-card">
+                                      <img 
+                                        :src="drink.photo" 
+                                        :alt="drink.listingName"
+                                        class="similar-drink-image"
+                                        loading="lazy"
+                                      />
+                                      <div class="similar-drink-overlay">
+                                        <p class="similar-drink-name mb-0">{{ drink.listingName }}</p>
+                                        <p class="similar-drink-producer mb-0">{{ drink.producerName }}</p>
+                                        <p class="similar-drink-reviews mb-0">{{ drink.reviewCount }} {{ drink.reviewCount === 1 ? 'review' : 'reviews' }}</p>
+                                      </div>
+                                    </div>
+                                  </router-link>
+                                </div>
+                              </div>
+                            </div>
+                            <div class="py-2"></div>
+                          </div>
+                        </div>
                         
       </div>
     </div>
@@ -4189,6 +4257,9 @@ export default {
 
       // Similar drinks for 2x2 grid
       similarDrinks: [],
+
+      // People also drank for 2x2 grid
+      peopleAlsoDrank: [],
 
       // search
       search: false,
@@ -5607,6 +5678,9 @@ export default {
 
       // Load similar drinks for the 2x2 grid
       this.loadSimilarDrinks();
+
+      // Load people also drank for the 2x2 grid
+      this.loadPeopleAlsoDrank();
 
       // venuesAPI
       // _id, venueName, venueDesc, originCountry
@@ -7716,6 +7790,20 @@ export default {
       } catch (error) {
         console.error("Error loading similar drinks:", error);
         this.similarDrinks = [];
+      }
+    },
+
+    // Load people also drank for 2x2 grid
+    async loadPeopleAlsoDrank() {
+      try {
+        const response = await this.$axios.get(
+          `${process.env.VUE_APP_API_URL}/getData/getPeopleAlsoDrank/${this.listing_id}`
+        );
+        this.peopleAlsoDrank = response.data;
+        console.log('People also drank loaded:', this.peopleAlsoDrank);
+      } catch (error) {
+        console.error("Error loading people also drank:", error);
+        this.peopleAlsoDrank = [];
       }
     },
 

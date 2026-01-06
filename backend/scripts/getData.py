@@ -13354,3 +13354,110 @@ def getSimilarDrinks(listing_id):
             "message": "An error occurred while fetching similar drinks.",
             "request_id": request_id
         }), 500
+
+
+# [GET] Get "People who drank this also drank" recommendations
+# Returns up to 4 unique listings: same producer first, then same drinkType as fallback
+# All must have at least one review and a photo
+@blueprint.route("/getPeopleAlsoDrank/<int:listing_id>", methods=['GET'])
+def getPeopleAlsoDrank(listing_id):
+    request_id = getattr(g, 'request_id', 'unknown')
+    
+    logger.info(f"Charsiucharlie_debug REQ-{request_id} getPeopleAlsoDrank listing_id={listing_id}")
+    
+    try:
+        with db_manager.get_cursor() as cursor:
+            # First, get the drinkType and producerID of the current listing
+            cursor.execute("""
+                SELECT "drinkType", "producerID"
+                FROM "listings"
+                WHERE "id" = %s
+            """, (listing_id,))
+            
+            current_listing = cursor.fetchone()
+            
+            if not current_listing:
+                logger.warning(f"REQ-{request_id} getPeopleAlsoDrank: listing {listing_id} not found")
+                return jsonify([]), 200
+            
+            drink_type = current_listing['drinkType']
+            producer_id = current_listing['producerID']
+            
+            results = []
+            existing_ids = [listing_id]
+            
+            # Step 1: Get drinks from same producer first (up to 4)
+            if producer_id:
+                cursor.execute("""
+                    SELECT 
+                        l."id",
+                        l."listingName",
+                        l."photo",
+                        l."drinkType",
+                        l."producerID",
+                        p."producerName",
+                        COUNT(r."id") as "reviewCount"
+                    FROM "listings" l
+                    LEFT JOIN "producers" p ON l."producerID" = p."id"
+                    INNER JOIN "reviews" r ON r."reviewTarget" = l."id"
+                    WHERE l."producerID" = %s
+                      AND l."id" != %s
+                      AND l."photo" IS NOT NULL
+                      AND l."photo" != ''
+                    GROUP BY l."id", l."listingName", l."photo", l."drinkType", l."producerID", p."producerName"
+                    HAVING COUNT(r."id") >= 1
+                    ORDER BY RANDOM()
+                    LIMIT 4
+                """, (producer_id, listing_id))
+                
+                producer_drinks = cursor.fetchall()
+                results = [dict(row) for row in producer_drinks]
+                existing_ids.extend([r['id'] for r in results])
+            
+            # Step 2: If less than 4, fill with same drinkType
+            if len(results) < 4 and drink_type:
+                remaining_slots = 4 - len(results)
+                
+                cursor.execute("""
+                    SELECT 
+                        l."id",
+                        l."listingName",
+                        l."photo",
+                        l."drinkType",
+                        l."producerID",
+                        p."producerName",
+                        COUNT(r."id") as "reviewCount"
+                    FROM "listings" l
+                    LEFT JOIN "producers" p ON l."producerID" = p."id"
+                    INNER JOIN "reviews" r ON r."reviewTarget" = l."id"
+                    WHERE l."drinkType" = %s
+                      AND l."id" != ALL(%s)
+                      AND l."photo" IS NOT NULL
+                      AND l."photo" != ''
+                    GROUP BY l."id", l."listingName", l."photo", l."drinkType", l."producerID", p."producerName"
+                    HAVING COUNT(r."id") >= 1
+                    ORDER BY RANDOM()
+                    LIMIT %s
+                """, (drink_type, existing_ids, remaining_slots))
+                
+                drinktype_drinks = cursor.fetchall()
+                results.extend([dict(row) for row in drinktype_drinks])
+            
+            logger.info(f"Charsiucharlie_debug REQ-{request_id} getPeopleAlsoDrank success count={len(results)}")
+            return jsonify(results), 200
+            
+    except psycopg2.Error as db_error:
+        logger.error(f"Charsiucharlie_debug REQ-{request_id} DB_ERROR getPeopleAlsoDrank listing_id={listing_id} error={str(db_error)}")
+        return jsonify({
+            "code": 500,
+            "message": "An error occurred while fetching recommendations.",
+            "request_id": request_id
+        }), 500
+        
+    except Exception as e:
+        logger.error(f"Charsiucharlie_debug REQ-{request_id} ERROR getPeopleAlsoDrank listing_id={listing_id} error={str(e)}", exc_info=True)
+        return jsonify({
+            "code": 500,
+            "message": "An error occurred while fetching recommendations.",
+            "request_id": request_id
+        }), 500
