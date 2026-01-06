@@ -115,6 +115,21 @@
                 
                 <!-- Post-commit summary -->
                 <div v-if="commitComplete && commitSummary" class="mb-3">
+                    <!-- Show/Hide skipped rows toggle -->
+                    <div class="d-flex justify-content-end mb-2">
+                        <div class="form-check form-switch">
+                            <input 
+                                class="form-check-input" 
+                                type="checkbox" 
+                                role="switch" 
+                                id="showAllRowsSwitch"
+                                v-model="showAllPostCommitRows"
+                            >
+                            <label class="form-check-label small text-muted" for="showAllRowsSwitch">
+                                Show all rows (including {{ getSkippedCount() }} skipped)
+                            </label>
+                        </div>
+                    </div>
                     <div class="alert" :class="getAlertClass()">
                         <h5 class="alert-heading mb-2">
                             <span v-if="commitSummary.committedCount === 0 && commitSummary.failCount === 0 && !commitSummary.linkedCount">ℹ️ No items imported</span>
@@ -198,7 +213,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <template v-for="(item, index) in stagedListings" :key="'staged-' + item.id">
+                            <template v-for="(item, index) in displayedStagedListings" :key="'staged-' + item.id">
                             <tr :class="getRowClass(item)">
                                 <!-- Checkbox column (hidden after commit) -->
                                 <td v-if="!commitComplete" class="text-center">
@@ -211,7 +226,7 @@
                                         :title="isConfirmedDuplicate(item.id) ? 'Linked to existing listing - cannot import' : ''"
                                     />
                                 </td>
-                                <td>{{ index + 1 }}</td>
+                                <td>{{ item.originalIndex }}</td>
                                 <td>
                                     <!-- Pre-commit: show status badges -->
                                     <template v-if="!commitComplete">
@@ -999,7 +1014,10 @@ export default {
             },
             
             // Track which listings have been added to menu
-            addedToMenuIds: new Set()
+            addedToMenuIds: new Set(),
+            
+            // Post-commit row filtering
+            showAllPostCommitRows: false
         }
     },
     mounted() {
@@ -1017,6 +1035,35 @@ export default {
         document.removeEventListener('click', this.handlePopoverClickOutside);
     },
     computed: {
+        // ============ POST-COMMIT FILTERED LISTINGS ============
+        
+        // Returns listings to display, filtering out skipped items after commit unless toggle is on
+        displayedStagedListings() {
+            // Add original index to each item for consistent row numbering
+            const listingsWithIndex = this.stagedListings.map((item, index) => ({
+                ...item,
+                originalIndex: index + 1
+            }));
+            
+            // Before commit, show all items
+            if (!this.commitComplete) {
+                return listingsWithIndex;
+            }
+            
+            // After commit, filter based on toggle
+            if (this.showAllPostCommitRows) {
+                return listingsWithIndex;
+            }
+            
+            // Hide items that were just skipped (not selected, no error)
+            // Show: success, linked, error
+            return listingsWithIndex.filter(item => 
+                item.commitStatus === 'success' || 
+                item.commitStatus === 'linked' || 
+                item.commitStatus === 'error'
+            );
+        },
+        
         // ============ MENU FUNCTIONALITY COMPUTED PROPERTIES ============
         
         // Check if venue has menu sections
@@ -1530,6 +1577,12 @@ export default {
                 }
             });
             return uniqueProducers.size;
+        },
+
+        // Count of skipped items (user didn't select them for import)
+        getSkippedCount() {
+            if (!this.commitComplete) return 0;
+            return this.stagedListings.filter(item => item.commitStatus === 'skipped').length;
         },
 
         // ============ INLINE EDITING METHODS ============
