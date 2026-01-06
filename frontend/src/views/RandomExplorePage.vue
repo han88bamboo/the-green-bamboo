@@ -1144,6 +1144,41 @@
                   </h5>
                   <!-- v-loop for each listing -->
                   <div class="containers text-start">
+                    <!-- Write Post Section (only for logged-in regular users) -->
+                    <div v-if="userID && userType === 'user'" class="mb-4">
+                      <div 
+                        class="d-flex align-items-center gap-3 p-3"
+                        style="
+                          border: 1px solid #e0e0e0;
+                          border-radius: 8px;
+                          background-color: #ffffff;
+                        "
+                      >
+                        <img 
+                          :src="user && user.photo ? user.photo : defaultProfilePhoto" 
+                          alt="Profile" 
+                          class="rounded-circle"
+                          style="width: 40px; height: 40px; object-fit: cover;"
+                        />
+                        <input 
+                          type="text" 
+                          class="form-control"
+                          placeholder="What's on your mind?"
+                          style="border-radius: 20px; background-color: #f0f2f5;"
+                          readonly
+                          data-bs-toggle="modal"
+                          data-bs-target="#addExploreWallPostModal"
+                        />
+                        <button 
+                          class="btn fw-bold primary-btn-green"
+                          style="white-space: nowrap;"
+                          data-bs-toggle="modal"
+                          data-bs-target="#addExploreWallPostModal"
+                        >
+                          + Write Post
+                        </button>
+                      </div>
+                    </div>
                     <!-- Displays listings from all general listings or from filtered listings from drinkCategory/drinkType depending if filter is selected-->
                     <!-- <div v-for="listing in filteredListings" v-bind:key="listing.id" class="p-3 mobile-pt-0"> -->
 
@@ -1231,10 +1266,26 @@
                                         "                                      
                                     />
                                   </div>
+
+                                  <!-- For WallPost (only show if there's a post photo) -->
+                                  <div v-else-if="content.contentType == 'WallPost' && content.postPhotos && content.postPhotos.length > 0" class="listing-img-wrap" style="aspect-ratio: 1 / 1;">
+                                    <img
+                                      :src="content.postPhotos[0]"
+                                      class="listing-img"
+                                      style="
+                                        width: 100%;
+                                        height: 100%;
+                                        object-fit: contain;
+                                      "
+                                    />
+                                  </div>
                                 </div>
 
                                 <!-- Details Section (Center) -->
-                                <div class="col col-md-7 d-flex flex-column justify-content-between px-0 p-md-3">
+                                <div :class="[
+                                  'col d-flex flex-column justify-content-between px-0 px-md-3',
+                                  (content.contentType === 'WallPost' && (!content.postPhotos || content.postPhotos.length === 0)) ? 'col-md-10' : 'col-md-7'
+                                ]">
 
                                   <!-- For Listings -->
                                   <div v-if="content.contentType == 'Listing'">
@@ -1472,6 +1523,45 @@
                                         
                                       <h6 class="primary-clickable-text text-decoration-none homepage-bottle-listing-description mt-2" >"{{ content.text }}"</h6>
                                   </div>
+
+                                  <!-- For WallPost -->
+                                  <div v-else-if="content.contentType == 'WallPost'">
+                                    <!-- Poster username, photo, and posted date -->
+                                    <div v-if="content.posterInfo" class="d-flex align-items-center">
+                                      <router-link
+                                        :to="{ path: '/profile/user/' + content.posterInfo.id + '/' + content.posterInfo.username }"
+                                        class="primary-clickable-text text-decoration-none"
+                                        style="color: #027562"
+                                      >
+                                        <div class="d-flex align-items-center">
+                                          <img
+                                            :src="content.posterInfo.photo || 'https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultProfilePhoto.png?v=1748434288'"
+                                            class="rounded-circle"
+                                            alt="Profile Photo"
+                                            width="30"
+                                            height="30"
+                                            style="object-fit: cover;"
+                                          />
+                                          <h5 class="d-none d-md-block mb-0 ms-2">@<b>{{ content.posterInfo.username }}</b></h5>
+                                          <h6 class="d-block d-md-none mobile-mt-2 mb-0 ms-2">@<b>{{ content.posterInfo.username }}</b></h6>
+                                        </div>
+                                      </router-link>
+                                      <span class="text-muted ms-2" style="font-size: 0.9em;">
+                                        posted on {{ new Date(content.postDate).toLocaleDateString() }}.
+                                      </span>
+                                    </div>
+
+                                    <!-- Post Content -->
+                                    <router-link
+                                      v-if="content.posterInfo"
+                                      :to="{ path: '/profile/user/' + content.posterInfo.id + '/' + content.posterInfo.username + '/all-wall-posts' }"
+                                      class="primary-clickable-text text-decoration-none"
+                                    >
+                                      <p class="homepage-bottle-listing-description">
+                                        {{ content.postContent }}
+                                      </p>
+                                    </router-link>
+                                  </div>
                                   
                                 </div>
 
@@ -1542,6 +1632,21 @@
                                       >
                                         <button class="btn secondary-btn-border fw-bold btn-sm py-2 px-3">
                                           View Profile
+                                        </button>
+                                      </router-link>
+                                    </div>
+                                  </div>
+
+                                  <!-- WallPost -->
+                                  <div v-else-if="content.contentType == 'WallPost'">
+                                    <div class="d-grid">
+                                      <router-link
+                                        v-if="content.posterInfo"
+                                        :to="{ path: '/profile/user/' + content.posterInfo.id + '/' + content.posterInfo.username + '/all-wall-posts' }"
+                                        class="primary-clickable-text"
+                                      >
+                                        <button class="btn secondary-btn-border fw-bold btn-sm py-2 px-3">
+                                          View Wall
                                         </button>
                                       </router-link>
                                     </div>
@@ -2278,6 +2383,121 @@
       :listingID="bookmarkListingID"
     />
   </div>
+
+  <!-- Add Wall Post Modal -->
+  <div
+    class="modal fade"
+    id="addExploreWallPostModal"
+    tabindex="-1"
+    aria-labelledby="addExploreWallPostModalLabel"
+    aria-hidden="true"
+  >
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <!-- Modal header -->
+        <div class="modal-header d-flex justify-content-between">
+          <h5 class="modal-title" id="addExploreWallPostModalLabel">Add A New Post</h5>
+          <button
+            type="button"
+            class="custom-close-btn"
+            data-bs-dismiss="modal"
+            aria-label="Close"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              fill="currentColor"
+              class="bi bi-x"
+              viewBox="0 0 16 16"
+            >
+              <path
+                d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"
+              />
+            </svg>
+          </button>
+        </div>
+
+        <!-- Modal body -->
+        <div class="modal-body">
+          <div class="container">
+            <div class="row">
+              <div class="col-md-12">
+                <textarea
+                  class="form-control"
+                  rows="5"
+                  placeholder="What's on your mind?"
+                  v-model="newWallPostContent"
+                ></textarea>
+              </div>
+            </div>
+            <div class="row mt-3">
+              <div class="col-md-12">
+                <!-- Upload image input field (max 1 photo) -->
+                <input
+                  type="file"
+                  class="form-control"
+                  id="exploreWallPostPhotoInputField"
+                  accept="image/*"
+                  @change="wallPostImageUpload"
+                />
+
+                <!-- Display the uploaded image -->
+                <div v-if="newWallPostPhoto" class="mt-3">
+                  <div class="position-relative d-inline-block m-2">
+                    <img
+                      :src="newWallPostPhoto"
+                      class="img-fluid"
+                      style="max-height: 300px"
+                      alt="Post Photo"
+                    />
+                    <button
+                      class="btn primary-btn-red btn-sm position-absolute top-0 end-0 mt-3 me-3"
+                      @click="removeWallPostPhoto"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="16"
+                        height="16"
+                        fill="currentColor"
+                        class="bi bi-trash-fill"
+                        viewBox="0 0 16 16"
+                      >
+                        <path
+                          d="M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1zm3 4a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5M8 5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7A.5.5 0 0 1 8 5m3 .5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 1 0"
+                        />
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Modal footer -->
+        <div class="modal-footer">
+          <button
+            type="button"
+            class="btn btn-secondary"
+            data-bs-dismiss="modal"
+            :disabled="disableWallPostButton"
+          >
+            Close
+          </button>
+          <button
+            type="button"
+            class="btn primary-btn-green"
+            :disabled="disableWallPostButton || !newWallPostContent"
+            @click="addWallPost"
+            data-bs-dismiss="modal"
+          >
+            Post
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
 </template>
 
 <!-- ---------------------------------------------------------------------------------------------------------------------------------------------------------- -->
@@ -2543,7 +2763,7 @@ export default {
       dashboardWord: "",
 
       defaultProfilePhoto:
-        "https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultDrinkImage.png?v=1750084739",
+        "https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultProfilePhoto.png?v=1748434288",
 
 
       // Added by CP - 25 Aug
@@ -2597,6 +2817,11 @@ export default {
       // Reply Comments variables - CP
       replyMode: {},
       replyComment: "",
+
+      // Wall Post variables
+      newWallPostContent: null,
+      newWallPostPhoto: null,
+      disableWallPostButton: false,
 
     };
   },
@@ -4006,6 +4231,97 @@ methods: {
             const toast = useToast();
             toast.error("Failed to post reply. Please try again later.");
         }
+    },
+
+    // Wall Post Methods
+    wallPostImageUpload(event) {
+      const file = event.target.files[0];
+      if (file && file.type.match("image.*")) {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => {
+          this.newWallPostPhoto = reader.result;
+        };
+      }
+    },
+
+    removeWallPostPhoto() {
+      this.newWallPostPhoto = null;
+      const input = document.getElementById('exploreWallPostPhotoInputField');
+      if (input) input.value = '';
+    },
+
+    async addWallPost() {
+      const toast = useToast();
+      
+      if (!this.newWallPostContent || this.newWallPostContent.trim() === '') {
+        toast.error("Please enter some content for your post.");
+        return;
+      }
+
+      try {
+        this.disableWallPostButton = true;
+
+        let postData = {
+          wallOwnerID: this.userID,
+          posterUserID: this.userID,
+          postContent: this.newWallPostContent,
+        };
+
+        if (this.newWallPostPhoto) {
+          postData.images = [this.newWallPostPhoto];
+        }
+
+        const response = await this.$axios.post(
+          `${process.env.VUE_APP_API_URL}/userWall/addWallPost`,
+          postData
+        );
+
+        if (response.status === 201) {
+          // Create a new content object for the wall post to prepend to contents array
+          const newPost = {
+            id: response.data.id || Date.now(), // Use returned ID or fallback
+            contentType: 'WallPost',
+            postContent: this.newWallPostContent,
+            postDate: new Date().toISOString(),
+            postPhotos: this.newWallPostPhoto ? [this.newWallPostPhoto] : [],
+            posterUserID: parseInt(this.userID),
+            wallOwnerID: parseInt(this.userID),
+            posterInfo: {
+              id: parseInt(this.userID),
+              username: this.username,
+              displayName: this.user?.displayName || this.username,
+              photo: this.user?.photo || null
+            },
+            wallOwnerInfo: {
+              id: parseInt(this.userID),
+              username: this.username,
+              displayName: this.user?.displayName || this.username,
+              photo: this.user?.photo || null
+            },
+            totalLikes: 0,
+            totalDislikes: 0,
+            totalComments: 0,
+            topComments: []
+          };
+
+          // Prepend the new post to the contents array
+          this.contents.unshift(newPost);
+
+          // Reset form
+          this.newWallPostContent = null;
+          this.newWallPostPhoto = null;
+          const input = document.getElementById('exploreWallPostPhotoInputField');
+          if (input) input.value = '';
+
+          toast.success("Post added successfully!");
+        }
+      } catch (error) {
+        console.error("Error adding wall post:", error);
+        toast.error("An error occurred while adding the post. Please try again!");
+      } finally {
+        this.disableWallPostButton = false;
+      }
     },
 
 
