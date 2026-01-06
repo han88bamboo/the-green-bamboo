@@ -577,7 +577,7 @@
                                   :key="drink.id" 
                                   class="col-6"
                                 >
-                                  <router-link :to="{ path: '/listing/view/' + drink.id }">
+                                  <router-link :to="{ path: '/listing/view/' + drink.id + '/' + slugify(drink.listingName) }">
                                     <div class="similar-drink-card">
                                       <img 
                                         :src="drink.photo" 
@@ -611,7 +611,7 @@
                                   :key="'also-' + drink.id" 
                                   class="col-6"
                                 >
-                                  <router-link :to="{ path: '/listing/view/' + drink.id }">
+                                  <router-link :to="{ path: '/listing/view/' + drink.id + '/' + slugify(drink.listingName) }">
                                     <div class="similar-drink-card">
                                       <img 
                                         :src="drink.photo" 
@@ -3773,7 +3773,7 @@
                                   :key="drink.id" 
                                   class="col-6"
                                 >
-                                  <router-link :to="{ path: '/listing/view/' + drink.id }">
+                                  <router-link :to="{ path: '/listing/view/' + drink.id + '/' + slugify(drink.listingName) }">
                                     <div class="similar-drink-card">
                                       <img 
                                         :src="drink.photo" 
@@ -3807,7 +3807,7 @@
                                   :key="'also-' + drink.id" 
                                   class="col-6"
                                 >
-                                  <router-link :to="{ path: '/listing/view/' + drink.id }">
+                                  <router-link :to="{ path: '/listing/view/' + drink.id + '/' + slugify(drink.listingName) }">
                                     <div class="similar-drink-card">
                                       <img 
                                         :src="drink.photo" 
