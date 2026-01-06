@@ -164,6 +164,55 @@
 .custom-close-btn:hover {
   opacity: 0.7;
 }
+
+/* Wall Post Modal Drag & Drop Styles */
+.wall-post-drop-zone {
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+.wall-post-drop-zone.dragging {
+  background-color: #e8f4e8;
+}
+
+.wall-post-drop-zone.dragging::after {
+  content: 'Drop image here';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(40, 167, 69, 0.1);
+  border: 3px dashed #28a745;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #28a745;
+  z-index: 10;
+  pointer-events: none;
+}
+
+.camera-upload-btn {
+  background: none;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  padding: 8px 16px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #6c757d;
+  transition: all 0.2s ease;
+}
+
+.camera-upload-btn:hover {
+  background-color: #f8f9fa;
+  border-color: #28a745;
+  color: #28a745;
+}
 </style>
 
 <!-- HTML -->
@@ -2446,7 +2495,13 @@
         </div>
 
         <!-- Modal body -->
-        <div class="modal-body">
+        <div 
+          class="modal-body wall-post-drop-zone"
+          :class="{ 'dragging': isDraggingWallPost }"
+          @dragover.prevent="handleWallPostDragOver"
+          @dragleave.prevent="handleWallPostDragLeave"
+          @drop.prevent="handleWallPostDrop"
+        >
           <div class="container">
             <div class="row">
               <div class="col-md-12">
@@ -2461,26 +2516,40 @@
             </div>
             <div class="row mt-3">
               <div class="col-md-12">
-                <!-- Upload image input field (max 1 photo) -->
+                <!-- Hidden file input -->
                 <input
                   type="file"
-                  class="form-control"
                   id="exploreWallPostPhotoInputField"
                   accept="image/*"
                   @change="wallPostImageUpload"
+                  style="display: none;"
                 />
 
+                <!-- Camera icon button (when no photo) -->
+                <label 
+                  v-if="!newWallPostPhoto" 
+                  for="exploreWallPostPhotoInputField" 
+                  class="camera-upload-btn"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+                    <path d="M15 12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h1.172a3 3 0 0 0 2.12-.879l.83-.828A1 1 0 0 1 6.827 3h2.344a1 1 0 0 1 .707.293l.828.828A3 3 0 0 0 12.828 5H14a1 1 0 0 1 1 1zM2 4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-1.172a2 2 0 0 1-1.414-.586l-.828-.828A2 2 0 0 0 9.172 2H6.828a2 2 0 0 0-1.414.586l-.828.828A2 2 0 0 1 3.172 4z"/>
+                    <path d="M8 11a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5m0 1a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7M3 6.5a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0"/>
+                  </svg>
+                  <span>Add Photo</span>
+                  <span class="text-muted" style="font-size: 0.85em;">or drag & drop</span>
+                </label>
+
                 <!-- Display the uploaded image -->
-                <div v-if="newWallPostPhoto" class="mt-3">
-                  <div class="position-relative d-inline-block m-2">
+                <div v-if="newWallPostPhoto" class="mt-2">
+                  <div class="position-relative d-inline-block">
                     <img
                       :src="newWallPostPhoto"
-                      class="img-fluid"
-                      style="max-height: 300px"
+                      class="img-fluid rounded"
+                      style="max-height: 250px"
                       alt="Post Photo"
                     />
                     <button
-                      class="btn primary-btn-red btn-sm position-absolute top-0 end-0 mt-3 me-3"
+                      class="btn primary-btn-red btn-sm position-absolute top-0 end-0 m-2"
                       @click="removeWallPostPhoto"
                     >
                       <svg
@@ -2488,12 +2557,9 @@
                         width="16"
                         height="16"
                         fill="currentColor"
-                        class="bi bi-trash-fill"
                         viewBox="0 0 16 16"
                       >
-                        <path
-                          d="M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1zm3 4a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5M8 5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7A.5.5 0 0 1 8 5m3 .5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 1 0"
-                        />
+                        <path d="M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1zm3 4a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5M8 5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7A.5.5 0 0 1 8 5m3 .5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 1 0"/>
                       </svg>
                     </button>
                   </div>
@@ -2852,6 +2918,7 @@ export default {
       newWallPostContent: null,
       newWallPostPhoto: null,
       disableWallPostButton: false,
+      isDraggingWallPost: false,
 
     };
   },
@@ -4400,11 +4467,34 @@ methods: {
     wallPostImageUpload(event) {
       const file = event.target.files[0];
       if (file && file.type.match("image.*")) {
-        const reader = new FileReader();
-        reader.readAsDataURL(file);
-        reader.onload = () => {
-          this.newWallPostPhoto = reader.result;
-        };
+        this.processWallPostImage(file);
+      }
+    },
+
+    processWallPostImage(file) {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => {
+        this.newWallPostPhoto = reader.result;
+      };
+    },
+
+    handleWallPostDragOver() {
+      this.isDraggingWallPost = true;
+    },
+
+    handleWallPostDragLeave() {
+      this.isDraggingWallPost = false;
+    },
+
+    handleWallPostDrop(event) {
+      this.isDraggingWallPost = false;
+      const files = event.dataTransfer.files;
+      if (files && files.length > 0) {
+        const file = files[0];
+        if (file.type.match("image.*")) {
+          this.processWallPostImage(file);
+        }
       }
     },
 
