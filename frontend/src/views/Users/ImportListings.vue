@@ -213,7 +213,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <template v-for="(item, index) in displayedStagedListings" :key="'staged-' + item.id">
+                            <template v-for="item in displayedStagedListings" :key="'staged-' + item.id">
                             <tr :class="getRowClass(item)">
                                 <!-- Checkbox column (hidden after commit) -->
                                 <td v-if="!commitComplete" class="text-center">
