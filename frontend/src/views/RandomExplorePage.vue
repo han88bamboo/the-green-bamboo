@@ -1197,8 +1197,11 @@
                               <!-- First Row: Image | Details | Rating -->
                               <div class="row flex-column flex-md-row g-3 mb-3 justify-content-between align-items-start w-100">
                                 
-                                <!-- Image Section (Left) -->
-                                <div class="col-12 col-md-3 d-flex justify-content-center justify-content-md-start px-0">
+                                <!-- Image Section (Left) - Hidden for WallPost without photos -->
+                                <div 
+                                  v-if="!(content.contentType === 'WallPost' && (!content.postPhotos || content.postPhotos.length === 0))"
+                                  class="col-12 col-md-3 d-flex justify-content-center justify-content-md-start px-0"
+                                >
                                   
                                   <!-- For Listings -->
                                   <div v-if="content.contentType == 'Listing'" class="listing-img-wrap"  style="  aspect-ratio: 1 / 1;" >
