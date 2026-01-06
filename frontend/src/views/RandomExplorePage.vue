@@ -1878,8 +1878,8 @@
                                           </div>
                                         </div>
 
-                                        <!-- Row 3: Reply Comment Section -->
-                                        <div class="row mt-3">
+                                        <!-- Row 3: Reply Comment Section (not available for WallPost) -->
+                                        <div v-if="content.contentType !== 'WallPost'" class="row mt-3">
                                           <!-- Reply button -->
                                           <div
                                             v-if="!replyMode[comment.id]"
@@ -1913,8 +1913,8 @@
                                           </div>
                                         </div>
 
-                                        <!-- Row 4: Comment Replies -->
-                                        <div class="row mt-2">
+                                        <!-- Row 4: Comment Replies (not available for WallPost) -->
+                                        <div v-if="content.contentType !== 'WallPost'" class="row mt-2">
                                           <div class="col-12">
                                             <div v-for="reply in comment.replies" :key="reply.id" class="pb-2 mb-2">
                                               <div class="d-flex align-items-start">
@@ -2798,6 +2798,7 @@ export default {
       venuesUpdatesLikes: [],
       producerReviewsLikes: [],
       venueReviewsLikes: [],
+      wallPostLikes: [],
 
       // For comment editing
       newComment: {},
@@ -2929,6 +2930,7 @@ methods: {
         this.reviewsLikes = response.data.reviewsLikes || [];
         this.producersUpdatesLikes = response.data.producersUpdatesLikes || [];
         this.venuesUpdatesLikes = response.data.venuesUpdatesLikes || [];
+        this.wallPostLikes = response.data.wallPostLikes || [];
 
       } catch (error) {
         // Check if error response indicates no content available
@@ -3800,13 +3802,15 @@ methods: {
           return this.producersUpdatesLikes.includes(contentId);
         case 'vUpdate':
           return this.venuesUpdatesLikes.includes(contentId);
+        case 'WallPost':
+          return this.wallPostLikes.includes(contentId);
         default:
           return false;
       }
     },
 
     // Function to like content
-    likeContent(contentId, contentType) {
+    async likeContent(contentId, contentType) {
 
       if (!this.userID || this.userID === 0 || !this.userType || this.userType === "public") {
         // Route to login page
@@ -3814,6 +3818,38 @@ methods: {
         return;
       }
       try {
+        // WallPost uses userWall API (toggle-based)
+        if (contentType === 'WallPost') {
+          console.log('Charsiucharlie_posting_debug: Liking WallPost - contentId:', contentId, 'type:', typeof contentId);
+          const response = await this.$axios.put(
+            `${process.env.VUE_APP_API_URL}/userWall/likeUnlikeWallPost`,
+            {
+              userID: this.userID,
+              postID: contentId,
+            }
+          );
+
+          const content = this.contents.find(c => c.id === contentId && c.contentType === contentType);
+
+          if (response.data.liked) {
+            // User liked the post
+            if (!this.wallPostLikes.includes(contentId)) {
+              this.wallPostLikes.push(contentId);
+            }
+            if (content) {
+              content.totalLikes = (content.totalLikes || 0) + 1;
+            }
+          } else {
+            // User unliked the post (toggle behavior)
+            this.wallPostLikes = this.wallPostLikes.filter(id => id !== contentId);
+            if (content) {
+              content.totalLikes = Math.max((content.totalLikes || 1) - 1, 0);
+            }
+          }
+          return;
+        }
+
+        // Other content types use randomContent API
         this.$axios.post(`${process.env.VUE_APP_API_URL}/randomContent/likeContent`, {
           userId: this.userID,
           userType: this.userType,
@@ -3858,7 +3894,7 @@ methods: {
     },
 
     // Function to unlike content
-    unlikeContent(contentId, contentType) {
+    async unlikeContent(contentId, contentType) {
 
       if (!this.userID || this.userID === 0 || !this.userType || this.userType === "public") {
         // Route to login page
@@ -3867,6 +3903,37 @@ methods: {
       }
 
       try {
+        // WallPost uses userWall API (toggle-based) - same endpoint as like
+        if (contentType === 'WallPost') {
+          const response = await this.$axios.put(
+            `${process.env.VUE_APP_API_URL}/userWall/likeUnlikeWallPost`,
+            {
+              userID: this.userID,
+              postID: contentId,
+            }
+          );
+
+          const content = this.contents.find(c => c.id === contentId && c.contentType === contentType);
+
+          if (response.data.liked) {
+            // User liked the post (shouldn't happen when unliking, but handle it)
+            if (!this.wallPostLikes.includes(contentId)) {
+              this.wallPostLikes.push(contentId);
+            }
+            if (content) {
+              content.totalLikes = (content.totalLikes || 0) + 1;
+            }
+          } else {
+            // User unliked the post
+            this.wallPostLikes = this.wallPostLikes.filter(id => id !== contentId);
+            if (content) {
+              content.totalLikes = Math.max((content.totalLikes || 1) - 1, 0);
+            }
+          }
+          return;
+        }
+
+        // Other content types use randomContent API
         this.$axios.post(`${process.env.VUE_APP_API_URL}/randomContent/unlikeContent`, {
           userId: this.userID,
           userType: this.userType,
@@ -3930,6 +3997,11 @@ methods: {
         case 'vReview':
         case 'vUpdate':
           return `/profile/venue/${content.venueId}/${this.slugify(content.venueName)}`;
+        case 'WallPost':
+          if (content.posterInfo) {
+            return `/profile/user/${content.posterInfo.id}/${content.posterInfo.username}/all-wall-posts`;
+          }
+          return null;
         default:
           return null;
       }
@@ -3957,6 +4029,54 @@ methods: {
       }
 
       try {
+        let newComment;
+
+        // WallPost uses userWall API for comments
+        if (contentType === 'WallPost') {
+          const response = await this.$axios.post(
+            `${process.env.VUE_APP_API_URL}/userWall/addWallPostComment`,
+            {
+              commenterID: this.userID,
+              postID: contentId,
+              commentContent: commentText.trim(),
+            }
+          );
+
+          if (response.status === 201) {
+            // Clear the input field for this contentId
+            this.newComment[contentId] = "";
+
+            // Get the comment object from response
+            newComment = response.data.comment_obj;
+
+            // Map the userWall comment format to match the UI format
+            newComment = {
+              id: newComment.id,
+              userId: newComment.commenterID,
+              userType: 'user',
+              username: newComment.commenterInfo?.username || '',
+              userPhoto: newComment.commenterInfo?.photo || null,
+              comment: newComment.commentContent,
+              createdAt: newComment.commentDate,
+              replies: []
+            };
+
+            // Push the new comment into the correct topComments array
+            topComments.push(newComment);
+
+            // Update comment count on the content
+            const content = this.contents.find(c => c.id === contentId && c.contentType === contentType);
+            if (content) {
+              content.totalComments = (content.totalComments || 0) + 1;
+            }
+
+            const toast = useToast();
+            toast.success("Comment added successfully.");
+          }
+          return;
+        }
+
+        // Other content types use randomContent API
         const response = await this.$axios.post(
           `${process.env.VUE_APP_API_URL}/randomContent/addComment`,
           {
@@ -3971,7 +4091,7 @@ methods: {
         // Clear the input field for this contentId
         this.newComment[contentId] = "";
 
-        let newComment = response.data.comment;
+        newComment = response.data.comment;
 
         // Replace "photo" key with "userPhoto" for UI 
         newComment.userPhoto = newComment.photo;
@@ -4294,8 +4414,11 @@ methods: {
 
         if (response.status === 201) {
           // Create a new content object for the wall post to prepend to contents array
+          console.log('Charsiucharlie_posting_debug: WallPost created - Backend response:', response.data);
+          console.log('Charsiucharlie_posting_debug: WallPost ID:', response.data.postID);
+          
           const newPost = {
-            id: response.data.id || Date.now(), // Use returned ID or fallback
+            id: response.data.postID, // Backend returns postID, not id
             contentType: 'WallPost',
             postContent: this.newWallPostContent,
             postDate: new Date().toISOString(),
