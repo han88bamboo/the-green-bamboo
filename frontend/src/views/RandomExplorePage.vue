@@ -152,6 +152,18 @@
     object-fit: cover; /* still crops nicely */
   }
 }
+
+/* Custom close button for modals */
+.custom-close-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
+
+.custom-close-btn:hover {
+  opacity: 0.7;
+}
 </style>
 
 <!-- HTML -->
