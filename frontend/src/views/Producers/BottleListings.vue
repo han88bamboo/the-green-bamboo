@@ -3835,7 +3835,7 @@
       :key="bookmarkListingID ? 'modal-' + bookmarkListingID : 'modal-default'" />
 
       <!-- You May Also Like Section (Full Width, User-Based) -->
-      <div class="container mt-4" v-if="userID !== 'defaultUser' && userMayAlsoLike.length >= 3">
+      <div class="container mt-4 mb-4" v-if="userID !== 'defaultUser' && userMayAlsoLike.length >= 3">
         <div class="row">
           <div class="col-12">
             <h5 class="fw-bold text-start">You May Also Like</h5>
@@ -3854,7 +3854,7 @@
                       class="similar-drink-image"
                       loading="lazy"
                     />
-                    <div class="similar-drink-overlay">
+                    <div class="similar-drink-overlay" style="text-align:left;">
                       <p class="similar-drink-name mb-0">{{ drink.listingName }}</p>
                       <p class="similar-drink-producer mb-0">{{ drink.producerName }}</p>
                       <p class="similar-drink-reviews mb-0">{{ drink.reviewCount }} {{ drink.reviewCount === 1 ? 'review' : 'reviews' }}</p>
