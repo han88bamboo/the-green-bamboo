@@ -10142,28 +10142,11 @@ input[type="range"].form-range::-webkit-slider-thumb {
   min-width: 0;
 }
 
-/* Responsive: On mobile, make it horizontally scrollable */
-@media (max-width: 992px) {
+/* Responsive: On tablet/mobile (991px and below), stack to 2x3 grid */
+@media (max-width: 991px) {
   .user-may-also-like-grid {
-    display: flex;
-    overflow-x: auto;
-    scroll-snap-type: x mandatory;
-    -webkit-overflow-scrolling: touch;
+    grid-template-columns: repeat(3, 1fr);
     gap: 10px;
-    padding-bottom: 8px;
-  }
-  
-  .user-may-also-like-item {
-    flex: 0 0 calc(33.333% - 7px);
-    min-width: calc(33.333% - 7px);
-    scroll-snap-align: start;
-  }
-}
-
-@media (max-width: 576px) {
-  .user-may-also-like-item {
-    flex: 0 0 calc(50% - 5px);
-    min-width: calc(50% - 5px);
   }
 }
 
