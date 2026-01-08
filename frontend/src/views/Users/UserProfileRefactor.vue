@@ -1889,6 +1889,8 @@ export default {
         if (this.userID) {
           if (this.ownProfile) {
             this.user = this.displayUser;
+            // Store logged-in user in localStorage for other components to access
+            localStorage.setItem('88B_loggedInUser', JSON.stringify(this.user));
           } else {
             try {
               const response = await this.$axios.get(
@@ -1896,6 +1898,8 @@ export default {
               );
               // const response  = await this.$axios.get(`http://127.0.0.1:5000/getData/getUser/${this.userID}`);
               this.user = response.data;
+              // Store logged-in user in localStorage for other components to access
+              localStorage.setItem('88B_loggedInUser', JSON.stringify(this.user));
 
             } catch (error) {
               console.error(error);
