@@ -35,3 +35,9 @@ Based on Step 3:
 - If revisions are made, summarise what changed and why.
 - Ensure the final output is what the user should implement/copy, not the draft.
 
+## Output format requirements
+Always structure your response with these headings (even if brief):
+1. **Draft answer**
+2. **Verification/Validation questions**
+3. **Verification/Validation answers**
+4. **Revised final answer** (or “No revision needed”)
