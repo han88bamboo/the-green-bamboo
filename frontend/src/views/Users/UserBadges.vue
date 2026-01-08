@@ -6,7 +6,11 @@
   <!-- User Profile Header and Navigation (always visible) -->
   <div v-if="displayUserID && routeUsername" class="userprofile mt-5 mobile-mt-3">
     <div class="container text-start">
-      <UserProfileHeader />
+      <UserProfileHeader 
+        :displayUserData="displayUser"
+        :loggedInUserData="loggedInUser"
+        :isOwnProfile="ownProfile"
+      />
     </div>
     
     <br>
@@ -142,9 +146,12 @@ export default {
       dataLoaded: false,
       
        // User data
+      userID: null,
       displayUserID: null,
       routeUsername: null,
       displayUser: {},
+      loggedInUser: null,
+      ownProfile: false,
       userBadges: [],
       userBadgesLoaded: false,
       defaultProfilePhoto: "https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultProfilePhoto.png?v=1748434288",
@@ -154,6 +161,21 @@ export default {
     // Get route parameters
     this.displayUserID = parseInt(this.$route.params.userID);
     this.routeUsername = this.$route.params.username;
+    
+    // Get logged-in user ID from localStorage
+    const accID = localStorage.getItem("88B_accID");
+    if (accID !== null) {
+      this.userID = accID;
+    }
+    
+    // Check if viewing own profile
+    this.ownProfile = (this.displayUserID == this.userID);
+    
+    // Get logged-in user data from localStorage (stored by UserProfileRefactor)
+    const storedUser = localStorage.getItem("88B_loggedInUser");
+    if (storedUser) {
+      this.loggedInUser = JSON.parse(storedUser);
+    }
     
     await this.loadData();
   },
