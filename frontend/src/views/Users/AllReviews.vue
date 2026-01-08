@@ -4,7 +4,11 @@
   <!-- User Profile Header and Navigation (always visible) -->
   <div v-if="displayUserID && routeUsername" class="userprofile mt-5 mobile-mt-3">
     <div class="container text-start">
-      <UserProfileHeader />
+      <UserProfileHeader 
+        :displayUserData="displayUser"
+        :loggedInUserData="loggedInUser"
+        :isOwnProfile="ownProfile"
+      />
     </div>
 
     <br>
@@ -529,6 +533,7 @@ export default {
       
       // Current user data
       userID: null,
+      loggedInUser: null,
       ownProfile: false,
 
       // Reviews data
@@ -601,6 +606,16 @@ export default {
     const accID = localStorage.getItem("88B_accID");
     if (accID !== null) {
       this.userID = accID;
+    }
+    
+    // Get logged-in user object from localStorage (stored by UserProfileRefactor or login)
+    const storedUser = localStorage.getItem("88B_loggedInUser");
+    if (storedUser) {
+      try {
+        this.loggedInUser = JSON.parse(storedUser);
+      } catch (e) {
+        console.error("Error parsing logged-in user from localStorage:", e);
+      }
     }
 
     // Get route parameters
