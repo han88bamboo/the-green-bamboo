@@ -4,7 +4,11 @@
   <!-- User Profile Header and Navigation (always visible) -->
   <div v-if="displayUserID && routeUsername" class="userprofile mt-5 mobile-mt-3">
     <div class="container text-start">
-      <UserProfileHeader />
+      <UserProfileHeader 
+        :displayUserData="displayUser"
+        :loggedInUserData="loggedInUser"
+        :isOwnProfile="ownProfile"
+      />
     </div>
 
     <br>
@@ -787,6 +791,7 @@ export default {
       userType: null,
       currentUserPhoto: null,
       ownProfile: false,
+      loggedInUser: null,
 
       // Posts data
       posts: [],
@@ -846,6 +851,12 @@ export default {
     // Check if viewing own profile
     if (this.displayUserID === this.userID) {
       this.ownProfile = true;
+    }
+
+    // Get logged-in user data from localStorage (stored by UserProfileRefactor)
+    const storedUser = localStorage.getItem("88B_loggedInUser");
+    if (storedUser) {
+      this.loggedInUser = JSON.parse(storedUser);
     }
 
     await this.loadData();
