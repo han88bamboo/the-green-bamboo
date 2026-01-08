@@ -10363,12 +10363,17 @@ input[type="range"].form-range::-webkit-slider-thumb {
   background-color: #f8f9fa;
   border-radius: 10px 10px 0 0;
   position: relative;
+  width: 100%;
 }
 
 .trending-review-card-vertical .review-card-img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  display: block;
+  position: absolute;
+  top: 0;
+  left: 0;
 }
 
 /* Review Overlay Styles for Trending Reviews */
