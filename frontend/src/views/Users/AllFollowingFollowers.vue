@@ -4,7 +4,11 @@
   <!-- User Profile Header and Navigation (always visible) -->
   <div v-if="displayUserID && routeUsername" class="userprofile mt-5 mobile-mt-3">
     <div class="container text-start">
-      <UserProfileHeader />
+      <UserProfileHeader 
+        :displayUserData="displayUser"
+        :loggedInUserData="loggedInUser"
+        :isOwnProfile="ownProfile"
+      />
     </div>
     <br>
     <!-- User Profile Navigation -->
@@ -379,10 +383,15 @@ export default {
       // Default images
       defaultUserImage: "https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultProfilePhoto.png?v=1748434288",
       
-      // User data
+      // Logged-in user data (from localStorage)
+      userID: null,
+      loggedInUser: null,
+      
+      // Display user data (user being viewed)
       displayUserID: null,
       routeUsername: null,
       displayUser: {},
+      ownProfile: false,
       
       // Users data
       allFollowing: [],
@@ -449,9 +458,30 @@ export default {
     }
   },
   async mounted() {
+    // Get logged-in user ID from localStorage
+    const accID = localStorage.getItem("88B_accID");
+    if (accID !== null) {
+      this.userID = accID;
+    }
+    
+    // Get logged-in user object from localStorage (stored by UserProfileRefactor or login)
+    const storedUser = localStorage.getItem("88B_loggedInUser");
+    if (storedUser) {
+      try {
+        this.loggedInUser = JSON.parse(storedUser);
+      } catch (e) {
+        console.error("Error parsing logged-in user from localStorage:", e);
+      }
+    }
+    
     // Get route parameters
     this.displayUserID = parseInt(this.$route.params.userID);
     this.routeUsername = this.$route.params.username;
+    
+    // Check if viewing own profile
+    if (this.userID && this.displayUserID == this.userID) {
+      this.ownProfile = true;
+    }
     
     await this.loadData();
   },
