@@ -3828,7 +3828,133 @@
                             <div class="py-2"></div>
                           </div>
                         </div>
-                        
+
+                        <!-- Trending Reviews Section (Desktop Sidebar) -->
+                        <div class="row">
+                          <div class="text-start">
+                            <div class="py-2 text-start">
+                              <h5 class="fw-bold">Trending Reviews</h5>
+                              <hr class="color: black">
+                              
+                              <!-- Loading skeleton cards -->
+                              <div v-if="trendingCategoryReviewsLoading" class="trending-reviews-vertical">
+                                <div v-for="n in 3" :key="'skeleton-' + n" class="trending-review-card-vertical mb-3">
+                                  <div class="card h-100 review-card border-light" style="border: 2px solid #f0b358;">
+                                    <div class="card-img-top-wrapper position-relative" style="height: 160px; background-color: #f0f0f0;">
+                                    </div>
+                                    <div class="card-body d-flex flex-column">
+                                      <div style="height: 20px; background-color: #e0e0e0; border-radius: 4px; margin-bottom: 8px;"></div>
+                                      <div style="height: 14px; background-color: #e0e0e0; border-radius: 4px; width: 60%; margin-bottom: 8px;"></div>
+                                      <div style="height: 14px; background-color: #e0e0e0; border-radius: 4px; width: 80%;"></div>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                              
+                              <!-- Actual review cards -->
+                              <div v-else-if="trendingCategoryReviews.length > 0" class="trending-reviews-vertical">
+                                <div 
+                                  v-for="review in trendingCategoryReviews" 
+                                  :key="'trending-' + review.reviewId" 
+                                  class="trending-review-card-vertical mb-3"
+                                >
+                                  <div 
+                                    class="card h-100 review-card border-light" 
+                                    style="border: 2px solid #f0b358; cursor: pointer;"
+                                    @click="goToReviewedListing(review)"
+                                  >
+                                    <!-- Image at top with overlay -->
+                                    <div class="card-img-top-wrapper position-relative">
+                                      <img 
+                                        v-if="review.photo" 
+                                        :src="review.photo" 
+                                        class="card-img-top review-card-img"
+                                        :alt="review.listingName" 
+                                      />
+                                      <img 
+                                        v-else-if="review.listingPhoto" 
+                                        :src="review.listingPhoto" 
+                                        class="card-img-top review-card-img"
+                                        :alt="review.listingName" 
+                                      />
+                                      <img 
+                                        v-else
+                                        src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultDrinkImage.png?v=1750084739"
+                                        class="card-img-top review-card-img"
+                                        alt="Default drink image" 
+                                      />
+                                      
+                                      <!-- User and Rating Overlay -->
+                                      <div class="review-overlay position-absolute d-flex align-items-center">
+                                        <img 
+                                          v-if="review.userPhoto" 
+                                          :src="review.userPhoto" 
+                                          class="rounded-circle me-1" 
+                                          style="width: 22px; height: 22px; object-fit: cover;" 
+                                          :alt="review.username" 
+                                        />
+                                        <img 
+                                          v-else
+                                          src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultProfilePhoto.png?v=1748434288"
+                                          class="rounded-circle me-1" 
+                                          style="width: 22px; height: 22px; object-fit: cover;" 
+                                          alt="Default profile" 
+                                        />
+                                        <span class="overlay-text">
+                                          @{{ truncateText(review.username, 15) }} rated 
+                                          <span class="overlay-rating">{{ parseFloat(review.rating) && !isNaN(parseFloat(review.rating)) ? parseFloat(review.rating).toFixed(1) : 'N/A' }}★</span>
+                                        </span>
+                                      </div>
+                                    </div>
+                                    
+                                    <div class="card-body d-flex flex-column">
+                                      <!-- Drink name -->
+                                      <h6 class="card-title fw-bold" style="color: #223957; margin-bottom: 0px;">
+                                        {{ truncateText(review.listingName, 30) }}
+                                      </h6>
+                                      
+                                      <!-- Producer name -->
+                                      <p class="text-muted small" v-if="review.producerName" style="margin-bottom: 0px;">
+                                        by {{ truncateText(review.producerName, 20) }}
+                                      </p>
+                                      
+                                      <!-- Category and Country -->
+                                      <p class="mb-2 small" style="color: #f0b358;" v-if="review.drinkType || review.originCountry">
+                                        <span v-if="review.drinkType">{{ review.drinkType }}</span>
+                                        <span v-if="review.drinkType && review.originCountry"> / </span>
+                                        <span v-if="review.originCountry">{{ review.originCountry }}</span>
+                                      </p>
+                                      
+                                      <!-- Review excerpt -->
+                                      <p class="card-text flex-grow-1 small" v-if="review.reviewDesc">
+                                        "{{ truncateText(review.reviewDesc, 55) }}" 
+                                      </p>
+                                    </div>
+                                    
+                                    <!-- Read Review Button Footer -->
+                                    <div class="text-center pb-3">
+                                      <button 
+                                        class="btn fw-semibold px-4"
+                                        @click.stop="goToReviewedListing(review)"
+                                        style="background-color: #f04444; border-color: #f04444; color: white;"
+                                      >
+                                        Read Review
+                                      </button>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                              
+                              <!-- No reviews message -->
+                              <div v-else class="text-muted small text-center py-3">
+                                No trending reviews in this category yet.
+                              </div>
+                              
+                            </div>
+                            <div class="py-2"></div>
+                          </div>
+                        </div>
+
       </div>
     </div>
     <BookmarkModal v-if="user" :user="user" :listingID="listingIDAsInt"
@@ -4297,6 +4423,10 @@ export default {
 
       // User-based "You May Also Like" for 1x6 grid
       userMayAlsoLike: [],
+
+      // Trending reviews for sidebar (same category)
+      trendingCategoryReviews: [],
+      trendingCategoryReviewsLoading: true,
 
       // search
       search: false,
@@ -5721,6 +5851,9 @@ export default {
 
       // Load user-based "You May Also Like" for the 1x6 grid
       this.loadUserMayAlsoLike();
+
+      // Load trending reviews for sidebar (same category)
+      this.loadTrendingCategoryReviews();
 
       // venuesAPI
       // _id, venueName, venueDesc, originCountry
@@ -7864,6 +7997,57 @@ export default {
         console.error("Error loading user may also like:", error);
         this.userMayAlsoLike = [];
       }
+    },
+
+    // Load trending category reviews for sidebar
+    async loadTrendingCategoryReviews() {
+      this.trendingCategoryReviewsLoading = true;
+      try {
+        // Build URL with optional userId query parameter for personalized 3rd card
+        let url = `${process.env.VUE_APP_API_URL}/getData/getRecentReviewsForListing/${this.listing_id}`;
+        
+        // Only pass userId if user is logged in (not 'defaultUser')
+        if (this.userID && this.userID !== 'defaultUser') {
+          url += `?userId=${this.userID}`;
+        }
+        
+        const response = await this.$axios.get(url);
+        this.trendingCategoryReviews = response.data;
+        console.log('Trending category reviews loaded:', this.trendingCategoryReviews);
+      } catch (error) {
+        console.error("Error loading trending category reviews:", error);
+        this.trendingCategoryReviews = [];
+      } finally {
+        this.trendingCategoryReviewsLoading = false;
+      }
+    },
+
+    // Navigate to reviewed listing (for trending reviews section)
+    goToReviewedListing(review) {
+      if (review && review.listingName) {
+        try {
+          const listingId = review.reviewTarget || review.listingId || review.id || review.listingID;
+          const listingName = review.listingName;
+          
+          if (listingId && listingName) {
+            this.$router.push({ 
+              path: `/listing/view/${listingId}/${this.slugify(listingName)}` 
+            });
+          } else {
+            console.warn("Missing listing ID or name:", review);
+          }
+        } catch (error) {
+          console.error("Error navigating to listing:", error);
+        }
+      } else {
+        console.warn("Invalid review for navigation:", review);
+      }
+    },
+
+    // Truncate text helper for trending reviews
+    truncateText(text, maxLength = 30) {
+      if (!text) return '';
+      return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
     },
 
     // Function to load more comments (pagination)
@@ -10148,6 +10332,96 @@ input[type="range"].form-range::-webkit-slider-thumb {
     grid-template-columns: repeat(3, 1fr);
     gap: 10px;
   }
+}
+
+/* Trending Reviews Vertical Layout (Sidebar) */
+.trending-reviews-vertical {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.trending-review-card-vertical {
+  width: 100%;
+}
+
+.trending-review-card-vertical .review-card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  cursor: pointer;
+  border-radius: 10px;
+}
+
+.trending-review-card-vertical .review-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.trending-review-card-vertical .card-img-top-wrapper {
+  height: 160px;
+  overflow: hidden;
+  background-color: #f8f9fa;
+  border-radius: 10px 10px 0 0;
+  position: relative;
+}
+
+.trending-review-card-vertical .review-card-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Review Overlay Styles for Trending Reviews */
+.trending-review-card-vertical .review-overlay {
+  top: 8px;
+  left: 8px;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 12px;
+  padding: 4px 8px;
+  backdrop-filter: blur(2px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  z-index: 2;
+}
+
+.trending-review-card-vertical .overlay-text {
+  color: #333;
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.trending-review-card-vertical .overlay-rating {
+  color: #f0b358;
+  font-weight: bold;
+}
+
+.trending-review-card-vertical .card-body {
+  padding: 0.75rem;
+}
+
+.trending-review-card-vertical .card-title {
+  font-size: 0.9rem;
+  line-height: 1.3;
+}
+
+/* Skeleton loading animation */
+@keyframes skeletonPulse {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+.trending-review-card-vertical .card-img-top-wrapper[style*="background-color: #f0f0f0"] {
+  animation: skeletonPulse 1.5s ease-in-out infinite;
+}
+
+.trending-review-card-vertical div[style*="background-color: #e0e0e0"] {
+  animation: skeletonPulse 1.5s ease-in-out infinite;
 }
 
 </style>

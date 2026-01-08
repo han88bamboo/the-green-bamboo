@@ -2758,6 +2758,362 @@ def get5MostRecentReviews():
         }), 500
 
 
+# [GET] Get 3 most recent reviews for a listing's category (drinkType + typeCategory)
+# Used in BottleListings.vue sidebar "Trending Reviews" section
+# Supports optional userId query parameter for personalized 3rd card
+@blueprint.route("/getRecentReviewsForListing/<int:listing_id>", methods=['GET'])
+def getRecentReviewsForListing(listing_id):
+    request_id = getattr(g, 'request_id', 'unknown')
+    
+    # Get optional userId from query parameter
+    user_id = request.args.get('userId', None)
+    if user_id:
+        try:
+            user_id = int(user_id)
+        except ValueError:
+            user_id = None
+    
+    # Start log for request tracking
+    logger.info(f"Charsiucharlie_debug REQ-{request_id} getRecentReviewsForListing listing_id={listing_id} userId={user_id}")
+    
+    try:
+        with db_manager.get_cursor() as cursor:
+            # First, get the drinkType and typeCategory of the current listing
+            cursor.execute("""
+                SELECT "drinkType", "typeCategory"
+                FROM "listings"
+                WHERE "id" = %s
+            """, (listing_id,))
+            
+            listing_data = cursor.fetchone()
+            
+            if not listing_data:
+                logger.warning(f"Charsiucharlie_debug REQ-{request_id} getRecentReviewsForListing listing not found")
+                return jsonify([]), 200
+            
+            drink_type = listing_data['drinkType']
+            type_category = listing_data['typeCategory']
+            
+            logger.info(f"Charsiucharlie_debug REQ-{request_id} getRecentReviewsForListing drinkType={drink_type} typeCategory={type_category}")
+            
+            # Check if we should personalize the 3rd card
+            user_favorite_category = None
+            should_personalize = False
+            
+            if user_id:
+                # Find user's most frequently reviewed typeCategory
+                cursor.execute("""
+                    SELECT l."typeCategory", COUNT(*) as review_count
+                    FROM "reviews" r
+                    JOIN "listings" l ON r."reviewTarget" = l."id"
+                    WHERE r."userID" = %s
+                    AND r."reviewType" = 'Listing'
+                    AND l."typeCategory" IS NOT NULL
+                    AND l."typeCategory" != ''
+                    GROUP BY l."typeCategory"
+                    ORDER BY review_count DESC, l."typeCategory" ASC
+                    LIMIT 1
+                """, (user_id,))
+                
+                favorite_category_data = cursor.fetchone()
+                
+                if favorite_category_data:
+                    user_favorite_category = favorite_category_data['typeCategory']
+                    # Only personalize if user's favorite category differs from current listing's category
+                    if user_favorite_category and user_favorite_category != type_category:
+                        should_personalize = True
+                        logger.info(f"Charsiucharlie_debug REQ-{request_id} getRecentReviewsForListing user_favorite_category={user_favorite_category} will_personalize=True")
+                    else:
+                        logger.info(f"Charsiucharlie_debug REQ-{request_id} getRecentReviewsForListing user_favorite_category={user_favorite_category} matches listing category, skipping personalization")
+            
+            # Query for reviews matching drinkType AND typeCategory first, then fall back to drinkType only
+            cursor.execute("""
+                WITH category_reviews AS (
+                    -- First priority: Same drinkType AND typeCategory (excluding current listing)
+                    SELECT 
+                        r."id" as "reviewId",
+                        r."userID",
+                        r."reviewTarget",
+                        r."rating",
+                        r."reviewDesc",
+                        r."reviewType",
+                        r."createdDate",
+                        r."observationTag",
+                        r."location",
+                        r."isPublic",
+                        COALESCE(NULLIF(r."photo", ''), l."photo") as "photo",
+                        l."photo" as "listingPhoto",
+                        u."username",
+                        u."photo" as "userPhoto",
+                        l."listingName",
+                        l."drinkType",
+                        l."typeCategory",
+                        l."originCountry",
+                        l."producerID",
+                        p."producerName",
+                        v."venueName",
+                        1 as "priority"
+                    FROM "reviews" r
+                    LEFT JOIN "users" u ON r."userID" = u."id"
+                    LEFT JOIN "listings" l ON r."reviewTarget" = l."id"
+                    LEFT JOIN "producers" p ON l."producerID" = p."id"
+                    LEFT JOIN "venues" v ON r."location" = v."id"
+                    WHERE r."reviewType" = 'Listing'
+                    AND r."reviewTarget" != %s
+                    AND r."rating" IS NOT NULL
+                    AND r."reviewDesc" IS NOT NULL
+                    AND r."reviewDesc" != ''
+                    AND r."isPublic" = true
+                    AND l."drinkType" = %s
+                    AND l."typeCategory" = %s
+                    
+                    UNION ALL
+                    
+                    -- Second priority: Same drinkType only (excluding current listing and already matched typeCategory)
+                    SELECT 
+                        r."id" as "reviewId",
+                        r."userID",
+                        r."reviewTarget",
+                        r."rating",
+                        r."reviewDesc",
+                        r."reviewType",
+                        r."createdDate",
+                        r."observationTag",
+                        r."location",
+                        r."isPublic",
+                        COALESCE(NULLIF(r."photo", ''), l."photo") as "photo",
+                        l."photo" as "listingPhoto",
+                        u."username",
+                        u."photo" as "userPhoto",
+                        l."listingName",
+                        l."drinkType",
+                        l."typeCategory",
+                        l."originCountry",
+                        l."producerID",
+                        p."producerName",
+                        v."venueName",
+                        2 as "priority"
+                    FROM "reviews" r
+                    LEFT JOIN "users" u ON r."userID" = u."id"
+                    LEFT JOIN "listings" l ON r."reviewTarget" = l."id"
+                    LEFT JOIN "producers" p ON l."producerID" = p."id"
+                    LEFT JOIN "venues" v ON r."location" = v."id"
+                    WHERE r."reviewType" = 'Listing'
+                    AND r."reviewTarget" != %s
+                    AND r."rating" IS NOT NULL
+                    AND r."reviewDesc" IS NOT NULL
+                    AND r."reviewDesc" != ''
+                    AND r."isPublic" = true
+                    AND l."drinkType" = %s
+                    AND (l."typeCategory" IS NULL OR l."typeCategory" != %s)
+                ),
+                ranked_reviews AS (
+                    SELECT *,
+                        ROW_NUMBER() OVER (PARTITION BY "username" ORDER BY "priority" ASC, "createdDate" DESC) as rn
+                    FROM category_reviews
+                )
+                SELECT *
+                FROM ranked_reviews
+                WHERE rn = 1
+                ORDER BY "priority" ASC, "createdDate" DESC
+                LIMIT %s
+            """, (listing_id, drink_type, type_category, listing_id, drink_type, type_category, 2 if should_personalize else 3))
+            
+            reviews_data = cursor.fetchall()
+            
+            # Convert to list of dicts for easier manipulation
+            formatted_reviews = []
+            collected_review_ids = set()
+            collected_usernames = set()
+            
+            for review in reviews_data:
+                formatted_review = dict(review)
+                collected_review_ids.add(formatted_review['reviewId'])
+                collected_usernames.add(formatted_review['username'])
+                
+                # Ensure observationTag is properly formatted as a list
+                if formatted_review.get("observationTag"):
+                    if isinstance(formatted_review["observationTag"], str):
+                        try:
+                            import json
+                            formatted_review["observationTag"] = json.loads(formatted_review["observationTag"])
+                        except:
+                            formatted_review["observationTag"] = [tag.strip() for tag in formatted_review["observationTag"].split(',') if tag.strip()]
+                else:
+                    formatted_review["observationTag"] = []
+                
+                # Format date for frontend
+                if formatted_review.get("createdDate"):
+                    formatted_review["createdDate"] = formatted_review["createdDate"].isoformat() if hasattr(formatted_review["createdDate"], 'isoformat') else str(formatted_review["createdDate"])
+                
+                # Remove internal priority field
+                formatted_review.pop('priority', None)
+                formatted_review.pop('rn', None)
+                
+                formatted_reviews.append(formatted_review)
+            
+            # If we should personalize, fetch the 3rd card from user's favorite category
+            if should_personalize and len(formatted_reviews) >= 2:
+                # Build exclusion list for review IDs and usernames
+                exclude_review_ids = tuple(collected_review_ids) if collected_review_ids else (0,)
+                exclude_usernames = tuple(collected_usernames) if collected_usernames else ('',)
+                
+                cursor.execute("""
+                    SELECT 
+                        r."id" as "reviewId",
+                        r."userID",
+                        r."reviewTarget",
+                        r."rating",
+                        r."reviewDesc",
+                        r."reviewType",
+                        r."createdDate",
+                        r."observationTag",
+                        r."location",
+                        r."isPublic",
+                        COALESCE(NULLIF(r."photo", ''), l."photo") as "photo",
+                        l."photo" as "listingPhoto",
+                        u."username",
+                        u."photo" as "userPhoto",
+                        l."listingName",
+                        l."drinkType",
+                        l."typeCategory",
+                        l."originCountry",
+                        l."producerID",
+                        p."producerName",
+                        v."venueName"
+                    FROM "reviews" r
+                    LEFT JOIN "users" u ON r."userID" = u."id"
+                    LEFT JOIN "listings" l ON r."reviewTarget" = l."id"
+                    LEFT JOIN "producers" p ON l."producerID" = p."id"
+                    LEFT JOIN "venues" v ON r."location" = v."id"
+                    WHERE r."reviewType" = 'Listing'
+                    AND r."reviewTarget" != %s
+                    AND r."id" NOT IN %s
+                    AND u."username" NOT IN %s
+                    AND r."rating" IS NOT NULL
+                    AND r."reviewDesc" IS NOT NULL
+                    AND r."reviewDesc" != ''
+                    AND r."isPublic" = true
+                    AND l."typeCategory" = %s
+                    ORDER BY r."createdDate" DESC
+                    LIMIT 1
+                """, (listing_id, exclude_review_ids, exclude_usernames, user_favorite_category))
+                
+                personalized_review = cursor.fetchone()
+                
+                if personalized_review:
+                    personalized_formatted = dict(personalized_review)
+                    
+                    # Format observationTag
+                    if personalized_formatted.get("observationTag"):
+                        if isinstance(personalized_formatted["observationTag"], str):
+                            try:
+                                import json
+                                personalized_formatted["observationTag"] = json.loads(personalized_formatted["observationTag"])
+                            except:
+                                personalized_formatted["observationTag"] = [tag.strip() for tag in personalized_formatted["observationTag"].split(',') if tag.strip()]
+                    else:
+                        personalized_formatted["observationTag"] = []
+                    
+                    # Format date
+                    if personalized_formatted.get("createdDate"):
+                        personalized_formatted["createdDate"] = personalized_formatted["createdDate"].isoformat() if hasattr(personalized_formatted["createdDate"], 'isoformat') else str(personalized_formatted["createdDate"])
+                    
+                    # Mark as personalized for frontend (optional, for debugging/styling)
+                    personalized_formatted["isPersonalized"] = True
+                    
+                    formatted_reviews.append(personalized_formatted)
+                    logger.info(f"Charsiucharlie_debug REQ-{request_id} getRecentReviewsForListing added personalized review from typeCategory={user_favorite_category}")
+                else:
+                    # No personalized review found, fall back to getting a 3rd review from original criteria
+                    logger.info(f"Charsiucharlie_debug REQ-{request_id} getRecentReviewsForListing no personalized review found, falling back")
+                    cursor.execute("""
+                        WITH category_reviews AS (
+                            SELECT 
+                                r."id" as "reviewId",
+                                r."userID",
+                                r."reviewTarget",
+                                r."rating",
+                                r."reviewDesc",
+                                r."reviewType",
+                                r."createdDate",
+                                r."observationTag",
+                                r."location",
+                                r."isPublic",
+                                COALESCE(NULLIF(r."photo", ''), l."photo") as "photo",
+                                l."photo" as "listingPhoto",
+                                u."username",
+                                u."photo" as "userPhoto",
+                                l."listingName",
+                                l."drinkType",
+                                l."typeCategory",
+                                l."originCountry",
+                                l."producerID",
+                                p."producerName",
+                                v."venueName",
+                                CASE WHEN l."typeCategory" = %s THEN 1 ELSE 2 END as "priority"
+                            FROM "reviews" r
+                            LEFT JOIN "users" u ON r."userID" = u."id"
+                            LEFT JOIN "listings" l ON r."reviewTarget" = l."id"
+                            LEFT JOIN "producers" p ON l."producerID" = p."id"
+                            LEFT JOIN "venues" v ON r."location" = v."id"
+                            WHERE r."reviewType" = 'Listing'
+                            AND r."reviewTarget" != %s
+                            AND r."id" NOT IN %s
+                            AND u."username" NOT IN %s
+                            AND r."rating" IS NOT NULL
+                            AND r."reviewDesc" IS NOT NULL
+                            AND r."reviewDesc" != ''
+                            AND r."isPublic" = true
+                            AND l."drinkType" = %s
+                        )
+                        SELECT *
+                        FROM category_reviews
+                        ORDER BY "priority" ASC, "createdDate" DESC
+                        LIMIT 1
+                    """, (type_category, listing_id, exclude_review_ids, exclude_usernames, drink_type))
+                    
+                    fallback_review = cursor.fetchone()
+                    if fallback_review:
+                        fallback_formatted = dict(fallback_review)
+                        
+                        if fallback_formatted.get("observationTag"):
+                            if isinstance(fallback_formatted["observationTag"], str):
+                                try:
+                                    import json
+                                    fallback_formatted["observationTag"] = json.loads(fallback_formatted["observationTag"])
+                                except:
+                                    fallback_formatted["observationTag"] = [tag.strip() for tag in fallback_formatted["observationTag"].split(',') if tag.strip()]
+                        else:
+                            fallback_formatted["observationTag"] = []
+                        
+                        if fallback_formatted.get("createdDate"):
+                            fallback_formatted["createdDate"] = fallback_formatted["createdDate"].isoformat() if hasattr(fallback_formatted["createdDate"], 'isoformat') else str(fallback_formatted["createdDate"])
+                        
+                        fallback_formatted.pop('priority', None)
+                        formatted_reviews.append(fallback_formatted)
+            
+            # Log success with result count
+            logger.info(f"Charsiucharlie_debug REQ-{request_id} getRecentReviewsForListing success count={len(formatted_reviews)} personalized={should_personalize}")
+            return jsonify(formatted_reviews), 200
+            
+    except psycopg2.Error as db_error:
+        logger.error(f"Charsiucharlie_debug REQ-{request_id} DB_ERROR getRecentReviewsForListing error={str(db_error)}")
+        return jsonify({
+            "code": 500,
+            "message": "An error occurred while fetching category reviews.",
+            "request_id": request_id
+        }), 500
+        
+    except Exception as e:
+        logger.error(f"Charsiucharlie_debug REQ-{request_id} ERROR getRecentReviewsForListing error={str(e)}", exc_info=True)
+        return jsonify({
+            "code": 500,
+            "message": "An error occurred while fetching category reviews.",
+            "request_id": request_id
+        }), 500
+
+
 # [GET] Get 5 most highly rated listing reviews for landing page
 @blueprint.route("/get5MostHighlyRatedReviews", methods=['GET'])
 def get5MostHighlyRatedReviews():
