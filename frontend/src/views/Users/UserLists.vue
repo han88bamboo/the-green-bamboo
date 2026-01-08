@@ -5,7 +5,11 @@
   <!-- User Profile Header and Navigation (always visible) -->
   <div v-if="displayUserID && routeUsername" class="userprofile mt-5 mobile-mt-3">
     <div class="container text-start">
-      <UserProfileHeader />
+      <UserProfileHeader 
+        :displayUserData="displayUser"
+        :loggedInUserData="loggedInUser"
+        :isOwnProfile="ownProfile"
+      />
     </div>
     
     <br>
@@ -1659,6 +1663,7 @@ export default {
       userType: null,
       username: null,
       ownProfile: false,
+      loggedInUser: null,
 
       // User bookmarks (editable copies)
       userBookmarks: {},
@@ -1779,6 +1784,12 @@ export default {
       }
     } catch (error) {
       console.error(error);
+    }
+
+    // Get logged-in user data from localStorage (stored by UserProfileRefactor)
+    const storedUser = localStorage.getItem("88B_loggedInUser");
+    if (storedUser) {
+      this.loggedInUser = JSON.parse(storedUser);
     }
 
     // get list/producer/venue name from URL if present
