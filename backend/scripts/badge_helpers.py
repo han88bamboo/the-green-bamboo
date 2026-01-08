@@ -107,8 +107,8 @@ def process_badges(conn, cur, user_id, badge_triggers):
                     "isNewBadge": True
                 })
     
-    # Commit all badge updates
-    conn.commit()
+    # Note: Commit is handled by the parent get_cursor() context manager
+    # Do NOT commit here - let the caller's transaction handle it
     
     return badges_awarded
 
@@ -150,7 +150,7 @@ def update_badge_progress(conn, cur, user_id, related_entity, badge_type, change
             RETURNING "currentLevel"
         """, (user_id, badge_id))
         
-        conn.commit()
+        # Commit removed - parent transaction handles commit
         
         return {
             "badgeId": badge_id,
@@ -195,7 +195,7 @@ def update_badge_progress(conn, cur, user_id, related_entity, badge_type, change
                 RETURNING "currentLevel"
             """, (current_level + 1, user_id, badge_id))
             
-            conn.commit()
+            # Commit removed - parent transaction handles commit
             new_level = cur.fetchone()['currentLevel']
             
             return {
@@ -216,7 +216,7 @@ def update_badge_progress(conn, cur, user_id, related_entity, badge_type, change
                 WHERE "userId" = %s AND "badgeId" = %s
             """, (new_progress, user_id, badge_id))
             
-            conn.commit()
+            # Commit removed - parent transaction handles commit
             
             return {
                 "badgeId": badge_id,
@@ -239,7 +239,7 @@ def update_badge_progress(conn, cur, user_id, related_entity, badge_type, change
                 WHERE "userId" = %s AND "badgeId" = %s
             """, (user_id, badge_id))
             
-            conn.commit()
+            # Commit removed - parent transaction handles commit
             
             return {
                 "badgeId": badge_id,
@@ -257,7 +257,7 @@ def update_badge_progress(conn, cur, user_id, related_entity, badge_type, change
                 WHERE "userId" = %s AND "badgeId" = %s
             """, (new_progress, user_id, badge_id))
             
-            conn.commit()
+            # Commit removed - parent transaction handles commit
             
             return {
                 "badgeId": badge_id,
@@ -301,7 +301,7 @@ def process_new_drink_badge(conn, cur, user_id):
                 RETURNING "currentLevel"
             """, (user_id, badge_id))
             
-            conn.commit()
+            # Commit removed - parent transaction handles commit
             
             return {
                 "badgeId": badge_id,
@@ -341,7 +341,7 @@ def process_new_drink_badge(conn, cur, user_id):
                 RETURNING "currentLevel"
             """, (current_level + 1, user_id, badge_id))
             
-            conn.commit()
+            # Commit removed - parent transaction handles commit
             new_level = cur.fetchone()['currentLevel']
             
             return {
@@ -361,7 +361,7 @@ def process_new_drink_badge(conn, cur, user_id):
                 WHERE "userId" = %s AND "badgeId" = %s
             """, (new_progress, user_id, badge_id))
             
-            conn.commit()
+            # Commit removed - parent transaction handles commit
             
             return {
                 "badgeId": badge_id,
@@ -418,7 +418,7 @@ def process_club_post_badge(conn, cur, user_id):
                 RETURNING "currentLevel"
             """, (user_id, badge_id))
             
-            conn.commit()
+            # Commit removed - parent transaction handles commit
             
             return {
                 "badgeId": badge_id,
@@ -458,7 +458,7 @@ def process_club_post_badge(conn, cur, user_id):
                 RETURNING "currentLevel"
             """, (current_level + 1, user_id, badge_id))
             
-            conn.commit()
+            # Commit removed - parent transaction handles commit
             new_level = cur.fetchone()['currentLevel']
             
             return {
@@ -478,7 +478,7 @@ def process_club_post_badge(conn, cur, user_id):
                 WHERE "userId" = %s AND "badgeId" = %s
             """, (new_progress, user_id, badge_id))
             
-            conn.commit()
+            # Commit removed - parent transaction handles commit
             
             return {
                 "badgeId": badge_id,
@@ -524,7 +524,7 @@ def process_comment_badge(conn, cur, user_id):
                 RETURNING "currentLevel"
             """, (user_id, badge_id))
             
-            conn.commit()
+            # Commit removed - parent transaction handles commit
             
             return {
                 "badgeId": badge_id,
@@ -564,7 +564,7 @@ def process_comment_badge(conn, cur, user_id):
                 RETURNING "currentLevel"
             """, (current_level + 1, user_id, badge_id))
             
-            conn.commit()
+            # Commit removed - parent transaction handles commit
             new_level = cur.fetchone()['currentLevel']
             
             return {
@@ -584,7 +584,7 @@ def process_comment_badge(conn, cur, user_id):
                 WHERE "userId" = %s AND "badgeId" = %s
             """, (new_progress, user_id, badge_id))
             
-            conn.commit()
+            # Commit removed - parent transaction handles commit
             
             return {
                 "badgeId": badge_id,
@@ -630,7 +630,7 @@ def process_question_badge(conn, cur, user_id):
                 RETURNING "currentLevel"
             """, (user_id, badge_id))
             
-            conn.commit()
+            # Commit removed - parent transaction handles commit
             
             return {
                 "badgeId": badge_id,
@@ -670,7 +670,7 @@ def process_question_badge(conn, cur, user_id):
                 RETURNING "currentLevel"
             """, (current_level + 1, user_id, badge_id))
             
-            conn.commit()
+            # Commit removed - parent transaction handles commit
             new_level = cur.fetchone()['currentLevel']
             
             return {
@@ -690,7 +690,7 @@ def process_question_badge(conn, cur, user_id):
                 WHERE "userId" = %s AND "badgeId" = %s
             """, (new_progress, user_id, badge_id))
             
-            conn.commit()
+            # Commit removed - parent transaction handles commit
             
             return {
                 "badgeId": badge_id,
@@ -738,7 +738,7 @@ def process_upvote_badge(conn, cur, user_id, is_new_upvote=False, is_removed_upv
                     RETURNING "currentLevel"
                 """, (user_id, badge_id))
                 
-                conn.commit()
+                # Commit removed - parent transaction handles commit
                 
                 # ONLY return for new badge earned
                 return {
@@ -774,7 +774,7 @@ def process_upvote_badge(conn, cur, user_id, is_new_upvote=False, is_removed_upv
                     RETURNING "currentLevel"
                 """, (current_level + 1, user_id, badge_id))
                 
-                conn.commit()
+                # Commit removed - parent transaction handles commit
                 new_level = cur.fetchone()['currentLevel']
                 
                 return {
@@ -794,7 +794,7 @@ def process_upvote_badge(conn, cur, user_id, is_new_upvote=False, is_removed_upv
                     WHERE "userId" = %s AND "badgeId" = %s
                 """, (current_progress, user_id, badge_id))
                 
-                conn.commit()
+                # Commit removed - parent transaction handles commit
                 
                 return None
         
@@ -831,7 +831,7 @@ def process_upvote_badge(conn, cur, user_id, is_new_upvote=False, is_removed_upv
                     WHERE "userId" = %s AND "badgeId" = %s
                 """, (user_id, badge_id))
                 
-                conn.commit()
+                # Commit removed - parent transaction handles commit
                 
                 return {
                     "badgeId": badge_id,
@@ -849,7 +849,7 @@ def process_upvote_badge(conn, cur, user_id, is_new_upvote=False, is_removed_upv
                     WHERE "userId" = %s AND "badgeId" = %s
                 """, (current_level, current_progress, user_id, badge_id))
                 
-                conn.commit()
+                # Commit removed - parent transaction handles commit
                 
                 return {
                     "badgeId": badge_id,
@@ -903,7 +903,7 @@ def process_public_list_badge(conn, cur, user_id, list_change):
                     RETURNING "currentLevel"
                 """, (user_id, badge_id))
                 
-                conn.commit()
+                # Commit removed - parent transaction handles commit
                 
                 return {
                     "badgeId": badge_id,
@@ -960,7 +960,7 @@ def process_public_list_badge(conn, cur, user_id, list_change):
                 RETURNING "currentLevel"
             """, (current_level, current_progress, user_id, badge_id))
             
-            conn.commit()
+            # Commit removed - parent transaction handles commit
             
             if levels_gained > 0:
                 return {
@@ -1019,7 +1019,7 @@ def process_public_list_badge(conn, cur, user_id, list_change):
                     WHERE "userId" = %s AND "badgeId" = %s
                 """, (user_id, badge_id))
                 
-                conn.commit()
+                # Commit removed - parent transaction handles commit
                 
                 return {
                     "badgeId": badge_id,
@@ -1037,7 +1037,7 @@ def process_public_list_badge(conn, cur, user_id, list_change):
                     WHERE "userId" = %s AND "badgeId" = %s
                 """, (current_level, current_progress, user_id, badge_id))
                 
-                conn.commit()
+                # Commit removed - parent transaction handles commit
                 
                 return {
                     "badgeId": badge_id,
@@ -1086,7 +1086,7 @@ def process_event_attendance_badge(conn, cur, user_id):
                 RETURNING "currentLevel"
             """, (user_id, badge_id))
             
-            conn.commit()
+            # Commit removed - parent transaction handles commit
             
             return {
                 "badgeId": badge_id,
@@ -1126,7 +1126,7 @@ def process_event_attendance_badge(conn, cur, user_id):
                 RETURNING "currentLevel"
             """, (current_level + 1, user_id, badge_id))
             
-            conn.commit()
+            # Commit removed - parent transaction handles commit
             new_level = cur.fetchone()['currentLevel']
             
             return {
@@ -1146,7 +1146,7 @@ def process_event_attendance_badge(conn, cur, user_id):
                 WHERE "userId" = %s AND "badgeId" = %s
             """, (new_progress, user_id, badge_id))
             
-            conn.commit()
+            # Commit removed - parent transaction handles commit
             
             return {
                 "badgeId": badge_id,

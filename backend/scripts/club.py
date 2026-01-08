@@ -1336,7 +1336,10 @@ def addClubMembers():
                     "createdAt": current_time
                 }
                 print("Notification data:", notification_data)
-                notifications.add_notification_to_db(notification_data)
+                try:
+                    notifications.add_notification_to_db(notification_data, cursor)
+                except Exception as notif_error:
+                    print(f"Failed to send club invite notification: {notif_error}")
 
             return jsonify({
                 'message': 'New member added to the club'
@@ -1444,7 +1447,10 @@ def joinClub():
                 "message":  f"@{member_username} joined your club: {club_name}",
                 "createdAt": current_time
             }
-            notifications.add_notification_to_db(notification_data)
+            try:
+                notifications.add_notification_to_db(notification_data, cursor)
+            except Exception as notif_error:
+                print(f"Failed to send club join notification: {notif_error}")
             
             return jsonify({
                 'message': 'User joined the club successfully',
@@ -1568,7 +1574,10 @@ def addPost():
                             "createdAt": current_time
                         }
                         print("Badge notification data:", notification_data)
-                        notifications.add_notification_to_db(notification_data)
+                        try:
+                            notifications.add_notification_to_db(notification_data, cursor)
+                        except Exception as notif_error:
+                            print(f"Failed to send badge notification: {notif_error}")
 
         # Prepare the response
         response_data = {
@@ -1679,7 +1688,10 @@ def addComment():
                     "createdAt": current_time
                 }
                 print("Notification data:", notification_data)
-                notifications.add_notification_to_db(notification_data)
+                try:
+                    notifications.add_notification_to_db(notification_data, cursor)
+                except Exception as notif_error:
+                    print(f"Failed to send post comment notification: {notif_error}")
 
             # Step 5: Get the commenter's information
             commenter_info = getUserInfo(cursor, commenter_id)
@@ -1729,7 +1741,10 @@ def addComment():
                             "createdAt": current_time
                         }
                         print("Badge notification data:", notification_data)
-                        notifications.add_notification_to_db(notification_data)
+                        try:
+                            notifications.add_notification_to_db(notification_data, cursor)
+                        except Exception as notif_error:
+                            print(f"Failed to send badge notification: {notif_error}")
 
             # Prepare the response
             response_data = {
@@ -1851,7 +1866,10 @@ def requestToJoinClub():
                         "createdAt": current_time
                     }
             
-                    notifications.add_notification_to_db(notification_data)
+                    try:
+                        notifications.add_notification_to_db(notification_data, cursor)
+                    except Exception as notif_error:
+                        print(f"Failed to send club request notification: {notif_error}")
 
             return jsonify({
                 'message': 'Request to join the club sent successfully'
@@ -1948,7 +1966,10 @@ def acceptClubRequest():
                 "message":  f"You have been accepted to join {club_name} club",
                 "createdAt": current_time
             }
-            notifications.add_notification_to_db(notification_data)
+            try:
+                notifications.add_notification_to_db(notification_data, cursor)
+            except Exception as notif_error:
+                print(f"Failed to send club accept notification: {notif_error}")
 
             return jsonify({
                 'message': 'User accepted successfully'
@@ -2060,7 +2081,10 @@ def acceptClubInvite():
                 "createdAt": current_time
             }
             print("Notification data:", notification_data)
-            notifications.add_notification_to_db(notification_data)
+            try:
+                notifications.add_notification_to_db(notification_data, cursor)
+            except Exception as notif_error:
+                print(f"Failed to send club join notification: {notif_error}")
 
             return jsonify({
                 'message': 'User joined the club successfully'
@@ -2587,7 +2611,10 @@ def likeUnlikeComment():
                         "createdAt": current_time
                     }
                     print("Badge notification data:", notification_data)
-                    notifications.add_notification_to_db(notification_data)
+                    try:
+                        notifications.add_notification_to_db(notification_data, cursor)
+                    except Exception as notif_error:
+                        print(f"Failed to send badge notification: {notif_error}")
 
             # Fetch club_id for notification link
             cursor.execute('SELECT "clubID" FROM "clubPosts" WHERE id = %s', (post_id,))
@@ -2631,7 +2658,10 @@ def likeUnlikeComment():
                             "createdAt": current_time
                         }
                         print("Notification data:", notification_data)
-                        notifications.add_notification_to_db(notification_data)
+                        try:
+                            notifications.add_notification_to_db(notification_data, cursor)
+                        except Exception as notif_error:
+                            print(f"Failed to send comment upvote notification: {notif_error}")
             
             # Prepare the response
             response_data = {

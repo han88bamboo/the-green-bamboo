@@ -277,7 +277,10 @@ def createListings():
                     }
                     
                     print("Sending approval notification:", approval_notification)
-                    notifications.add_notification_to_db(approval_notification)
+                    try:
+                        notifications.add_notification_to_db(approval_notification, cursor)
+                    except Exception as notif_error:
+                        print(f"Failed to send approval notification: {notif_error}")
 
             # Existing notification logic for followers
             cutoff = datetime.now(pytz.timezone('Etc/GMT-8')) - timedelta(hours=24)
@@ -323,7 +326,10 @@ def createListings():
                         "createdAt": current_time,
                     }
                     print("Sending notification:", notification_data)
-                    notifications.add_notification_to_db(notification_data)
+                    try:
+                        notifications.add_notification_to_db(notification_data, cursor)
+                    except Exception as notif_error:
+                        print(f"Failed to send follower notification: {notif_error}")
 
         return jsonify(
             {   

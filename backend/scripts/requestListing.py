@@ -192,7 +192,10 @@ def requestListing():
                         "createdAt": current_time,
                     }
                     
-                    notifications.add_notification_to_db(notification_data)
+                    try:
+                        notifications.add_notification_to_db(notification_data, cursor)
+                    except Exception as notif_error:
+                        print(f"Failed to send venue approval notification: {notif_error}")
                     
                 elif userId and submitter_type == 'user':
                     # Original user submitter logic
@@ -211,7 +214,10 @@ def requestListing():
                         "createdAt": current_time,
                     }
                     
-                    notifications.add_notification_to_db(notification_data)
+                    try:
+                        notifications.add_notification_to_db(notification_data, cursor)
+                    except Exception as notif_error:
+                        print(f"Failed to send user approval notification: {notif_error}")
                     
                     # Process any reward points or badges for users only
                     if pointsHelperFunc.check_max_proof_points(userId) is False:
@@ -239,7 +245,10 @@ def requestListing():
                                 "message": f"Congratulations! You earned a badge: {badge_result['badgeName']}.",
                                 "createdAt": current_time,
                             }
-                            notifications.add_notification_to_db(badge_notification)
+                            try:
+                                notifications.add_notification_to_db(badge_notification, cursor)
+                            except Exception as notif_error:
+                                print(f"Failed to send badge notification: {notif_error}")
                 
                 # Notify producer followers about the new listing
                 if producerId:
@@ -286,7 +295,10 @@ def requestListing():
                                 "message": f"{producer_name} added a new drink: {rawRequestName}",
                                 "createdAt": current_time,
                             }
-                            notifications.add_notification_to_db(notification_data)
+                            try:
+                                notifications.add_notification_to_db(notification_data, cursor)
+                            except Exception as notif_error:
+                                print(f"Failed to send producer follower notification: {notif_error}")
             if newRequestId is None:
                 raise Exception("Failed to retrieve the new request ID after insert.")
 
@@ -417,7 +429,10 @@ def requestListingsBulk():
                             "message": f"Congratulations! You earned a badge: {badge_result['badgeName']}.",
                             "createdAt": current_time,
                         }
-                        notifications.add_notification_to_db(badge_notification)
+                        try:
+                            notifications.add_notification_to_db(badge_notification, cursor)
+                        except Exception as notif_error:
+                            print(f"Failed to send badge notification: {notif_error})")
         except Exception as e:
             print(f"Warning: Failed to award proof points/badges for bulk submission: {str(e)}")
     
@@ -1067,7 +1082,10 @@ def requestEdits():
                 "createdAt": current_time,
             }
 
-            notifications.add_notification_to_db(notification_data)
+            try:
+                notifications.add_notification_to_db(notification_data, cursor)
+            except Exception as notif_error:
+                print(f"Failed to send edit request notification: {notif_error}")
 
             return jsonify(
                 {
@@ -1307,7 +1325,10 @@ def requestReviewStatus(requestID):
                     "createdAt": current_time,
                 }
                 print("Adding notification for badge earned:", notification_data)
-                notifications.add_notification_to_db(notification_data)        
+                try:
+                    notifications.add_notification_to_db(notification_data, cursor)
+                except Exception as notif_error:
+                    print(f"Failed to send badge notification: {notif_error}")        
 
             # Prepare the response
             response_data = {

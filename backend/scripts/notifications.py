@@ -16,7 +16,7 @@ blueprint = Blueprint(file_name[:-3], __name__)
 
 # -----------------------------------------------------------------------------------------
 # Helper function 
-def add_notification_to_db(data):
+def add_notification_to_db(data, cursor=None):
     """
     Expects `data` to contain these keys (matching exactly the column names):
       - userId    [int]
@@ -29,9 +29,15 @@ def add_notification_to_db(data):
       - createdAt [int] 
       - read      [bool] 
     We no longer pass `createdAt` explicitly, so the DB DEFAULT CURRENT_TIMESTAMP is used.
+    
+    Args:
+      - data: dict with notification fields
+      - cursor: optional database cursor. If provided, uses existing cursor (shares connection).
+                If None, creates its own connection (standalone mode).
     """
     try:
-        with db_manager.get_cursor() as cursor:
+        if cursor is not None:
+            # Use existing cursor - shares the connection with caller (no new connection checkout)
             cursor.execute(
                 '''
                 INSERT INTO "notifications"
@@ -50,6 +56,27 @@ def add_notification_to_db(data):
                     data.get('read', False)
                 )
             )
+        else:
+            # Standalone mode - create own connection (backwards compatible)
+            with db_manager.get_cursor() as own_cursor:
+                own_cursor.execute(
+                    '''
+                    INSERT INTO "notifications"
+                        ("userId", "userType", "notiTabs", "notiType", "image", "link", "message", "createdAt", "read")
+                    VALUES (%s,      %s,        %s,        %s,        %s,      %s,      %s, %s, %s)
+                    ''',
+                    (
+                        data.get('userId'),
+                        data.get('userType'),
+                        data.get('notiTabs'),
+                        data.get('notiType'),
+                        data.get('image'),   # may be None
+                        data.get('link'),    # may be None
+                        data.get('message'),
+                        data.get('createdAt'),  
+                        data.get('read', False)
+                    )
+                )
         return True
 
     except Exception as e:

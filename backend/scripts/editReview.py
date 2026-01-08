@@ -19,21 +19,44 @@ file_name = os.path.basename(__file__)
 blueprint = Blueprint(file_name[:-3], __name__)
 
 # Helper function to create a unique username for the venue
-def create_username(location_name):
-    with db_manager.get_cursor() as cursor:
-        location_name = location_name.replace(" ", "").lower()
-
+def create_username(location_name, cursor=None):
+    """
+    Create a unique username for a venue based on location name.
+    
+    Args:
+        location_name: The venue's location name
+        cursor: optional database cursor. If provided, uses existing cursor (shares connection).
+                If None, creates its own connection (standalone mode).
+    """
+    location_name_normalized = location_name.replace(" ", "").lower()
+    
+    if cursor is not None:
+        # Use existing cursor - shares the connection with caller
         cursor.execute("""
             SELECT id FROM "venues" WHERE "username" LIKE %s
-        """, (f"{location_name}%",))
+        """, (f"{location_name_normalized}%",))
 
         existing_usernames = cursor.fetchall()
 
         if not existing_usernames:
-            return location_name
+            return location_name_normalized
         else:
             max_suffix = max([int(name[0].split('_')[-1]) for name in existing_usernames if '_' in name[0]], default=0)
-            return f"{location_name}_{max_suffix + 1}"
+            return f"{location_name_normalized}_{max_suffix + 1}"
+    else:
+        # Standalone mode - create own connection (backwards compatible)
+        with db_manager.get_cursor() as own_cursor:
+            own_cursor.execute("""
+                SELECT id FROM "venues" WHERE "username" LIKE %s
+            """, (f"{location_name_normalized}%",))
+
+            existing_usernames = own_cursor.fetchall()
+
+            if not existing_usernames:
+                return location_name_normalized
+            else:
+                max_suffix = max([int(name[0].split('_')[-1]) for name in existing_usernames if '_' in name[0]], default=0)
+                return f"{location_name_normalized}_{max_suffix + 1}"
 
 def is_empty_photo(value):
     return value in (None, '', [])
@@ -178,7 +201,10 @@ def voteReview():
                           "createdAt": current_time
                         }
                         print("Notification data: ", notification_data)
-                        notifications.add_notification_to_db(notification_data)      
+                        try:
+                            notifications.add_notification_to_db(notification_data, cursor)
+                        except Exception as notif_error:
+                            print(f"Failed to send upvote notification: {notif_error}")
             
             # Get the review owner and creation date
             cursor.execute(
@@ -227,7 +253,10 @@ def voteReview():
                           "createdAt": current_time
                         }
                         print("Badge notification data: ", notification_data)
-                        notifications.add_notification_to_db(notification_data)
+                        try:
+                            notifications.add_notification_to_db(notification_data, cursor)
+                        except Exception as notif_error:
+                            print(f"Failed to send badge notification: {notif_error}")
             
             # Prepare the response
             response_data = {
@@ -381,7 +410,7 @@ def updateReview(id):
                 venue_id = cursor.fetchone()['id'] if cursor.rowcount > 0 else None
 
                 if not venue_id:
-                    username = create_username(location_name)
+                    username = create_username(location_name, cursor)
                     insert_venue_sql = """INSERT INTO venues ("venueName", "address", "venueType", "originLocation", "venueDesc",
                                           "hashedPassword", "claimStatus", photo, "reservationDetails", username)
                                           VALUES (%s, %s, '', '', '', %s, FALSE, '', '', %s) RETURNING id"""
@@ -389,7 +418,7 @@ def updateReview(id):
                     cursor.execute(insert_venue_sql, (location_name, address, hashed_password, username))
                     venue_id = cursor.fetchone()['id'] if cursor.rowcount > 0 else None
                     print("Venue ID: ", venue_id)
-                    cursor.connection.commit()
+                    # Commit removed - parent transaction handles commit
 
         # Update review photo
         if existing_review['photo'] and data['photo'] != existing_review['photo']:
@@ -518,7 +547,10 @@ def updateReview(id):
                         "createdAt": current_time
                     }
                     print("Badge notification data: ", notification_data)
-                    notifications.add_notification_to_db(notification_data)
+                    try:
+                        notifications.add_notification_to_db(notification_data, cursor)
+                    except Exception as notif_error:
+                        print(f"Failed to send badge notification: {notif_error}")
             
             return jsonify({
                 "code": 200,

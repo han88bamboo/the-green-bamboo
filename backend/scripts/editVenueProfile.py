@@ -545,7 +545,10 @@ def addUpdates():
                         "createdAt": current_time,
                     }
                     print("Notification data for venue update:", notification_data)
-                    notifications.add_notification_to_db(notification_data)
+                    try:
+                        notifications.add_notification_to_db(notification_data, cursor)
+                    except Exception as notif_error:
+                        print(f"Failed to send venue update notification: {notif_error}")
 
                 return jsonify(
                     {
@@ -624,7 +627,10 @@ def sendQuestions():
             }
             print("Notification data for venue:", notification_data)
             
-            notifications.add_notification_to_db(notification_data)
+            try:
+                notifications.add_notification_to_db(notification_data, cursor)
+            except Exception as notif_error:
+                print(f"Failed to send venue question notification: {notif_error}")
 
             # Initialize variables for points and badge processing
             points_earned = 0
@@ -663,7 +669,10 @@ def sendQuestions():
                     "createdAt": current_time,
                 }
                 print("Notification data for badge:", notification_data)
-                notifications.add_notification_to_db(notification_data)
+                try:
+                    notifications.add_notification_to_db(notification_data, cursor)
+                except Exception as notif_error:
+                    print(f"Failed to send badge notification: {notif_error}")
             
             # Prepare the response
             response_data = {
@@ -743,7 +752,10 @@ def sendAnswers():
                     "createdAt": current_time,
                 }
                 print("Notification data for asker:", notification_data)
-                notifications.add_notification_to_db(notification_data)
+                try:
+                    notifications.add_notification_to_db(notification_data, cursor)
+                except Exception as notif_error:
+                    print(f"Failed to send venue answer notification: {notif_error}")
 
         return jsonify(
             {
@@ -1122,7 +1134,10 @@ def addListingToMenu():
             "createdAt": current_time,
             }
 
-            notifications.add_notification_to_db(notification_data)
+            try:
+                notifications.add_notification_to_db(notification_data, cursor)
+            except Exception as notif_error:
+                print(f"Failed to send listing included notification: {notif_error}")
 
             # ===== Create Menu History Snapshot =====
             # Capture the current menu state as a snapshot for history/rollback
@@ -1810,7 +1825,10 @@ def updateVenueStatus():
                     "createdAt": current_time,
                 }
                 print("Notification data for venue status update:", notification_data)
-                notifications.add_notification_to_db(notification_data)
+                try:
+                    notifications.add_notification_to_db(notification_data, cursor)
+                except Exception as notif_error:
+                    print(f"Failed to send venue status update notification: {notif_error}")
 
         return jsonify(
             {

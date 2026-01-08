@@ -452,7 +452,10 @@ def updateBookmark():
                     "createdAt": current_time
                 }
                 print("Notification data:", notification_data)
-                notifications.add_notification_to_db(notification_data)
+                try:
+                    notifications.add_notification_to_db(notification_data, cursor)
+                except Exception as notif_error:
+                    print(f"Failed to send badge notification: {notif_error}")
 
             # Prepare the response
             response_data = {
@@ -592,7 +595,10 @@ def updateFollowList():
 
                         #Send notification to User B
                         print("Sending notification:", notification_data)
-                        notifications.add_notification_to_db(notification_data)
+                        try:
+                            notifications.add_notification_to_db(notification_data, cursor)
+                        except Exception as notif_error:
+                            print(f"Failed to send new follower notification: {notif_error}")
 
             if row:
                 cursor.execute(

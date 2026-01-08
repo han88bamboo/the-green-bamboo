@@ -132,7 +132,10 @@ def addUpdates():
                 "createdAt": current_time
             }
             print("Sending notification:", notification_data)
-            notifications.add_notification_to_db(notification_data)
+            try:
+                notifications.add_notification_to_db(notification_data, cursor)
+            except Exception as notif_error:
+                print(f"Failed to send producer update notification: {notif_error}")
 
         return jsonify(
             {   
@@ -189,7 +192,10 @@ def sendQuestions():
                 "message":  f"@{user_username} asked you a question",
                 "createdAt": current_time
             }
-            notifications.add_notification_to_db(notification_data)
+            try:
+                notifications.add_notification_to_db(notification_data, cursor)
+            except Exception as notif_error:
+                print(f"Failed to send producer question notification: {notif_error}")
 
             # Initialize variables for points and badge processing
             points_earned = 0
@@ -228,7 +234,10 @@ def sendQuestions():
                     "createdAt": current_time
                 }
                 print("Sending badge notification:", notification_data)
-                notifications.add_notification_to_db(notification_data)
+                try:
+                    notifications.add_notification_to_db(notification_data, cursor)
+                except Exception as notif_error:
+                    print(f"Failed to send badge notification: {notif_error}")
             
             # Prepare the response
             response_data = {
@@ -300,7 +309,10 @@ def sendAnswers():
                     "createdAt": current_time
                 }
                 print("Sending answer notification:", notification_data)
-                notifications.add_notification_to_db(notification_data)
+                try:
+                    notifications.add_notification_to_db(notification_data, cursor)
+                except Exception as notif_error:
+                    print(f"Failed to send answer notification: {notif_error}")
 
             return jsonify(
                 {   
@@ -465,7 +477,10 @@ def updateProducerStatus():
                 "createdAt": current_time
                 }
                 print("Sending notification:", notification_data)
-                notifications.add_notification_to_db(notification_data)
+                try:
+                    notifications.add_notification_to_db(notification_data, cursor)
+                except Exception as notif_error:
+                    print(f"Failed to send status update notification: {notif_error}")
 
         return jsonify({
             "code": 201,

@@ -999,7 +999,10 @@ def createEvent():
                     'createdAt': current_time,
                 }
                 print(notification_data)
-                notifications.add_notification_to_db(notification_data)
+                try:
+                    notifications.add_notification_to_db(notification_data, cursor)
+                except Exception as notif_error:
+                    print(f"Failed to send event created notification: {notif_error}")
             
             return jsonify({'message': 'Event created successfully'}), 201
 
@@ -1586,7 +1589,10 @@ def addAttendee():
                 "createdAt": current_time
             }
             print("data for notification: ", notification_data)
-            notifications.add_notification_to_db(notification_data)
+            try:
+                notifications.add_notification_to_db(notification_data, cursor)
+            except Exception as notif_error:
+                print(f"Failed to send event invite notification: {notif_error}")
 
             return jsonify({'message': 'Attendee added successfully'}), 201
 
@@ -1732,7 +1738,10 @@ def updateAttendeeStatus():
                             "createdAt": current_time
                         }
                         print("notification data for badge: ", notification_data)
-                        notifications.add_notification_to_db(notification_data)
+                        try:
+                            notifications.add_notification_to_db(notification_data, cursor)
+                        except Exception as notif_error:
+                            print(f"Failed to send badge notification: {notif_error}")
             
             response_data = {'message': 'Attendee status updated successfully'}
             

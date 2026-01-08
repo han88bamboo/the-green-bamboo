@@ -427,7 +427,10 @@ def addWallPost():
                     "message": f"{poster_name} posted on your wall",
                     "createdAt": current_time
                 }
-                notifications.add_notification_to_db(notification_data)
+                try:
+                    notifications.add_notification_to_db(notification_data, cursor)
+                except Exception as notif_error:
+                    print(f"Failed to send wall post notification: {notif_error}")
             
             # Send notifications to tagged users
             if tagged_users:
@@ -451,7 +454,10 @@ def addWallPost():
                             "message": f"{poster_name} tagged you in a wall post",
                             "createdAt": current_time
                         }
-                        notifications.add_notification_to_db(notification_data)
+                        try:
+                            notifications.add_notification_to_db(notification_data, cursor)
+                        except Exception as notif_error:
+                            print(f"Failed to send wall post tag notification: {notif_error}")
         
         # Prepare the response
         response_data = {
@@ -550,7 +556,10 @@ def addWallPostComment():
                     "message": f"{commenter_name} commented on your wall post",
                     "createdAt": current_time
                 }
-                notifications.add_notification_to_db(notification_data)
+                try:
+                    notifications.add_notification_to_db(notification_data, cursor)
+                except Exception as notif_error:
+                    print(f"Failed to send wall post comment notification: {notif_error}")
             
             # Award points for commenting
             points_earned = 0
