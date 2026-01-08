@@ -1690,6 +1690,45 @@ export default {
       return this.displayUser.modType.join(", ");
     }
   },
+  watch: {
+    // Watch for changes in displayUserData prop (parent loads data async)
+    displayUserData: {
+      handler(newVal) {
+        if (newVal && newVal.username) {
+          console.log("[UserProfileHeader] displayUserData prop changed - updating local data");
+          this.displayUser = newVal;
+          this._processDisplayUserData();
+          this.getStatistics();
+        }
+      },
+      deep: true,
+      immediate: false
+    },
+    // Watch for changes in loggedInUserData prop
+    loggedInUserData: {
+      handler(newVal) {
+        if (newVal && newVal.username) {
+          console.log("[UserProfileHeader] loggedInUserData prop changed - updating local user");
+          this.user = newVal;
+          // Update following status if we have followLists
+          if (this.user && this.user.followLists && this.user.followLists.users) {
+            this.following = this.user.followLists.users.includes(this.displayUserID);
+          }
+        }
+      },
+      deep: true,
+      immediate: false
+    },
+    // Watch for changes in isFollowing prop
+    isFollowing: {
+      handler(newVal) {
+        if (newVal !== null) {
+          this.following = newVal;
+        }
+      },
+      immediate: false
+    }
+  },
   async mounted() {
     // Get user data from localStorage (matching UserProfileRefactor)
     const accID = localStorage.getItem("88B_accID");
@@ -1724,7 +1763,8 @@ export default {
     async fetchDisplayUserData() {
       try {
         // ========== CHECK IF PROPS WERE PROVIDED (Parent passed data) ==========
-        if (this.displayUserData) {
+        // Check for actual data (not just empty object {}) by verifying username exists
+        if (this.displayUserData && this.displayUserData.username) {
           console.log("[UserProfileHeader] Using props from parent - skipping API call for displayUser");
           
           // Use display user data from props
