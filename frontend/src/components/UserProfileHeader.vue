@@ -1573,7 +1573,23 @@ export default {
     PWStrengthChecker
   },
   props: {
-    // Props passed from parent component
+    // Props passed from parent component for data sharing (reduces duplicate API calls)
+    displayUserData: {
+      type: Object,
+      default: null
+    },
+    loggedInUserData: {
+      type: Object,
+      default: null
+    },
+    isOwnProfile: {
+      type: Boolean,
+      default: null // null means "not provided, determine from route"
+    },
+    isFollowing: {
+      type: Boolean,
+      default: null // null means "not provided, determine from API"
+    }
   },
   data() {
     return {
@@ -1690,12 +1706,14 @@ export default {
     this.displayUserID = this.$route.params.userID;
     this.routeUsername = this.$route.params.username;
 
-    // Check if viewing own profile
-    if (this.displayUserID === this.userID) {
-      this.ownProfile = true;
+    // Check if viewing own profile (use prop if provided, otherwise compute)
+    if (this.isOwnProfile !== null) {
+      this.ownProfile = this.isOwnProfile;
+    } else {
+      this.ownProfile = (this.displayUserID === this.userID);
     }
 
-    // Fetch display user data
+    // Fetch display user data (will use props if available)
     await this.fetchDisplayUserData();
 
     // Fetch drink types, flavours, and observation tags for editing
@@ -1705,7 +1723,39 @@ export default {
     // ------------------- Fetch Data -------------------
     async fetchDisplayUserData() {
       try {
-        // Use same API as UserProfileRefactor
+        // ========== CHECK IF PROPS WERE PROVIDED (Parent passed data) ==========
+        if (this.displayUserData) {
+          console.log("[UserProfileHeader] Using props from parent - skipping API call for displayUser");
+          
+          // Use display user data from props
+          this.displayUser = this.displayUserData;
+          
+          // Use logged-in user data from props (if provided)
+          if (this.loggedInUserData) {
+            this.user = this.loggedInUserData;
+          } else if (this.ownProfile) {
+            this.user = this.displayUser;
+          }
+          
+          // Use following status from props (if provided)
+          if (this.isFollowing !== null) {
+            this.following = this.isFollowing;
+          } else if (this.user && this.user.followLists && this.user.followLists.users) {
+            this.following = this.user.followLists.users.includes(this.displayUserID);
+          }
+          
+          // Process the display user data (same as when fetched from API)
+          this._processDisplayUserData();
+          
+          // Still need to fetch statistics (reviews count, followers, etc.)
+          await this.getStatistics();
+          
+          return; // Exit early - no need to fetch from API
+        }
+        
+        // ========== FALLBACK: Fetch from API (for backwards compatibility) ==========
+        console.log("[UserProfileHeader] No props provided - fetching from API");
+        
         const response = await this.$axios.get(
           `${process.env.VUE_APP_API_URL}/getData/getUser/${this.displayUserID}`
         );
@@ -1716,39 +1766,8 @@ export default {
         console.log("Choice Drinks:", this.displayUser.choiceDrinks);
         console.log("Choice Flavours:", this.displayUser.choiceFlavours);
 
-        // Get display user drink choice
-        if (this.displayUser.choiceDrinks && Array.isArray(this.displayUser.choiceDrinks) && this.displayUser.choiceDrinks.length > 0) {
-          this.displayUserDrinkChoice = this.displayUser.choiceDrinks.join(", ");
-        } else {
-          this.displayUserDrinkChoice = "";
-        }
-
-        // Set selected values for editing
-        this.selectedDrinks = Array.isArray(this.displayUser.choiceDrinks) 
-          ? [...this.displayUser.choiceDrinks]
-          : [];
-        this.selectedFlavours = Array.isArray(this.displayUser.choiceFlavours) 
-          ? [...this.displayUser.choiceFlavours]
-          : [];
-        this.selectedObservationTags = Array.isArray(this.displayUser.preferences) 
-          ? [...this.displayUser.preferences]
-          : [];
-
-        console.log("Selected Drinks:", this.selectedDrinks);
-        console.log("Selected Flavours:", this.selectedFlavours);
-        console.log("Display User Drink Choice:", this.displayUserDrinkChoice);
-
-        // Get display user producer bookmarks
-        if (this.displayUser.producerLists) {
-          this.displayUserProducerBookmarks = this.displayUser.producerLists;
-        }
-
-        // Format join date
-        const dateString = this.displayUser.joinDate;
-        const date = new Date(dateString);
-        const month = date.toLocaleString('default', { month: 'short' });
-        const year = date.getFullYear();
-        this.joinDate = `${month} ${year}`;
+        // Process the display user data
+        this._processDisplayUserData();
 
         // Get current user data if logged in
         if (this.userID) {
@@ -1777,6 +1796,43 @@ export default {
       } catch (error) {
         console.error("Error fetching user data:", error);
       }
+    },
+    
+    // Helper method to process display user data (shared between props and API paths)
+    _processDisplayUserData() {
+      // Get display user drink choice
+      if (this.displayUser.choiceDrinks && Array.isArray(this.displayUser.choiceDrinks) && this.displayUser.choiceDrinks.length > 0) {
+        this.displayUserDrinkChoice = this.displayUser.choiceDrinks.join(", ");
+      } else {
+        this.displayUserDrinkChoice = "";
+      }
+
+      // Set selected values for editing
+      this.selectedDrinks = Array.isArray(this.displayUser.choiceDrinks) 
+        ? [...this.displayUser.choiceDrinks]
+        : [];
+      this.selectedFlavours = Array.isArray(this.displayUser.choiceFlavours) 
+        ? [...this.displayUser.choiceFlavours]
+        : [];
+      this.selectedObservationTags = Array.isArray(this.displayUser.preferences) 
+        ? [...this.displayUser.preferences]
+        : [];
+
+      console.log("Selected Drinks:", this.selectedDrinks);
+      console.log("Selected Flavours:", this.selectedFlavours);
+      console.log("Display User Drink Choice:", this.displayUserDrinkChoice);
+
+      // Get display user producer bookmarks
+      if (this.displayUser.producerLists) {
+        this.displayUserProducerBookmarks = this.displayUser.producerLists;
+      }
+
+      // Format join date
+      const dateString = this.displayUser.joinDate;
+      const date = new Date(dateString);
+      const month = date.toLocaleString('default', { month: 'short' });
+      const year = date.getFullYear();
+      this.joinDate = `${month} ${year}`;
     },
 
     async getStatistics() {

@@ -4,7 +4,12 @@
   <!-- User Profile Header and Navigation (always visible) -->
   <div v-if="displayUserID && routeUsername" class="userprofile mt-5 mobile-mt-3 ">
     <div class="container text-start mb-2">
-          <UserProfileHeader />
+          <UserProfileHeader 
+            :displayUserData="displayUser"
+            :loggedInUserData="user"
+            :isOwnProfile="ownProfile"
+            :isFollowing="following"
+          />
       </div>
     <div v-if="totalReviewsCount > 0" class="pt-2 container mobile-view-show" style="background-color:wheat">
       <p class="text-start fw-bold mobile-spacer mobile-rating-smaller-text-2 mb-0">Ratings Spread</p>
