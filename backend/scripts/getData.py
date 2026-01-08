@@ -2826,7 +2826,10 @@ def getRecentReviewsForListing(listing_id):
                     else:
                         logger.info(f"Charsiucharlie_debug REQ-{request_id} getRecentReviewsForListing user_favorite_category={user_favorite_category} matches listing category, skipping personalization")
             
-            # Query for reviews matching drinkType AND typeCategory first, then fall back to drinkType only
+            # Determine how many reviews we need for the main query
+            target_count = 2 if should_personalize else 3
+            
+            # Step 1: Get reviews with unique usernames first (prioritize diversity)
             cursor.execute("""
                 WITH category_reviews AS (
                     -- First priority: Same drinkType AND typeCategory (excluding current listing)
@@ -2861,8 +2864,6 @@ def getRecentReviewsForListing(listing_id):
                     WHERE r."reviewType" = 'Listing'
                     AND r."reviewTarget" != %s
                     AND r."rating" IS NOT NULL
-                    AND r."reviewDesc" IS NOT NULL
-                    AND r."reviewDesc" != ''
                     AND r."isPublic" = true
                     AND l."drinkType" = %s
                     AND l."typeCategory" = %s
@@ -2901,8 +2902,6 @@ def getRecentReviewsForListing(listing_id):
                     WHERE r."reviewType" = 'Listing'
                     AND r."reviewTarget" != %s
                     AND r."rating" IS NOT NULL
-                    AND r."reviewDesc" IS NOT NULL
-                    AND r."reviewDesc" != ''
                     AND r."isPublic" = true
                     AND l."drinkType" = %s
                     AND (l."typeCategory" IS NULL OR l."typeCategory" != %s)
@@ -2917,7 +2916,7 @@ def getRecentReviewsForListing(listing_id):
                 WHERE rn = 1
                 ORDER BY "priority" ASC, "createdDate" DESC
                 LIMIT %s
-            """, (listing_id, drink_type, type_category, listing_id, drink_type, type_category, 2 if should_personalize else 3))
+            """, (listing_id, drink_type, type_category, listing_id, drink_type, type_category, target_count))
             
             reviews_data = cursor.fetchall()
             
@@ -2951,6 +2950,79 @@ def getRecentReviewsForListing(listing_id):
                 formatted_review.pop('rn', None)
                 
                 formatted_reviews.append(formatted_review)
+            
+            # Step 2: If we don't have enough unique users, allow duplicate usernames to fill slots
+            if len(formatted_reviews) < target_count and collected_review_ids:
+                remaining_needed = target_count - len(formatted_reviews)
+                exclude_review_ids = tuple(collected_review_ids)
+                
+                cursor.execute("""
+                    WITH category_reviews AS (
+                        SELECT 
+                            r."id" as "reviewId",
+                            r."userID",
+                            r."reviewTarget",
+                            r."rating",
+                            r."reviewDesc",
+                            r."reviewType",
+                            r."createdDate",
+                            r."observationTag",
+                            r."location",
+                            r."isPublic",
+                            COALESCE(NULLIF(r."photo", ''), l."photo") as "photo",
+                            l."photo" as "listingPhoto",
+                            u."username",
+                            u."photo" as "userPhoto",
+                            l."listingName",
+                            l."drinkType",
+                            l."typeCategory",
+                            l."originCountry",
+                            l."producerID",
+                            p."producerName",
+                            v."venueName",
+                            CASE WHEN l."typeCategory" = %s THEN 1 ELSE 2 END as "priority"
+                        FROM "reviews" r
+                        LEFT JOIN "users" u ON r."userID" = u."id"
+                        LEFT JOIN "listings" l ON r."reviewTarget" = l."id"
+                        LEFT JOIN "producers" p ON l."producerID" = p."id"
+                        LEFT JOIN "venues" v ON r."location" = v."id"
+                        WHERE r."reviewType" = 'Listing'
+                        AND r."reviewTarget" != %s
+                        AND r."id" NOT IN %s
+                        AND r."rating" IS NOT NULL
+                        AND r."isPublic" = true
+                        AND l."drinkType" = %s
+                    )
+                    SELECT *
+                    FROM category_reviews
+                    ORDER BY "priority" ASC, "createdDate" DESC
+                    LIMIT %s
+                """, (type_category, listing_id, exclude_review_ids, drink_type, remaining_needed))
+                
+                additional_reviews = cursor.fetchall()
+                
+                for review in additional_reviews:
+                    formatted_review = dict(review)
+                    collected_review_ids.add(formatted_review['reviewId'])
+                    collected_usernames.add(formatted_review['username'])
+                    
+                    if formatted_review.get("observationTag"):
+                        if isinstance(formatted_review["observationTag"], str):
+                            try:
+                                import json
+                                formatted_review["observationTag"] = json.loads(formatted_review["observationTag"])
+                            except:
+                                formatted_review["observationTag"] = [tag.strip() for tag in formatted_review["observationTag"].split(',') if tag.strip()]
+                    else:
+                        formatted_review["observationTag"] = []
+                    
+                    if formatted_review.get("createdDate"):
+                        formatted_review["createdDate"] = formatted_review["createdDate"].isoformat() if hasattr(formatted_review["createdDate"], 'isoformat') else str(formatted_review["createdDate"])
+                    
+                    formatted_review.pop('priority', None)
+                    formatted_reviews.append(formatted_review)
+                
+                logger.info(f"Charsiucharlie_debug REQ-{request_id} getRecentReviewsForListing added {len(additional_reviews)} duplicate-user reviews to fill slots")
             
             # If we should personalize, fetch the 3rd card from user's favorite category
             if should_personalize and len(formatted_reviews) >= 2:
@@ -2991,8 +3063,6 @@ def getRecentReviewsForListing(listing_id):
                     AND r."id" NOT IN %s
                     AND u."username" NOT IN %s
                     AND r."rating" IS NOT NULL
-                    AND r."reviewDesc" IS NOT NULL
-                    AND r."reviewDesc" != ''
                     AND r."isPublic" = true
                     AND l."typeCategory" = %s
                     ORDER BY r."createdDate" DESC
@@ -3027,6 +3097,8 @@ def getRecentReviewsForListing(listing_id):
                 else:
                     # No personalized review found, fall back to getting a 3rd review from original criteria
                     logger.info(f"Charsiucharlie_debug REQ-{request_id} getRecentReviewsForListing no personalized review found, falling back")
+                    
+                    # First try with unique username
                     cursor.execute("""
                         WITH category_reviews AS (
                             SELECT 
@@ -3062,8 +3134,6 @@ def getRecentReviewsForListing(listing_id):
                             AND r."id" NOT IN %s
                             AND u."username" NOT IN %s
                             AND r."rating" IS NOT NULL
-                            AND r."reviewDesc" IS NOT NULL
-                            AND r."reviewDesc" != ''
                             AND r."isPublic" = true
                             AND l."drinkType" = %s
                         )
@@ -3074,6 +3144,54 @@ def getRecentReviewsForListing(listing_id):
                     """, (type_category, listing_id, exclude_review_ids, exclude_usernames, drink_type))
                     
                     fallback_review = cursor.fetchone()
+                    
+                    # If no unique username found, allow duplicate username
+                    if not fallback_review:
+                        cursor.execute("""
+                            WITH category_reviews AS (
+                                SELECT 
+                                    r."id" as "reviewId",
+                                    r."userID",
+                                    r."reviewTarget",
+                                    r."rating",
+                                    r."reviewDesc",
+                                    r."reviewType",
+                                    r."createdDate",
+                                    r."observationTag",
+                                    r."location",
+                                    r."isPublic",
+                                    COALESCE(NULLIF(r."photo", ''), l."photo") as "photo",
+                                    l."photo" as "listingPhoto",
+                                    u."username",
+                                    u."photo" as "userPhoto",
+                                    l."listingName",
+                                    l."drinkType",
+                                    l."typeCategory",
+                                    l."originCountry",
+                                    l."producerID",
+                                    p."producerName",
+                                    v."venueName",
+                                    CASE WHEN l."typeCategory" = %s THEN 1 ELSE 2 END as "priority"
+                                FROM "reviews" r
+                                LEFT JOIN "users" u ON r."userID" = u."id"
+                                LEFT JOIN "listings" l ON r."reviewTarget" = l."id"
+                                LEFT JOIN "producers" p ON l."producerID" = p."id"
+                                LEFT JOIN "venues" v ON r."location" = v."id"
+                                WHERE r."reviewType" = 'Listing'
+                                AND r."reviewTarget" != %s
+                                AND r."id" NOT IN %s
+                                AND r."rating" IS NOT NULL
+                                AND r."isPublic" = true
+                                AND l."drinkType" = %s
+                            )
+                            SELECT *
+                            FROM category_reviews
+                            ORDER BY "priority" ASC, "createdDate" DESC
+                            LIMIT 1
+                        """, (type_category, listing_id, exclude_review_ids, drink_type))
+                        
+                        fallback_review = cursor.fetchone()
+                    
                     if fallback_review:
                         fallback_formatted = dict(fallback_review)
                         
