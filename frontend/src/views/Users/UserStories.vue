@@ -4,7 +4,11 @@
   <!-- User Profile Header and Navigation (always visible) -->
   <div v-if="displayUserID && routeUsername" class="userprofile mt-5 mobile-mt-3">
     <div class="container text-start">
-      <UserProfileHeader />
+      <UserProfileHeader 
+        :displayUserData="displayUser"
+        :loggedInUserData="loggedInUser"
+        :isOwnProfile="ownProfile"
+      />
     </div>
     <br>
     <!-- User Profile Navigation -->
@@ -332,6 +336,7 @@ export default {
       userType: null,
       username: null,
       ownProfile: false,
+      loggedInUser: null,
 
       // Cellar Data
       displayUserCellarCollections: {},
@@ -379,6 +384,12 @@ export default {
 
     if (this.displayUserID && this.userID && parseInt(this.displayUserID) === parseInt(this.userID)) {
       this.ownProfile = true;
+    }
+
+    // Get logged-in user data from localStorage (stored by UserProfileRefactor)
+    const storedUser = localStorage.getItem("88B_loggedInUser");
+    if (storedUser) {
+      this.loggedInUser = JSON.parse(storedUser);
     }
 
     // Handle shared collection query param (if any)
