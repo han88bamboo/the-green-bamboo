@@ -1070,11 +1070,6 @@
           if (this.$route.path.split("/")[1] == "request") {
             this.onRequest = true;
           }
-          
-          // Load user data for follow functionality
-          if (this.accType === 'user') {
-            this.loadUserData(accID);
-          }
         }
 
         // Add event listeners for user search in the modal
@@ -1092,7 +1087,7 @@
         document.removeEventListener("keydown", this.handleUserSearchKeyDown);
       },
       methods: {
-        // load data from database (profile picture)
+        // load data from database (profile picture, admin/mod status, followLists for users)
         async loadData(url) {
           try {
             const response = await this.$axios.get(url);
@@ -1113,22 +1108,15 @@
               ) {
                 this.isModerator = true;
               }
+              // Store full user data for follow functionality (Find Friends modal)
+              // This consolidates the previous separate loadUserData() call
+              this.user = response.data;
             } else if (this.accType == "venue") {
               // Capture specialStatus for venue accounts
               this.specialStatus = response.data.specialStatus || null;
             }
           } catch (error) {
             console.error(error);
-          }
-        },
-        
-        // Load user data for follow functionality
-        async loadUserData(userID) {
-          try {
-            const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getUser/${userID}`);
-            this.user = response.data;
-          } catch (error) {
-            console.error("Error loading user data:", error);
           }
         },
 
