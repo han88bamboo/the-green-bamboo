@@ -10349,11 +10349,12 @@ input[type="range"].form-range::-webkit-slider-thumb {
   transition: transform 0.2s ease, box-shadow 0.2s ease;
   cursor: pointer;
   border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
 
 .trending-review-card-vertical .review-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.18);
 }
 
 .trending-review-card-vertical .card-img-top-wrapper {
