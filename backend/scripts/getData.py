@@ -13254,9 +13254,9 @@ def getSimilarDrinks(listing_id):
     
     try:
         with db_manager.get_cursor() as cursor:
-            # First, get the drinkType and producerID of the current listing
+            # First, get the drinkType, typeCategory and producerID of the current listing
             cursor.execute("""
-                SELECT "drinkType", "producerID"
+                SELECT "drinkType", "typeCategory", "producerID"
                 FROM "listings"
                 WHERE "id" = %s
             """, (listing_id,))
@@ -13268,55 +13268,89 @@ def getSimilarDrinks(listing_id):
                 return jsonify([]), 200
             
             drink_type = current_listing['drinkType']
+            type_category = current_listing['typeCategory']
             producer_id = current_listing['producerID']
             
             if not drink_type:
                 logger.warning(f"REQ-{request_id} getSimilarDrinks: listing {listing_id} has no drinkType")
                 return jsonify([]), 200
             
-            # Get up to 4 random listings with:
-            # - Same drinkType
-            # - At least one review
-            # - Has a photo
-            # - Not the current listing
-            cursor.execute("""
-                SELECT 
-                    l."id",
-                    l."listingName",
-                    l."photo",
-                    l."drinkType",
-                    l."producerID",
-                    p."producerName",
-                    COUNT(r."id") as "reviewCount"
-                FROM "listings" l
-                LEFT JOIN "producers" p ON l."producerID" = p."id"
-                INNER JOIN "reviews" r ON r."reviewTarget" = l."id"
-                WHERE l."drinkType" = %s
-                  AND l."id" != %s
-                  AND l."photo" IS NOT NULL
-                  AND l."photo" != ''
-                GROUP BY l."id", l."listingName", l."photo", l."drinkType", l."producerID", p."producerName"
-                HAVING COUNT(r."id") >= 1
-                ORDER BY RANDOM()
-                LIMIT 4
-            """, (drink_type, listing_id))
+            results = []
+            existing_ids = [listing_id]
             
-            similar_drinks = cursor.fetchall()
-            results = [dict(row) for row in similar_drinks]
-            
-            # If we have less than 4 results, fill remaining slots with drinks from same producer
-            if len(results) < 4 and producer_id:
-                existing_ids = [listing_id] + [r['id'] for r in results]
-                remaining_slots = 4 - len(results)
-                
-                # Get drinks from same producer (regardless of drinkType)
-                # Must have at least one review and a photo
+            # Step 1: Get up to 4 random listings with same drinkType AND typeCategory
+            # Only if typeCategory is not NULL/empty
+            if type_category and type_category.strip():
                 cursor.execute("""
                     SELECT 
                         l."id",
                         l."listingName",
                         l."photo",
                         l."drinkType",
+                        l."typeCategory",
+                        l."producerID",
+                        p."producerName",
+                        COUNT(r."id") as "reviewCount"
+                    FROM "listings" l
+                    LEFT JOIN "producers" p ON l."producerID" = p."id"
+                    INNER JOIN "reviews" r ON r."reviewTarget" = l."id"
+                    WHERE l."drinkType" = %s
+                      AND l."typeCategory" = %s
+                      AND l."id" != %s
+                      AND l."photo" IS NOT NULL
+                      AND l."photo" != ''
+                    GROUP BY l."id", l."listingName", l."photo", l."drinkType", l."typeCategory", l."producerID", p."producerName"
+                    HAVING COUNT(r."id") >= 1
+                    ORDER BY RANDOM()
+                    LIMIT 4
+                """, (drink_type, type_category, listing_id))
+                
+                similar_drinks = cursor.fetchall()
+                results = [dict(row) for row in similar_drinks]
+                existing_ids.extend([r['id'] for r in results])
+            
+            # Step 2: If less than 4, fill with same drinkType only (any typeCategory)
+            if len(results) < 4:
+                remaining_slots = 4 - len(results)
+                
+                cursor.execute("""
+                    SELECT 
+                        l."id",
+                        l."listingName",
+                        l."photo",
+                        l."drinkType",
+                        l."typeCategory",
+                        l."producerID",
+                        p."producerName",
+                        COUNT(r."id") as "reviewCount"
+                    FROM "listings" l
+                    LEFT JOIN "producers" p ON l."producerID" = p."id"
+                    INNER JOIN "reviews" r ON r."reviewTarget" = l."id"
+                    WHERE l."drinkType" = %s
+                      AND l."id" != ALL(%s)
+                      AND l."photo" IS NOT NULL
+                      AND l."photo" != ''
+                    GROUP BY l."id", l."listingName", l."photo", l."drinkType", l."typeCategory", l."producerID", p."producerName"
+                    HAVING COUNT(r."id") >= 1
+                    ORDER BY RANDOM()
+                    LIMIT %s
+                """, (drink_type, existing_ids, remaining_slots))
+                
+                drinktype_drinks = cursor.fetchall()
+                results.extend([dict(row) for row in drinktype_drinks])
+                existing_ids.extend([r['id'] for r in drinktype_drinks])
+            
+            # Step 3: If still less than 4, fill with drinks from same producer
+            if len(results) < 4 and producer_id:
+                remaining_slots = 4 - len(results)
+                
+                cursor.execute("""
+                    SELECT 
+                        l."id",
+                        l."listingName",
+                        l."photo",
+                        l."drinkType",
+                        l."typeCategory",
                         l."producerID",
                         p."producerName",
                         COUNT(r."id") as "reviewCount"
@@ -13327,7 +13361,7 @@ def getSimilarDrinks(listing_id):
                       AND l."id" != ALL(%s)
                       AND l."photo" IS NOT NULL
                       AND l."photo" != ''
-                    GROUP BY l."id", l."listingName", l."photo", l."drinkType", l."producerID", p."producerName"
+                    GROUP BY l."id", l."listingName", l."photo", l."drinkType", l."typeCategory", l."producerID", p."producerName"
                     HAVING COUNT(r."id") >= 1
                     ORDER BY RANDOM()
                     LIMIT %s
@@ -13357,7 +13391,7 @@ def getSimilarDrinks(listing_id):
 
 
 # [GET] Get "People who drank this also drank" recommendations
-# Returns up to 4 unique listings: same producer first, then same drinkType as fallback
+# Returns up to 4 unique listings: same producer first, then same drinkType+typeCategory, then drinkType only as fallback
 # All must have at least one review and a photo
 @blueprint.route("/getPeopleAlsoDrank/<int:listing_id>", methods=['GET'])
 def getPeopleAlsoDrank(listing_id):
@@ -13367,9 +13401,9 @@ def getPeopleAlsoDrank(listing_id):
     
     try:
         with db_manager.get_cursor() as cursor:
-            # First, get the drinkType and producerID of the current listing
+            # First, get the drinkType, typeCategory and producerID of the current listing
             cursor.execute("""
-                SELECT "drinkType", "producerID"
+                SELECT "drinkType", "typeCategory", "producerID"
                 FROM "listings"
                 WHERE "id" = %s
             """, (listing_id,))
@@ -13381,6 +13415,7 @@ def getPeopleAlsoDrank(listing_id):
                 return jsonify([]), 200
             
             drink_type = current_listing['drinkType']
+            type_category = current_listing['typeCategory']
             producer_id = current_listing['producerID']
             
             results = []
@@ -13394,6 +13429,7 @@ def getPeopleAlsoDrank(listing_id):
                         l."listingName",
                         l."photo",
                         l."drinkType",
+                        l."typeCategory",
                         l."producerID",
                         p."producerName",
                         COUNT(r."id") as "reviewCount"
@@ -13404,7 +13440,7 @@ def getPeopleAlsoDrank(listing_id):
                       AND l."id" != %s
                       AND l."photo" IS NOT NULL
                       AND l."photo" != ''
-                    GROUP BY l."id", l."listingName", l."photo", l."drinkType", l."producerID", p."producerName"
+                    GROUP BY l."id", l."listingName", l."photo", l."drinkType", l."typeCategory", l."producerID", p."producerName"
                     HAVING COUNT(r."id") >= 1
                     ORDER BY RANDOM()
                     LIMIT 4
@@ -13414,7 +13450,40 @@ def getPeopleAlsoDrank(listing_id):
                 results = [dict(row) for row in producer_drinks]
                 existing_ids.extend([r['id'] for r in results])
             
-            # Step 2: If less than 4, fill with same drinkType
+            # Step 2: If less than 4, fill with same drinkType AND typeCategory
+            # Only if typeCategory is not NULL/empty
+            if len(results) < 4 and drink_type and type_category and type_category.strip():
+                remaining_slots = 4 - len(results)
+                
+                cursor.execute("""
+                    SELECT 
+                        l."id",
+                        l."listingName",
+                        l."photo",
+                        l."drinkType",
+                        l."typeCategory",
+                        l."producerID",
+                        p."producerName",
+                        COUNT(r."id") as "reviewCount"
+                    FROM "listings" l
+                    LEFT JOIN "producers" p ON l."producerID" = p."id"
+                    INNER JOIN "reviews" r ON r."reviewTarget" = l."id"
+                    WHERE l."drinkType" = %s
+                      AND l."typeCategory" = %s
+                      AND l."id" != ALL(%s)
+                      AND l."photo" IS NOT NULL
+                      AND l."photo" != ''
+                    GROUP BY l."id", l."listingName", l."photo", l."drinkType", l."typeCategory", l."producerID", p."producerName"
+                    HAVING COUNT(r."id") >= 1
+                    ORDER BY RANDOM()
+                    LIMIT %s
+                """, (drink_type, type_category, existing_ids, remaining_slots))
+                
+                category_drinks = cursor.fetchall()
+                results.extend([dict(row) for row in category_drinks])
+                existing_ids.extend([r['id'] for r in category_drinks])
+            
+            # Step 3: If still less than 4, fill with same drinkType only (any typeCategory)
             if len(results) < 4 and drink_type:
                 remaining_slots = 4 - len(results)
                 
@@ -13424,6 +13493,7 @@ def getPeopleAlsoDrank(listing_id):
                         l."listingName",
                         l."photo",
                         l."drinkType",
+                        l."typeCategory",
                         l."producerID",
                         p."producerName",
                         COUNT(r."id") as "reviewCount"
@@ -13434,7 +13504,7 @@ def getPeopleAlsoDrank(listing_id):
                       AND l."id" != ALL(%s)
                       AND l."photo" IS NOT NULL
                       AND l."photo" != ''
-                    GROUP BY l."id", l."listingName", l."photo", l."drinkType", l."producerID", p."producerName"
+                    GROUP BY l."id", l."listingName", l."photo", l."drinkType", l."typeCategory", l."producerID", p."producerName"
                     HAVING COUNT(r."id") >= 1
                     ORDER BY RANDOM()
                     LIMIT %s
@@ -13463,8 +13533,8 @@ def getPeopleAlsoDrank(listing_id):
         }), 500
 
 
-# [GET] Get "You May Also Like" recommendations based on user's most reviewed drinkType
-# Returns up to 6 listings of user's top reviewed drinkType, or random from 3+ drinkTypes if no reviews
+# [GET] Get "You May Also Like" recommendations based on user's most reviewed drinkType and typeCategory
+# Returns up to 6 listings of user's top reviewed drinkType+typeCategory, with fallbacks
 # All must have at least one review and a photo
 @blueprint.route("/getUserMayAlsoLike/<int:user_id>/<int:listing_id>", methods=['GET'])
 def getUserMayAlsoLike(user_id, listing_id):
@@ -13487,19 +13557,36 @@ def getUserMayAlsoLike(user_id, listing_id):
             """, (user_id,))
             
             top_drinktype_result = cursor.fetchone()
+            top_drinktype = top_drinktype_result['drinkType'] if top_drinktype_result else None
+            
+            # Step 2: Find user's most reviewed typeCategory (separately)
+            cursor.execute("""
+                SELECT l."typeCategory", COUNT(*) as review_count
+                FROM "reviews" r
+                INNER JOIN "listings" l ON r."reviewTarget" = l."id"
+                WHERE r."userID" = %s
+                  AND l."typeCategory" IS NOT NULL
+                  AND l."typeCategory" != ''
+                GROUP BY l."typeCategory"
+                ORDER BY review_count DESC
+                LIMIT 1
+            """, (user_id,))
+            
+            top_typecategory_result = cursor.fetchone()
+            top_typecategory = top_typecategory_result['typeCategory'] if top_typecategory_result else None
             
             results = []
+            existing_ids = [listing_id]
             
-            if top_drinktype_result:
-                # User has reviews - get drinks from their top drinkType
-                top_drinktype = top_drinktype_result['drinkType']
-                
+            # Step 3: If user has both top drinkType and typeCategory, get drinks matching both
+            if top_drinktype and top_typecategory:
                 cursor.execute("""
                     SELECT 
                         l."id",
                         l."listingName",
                         l."photo",
                         l."drinkType",
+                        l."typeCategory",
                         l."producerID",
                         p."producerName",
                         COUNT(r."id") as "reviewCount"
@@ -13507,20 +13594,52 @@ def getUserMayAlsoLike(user_id, listing_id):
                     LEFT JOIN "producers" p ON l."producerID" = p."id"
                     INNER JOIN "reviews" r ON r."reviewTarget" = l."id"
                     WHERE l."drinkType" = %s
+                      AND l."typeCategory" = %s
                       AND l."id" != %s
                       AND l."photo" IS NOT NULL
                       AND l."photo" != ''
-                    GROUP BY l."id", l."listingName", l."photo", l."drinkType", l."producerID", p."producerName"
+                    GROUP BY l."id", l."listingName", l."photo", l."drinkType", l."typeCategory", l."producerID", p."producerName"
                     HAVING COUNT(r."id") >= 1
                     ORDER BY RANDOM()
                     LIMIT 6
-                """, (top_drinktype, listing_id))
+                """, (top_drinktype, top_typecategory, listing_id))
                 
                 results = [dict(row) for row in cursor.fetchall()]
+                existing_ids.extend([r['id'] for r in results])
             
-            # Fallback: If user has no reviews OR not enough results, get random from 3+ drinkTypes
+            # Step 4: If less than 6, fill with user's top drinkType only (any typeCategory)
+            if len(results) < 6 and top_drinktype:
+                remaining_slots = 6 - len(results)
+                
+                cursor.execute("""
+                    SELECT 
+                        l."id",
+                        l."listingName",
+                        l."photo",
+                        l."drinkType",
+                        l."typeCategory",
+                        l."producerID",
+                        p."producerName",
+                        COUNT(r."id") as "reviewCount"
+                    FROM "listings" l
+                    LEFT JOIN "producers" p ON l."producerID" = p."id"
+                    INNER JOIN "reviews" r ON r."reviewTarget" = l."id"
+                    WHERE l."drinkType" = %s
+                      AND l."id" != ALL(%s)
+                      AND l."photo" IS NOT NULL
+                      AND l."photo" != ''
+                    GROUP BY l."id", l."listingName", l."photo", l."drinkType", l."typeCategory", l."producerID", p."producerName"
+                    HAVING COUNT(r."id") >= 1
+                    ORDER BY RANDOM()
+                    LIMIT %s
+                """, (top_drinktype, existing_ids, remaining_slots))
+                
+                drinktype_drinks = [dict(row) for row in cursor.fetchall()]
+                results.extend(drinktype_drinks)
+                existing_ids.extend([r['id'] for r in drinktype_drinks])
+            
+            # Step 5 (Fallback): If user has no reviews OR still not enough results, get random from 3+ drinkTypes
             if len(results) < 6:
-                existing_ids = [listing_id] + [r['id'] for r in results]
                 remaining_slots = 6 - len(results)
                 
                 # Get random drinks ensuring at least 3 different drinkTypes in final result
@@ -13531,6 +13650,7 @@ def getUserMayAlsoLike(user_id, listing_id):
                             l."listingName",
                             l."photo",
                             l."drinkType",
+                            l."typeCategory",
                             l."producerID",
                             p."producerName",
                             COUNT(r."id") as "reviewCount",
@@ -13541,10 +13661,10 @@ def getUserMayAlsoLike(user_id, listing_id):
                         WHERE l."id" != ALL(%s)
                           AND l."photo" IS NOT NULL
                           AND l."photo" != ''
-                        GROUP BY l."id", l."listingName", l."photo", l."drinkType", l."producerID", p."producerName"
+                        GROUP BY l."id", l."listingName", l."photo", l."drinkType", l."typeCategory", l."producerID", p."producerName"
                         HAVING COUNT(r."id") >= 1
                     )
-                    SELECT "id", "listingName", "photo", "drinkType", "producerID", "producerName", "reviewCount"
+                    SELECT "id", "listingName", "photo", "drinkType", "typeCategory", "producerID", "producerName", "reviewCount"
                     FROM ranked_drinks
                     WHERE rn <= 2
                     ORDER BY RANDOM()
@@ -13555,7 +13675,7 @@ def getUserMayAlsoLike(user_id, listing_id):
                 results.extend(fallback_drinks)
             
             # Verify we have at least 3 different drinkTypes if this is fallback-only
-            if top_drinktype_result is None and len(results) > 0:
+            if top_drinktype is None and len(results) > 0:
                 unique_types = set(r['drinkType'] for r in results if r.get('drinkType'))
                 if len(unique_types) < 3 and len(results) < 6:
                     # Not enough variety - this is acceptable, we'll show what we have
