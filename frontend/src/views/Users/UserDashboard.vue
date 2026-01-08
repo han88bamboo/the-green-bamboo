@@ -13,7 +13,11 @@
         <!-- User Profile Header and Navigation (always visible) -->
   <div v-if="displayUserID && displayUser.username" class="userprofile mt-5 mobile-mt-3">
     <div class="container text-start">
-      <UserProfileHeader />
+      <UserProfileHeader 
+        :displayUserData="displayUser"
+        :loggedInUserData="user"
+        :isOwnProfile="ownProfile"
+      />
     </div>
     <br>
     <!-- User Profile Navigation -->
