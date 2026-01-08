@@ -3025,7 +3025,8 @@ def getRecentReviewsForListing(listing_id):
                 logger.info(f"Charsiucharlie_debug REQ-{request_id} getRecentReviewsForListing added {len(additional_reviews)} duplicate-user reviews to fill slots")
             
             # If we should personalize, fetch the 3rd card from user's favorite category
-            if should_personalize and len(formatted_reviews) >= 2:
+            # Note: We fetch personalized card regardless of how many main reviews we got
+            if should_personalize:
                 # Build exclusion list for review IDs and usernames
                 exclude_review_ids = tuple(collected_review_ids) if collected_review_ids else (0,)
                 exclude_usernames = tuple(collected_usernames) if collected_usernames else ('',)
