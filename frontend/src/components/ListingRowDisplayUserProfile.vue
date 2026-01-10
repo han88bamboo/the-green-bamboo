@@ -398,12 +398,26 @@ export default {
   text-decoration: underline;
 }
 
-.review-card-img{
+.card-img-top-wrapper {
   width: 100%;
-  height: 180px;       /* tweak */
+  height: 180px;
+  position: relative;
+}
+
+.card-img-top-wrapper > div,
+.card-img-top-wrapper a {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.review-card-img {
+  width: 100%;
+  height: 100%;
   object-fit: cover;
   display: block;
 }
+
 
 /* Grid view styles */
 .review-card {
@@ -434,7 +448,7 @@ export default {
 
   .review-card-img{
   width: 100%;
-  height: 150px;       /* tweak */
+  height: 100%;       /* tweak */
   object-fit: cover;
   display: block;
 }

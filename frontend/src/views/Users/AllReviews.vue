@@ -1068,16 +1068,25 @@ export default {
   box-shadow: 0 4px 12px rgba(0,0,0,0.15);
 }
 
+
 .card-img-top-wrapper {
-  height: 200px;
-  overflow: hidden;
-  background-color: #f8f9fa;
+  width: 100%;
+  height: 180px;
+  position: relative;
+}
+
+.card-img-top-wrapper > div,
+.card-img-top-wrapper a {
+  width: 100%;
+  height: 100%;
+  display: block;
 }
 
 .review-card-img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  display: block;
 }
 
 .card-body {
