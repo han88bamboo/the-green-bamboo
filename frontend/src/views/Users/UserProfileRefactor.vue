@@ -54,13 +54,7 @@
       <div v-if="ownProfile || latestWallOwnerPost" class="row mb-3">
         <div class="col-12">
           <div 
-            class="personal-wall-container"
-            style="
-              border: 1px solid #e0e0e0;
-              border-radius: 8px;
-              padding: 16px;
-              background-color: #ffffff;
-            "
+           
           >
             <div class="d-flex justify-content-between align-items-center">
               <h5 class="text-body-secondary fw-bold mb-0 mobile-fs-6">Personal Wall</h5>

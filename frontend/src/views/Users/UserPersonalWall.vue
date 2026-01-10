@@ -43,7 +43,7 @@
         <div class="col-12 col-md-10 mx-auto mobile-px-3">
 
           <!-- Page Header -->
-          <div class="d-flex justify-content-between align-items-center mb-4">
+          <div class="d-flex justify-content-between align-items-center my-4">
             <h4 class="fw-bold mb-0">Personal Wall</h4>
             <router-link 
               :to="`/profile/user/${displayUserID}/${routeUsername}`"
