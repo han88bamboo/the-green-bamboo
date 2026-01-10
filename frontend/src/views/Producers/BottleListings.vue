@@ -789,55 +789,56 @@
                   </div>
                 </div>
                 <!-- DESKTOP -->
-                <div class="row g-0 mobile-view-hide mt-2">
+                <div class="d-flex flex-wrap g-1 mobile-view-hide mt-2 px-0 align-items-start">
+
                   <!-- Category -->
-                  <div class="col-3 text-start">
+                  <div class="text-start flex-item-min">
                     <h6 class="mb-1">
-                      <b> {{ specified_listing["typeCategory"] }} </b>
+                      <b>{{ specified_listing["typeCategory"] }}</b>
                     </h6>
-                    <p class="mb-2"><u> Category </u></p>
+                    <p class="mb-2"><u>Category</u></p>
                   </div>
 
                   <!-- Drink Style -->
-                  <div v-if="specified_listing['drinkStyle']"
-                    class="col-3 text-start">
+                  <div 
+                    v-if="specified_listing?.drinkStyle && specified_listing?.drinkStyle !== '-'" 
+                    class="text-start flex-item-min"
+                  >
                     <h6 class="mb-1">
-                      <b>
-                        {{ specified_listing["drinkStyle"] }}
-                      </b>
+                      <b>{{ specified_listing["drinkStyle"] }}</b>
                     </h6>
-                    <p class="mb-2"><u> Drink Style </u></p>
+                    <p class="mb-2"><u>Drink Style</u></p>
                   </div>
 
                   <!-- Variety Tag(s) -->
-                  <div v-if="specified_listing['varietyTags'] && specified_listing['varietyTags'].length > 0"
-                    class="col-3 text-start ">
+                  <div
+                    v-if="specified_listing?.varietyTags?.length"
+                    class="text-start flex-item-min"
+                  >
                     <h6 class="mb-1">
-                      <b> {{ specified_listing['varietyTags'].join('; ') }} </b>
+                      <b>{{ specified_listing["varietyTags"].join('; ') }}</b>
                     </h6>
-                    <p class="mb-2"><u> Variety Tag(s) </u></p>
+                    <p class="mb-2"><u>Variety Tag(s)</u></p>
                   </div>
 
                   <!-- Age -->
-                  <div v-if="specified_listing['age']"
-                    class="col-1 text-start ">
-                    <div>
-                      <h6 class="mb-1">
-                        <b> {{ specified_listing["age"] }} </b>
-                      </h6>
-                      <p class="mb-2"><u>Years</u></p>
-                    </div>
+                  <div v-if="specified_listing?.age" class="text-start flex-item-small">
+                    <h6 class="mb-1">
+                      <b>{{ specified_listing["age"] }}</b>
+                    </h6>
+                    <p class="mb-2"><u>Years</u></p>
                   </div>
 
                   <!-- ABV -->
-                  <div v-if="specified_listing['abv']"
-                    class="col-1 text-start text-color-black">
-                    <h6 class=" mb-1">
-                      <b> {{ specified_listing["abv"] }}% </b>
+                  <div v-if="specified_listing?.abv" class="text-start flex-item-small">
+                    <h6 class="mb-1">
+                      <b>{{ specified_listing["abv"] }}%</b>
                     </h6>
-                    <p class="mb-2"><u> ABV </u></p>
+                    <p class="mb-2"><u>ABV</u></p>
                   </div>
+
                 </div>
+
 
               <!-- Avg Rating, % Recommend, % Drink Again -->
               <div class="row flex-start g-1 container pb-2">
@@ -927,7 +928,7 @@
             
             <div class="container p-2" >
               <!-- FOR USERS:  DRINK, BOOKMARK, ADD TO CELLAR BUTTONS-->
-                <div v-if="userType !== 'venue'" class="row justify-content-between m-0 pb-1 pt-2 text-white" style="background: linear-gradient(135deg,#007bff,#0056b3); border-bottom: 0.5px solid white;">
+                <div v-if="userType !== 'venue'" class="row justify-content-between m-0 pb-1 pt-2 text-white" style="border-radius: 10px 10px 0 0; ;background: linear-gradient(135deg,#007bff,#0056b3); border-bottom: 0.5px solid white;">
                   <div class="col-4 justify-content-center d-flex p-0">
                     <button 
                         v-if="showTastingNotesButton"
@@ -970,7 +971,7 @@
                   </div>
                 </div>
                 <!-- FOR VENUES:  ADD TO MENU AND ADD TO CELLAR BUTTONS-->
-                <div v-else-if="userType === 'venue' && userID !== 'defaultUser'" class="row justify-content-between m-0 pb-1 pt-2 text-white" style="background: linear-gradient(135deg,#007bff,#0056b3); border-bottom: 0.5px solid white;">
+                <div v-else-if="userType === 'venue' && userID !== 'defaultUser'" class="row justify-content-between m-0 pb-1 pt-2 text-white" style="border-radius: 10px 10px 0 0; ; background: linear-gradient(135deg,#007bff,#0056b3); border-bottom: 0.5px solid white;">
                   <div class="col-6 justify-content-center d-flex p-0">
                     <button
                       class="redbox-link py-2"
@@ -1073,7 +1074,7 @@
                     </button> 
                 </div>
                 <!-- SHARE -->
-                <div class="row justify-content-between m-0 p-0 pb-1 text-white" style="background: linear-gradient(135deg,#007bff,#0056b3);">
+                <div class="row justify-content-between m-0 p-0 pb-1 text-white" style="border-radius: 0 0 10px 10px ; background: linear-gradient(135deg,#007bff,#0056b3);">
                   <button class="redbox-link py-2" @click="shareListingLink">
                     <span v-if="!linkCopied">Share</span>
                     <span v-else style="color: #f0b258;"><i class="bi bi-check-circle me-1"></i>Link Copied!</span>
@@ -3594,7 +3595,7 @@
       <!-- where to buy & where to try & 88 bamboo's review -->
       <div class="col-3 mobile-view-hide ">
                         <!-- where to try -->
-                        <div class="row mb-3">
+                        <div class="row primary-square-green rounded px-2 py-3 mb-3">
                           <div class="text-start">
                             <!-- header text -->
                             <div class="d-flex justify-content-between align-items-center flex-start">
@@ -3635,7 +3636,7 @@
                                     We couldn't find any bars with this drink listed on their menu yet.
                                     <router-link
                                       to="/signup"
-                                      class="default-text-no-background fst-italic"
+                                      class="fst-italic text-white"
                                     >
                                       Sign up to get notified when a bar adds this drink to their menu!
                                     </router-link>
@@ -3714,7 +3715,7 @@
                           </div>
                         </div>
                         <!-- 88 bamboo's review -->
-                        <div class="row">
+                        <div class="row primary-square-green-outline px-2 py-3 mb-3">
                           <div class="text-start">
                             <!-- TZH added 'primary-square-green-outline'-->
                             <!-- header text -->
@@ -9191,6 +9192,23 @@ export default {
 
 <style scoped>
 
+    /* “col-3-ish” feel, but flexible and wrap-friendly */
+    .flex-item-min{
+      flex: 1 1 88px;     /* grow, shrink, min width */
+      max-width: 100%;
+    }
+
+    .flex-item-small{
+      flex: 1 1 80px;     /* grow, shrink, min width */
+      max-width: 100%;
+    }
+
+    /* if something is a long unbroken string, allow wrapping */
+    .wrap-anywhere{
+      overflow-wrap: anywhere;
+      word-break: break-word;
+    }
+
   /* Divider lines */
     .redbox-link {
       border: none;
@@ -9199,6 +9217,7 @@ export default {
       background-color: inherit;
     }
 
+    
 
   .star-rating {
   display: flex;
