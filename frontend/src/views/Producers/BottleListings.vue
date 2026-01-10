@@ -1009,6 +1009,9 @@
                   </button>
                   <button v-else class="redbox-link pt-2 pb-0">
                     You Rated
+                    <span v-if="userCurrentRating" class="ms-2 fw-bold" style="color: #f0b258;">
+                      {{ userCurrentRating }}/10
+                    </span>
                   </button>
                   <!-- Star Rating -->
                   <div 
@@ -5049,15 +5052,11 @@ export default {
         return this.inEdit;
       }
       
-      // For variant drinks with "Show All" selected - always allow new submissions
-      if (this.selectedVintage === 'Show All') {
-        return false;
-      }
-      
-      // For variant drinks with specific vintage selected, check if already reviewed
+      // For variant drinks, check if user has any review matching the selected vintage
+      // When "Show All" is selected, check if user has ANY review for this listing
       const userReview = this.reviews.find(review => 
         review.userID === parseInt(this.userID) && 
-        review.variant === parseInt(this.selectedVintage)
+        (this.selectedVintage === 'Show All' || review.variant === parseInt(this.selectedVintage))
       );
       
       return !!userReview;
@@ -6452,7 +6451,7 @@ export default {
 
     getLoggedUserReview() {
       const specificReview = this.filteredReviews.filter((review) => {
-        return review["userID"] == this.userID;
+        return review.userID === parseInt(this.userID);
       });
       if (specificReview.length != 0) {
         this.inEdit = true;
