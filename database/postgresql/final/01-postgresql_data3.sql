@@ -1997,3 +1997,111 @@ ON "venueMenuItemSnapshots"("versionSnapshotId");
 CREATE INDEX idx_menu_item_snapshots_section 
 ON "venueMenuItemSnapshots"("sectionSnapshotId");
 
+-- ========= "assemblies" =========
+CREATE TABLE "assemblies" (
+    "id" SERIAL PRIMARY KEY,
+    "assemblyName" VARCHAR(255) NOT NULL,
+    "assemblyDesc" TEXT,
+    "drinkTypes" TEXT[] DEFAULT NULL, -- Optional array of drink types (e.g., ARRAY['Wine', 'Whisky'])
+    "isInviteOnly" BOOLEAN DEFAULT FALSE,
+    "assemblyBanner" TEXT,
+    "dateCreated" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    "totalMembers" INTEGER DEFAULT 0,
+    "totalPosts" INTEGER DEFAULT 0,
+    "createdByID" INTEGER NOT NULL, -- [!] "producers" or "venues" or "users" id in their respective tables
+    "createdByType" VARCHAR(255) NOT NULL -- 'user', 'producer', or 'venue'
+);
+
+-- ========= "assemblyMembers" =========
+CREATE TABLE "assemblyMembers" (
+    "id" SERIAL PRIMARY KEY,
+    "assemblyID" INTEGER REFERENCES "assemblies"("id") ON DELETE CASCADE,
+    "userID" INTEGER NOT NULL,
+    "userType" VARCHAR(255) NOT NULL, -- 'user', 'producer', or 'venue'
+    "joinDate" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    "isAdmin" BOOLEAN DEFAULT FALSE
+);
+
+-- ========= "assemblyPosts" =========
+CREATE TABLE "assemblyPosts" (
+    "id" SERIAL PRIMARY KEY,
+    "assemblyID" INTEGER REFERENCES "assemblies"("id") ON DELETE CASCADE,
+    "postTitle" VARCHAR(500) NOT NULL,
+    "postContent" TEXT,
+    "postPhotos" TEXT[], -- s3 URLs array
+    "listingIDs" INTEGER[], -- Array of listing IDs that can be linked to this post
+    "isPinned" BOOLEAN DEFAULT FALSE, -- Whether the post is pinned to the top
+    "postDate" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    "editedAt" TIMESTAMP DEFAULT NULL, -- Timestamp when post was last edited (null if never edited)
+    "posterID" INTEGER REFERENCES "assemblyMembers"("id") ON DELETE SET NULL
+    -- TODO: Add "mentionedUserIDs" INTEGER[] for @mention support in post content
+);
+
+-- ========= "assemblyPostsLikes" =========
+CREATE TABLE "assemblyPostsLikes" (
+    "id" SERIAL PRIMARY KEY,
+    "assemblyID" INTEGER REFERENCES "assemblies"("id") ON DELETE CASCADE,
+    "postID" INTEGER REFERENCES "assemblyPosts"("id") ON DELETE CASCADE,
+    "memberID" INTEGER REFERENCES "assemblyMembers"("id") ON DELETE SET NULL,
+    "likedAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- ========= "assemblyPostsDislikes" =========
+CREATE TABLE "assemblyPostsDislikes" (
+    "id" SERIAL PRIMARY KEY,
+    "assemblyID" INTEGER REFERENCES "assemblies"("id") ON DELETE CASCADE,
+    "postID" INTEGER REFERENCES "assemblyPosts"("id") ON DELETE CASCADE,
+    "memberID" INTEGER REFERENCES "assemblyMembers"("id") ON DELETE SET NULL,
+    "dislikedAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- ========= "assemblyPostComments" =========
+CREATE TABLE "assemblyPostComments" (
+    "id" SERIAL PRIMARY KEY,
+    "postID" INTEGER REFERENCES "assemblyPosts"("id") ON DELETE CASCADE,
+    "parentCommentID" INTEGER REFERENCES "assemblyPostComments"("id") ON DELETE CASCADE, -- For nested replies (1 level only)
+    "commentContent" TEXT,
+    "commentPhotos" TEXT[], -- s3 URLs array (not used for now, but kept for future)
+    "commentDate" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    "commenterID" INTEGER REFERENCES "assemblyMembers"("id") ON DELETE SET NULL
+    -- TODO: Add "mentionedUserIDs" INTEGER[] for @mention support in comments
+    -- TODO: Add "replyToUsername" VARCHAR(255) for tracking who the reply is addressing (for @username prepend)
+);
+
+-- ========= "assemblyPostCommentsLikes" =========
+CREATE TABLE "assemblyPostCommentsLikes" (
+    "id" SERIAL PRIMARY KEY,
+    "postID" INTEGER REFERENCES "assemblyPosts"("id") ON DELETE CASCADE,
+    "commentID" INTEGER REFERENCES "assemblyPostComments"("id") ON DELETE CASCADE,
+    "memberID" INTEGER REFERENCES "assemblyMembers"("id") ON DELETE SET NULL,
+    "likedAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- ========= "assemblyPostCommentsDislikes" =========
+CREATE TABLE "assemblyPostCommentsDislikes" (
+    "id" SERIAL PRIMARY KEY,
+    "postID" INTEGER REFERENCES "assemblyPosts"("id") ON DELETE CASCADE,
+    "commentID" INTEGER REFERENCES "assemblyPostComments"("id") ON DELETE CASCADE,
+    "memberID" INTEGER REFERENCES "assemblyMembers"("id") ON DELETE SET NULL,
+    "dislikedAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- ========= "assemblyInvites" =========
+CREATE TABLE "assemblyInvites" (
+    "id" SERIAL PRIMARY KEY,
+    "assemblyID" INTEGER REFERENCES "assemblies"("id") ON DELETE CASCADE,
+    "inviteeUserID" INTEGER NOT NULL, -- [!] "producers" or "venues" or "users" id in their respective tables
+    "inviteeUserType" VARCHAR(255) NOT NULL, -- 'user', 'producer', or 'venue'
+    "inviterMemberID" INTEGER REFERENCES "assemblyMembers"("id") ON DELETE SET NULL,
+    "inviteDate" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- ========= "assemblyRequests" =========
+CREATE TABLE "assemblyRequests" (
+    "id" SERIAL PRIMARY KEY,
+    "assemblyID" INTEGER REFERENCES "assemblies"("id") ON DELETE CASCADE,
+    "userID" INTEGER NOT NULL, -- [!] "producers" or "venues" or "users" id in their respective tables
+    "userType" VARCHAR(255) NOT NULL, -- 'user', 'producer', or 'venue'
+    "requestDate" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    "status" VARCHAR(50) DEFAULT 'pending' -- 'pending', 'approved', 'rejected'
+);

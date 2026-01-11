@@ -287,7 +287,9 @@
                   <li>
                     <router-link :to="'/best-of'" class="dropdown-item">Best Of</router-link>
                   </li>
-
+                  <li>
+                    <router-link :to="'/assemblies'" class="dropdown-item">Assemblies</router-link>
+                  </li>
                   <li>
                     <span @click="externalURL('https://88bamboo.co/')" class="dropdown-item">Latest News</span>
                   </li>
@@ -385,7 +387,9 @@
                     style="text-decoration: none; font-weight:normal">Trending Drinks</router-link></li>
                 <li v-show="showExplore" class="text-start"><router-link to="/best-of"
                     style="text-decoration: none; font-weight:normal">Best Of</router-link></li>
-                <li v-show="showExplore" class="text-start"><router-link to="/best-of"
+                <li v-show="showExplore" class="text-start"><router-link to="/assemblies"
+                    style="text-decoration: none; font-weight:normal">Assemblies</router-link></li>
+                <li v-show="showExplore" class="text-start"><router-link to="/latest-news"
                     style="text-decoration: none; font-weight:normal">Latest News</router-link></li>
                 
 
@@ -563,6 +567,11 @@
         <router-link :to="'/best-of'">
           <button class="btn primary-btn border-0 fw-bold" type="button">
             Best Of
+          </button>
+        </router-link>
+        <router-link :to="'/assemblies'">
+          <button class="btn primary-btn border-0 fw-bold" type="button">
+            Assemblies
           </button>
         </router-link>
 
