@@ -1508,9 +1508,6 @@ export default {
   text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
 }
 
-.hero-desc {
-  max-width: 600px;
-}
 
 .drink-tags .badge {
   font-size: 0.75rem;
