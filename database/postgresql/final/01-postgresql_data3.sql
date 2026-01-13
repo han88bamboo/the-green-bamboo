@@ -2113,14 +2113,11 @@ CREATE TABLE "topics" (
     "id" SERIAL PRIMARY KEY,
     "topicName" VARCHAR(255) NOT NULL,
     "topicDesc" TEXT,
-    "drinkTypes" TEXT[] DEFAULT NULL, -- Optional array of drink types (e.g., ARRAY['Wine', 'Whisky'])
-    "isInviteOnly" BOOLEAN DEFAULT FALSE,
-    "topicBanner" TEXT,
+    "drinkTypes" TEXT[] DEFAULT NULL, -- Optional array of drink types (e.g., ARRAY['Wine', 'Whisky']) for tagging relevant drink categories
+    "topicBanner" TEXT, -- S3 URL for topic banner image
     "dateCreated" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    "totalMembers" INTEGER DEFAULT 0, --not to use
-    "totalPosts" INTEGER DEFAULT 0, --not to use
     "createdByID" INTEGER, -- [!] by default it would be admin and thus left empty, otherwise "producers" or "venues" or "users" id in their respective tables
-    "createdByType" VARCHAR(255) DEFAULT 'admin' -- by default it would be admin otherwise it would be, 'user', 'producer', or 'venue'
+    "createdByType" VARCHAR(255) DEFAULT 'admin' -- by default it would be admin otherwise it would be 'user', 'producer', or 'venue'
 );
 
 -- ========= assemblyMembers --> topicSubscribers -people who subscribe to a certain topic =========
@@ -2161,23 +2158,13 @@ CREATE TABLE "newsletterPatrons" (
     "nextBillingDate" TIMESTAMP
 );
 
--- ========= storyPatrons == table for patrons of individual stories who will have access to those stories=========
-CREATE TABLE "storyPatrons" (
-    "id" SERIAL PRIMARY KEY,
-    "storyID" INTEGER REFERENCES "stories"("id") ON DELETE CASCADE,
-    "patronUserID" INTEGER NOT NULL, -- user/producer/venue id
-    "patronUserType" VARCHAR(255) NOT NULL, -- 'user', 'producer', or 'venue'
-    "patronageDate" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    "paymentAmount" DECIMAL(10, 2),
-    "stripePaymentIntentId" VARCHAR(255) -- Stripe payment intent ID
-);
-
+-- ========= storyHashtags == reference table for hashtag normalization/search =========
 CREATE TABLE "storyHashtags" (
     "id" SERIAL PRIMARY KEY,
     "hashtag" VARCHAR(255) UNIQUE NOT NULL -- Normalized hashtag (e.g., "wine")
-    -- No usageCount column (as per requirements)
 );
 
+-- ========= creatorPayouts == tracks Stripe payouts to content creators =========
 CREATE TABLE "creatorPayouts" (
     "id" SERIAL PRIMARY KEY,
     "creatorUserID" INTEGER NOT NULL, -- user/producer/venue id
@@ -2189,43 +2176,43 @@ CREATE TABLE "creatorPayouts" (
     "payoutPeriodStart" TIMESTAMP,
     "payoutPeriodEnd" TIMESTAMP
 );
+
 -- ========= assemblyPosts --> stories  =========
 CREATE TABLE "stories" (
     "id" SERIAL PRIMARY KEY,
-    "topicID" INTEGER REFERENCES "topics"("id") ON DELETE SET NULL, -- take note that stories can exist without being linked to a topic
+    "topicID" INTEGER REFERENCES "topics"("id") ON DELETE SET NULL, -- stories can exist without being linked to a topic
     "newsletterID" INTEGER REFERENCES "newsletters"("id") ON DELETE SET NULL, -- Link to newsletter
     "storyTitle" VARCHAR(500) NOT NULL,
-    "storyContent" TEXT,
-    "storyPhotos" TEXT[], -- s3 URLs array
-    "listingIDs" INTEGER[], -- Array of listing IDs that can be linked to this post
-    "isPinned" BOOLEAN DEFAULT FALSE, -- Whether the post is pinned to the top
+    "storyContent" TEXT, -- Rich HTML content
+    "storyPhotos" TEXT[], -- S3 URLs array
+    "listingIDs" INTEGER[], -- Array of listing IDs (drinks) that can be linked to this story
     "publishingDate" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    "editedAt" TIMESTAMP DEFAULT NULL, -- Timestamp when post was last edited (null if never edited)
-    "freeOrPaid" VARCHAR(50) DEFAULT 'free', -- 'free' or 'paid'
+    "editedAt" TIMESTAMP DEFAULT NULL, -- Timestamp when story was last edited (null if never edited)
+    "freeOrPaid" VARCHAR(50) DEFAULT 'free' CHECK ("freeOrPaid" IN ('free', 'paid')), -- Must be 'free' or 'paid'
     "hashtags" VARCHAR(255)[], -- array of hashtags associated with the story
-    "creatorUserID" INTEGER NOT NULL, --"producers" or "venues" or "users" id in their respective tables -- instead of this "posterID" INTEGER REFERENCES "assemblyMembers"("id") ON DELETE SET NULL
-    "creatorUserType" VARCHAR(255) NOT NULL, -- 'user', 'producer', or 'venue' 
+    "creatorUserID" INTEGER NOT NULL, -- user/producer/venue id (validated at app level)
+    "creatorUserType" VARCHAR(255) NOT NULL -- 'user', 'producer', or 'venue'
     -- TODO: Add "mentionedUserIDs" INTEGER[] for @mention support in post content
+);
+
+-- ========= storyPatrons == table for patrons of individual stories who pay one-time to access that story =========
+CREATE TABLE "storyPatrons" (
+    "id" SERIAL PRIMARY KEY,
+    "storyID" INTEGER REFERENCES "stories"("id") ON DELETE CASCADE,
+    "patronUserID" INTEGER NOT NULL, -- user/producer/venue id
+    "patronUserType" VARCHAR(255) NOT NULL, -- 'user', 'producer', or 'venue'
+    "patronageDate" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    "paymentAmount" DECIMAL(10, 2), -- Amount paid in USD
+    "stripePaymentIntentId" VARCHAR(255) -- Stripe payment intent ID
 );
 
 -- ========= assemblyPostsLikes --> storiesLikes =========
 CREATE TABLE "storiesLikes" (
     "id" SERIAL PRIMARY KEY,
-    --"topicID" INTEGER REFERENCES "topics"("id") ON DELETE CASCADE, actually unnecessary as storyID can lead us to topicID
     "storyID" INTEGER REFERENCES "stories"("id") ON DELETE CASCADE,
-    "userID" INTEGER NOT NULL, --"producers" or "venues" or "users" id in their respective tables  --instead of using memberID we will directly refer to users because all users, not just members of a specific topic, can interact - "memberID" INTEGER REFERENCES "assemblyMembers"("id") ON DELETE SET NULL,
-    "userType" VARCHAR(255) NOT NULL, -- 'user', 'producer', or 'venue' 
+    "userID" INTEGER NOT NULL, -- user/producer/venue id
+    "userType" VARCHAR(255) NOT NULL, -- 'user', 'producer', or 'venue'
     "likedAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
--- ========= assemblyPostsDislikes --> storiesDislikes =========
-CREATE TABLE "storiesDislikes" (
-    "id" SERIAL PRIMARY KEY,
-    --"topicID" INTEGER REFERENCES "topics"("id") ON DELETE CASCADE, actually unnecessary as storyID can lead us to topicID
-    "storyID" INTEGER REFERENCES "stories"("id") ON DELETE CASCADE,
-    "userID" INTEGER NOT NULL, --"producers" or "venues" or "users" id in their respective tables  --instead of using memberID we will directly refer to users because all users, not just members of a specific topic, can interact - "memberID" INTEGER REFERENCES "assemblyMembers"("id") ON DELETE SET NULL,
-    "userType" VARCHAR(255) NOT NULL, -- 'user', 'producer', or 'venue' 
-    "dislikedAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- ========= assemblyPostComments --> storyComments =========
@@ -2234,34 +2221,31 @@ CREATE TABLE "storyComments" (
     "storyID" INTEGER REFERENCES "stories"("id") ON DELETE CASCADE,
     "parentCommentID" INTEGER REFERENCES "storyComments"("id") ON DELETE CASCADE, -- For nested replies (1 level only)
     "commentContent" TEXT,
-    "commentPhotos" TEXT[], -- s3 URLs array (not used for now, but kept for future)
+    -- "commentPhotos" TEXT[], -- S3 URLs array (not used for now, but kept for future)
     "commentDate" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    "userID" INTEGER NOT NULL, --"producers" or "venues" or "users" id in their respective tables  --instead of using memberID we will directly refer to users because all users, not just members of a specific topic, can interact - --instead of "commenterID" INTEGER REFERENCES "assemblyMembers"("id") ON DELETE SET NULL
-    "userType" VARCHAR(255) NOT NULL, -- 'user', 'producer', or 'venue' 
+    "userID" INTEGER NOT NULL, -- user/producer/venue id
+    "userType" VARCHAR(255) NOT NULL -- 'user', 'producer', or 'venue'
     -- TODO: Add "mentionedUserIDs" INTEGER[] for @mention support in comments
     -- TODO: Add "replyToUsername" VARCHAR(255) for tracking who the reply is addressing (for @username prepend)
 );
 
--- ========= assemblyPostCommentsLikes --> topicStoryCommentsLikes  =========
-CREATE TABLE "topicStoryCommentsLikes" (
+-- ========= assemblyPostCommentsLikes --> storyCommentsLikes =========
+CREATE TABLE "storyCommentsLikes" (
     "id" SERIAL PRIMARY KEY,
-    -- "storyID" INTEGER REFERENCES "stories"("id") ON DELETE CASCADE, actually unnecessary as commentID can lead us to storyID
-    "commentID" INTEGER REFERENCES "topicStoryComments"("id") ON DELETE CASCADE,
-    "userID" INTEGER NOT NULL, --"producers" or "venues" or "users" id in their respective tables  --instead of using memberID we will directly refer to users because all users, not just members of a specific topic, can interact -- instead of "memberID" INTEGER REFERENCES "assemblyMembers"("id") ON DELETE SET NULL,
-    "userType" VARCHAR(255) NOT NULL, -- 'user', 'producer', or 'venue' 
+    "commentID" INTEGER REFERENCES "storyComments"("id") ON DELETE CASCADE,
+    "userID" INTEGER NOT NULL, -- user/producer/venue id
+    "userType" VARCHAR(255) NOT NULL, -- 'user', 'producer', or 'venue'
     "likedAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- ========= assemblyPostCommentsDislikes --> topicStoryCommentsDislikes =========
-CREATE TABLE "topicStoryCommentsDislikes" (
+-- ========= assemblyPostCommentsDislikes --> storyCommentsDislikes =========
+CREATE TABLE "storyCommentsDislikes" (
     "id" SERIAL PRIMARY KEY,
-    -- "storyID" INTEGER REFERENCES "stories"("id") ON DELETE CASCADE, actually unnecessary as commentID can lead us to storyID
-    "commentID" INTEGER REFERENCES "topicStoryComments"("id") ON DELETE CASCADE,
+    "commentID" INTEGER REFERENCES "storyComments"("id") ON DELETE CASCADE,
     "userID" INTEGER NOT NULL, --"producers" or "venues" or "users" id in their respective tables  --instead of using memberID we will directly refer to users because all users, not just members of a specific topic, can interact -- instead of "memberID" INTEGER REFERENCES "assemblyMembers"("id") ON DELETE SET NULL,
     "userType" VARCHAR(255) NOT NULL, -- 'user', 'producer', or 'venue' 
     "dislikedAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
-
 -- -- ========= assemblyInvites --> topicInvite - not necessary atm =========
 -- CREATE TABLE "topicInvites" (
 --     "id" SERIAL PRIMARY KEY,
