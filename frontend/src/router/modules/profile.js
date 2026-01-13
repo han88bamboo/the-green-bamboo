@@ -6,9 +6,9 @@ const routes = [
     component: () => import(/* webpackChunkName: "profile" */ "@/views/Users/UserProfileRefactor.vue"),
   },
   {
-    path: "/profile/user/:userID/:username/stories",
-    name: "userStories",
-    component: () => import(/* webpackChunkName: "profile" */ "@/views/Users/UserStories.vue"),
+    path: "/profile/user/:userID/:username/cellar-preview",
+    name: "userCellarPreview",
+    component: () => import(/* webpackChunkName: "profile" */ "@/views/Users/UserCellarPreview.vue"),
   },
   {
     path: "/profile/user/:userID/:username/activity",

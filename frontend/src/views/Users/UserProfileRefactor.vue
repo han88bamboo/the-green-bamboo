@@ -665,7 +665,7 @@
                   </router-link>
                   <router-link
                     v-else
-                    :to="`/profile/user/${displayUserID || userID}/${routeUsername || username}/stories`"
+                    :to="`/profile/user/${displayUserID || userID}/${routeUsername || username}/cellar-preview`"
                     class="text-end text-muted text-decoration-none mobile-rating-smaller-text-2"
                   >
                     VIEW ALL →
@@ -683,7 +683,7 @@
                   >
                    <div
                     class="pin-card h-100"
-                    @click="$router.push(`/profile/user/${displayUserID || userID}/${routeUsername || username}/stories`)"
+                    @click="$router.push(`/profile/user/${displayUserID || userID}/${routeUsername || username}/cellar-preview`)"
                     role="button"
                     tabindex="0"
                   >
@@ -729,7 +729,7 @@
                         <!-- Meta -->
                         <div class="pin-meta">
                           <router-link
-                            :to="`/profile/user/${displayUserID || userID}/${routeUsername || username}/stories`"
+                            :to="`/profile/user/${displayUserID || userID}/${routeUsername || username}/cellar-preview`"
                             class="text-decoration-underline"
                             style="color:black"
                           >

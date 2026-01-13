@@ -95,7 +95,7 @@ export default {
       const basePath = `/profile/user/${this.userID}/${this.username}`;
       return path === basePath || 
              (path.startsWith(basePath) && 
-              !path.includes('/stories') &&
+              !path.includes('/cellar-preview') &&
               !path.includes('/allreviews') && 
               !path.includes('/activity') && 
               !path.includes('/lists') && 
@@ -105,7 +105,7 @@ export default {
     cellarRoute() {
     return this.ownProfile
       ? `/my-cellar/user/${this.userID}/${this.username}`
-      : `/profile/user/${this.userID}/${this.username}/stories`
+      : `/profile/user/${this.userID}/${this.username}/cellar-preview`
     }
   }
 };

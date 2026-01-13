@@ -310,7 +310,7 @@ import UserProfileNavbar from '@/components/UserProfileNavbar.vue';
 import { useToast } from "vue-toastification";
 
 export default {
-  name: "UserStories",
+  name: "UserCellarPreview",
   components: {
     NavBar,
     LoadingWithFunFact,
