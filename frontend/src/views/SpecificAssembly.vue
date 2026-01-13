@@ -56,7 +56,8 @@
               </button>
               <button 
                 class="btn btn-outline-light" 
-                @click="showLeaveConfirmModal"
+                data-bs-toggle="modal"
+                data-bs-target="#leaveConfirmModal"
                 title="Leave Assembly"
               >
                 <i class="bi bi-box-arrow-right"></i>
@@ -92,11 +93,12 @@
               type="text" 
               class="form-control" 
               placeholder="Create a post..."
-              @click="openCreatePostModal"
+              data-bs-toggle="modal"
+              data-bs-target="#createPostModal"
               readonly
               style="cursor: pointer;"
             />
-            <button class="btn btn-outline-secondary" @click="openCreatePostModal">
+            <button class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#createPostModal">
               <i class="bi bi-image"></i>
             </button>
           </div>
@@ -139,8 +141,6 @@
               :key="post.id"
               class="post-card card mb-3 shadow-sm"
               :class="{ 'border-warning': post.isPinned }"
-              @click="viewPost(post)"
-              style="cursor: pointer;"
             >
               <!-- Pinned Badge -->
               <div v-if="post.isPinned" class="pinned-badge">
@@ -189,8 +189,11 @@
                       <span>{{ formatTimeAgo(post.postDate) }}</span>
                     </div>
 
-                    <!-- Post Title -->
-                    <h5 class="text-start post-title fw-bold mb-2">{{ post.postTitle }}</h5>
+                    <!-- Post Title (clickable to navigate) -->
+                    <h5 
+                      class="text-start post-title fw-bold mb-2 clickable-title"
+                      @click="viewPost(post)"
+                    >{{ post.postTitle }}</h5>
 
                     <!-- Post Content Preview (truncated) -->
                     <p v-if="post.postContentPreview" class="text-start post-preview text-muted mb-2">
@@ -211,25 +214,54 @@
                             v-if="listing.photo" 
                             :src="listing.photo" 
                             class="me-1 rounded"
-                            style="width: 16px; height: 16px; object-fit: cover;"
+                            style="width: 40px; height: 40px; object-fit: cover;"
                           />
                           <i v-else class="bi bi-cup-straw me-1"></i>
-                          {{ truncateText(listing.listingName, 20) }}
+                          {{ truncateText(listing.listingName, 50) }}
                         </span>
                       </div>
                     </div>
 
-                    <!-- Post Image Preview (if exists) -->
-                    <div v-if="post.postPhotos && post.postPhotos.length > 0" class="post-image-preview mb-2">
-                      <img 
-                        :src="post.postPhotos[0]" 
-                        :alt="post.postTitle"
-                        class="img-fluid rounded"
-                        style="max-height: 300px; object-fit: cover;"
-                      />
-                      <span v-if="post.postPhotos.length > 1" class="badge bg-dark ms-2">
-                        +{{ post.postPhotos.length - 1 }} more
-                      </span>
+                    <!-- Post Image Preview (Pinterest-style mosaic, clickable to navigate) -->
+                    <div 
+                      v-if="post.postPhotos && post.postPhotos.length > 0" 
+                      class="post-image-mosaic mb-2"
+                      @click="viewPost(post)"
+                    >
+                      <!-- Single Image -->
+                      <div v-if="post.postPhotos.length === 1" class="mosaic-single">
+                        <img 
+                          :src="post.postPhotos[0]" 
+                          :alt="post.postTitle"
+                          class="mosaic-img rounded"
+                        />
+                      </div>
+                      
+                      <!-- 2 Images: Side by side in Pinterest layout -->
+                      <div v-else-if="post.postPhotos.length === 2" class="mosaic-grid mosaic-2">
+                        <div class="mosaic-cell mosaic-main">
+                          <img :src="post.postPhotos[0]" :alt="post.postTitle" class="mosaic-img" />
+                        </div>
+                        <div class="mosaic-cell mosaic-side">
+                          <img :src="post.postPhotos[1]" :alt="post.postTitle" class="mosaic-img" />
+                        </div>
+                      </div>
+                      
+                      <!-- 3+ Images: Pinterest layout with +X more badge -->
+                      <div v-else class="mosaic-grid mosaic-3">
+                        <div class="mosaic-cell mosaic-main">
+                          <img :src="post.postPhotos[0]" :alt="post.postTitle" class="mosaic-img" />
+                        </div>
+                        <div class="mosaic-cell mosaic-side1">
+                          <img :src="post.postPhotos[1]" :alt="post.postTitle" class="mosaic-img" />
+                        </div>
+                        <div class="mosaic-cell mosaic-side2">
+                          <img :src="post.postPhotos[2]" :alt="post.postTitle" class="mosaic-img" />
+                          <div v-if="post.postPhotos.length > 3" class="mosaic-more-overlay">
+                            <span class="mosaic-more-badge">+{{ post.postPhotos.length - 3 }} more</span>
+                          </div>
+                        </div>
+                      </div>
                     </div>
 
                     <!-- Post Actions -->
@@ -242,22 +274,34 @@
                         <i class="bi bi-share me-1"></i>
                         Share
                       </span>
-                      <!-- Admin Actions -->
-                      <div v-if="isAdmin" class="dropdown ms-auto" @click.stop>
-                        <button class="btn btn-sm btn-link text-muted" data-bs-toggle="dropdown">
-                          <i class="bi bi-three-dots"></i>
+                      <!-- Post Actions Menu (Admin or Post Author) -->
+                      <div v-if="isAdmin || isPostAuthor(post)" class="dropdown ms-auto">
+                        <button class="btn p-0 border-0 bg-transparent" type="button" data-bs-toggle="dropdown"
+                          aria-expanded="false">
+                          <i class="bi bi-three-dots text-muted"></i>
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end">
+                          <!-- Edit (for author or admin) -->
                           <li>
-                            <a class="dropdown-item" href="#" @click.prevent="togglePinPost(post)">
+                            <button class="dropdown-item" @click="goToEditPost(post)">
+                              <i class="bi bi-pencil"></i> Edit Post
+                            </button>
+                          </li>
+                          <!-- Pin/Unpin (admin only) -->
+                          <li v-if="isAdmin">
+                            <button class="dropdown-item" @click="togglePinPost(post)">
                               <i class="bi" :class="post.isPinned ? 'bi-pin-angle' : 'bi-pin-fill'"></i>
                               {{ post.isPinned ? 'Unpin Post' : 'Pin Post' }}
-                            </a>
+                            </button>
+                          </li>
+                          <!-- Delete (admin or author) -->
+                          <li>
+                            <hr class="dropdown-divider">
                           </li>
                           <li>
-                            <a class="dropdown-item text-danger" href="#" @click.prevent="confirmDeletePost(post)">
+                            <button class="dropdown-item text-danger" @click="setPostToDelete(post)" data-bs-toggle="modal" data-bs-target="#deletePostModal">
                               <i class="bi bi-trash"></i> Delete Post
-                            </a>
+                            </button>
                           </li>
                         </ul>
                       </div>
@@ -346,7 +390,8 @@
             <button 
               v-if="isMember"
               class="btn btn-warning w-100 mt-3 fw-bold"
-              @click="openCreatePostModal"
+              data-bs-toggle="modal"
+              data-bs-target="#createPostModal"
             >
               Create Post
             </button>
@@ -686,7 +731,7 @@ import NavBar from "@/components/NavBar.vue";
 import InlineRichTextEditor from "@/components/InlineRichTextEditor.vue";
 import AutocompleteSearchSelector from "@/components/AutocompleteSearchSelector.vue";
 import { useToast } from "vue-toastification";
-import { Modal } from "bootstrap";
+// Use global bootstrap object from bundle instead of ESM import to avoid conflicts
 
 export default {
   name: "SpecificAssembly",
@@ -1005,11 +1050,6 @@ export default {
       }
     },
 
-    showLeaveConfirmModal() {
-      const modal = new Modal(document.getElementById('leaveConfirmModal'));
-      modal.show();
-    },
-
     async leaveAssembly() {
       this.leaving = true;
       const toast = useToast();
@@ -1033,8 +1073,8 @@ export default {
           this.assemblyInfo.totalMembers--;
           toast.success('You have left the assembly.');
           
-          // Close modal
-          const modal = Modal.getInstance(document.getElementById('leaveConfirmModal'));
+          // Close modal using global bootstrap object
+          const modal = window.bootstrap.Modal.getInstance(document.getElementById('leaveConfirmModal'));
           if (modal) modal.hide();
         } else {
           toast.error(response.data.message || 'Failed to leave assembly.');
@@ -1046,11 +1086,6 @@ export default {
       } finally {
         this.leaving = false;
       }
-    },
-
-    openCreatePostModal() {
-      const modal = new Modal(document.getElementById('createPostModal'));
-      modal.show();
     },
 
     onPostContentChange(content) {
@@ -1150,8 +1185,8 @@ export default {
           // Clear draft
           this.clearDraft();
           
-          // Close modal
-          const modal = Modal.getInstance(document.getElementById('createPostModal'));
+          // Close modal using global bootstrap object
+          const modal = window.bootstrap.Modal.getInstance(document.getElementById('createPostModal'));
           if (modal) modal.hide();
           
           // Reload posts
@@ -1232,10 +1267,8 @@ export default {
       }
     },
 
-    confirmDeletePost(post) {
+    setPostToDelete(post) {
       this.postToDelete = post;
-      const modal = new Modal(document.getElementById('deletePostModal'));
-      modal.show();
     },
 
     async deletePost() {
@@ -1261,8 +1294,8 @@ export default {
           this.assemblyInfo.totalPosts--;
           toast.success('Post deleted successfully.');
           
-          // Close modal
-          const modal = Modal.getInstance(document.getElementById('deletePostModal'));
+          // Close modal using global bootstrap object
+          const modal = window.bootstrap.Modal.getInstance(document.getElementById('deletePostModal'));
           if (modal) modal.hide();
           
           this.postToDelete = null;
@@ -1327,6 +1360,30 @@ export default {
           postTitle: postTitle
         }
       });
+    },
+
+    goToEditPost(post) {
+      // Navigate to the specific post page where editing can happen
+      const postTitle = this.normalizeForUrl(post.postTitle || 'post');
+      this.$router.push({
+        name: 'specificAssemblyPost',
+        params: {
+          assemblyId: this.assemblyId,
+          assemblyName: this.assemblyName,
+          postId: post.id,
+          postTitle: postTitle
+        }
+      });
+    },
+
+    isPostAuthor(post) {
+      // Check if current user is the author of this post
+      if (!post.posterInfo || this.userID === 'defaultUser') return false;
+      
+      // Compare user ID and type with poster info
+      return post.posterInfo.id == this.userID && 
+             (post.posterInfo.userType === this.userType || 
+              (!post.posterInfo.userType && this.userType === 'user'));
     },
 
     goToUserProfile(userInfo) {
@@ -1583,9 +1640,10 @@ export default {
 .post-title {
   color: #212529;
   transition: color 0.15s ease-in-out;
+  cursor: pointer;
 }
 
-.post-card:hover .post-title {
+.post-title:hover {
   color: #0d6efd;
 }
 
@@ -1612,6 +1670,97 @@ export default {
 
 .linked-listings .badge:hover {
   background-color: #e9ecef !important;
+}
+
+/* Post Image Mosaic */
+.post-image-mosaic {
+  cursor: pointer;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+/* Single image */
+.mosaic-single {
+  height: 300px;
+  overflow: hidden;
+}
+
+.mosaic-single .mosaic-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background: #f8f9fa;
+}
+
+/* Mosaic grid layouts */
+.mosaic-grid {
+  display: grid;
+  gap: 4px;
+  height: 300px;
+}
+
+.mosaic-2 {
+  grid-template-columns: 2fr 1fr;
+}
+
+.mosaic-3 {
+  grid-template-columns: 2fr 1fr;
+  grid-template-rows: 1fr 1fr;
+}
+
+.mosaic-cell {
+  overflow: hidden;
+  position: relative;
+}
+
+.mosaic-main {
+  grid-row: 1 / -1;
+}
+
+/* For 2-image layout */
+.mosaic-side {
+  grid-column: 2;
+  grid-row: 1 / -1;
+}
+
+/* For 3-image layout */
+.mosaic-side1 {
+  grid-column: 2;
+  grid-row: 1;
+}
+
+.mosaic-side2 {
+  grid-column: 2;
+  grid-row: 2;
+}
+
+.mosaic-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.2s ease;
+}
+
+.post-image-mosaic:hover .mosaic-img {
+  transform: scale(1.02);
+}
+
+.mosaic-more-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mosaic-more-badge {
+  color: white;
+  font-weight: bold;
+  font-size: 1.1rem;
 }
 
 /* Comments Preview */
@@ -1707,8 +1856,17 @@ export default {
     -webkit-line-clamp: 2;
   }
   
-  .post-image-preview img {
-    max-height: 200px;
+  /* Mobile mosaic adjustments */
+  .mosaic-single {
+    height: 450px;
+  }
+  
+  .mosaic-single .mosaic-img {
+    object-fit: cover;
+  }
+  
+  .mosaic-grid {
+    height: 450px;
   }
   
   .post-actions {
