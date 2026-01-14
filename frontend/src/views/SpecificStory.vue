@@ -103,10 +103,10 @@
             </div>
 
             <!-- Story Title -->
-            <h1 class="story-title fw-bold mb-3">{{ story.storyTitle }}</h1>
+            <h1 class="text-start story-title fw-bold mb-3">{{ story.storyTitle }}</h1>
 
             <!-- Author Info -->
-            <div class="author-info d-flex align-items-center mb-3">
+            <div class="text-start author-info d-flex mb-3">
               <img 
                 :src="story.creatorPhoto || defaultProfilePhoto" 
                 alt="Author"
@@ -154,7 +154,7 @@
 
           <!-- Story Content (Rich Text) -->
           <!-- TODO: Render rich text content properly (similar to how reviews are displayed) -->
-          <div class="story-content mb-4" v-html="story.storyContent">
+          <div class="text-start story-content mb-4" v-html="story.storyContent">
           </div>
 
           <!-- Additional Photos Gallery -->
@@ -571,7 +571,7 @@ export default {
 
     // Initialize delete modal
     this.$nextTick(() => {
-      if (this.$refs.deleteModal) {
+      if (this.$refs.deleteModal && window.bootstrap?.Modal) {
         this.deleteModalInstance = new window.bootstrap.Modal(this.$refs.deleteModal);
       }
     });
@@ -824,6 +824,10 @@ export default {
 
     confirmDelete() {
       if (this.deleteModalInstance) {
+        this.deleteModalInstance.show();
+      } else if (window.bootstrap?.Modal && this.$refs.deleteModal) {
+        // Lazy initialization if bootstrap wasn't available on mount
+        this.deleteModalInstance = new window.bootstrap.Modal(this.$refs.deleteModal);
         this.deleteModalInstance.show();
       }
     },
