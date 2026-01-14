@@ -1,5 +1,17 @@
 <template>
   <div class="inline-quill-editor-container" :class="{ 'floating-toolbar-mode': floatingToolbar }">
+    <!-- Plus Button (Medium-style, shows on empty lines) -->
+    <button 
+      v-if="floatingToolbar && showPlusButton && isDesktop"
+      type="button"
+      class="plus-button"
+      :style="plusButtonStyle"
+      @click="toggleToolbarFromPlus"
+      title="Insert content"
+    >
+      <i class="bi bi-plus-lg"></i>
+    </button>
+    
     <!-- Floating Toolbar (desktop only, when floatingToolbar prop is true) -->
     <div 
       v-if="floatingToolbar && showFloatingToolbar && isDesktop" 
@@ -89,6 +101,12 @@ export default {
         top: '0px',
         left: '0px'
       },
+      showPlusButton: false,
+      plusButtonStyle: {
+        top: '0px',
+        left: '0px'
+      },
+      currentLineIndex: 0,
       activeFormats: {
         bold: false,
         italic: false,
@@ -212,14 +230,105 @@ export default {
       if (!this.floatingToolbar || !this.isDesktop) return;
       
       if (range && range.length > 0) {
-        // Text is selected - show toolbar
+        // Text is selected - show toolbar, hide plus button
+        this.showPlusButton = false;
         this.updateActiveFormats();
         this.positionFloatingToolbar();
         this.showFloatingToolbar = true;
-      } else {
-        // No selection - hide toolbar
+      } else if (range) {
+        // Cursor position changed (no selection)
         this.showFloatingToolbar = false;
+        this.currentLineIndex = range.index;
+        this.checkAndShowPlusButton();
+      } else {
+        // No selection - hide both
+        this.showFloatingToolbar = false;
+        this.showPlusButton = false;
       }
+    },
+
+    checkAndShowPlusButton() {
+      if (!this.quill) return;
+      
+      const range = this.quill.getSelection();
+      if (!range) return;
+      
+      // Get the current line
+      const [line] = this.quill.getLine(range.index);
+      if (!line) return;
+      
+      // Check if line is empty (only contains newline or is blank)
+      const lineText = line.domNode.textContent || '';
+      const isEmpty = lineText.trim() === '' || lineText === '\n';
+      
+      if (isEmpty) {
+        // Position plus button at the current line
+        this.positionPlusButton(range.index);
+        this.showPlusButton = true;
+      } else {
+        this.showPlusButton = false;
+      }
+    },
+
+    positionPlusButton(index) {
+      if (!this.quill) return;
+      
+      const bounds = this.quill.getBounds(index);
+      const editorEl = this.$refs['editor-' + this.sectionId];
+      if (!editorEl) return;
+      
+      const editorRect = editorEl.getBoundingClientRect();
+      
+      // Position button in left margin
+      const top = editorRect.top + bounds.top + window.scrollY;
+      const left = editorRect.left - 50 + window.scrollX; // 50px left of editor
+      
+      this.plusButtonStyle = {
+        top: `${top}px`,
+        left: `${left}px`
+      };
+    },
+
+    toggleToolbarFromPlus() {
+      if (!this.quill) return;
+      
+      // Hide plus button
+      this.showPlusButton = false;
+      
+      // Focus the editor at current line
+      this.quill.setSelection(this.currentLineIndex, 0);
+      
+      // Show toolbar at the current line position
+      const bounds = this.quill.getBounds(this.currentLineIndex);
+      const editorEl = this.$refs['editor-' + this.sectionId];
+      if (!editorEl) return;
+      
+      const editorRect = editorEl.getBoundingClientRect();
+      
+      const toolbarWidth = 420;
+      const toolbarHeight = 40;
+      
+      let left = editorRect.left + bounds.left + (bounds.width / 2) - (toolbarWidth / 2);
+      let top = editorRect.top + bounds.top - toolbarHeight - 10 + window.scrollY;
+      
+      // Boundary detection
+      const padding = 10;
+      if (left < padding) left = padding;
+      if (left + toolbarWidth > window.innerWidth - padding) {
+        left = window.innerWidth - toolbarWidth - padding;
+      }
+      
+      if (top < padding + window.scrollY) {
+        top = editorRect.top + bounds.bottom + 10 + window.scrollY;
+      }
+      
+      this.floatingToolbarStyle = {
+        top: `${top}px`,
+        left: `${left}px`
+      };
+      
+      this.updateActiveFormats();
+      this.showFloatingToolbar = true;
     },
 
     updateActiveFormats() {
@@ -560,5 +669,38 @@ export default {
   height: 20px;
   background: rgba(255, 255, 255, 0.2);
   margin: 0 4px;
+}
+
+/* =====================================================================================
+   PLUS BUTTON (Medium-style, appears in left margin on empty lines)
+   ===================================================================================== */
+
+.plus-button {
+  position: fixed;
+  z-index: 1049;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 1px solid #ddd;
+  background: #fff;
+  color: #999;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.plus-button:hover {
+  border-color: #999;
+  color: #333;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.plus-button i {
+  font-size: 1.1rem;
+  font-weight: 600;
 }
 </style>

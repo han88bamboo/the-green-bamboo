@@ -69,6 +69,25 @@
             </small>
           </div>
 
+          <!-- Writing Guidance Panel -->
+          <div v-if="showGuidance" class="guidance-panel mb-3">
+            <button 
+              type="button" 
+              class="btn-close" 
+              @click="closeGuidance"
+              aria-label="Close guidance"
+            ></button>
+            <div class="guidance-content">
+              <h6 class="mb-2">
+                <i class="bi bi-info-circle me-2"></i>Writing Tips
+              </h6>
+              <ul class="small mb-0">
+                <li><strong>Select text</strong> or <strong>+ button</strong> to add formatting, subheaders, hyperlinks or images.</li>
+                <li>Your work auto-saves every 30 seconds.</li>
+              </ul>
+            </div>
+          </div>
+
           <!-- Title Input (H2 styled) -->
           <div class="title-wrapper mb-3">
             <input
@@ -409,6 +428,9 @@ export default {
       hasUnsavedChanges: false,
       draftStoryID: null,  // Track if we have a saved draft
       
+      // UI guidance
+      showGuidance: true,
+      
       // Default images
       defaultDrinkPhoto: "https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultDrinkImage.png?v=1750084739",
     };
@@ -461,6 +483,19 @@ export default {
     this.userType = accType || 'user';
     this.username = accUsername;
     this.checkingAuth = false;
+    
+    // Check if user dismissed guidance before
+    const guidanceDismissed = localStorage.getItem('createStoryGuidanceDismissed');
+    if (guidanceDismissed) {
+      const dismissedTime = parseInt(guidanceDismissed);
+      const sixHoursInMs = 6 * 60 * 60 * 1000;
+      const timeSinceDismissal = Date.now() - dismissedTime;
+      // Show guidance again if more than 6 hours have passed
+      this.showGuidance = timeSinceDismissal > sixHoursInMs;
+    } else {
+      // Never dismissed before, show guidance
+      this.showGuidance = true;
+    }
     
     // Load dropdown data
     await this.loadDropdownData();
@@ -816,6 +851,12 @@ export default {
     // Navigation
     // ==========================================
     
+    closeGuidance() {
+      this.showGuidance = false;
+      // Store current timestamp
+      localStorage.setItem('createStoryGuidanceDismissed', Date.now().toString());
+    },
+    
     goBack() {
       if (this.hasUnsavedChanges) {
         if (!confirm('You have unsaved changes. Are you sure you want to leave?')) {
@@ -920,6 +961,63 @@ export default {
 /* Auto-save Indicator */
 .autosave-indicator {
   min-height: 20px;
+}
+
+/* Writing Guidance Panel */
+.guidance-panel {
+  position: relative;
+  background: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  padding: 1rem 1.25rem;
+  animation: slideDown 0.3s ease;
+}
+
+.guidance-panel .btn-close {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  font-size: 0.75rem;
+  filter: invert(1) grayscale(100%) brightness(0) !important;
+  opacity: 0.7 !important;
+}
+
+.guidance-panel .btn-close:hover {
+  opacity: 1 !important;
+}
+
+.guidance-content h6 {
+  color: #495057;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+}
+
+.guidance-content ul {
+  list-style: none;
+  padding-left: 0;
+  margin-bottom: 0;
+}
+
+.guidance-content li {
+  padding: 0.25rem 0;
+  color: #6c757d;
+}
+
+.guidance-content li:before {
+  content: "→";
+  margin-right: 0.5rem;
+  color: #0d6efd;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* Settings Sidebar (Right) */
