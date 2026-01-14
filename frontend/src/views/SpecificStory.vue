@@ -1499,11 +1499,6 @@ export default {
       });
     },
 
-    // Legacy method - now redirects to inline edit
-    editStory() {
-      this.startEditStory();
-    },
-
     confirmDelete() {
       if (this.deleteModalInstance) {
         this.deleteModalInstance.show();

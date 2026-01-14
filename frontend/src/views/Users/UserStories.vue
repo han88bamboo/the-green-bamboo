@@ -1047,7 +1047,7 @@ export default {
 /* Story title */
 .story-title {
   color: #222;
-  font-size: 1.35rem;
+  font-size: 2rem;
   line-height: 1.3;
 }
 
