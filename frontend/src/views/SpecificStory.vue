@@ -199,7 +199,7 @@
                 :to="`/stories/topics/${story.topicID}/${slugify(story.topicName)}`"
                 class="badge bg-warning text-dark text-decoration-none me-2"
               >
-                <i class="bi bi-hash me-1"></i>{{ story.topicName }}
+                {{ story.topicName }}
               </router-link>
               <router-link 
                 v-if="story.newsletterID"

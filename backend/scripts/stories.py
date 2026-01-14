@@ -1742,11 +1742,11 @@ def get_newsletter_stories(newsletterID, offset):
 
 # -----------------------------------------------------------------------------------------
 # [GET] getUserNewsletters/<userID>/<userType>
-# Purpose: Get all newsletters created by a specific user (for dropdown in create story modal)
-# Used: UserStories.vue, SpecificStoryTopic.vue, SpecificStoryNewsletter.vue (create story modal)
+# Purpose: Get all newsletters created by a specific user with story counts
+# Used: UserStories.vue (newsletter sidebar), SpecificStoryTopic.vue, SpecificStoryNewsletter.vue
 # Input: userID, userType (path params)
 # Output:
-#   200 - List of user's newsletters (id, name)
+#   200 - List of user's newsletters (id, name, photo, storyCount)
 #   500 - Server error
 # -----------------------------------------------------------------------------------------
 @blueprint.route('/getUserNewsletters/<userID>/<userType>', methods=['GET'])
@@ -1760,11 +1760,21 @@ def get_user_newsletters(userID, userType):
             }), 400
         
         with db_manager.get_cursor() as cursor:
+            # Get newsletters with story count
             cursor.execute('''
-                SELECT "id", "newsletterName", "newsletterDisplayPhoto", "newsletterBanner"
-                FROM "newsletters"
-                WHERE "creatorUserID" = %s AND "creatorUserType" = %s
-                ORDER BY "dateCreated" DESC
+                SELECT 
+                    n."id", 
+                    n."newsletterName", 
+                    n."newsletterDisplayPhoto", 
+                    n."newsletterBanner",
+                    COUNT(s.id) as "storyCount"
+                FROM "newsletters" n
+                LEFT JOIN "stories" s ON s."newsletterID" = n."id" 
+                    AND s."publicationDate" IS NOT NULL 
+                    AND s."publicationDate" <= NOW()
+                WHERE n."creatorUserID" = %s AND n."creatorUserType" = %s
+                GROUP BY n."id", n."newsletterName", n."newsletterDisplayPhoto", n."newsletterBanner", n."dateCreated"
+                ORDER BY n."dateCreated" DESC
             ''', (userID, userType))
             
             newsletters = cursor.fetchall()

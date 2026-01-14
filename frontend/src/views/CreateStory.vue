@@ -268,7 +268,7 @@
               <!-- Show selected topic badge -->
               <div v-if="selectedTopicName" class="mt-2">
                 <span class="badge bg-warning text-dark">
-                  <i class="bi bi-hash me-1"></i>{{ selectedTopicName }}
+                  {{ selectedTopicName }}
                 </span>
               </div>
             </div>
@@ -508,6 +508,17 @@ export default {
       const matchedNewsletter = this.userNewsletters.find(n => n.id === newsletterIdInt);
       if (matchedNewsletter) {
         this.story.newsletterID = newsletterIdInt;
+      }
+    }
+    
+    // Check for pre-selected topic from query param (e.g., from SpecificStoryTopic.vue)
+    const preselectedTopicID = this.$route.query.topicID;
+    if (preselectedTopicID) {
+      const topicIdInt = parseInt(preselectedTopicID);
+      // Verify this topic exists in allTopics
+      const matchedTopic = this.allTopics.find(t => t.id === topicIdInt);
+      if (matchedTopic) {
+        this.story.topicID = topicIdInt;
       }
     }
     

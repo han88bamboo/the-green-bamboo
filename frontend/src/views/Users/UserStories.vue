@@ -75,32 +75,24 @@
   <div v-if="dataLoaded" class="userprofile">
     <div class="row col-11 mobile-spacer my-4 mobile-my-2">
       <div class="col-12 col-md-10 mx-auto px-2">
-        
-        <!-- Page Header and Actions -->
-        <div class="d-flex justify-content-between align-items-center mb-4">
-          <h5 class="fw-bold mobile-fs-6 mb-0">
-            <i class="bi bi-journal-richtext"></i> All Stories by @{{ displayUser.username }}
-          </h5>
-          
-          <!-- Action Buttons (only for own profile) -->
-          <div v-if="ownProfile" class="d-flex gap-2">
-            <!-- My Newsletters Button -->
-            <button 
-              class="btn btn-outline-primary fw-bold"
-              @click="openMyNewsletters"
-            >
-              <i class="bi bi-envelope-paper me-1"></i> My Newsletters
-            </button>
-            
-            <!-- Create Story Button -->
-            <button 
-              class="btn primary-btn-less-round-blue fw-bold"
-              @click="$router.push('/stories/create')"
-            >
-              <i class="bi bi-plus-circle me-1"></i> Create Story
-            </button>
-          </div>
-        </div>
+        <div class="row">
+          <!-- Stories Column (left) -->
+          <div class="col-12 col-lg-8 order-2 order-lg-1">
+            <!-- Page Header and Actions -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+              <h5 class="fw-bold mobile-fs-6 mb-0">
+                <i class="bi bi-journal-richtext"></i> All Stories by @{{ displayUser.username }}
+              </h5>
+              
+              <!-- Create Story Button (only for own profile) -->
+              <button 
+                v-if="ownProfile"
+                class="btn primary-btn-less-round-blue fw-bold"
+                @click="$router.push('/stories/create')"
+              >
+                <i class="bi bi-plus-circle me-1"></i> Create Story
+              </button>
+            </div>
 
         <!-- Stories List (Medium-style row layout) -->
         <div v-if="stories.length > 0" class="stories-list">
@@ -229,6 +221,83 @@
             </span>
             <span v-else>Load More Stories</span>
           </button>
+        </div>
+          </div>
+          
+          <!-- Newsletters Sidebar (right) -->
+          <div class="col-12 col-lg-4 order-1 order-lg-2 mb-4 mb-lg-0">
+            <!-- Header -->
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <h5 class="fw-bold mobile-fs-6 mb-0">
+                <i class="bi bi-envelope-paper"></i> Newsletters
+              </h5>
+              <router-link 
+                v-if="ownProfile"
+                to="/stories/newsletters/create" 
+                class="btn btn-primary fw-bold"
+              >
+                <i class="bi bi-plus-circle me-1"></i> Create
+              </router-link>
+            </div>
+            
+            <!-- Explanation Guide -->
+            <p class="small text-muted mb-3">
+              <i class="bi bi-info-circle me-1"></i>
+              Newsletters are curated collections of stories. Subscribe to get updates when new stories are published!
+            </p>
+            
+            <!-- Newsletters List -->
+            <div v-if="displayUserNewsletters.length > 0" class="newsletter-list">
+              <div 
+                v-for="newsletter in displayedNewsletters" 
+                :key="newsletter.id"
+                class="newsletter-item d-flex align-items-center gap-2 p-2 rounded mb-2"
+                @click="goToNewsletter(newsletter)"
+                role="button"
+              >
+                <!-- Newsletter Thumbnail -->
+                <img 
+                  :src="newsletter.newsletterDisplayPhoto || defaultProfilePhoto" 
+                  :alt="newsletter.newsletterName"
+                  class="newsletter-thumbnail rounded"
+                />
+                
+                <!-- Newsletter Info -->
+                <div class="flex-grow-1 min-width-0">
+                  <div class="fw-bold small text-truncate">{{ newsletter.newsletterName }}</div>
+                  <small class="text-muted">
+                    <i class="bi bi-journal-richtext me-1"></i>{{ newsletter.storyCount || 0 }} stories
+                  </small>
+                </div>
+                
+                <!-- Arrow -->
+                <i class="bi bi-chevron-right text-muted"></i>
+              </div>
+              
+              <!-- View All Link -->
+              <div v-if="displayUserNewsletters.length > 5" class="text-center mt-2">
+                <router-link 
+                  :to="`/stories/newsletters?creator=${displayUserID}`" 
+                  class="small text-primary text-decoration-none"
+                >
+                  View all {{ displayUserNewsletters.length }} newsletters <i class="bi bi-arrow-right"></i>
+                </router-link>
+              </div>
+            </div>
+            
+            <!-- Empty State -->
+            <div v-else class="text-center py-3">
+              <i class="bi bi-envelope-paper text-muted" style="font-size: 2rem;"></i>
+              <p class="small text-muted mt-2 mb-2">No newsletters yet</p>
+              <router-link 
+                v-if="ownProfile"
+                to="/stories/newsletters/create" 
+                class="btn btn-sm btn-primary fw-bold"
+              >
+                <i class="bi bi-plus-circle me-1"></i> Create Your First Newsletter
+              </router-link>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -510,35 +579,6 @@
     </div>
   </div> -->
 
-  <!-- =====================================================================================
-       MY NEWSLETTERS MODAL
-       Quick access to manage user's newsletters
-       ===================================================================================== -->
-  <div class="modal fade" id="myNewslettersModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title fw-bold">My Newsletters</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <div class="modal-body">
-          <!-- TODO: Implement newsletters list -->
-          <div class="text-center py-4 text-muted">
-            <i class="bi bi-envelope-paper" style="font-size: 3rem;"></i>
-            <p class="mt-3">Newsletter management coming soon!</p>
-            <router-link 
-              to="/stories/newsletters/create" 
-              class="btn btn-primary mt-2"
-              data-bs-dismiss="modal"
-            >
-              <i class="bi bi-plus-circle me-1"></i> Create Newsletter
-            </router-link>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
 </template>
 
 <script>
@@ -589,9 +629,12 @@ export default {
       hasMoreStories: false,
       loadingMore: false,
 
-      // Dropdown data
+      // Dropdown data (for create story form)
       allTopics: [],
       userNewsletters: [],
+      
+      // Display user's newsletters (for sidebar - loaded for all profiles)
+      displayUserNewsletters: [],
 
       // New story form data
       newStory: {
@@ -610,6 +653,13 @@ export default {
       newHashtag: '',
       submittingStory: false,
     };
+  },
+
+  computed: {
+    // Show first 5 newsletters in sidebar
+    displayedNewsletters() {
+      return this.displayUserNewsletters.slice(0, 5);
+    },
   },
 
   async mounted() {
@@ -656,7 +706,10 @@ export default {
         // Load user's stories via /getUserStories/<userID>/<userType>/<offset>
         await this.loadStories();
         
-        // If own profile, load topics and newsletters for dropdown
+        // Load display user's newsletters for sidebar (visible to all)
+        await this.loadDisplayUserNewsletters();
+        
+        // If own profile, load topics and newsletters for create story dropdown
         if (this.ownProfile) {
           await this.loadDropdownData();
         }
@@ -726,6 +779,26 @@ export default {
       } catch (error) {
         console.error("Error loading dropdown data:", error);
       }
+    },
+
+    async loadDisplayUserNewsletters() {
+      try {
+        // Load newsletters for the displayed user (for sidebar)
+        const response = await fetch(
+          `${this.currentURL}/stories/getUserNewsletters/${this.displayUserID}/user`
+        );
+        const data = await response.json();
+        if (data.code === 200) {
+          this.displayUserNewsletters = data.data || [];
+        }
+      } catch (error) {
+        console.error("Error loading display user newsletters:", error);
+      }
+    },
+
+    goToNewsletter(newsletter) {
+      const slugName = this.slugify(newsletter.newsletterName);
+      this.$router.push(`/stories/newsletters/${newsletter.id}/${slugName}`);
     },
 
     async loadMoreStories() {
@@ -992,19 +1065,6 @@ export default {
       }
     },
 
-    openMyNewsletters() {
-      const modal = new window.bootstrap.Modal(document.getElementById('myNewslettersModal'));
-      modal.show();
-    },
-
-    createNewNewsletter() {
-      // Close create story modal first
-      const storyModal = window.bootstrap.Modal.getInstance(document.getElementById('createStoryModal'));
-      if (storyModal) storyModal.hide();
-      // Navigate to create newsletter page
-      this.$router.push('/stories/newsletters/create');
-    },
-
     viewStory(story) {
       // Navigate to specific story page
       const title = story.title || story.storyTitle || 'story';
@@ -1113,6 +1173,31 @@ export default {
 
 .bg-success-subtle {
   background-color: rgba(25, 135, 84, 0.1) !important;
+}
+
+/* =====================================================================================
+   NEWSLETTER SIDEBAR STYLES
+   ===================================================================================== */
+.newsletter-item {
+  transition: background-color 0.2s;
+  cursor: pointer;
+  border: 1px solid transparent;
+}
+
+.newsletter-item:hover {
+  background-color: #f8f9fa;
+  border-color: #e9ecef;
+}
+
+.newsletter-thumbnail {
+  width: 40px;
+  height: 40px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.min-width-0 {
+  min-width: 0;
 }
 
 /* =====================================================================================
