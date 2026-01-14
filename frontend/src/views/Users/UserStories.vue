@@ -120,16 +120,6 @@
               <div class="row g-0">
                 <!-- Story Content (left side) -->
                 <div class="col-8 col-md-9 p-3 d-flex flex-column">
-                  <!-- Status badges (draft/scheduled) - only visible to owner -->
-                  <div v-if="ownProfile && (isDraft(story) || isScheduled(story))" class="mb-2">
-                    <span v-if="isDraft(story)" class="badge bg-secondary me-2">
-                      <i class="bi bi-file-earmark-text me-1"></i>Draft
-                    </span>
-                    <span v-else-if="isScheduled(story)" class="badge bg-info text-dark me-2">
-                      <i class="bi bi-clock me-1"></i>Scheduled for {{ formatDate(story.publicationDate) }}
-                    </span>
-                  </div>
-                  
                   <!-- Story Title -->
                   <h5 class="text-start story-title fw-bold mb-2 line-clamp-2">
                     {{ story.title || story.storyTitle }}
@@ -147,8 +137,18 @@
                       {{ story.creatorDisplayName || story.creatorUsername }}
                     </small>
                     
-                    <!-- Separator and Publication Date -->
-                    <small class="text-muted" v-if="!isDraft(story)">
+                    <!-- Draft Badge (in place of date) -->
+                    <span v-if="ownProfile && isDraft(story)" class="badge bg-secondary">
+                      <i class="bi bi-file-earmark-text me-1"></i>Draft
+                    </span>
+                    
+                    <!-- Scheduled Badge (in place of date) -->
+                    <span v-else-if="ownProfile && isScheduled(story)" class="badge bg-info text-dark">
+                      <i class="bi bi-clock me-1"></i>Scheduled for {{ formatScheduledDate(story.publicationDate) }}
+                    </span>
+                    
+                    <!-- Published Date (normal stories) -->
+                    <small class="text-muted" v-else-if="!isDraft(story) && !isScheduled(story)">
                       · {{ formatDate(story.publicationDate) }}
                     </small>
                     
@@ -257,19 +257,12 @@
           <!-- Story Content (Rich Text) -->
           <div class="mb-3">
             <label class="form-label fw-bold">Content</label>
-            <!-- TODO: Integrate InlineRichTextEditor component (same as Assemblies) -->
-            <!-- <InlineRichTextEditor
+            <InlineRichTextEditor
               ref="storyEditor"
               :initial-content="newStory.content"
               @content-changed="onStoryContentChange"
               :section-id="'new-story'"
-            /> -->
-            <textarea 
-              class="form-control" 
-              v-model="newStory.content"
-              placeholder="Write your story content here... (Rich text editor coming soon)"
-              rows="6"
-            ></textarea>
+            />
           </div>
 
           <!-- Feature Image Upload (Single) -->
@@ -317,34 +310,44 @@
           <!-- Link Drinks -->
           <div class="mb-3">
             <label class="form-label fw-bold">Link Drinks (Optional, max 5)</label>
-            <!-- TODO: Integrate AutocompleteSearchSelector component -->
-            <!-- <AutocompleteSearchSelector
+            <AutocompleteSearchSelector
               placeholder="Search for drinks to link..."
               :disabled="newStory.selectedDrinks.length >= 5"
               @select="handleDrinkSelect"
-            /> -->
-            <input 
-              type="text" 
-              class="form-control" 
-              placeholder="Search for drinks to link... (Coming soon)"
-              disabled
             />
             <div class="form-text">Link drinks you're discussing in your story</div>
             
-            <!-- Selected Drinks Display -->
+            <!-- Selected Drinks Display (styled like SpecificAssembly.vue) -->
             <div v-if="newStory.selectedDrinks.length > 0" class="selected-drinks mt-3">
               <div 
                 v-for="drink in newStory.selectedDrinks" 
                 :key="drink.id"
-                class="badge bg-light text-dark border me-2 mb-2 d-inline-flex align-items-center"
+                class="selected-drink-card d-flex align-items-center p-2 mb-2 border rounded bg-light"
               >
-                {{ drink.listingName }}
+                <img 
+                  :src="drink.photo || defaultDrinkPhoto" 
+                  :alt="drink.listingName"
+                  class="rounded me-3"
+                  style="width: 50px; height: 50px; object-fit: cover;"
+                />
+                <div class="flex-grow-1 overflow-hidden">
+                  <div class="fw-bold text-truncate">{{ drink.listingName }}</div>
+                  <div class="small text-muted text-truncate">
+                    <span v-if="drink.producerName">{{ drink.producerName }}</span>
+                    <span v-if="drink.producerName && drink.drinkType"> · </span>
+                    <span v-if="drink.drinkType">{{ drink.drinkType }}</span>
+                    <span v-if="drink.abv"> · {{ drink.abv }}%</span>
+                    <span v-if="drink.originCountry"> · {{ drink.originCountry }}</span>
+                  </div>
+                </div>
                 <button 
                   type="button" 
-                  class="btn-close ms-2" 
-                  style="font-size: 0.5rem;"
+                  class="btn btn-sm btn-outline-danger ms-2"
                   @click="removeDrink(drink.id)"
-                ></button>
+                  title="Remove drink"
+                >
+                  <i class="bi bi-trash"></i>
+                </button>
               </div>
             </div>
           </div>
@@ -537,9 +540,8 @@ import NavBar from "@/components/NavBar.vue";
 import LoadingWithFunFact from '@/components/LoadingWithFunFact.vue';
 import UserProfileHeader from '@/components/UserProfileHeader.vue';
 import UserProfileNavbar from '@/components/UserProfileNavbar.vue';
-// TODO: Import these when implementing full functionality
-// import InlineRichTextEditor from "@/components/InlineRichTextEditor.vue";
-// import AutocompleteSearchSelector from "@/components/AutocompleteSearchSelector.vue";
+import InlineRichTextEditor from "@/components/InlineRichTextEditor.vue";
+import AutocompleteSearchSelector from "@/components/AutocompleteSearchSelector.vue";
 import { useToast } from "vue-toastification";
 
 export default {
@@ -549,9 +551,8 @@ export default {
     LoadingWithFunFact,
     UserProfileHeader,
     UserProfileNavbar,
-    // TODO: Register components when implementing
-    // InlineRichTextEditor,
-    // AutocompleteSearchSelector,
+    InlineRichTextEditor,
+    AutocompleteSearchSelector,
   },
   data() {
     return {
@@ -563,6 +564,8 @@ export default {
         "https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultProfilePhoto.png?v=1748434288",
       defaultFeatureImage:
         "https://cdn.shopify.com/s/files/1/0353/9510/9003/files/fred-moon-0yqa0rMCsYk-unsplash.jpg?v=1763054984",
+      defaultDrinkPhoto:
+        "https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultDrinkImage.png?v=1750084739",
 
       // User data
       displayUserID: null,
@@ -792,6 +795,16 @@ export default {
       });
     },
 
+    // Format for scheduled date badge: "dd MMM yy"
+    formatScheduledDate(dateString) {
+      if (!dateString) return '';
+      const date = new Date(dateString);
+      const day = date.getDate();
+      const month = date.toLocaleDateString('en-US', { month: 'short' });
+      const year = date.getFullYear().toString().slice(-2);
+      return `${day} ${month} ${year}`;
+    },
+
     // ==========================================
     // Create Story Modal Methods
     // ==========================================
@@ -831,10 +844,20 @@ export default {
     },
 
     addHashtag() {
-      const tag = this.newHashtag.trim().replace(/^#/, ''); // Remove leading # if present
+      let tag = this.newHashtag.trim().replace(/^#/, ''); // Remove leading # if present
       if (!tag) return;
+      
+      // Frontend validation: only alphanumeric characters (no special chars)
+      tag = tag.replace(/[^a-zA-Z0-9]/g, '');
+      if (!tag) {
+        useToast().warning("Hashtags can only contain letters and numbers");
+        this.newHashtag = '';
+        return;
+      }
+      
       if (this.newStory.hashtags.includes(tag.toLowerCase())) {
         useToast().warning("This hashtag has already been added");
+        this.newHashtag = '';
         return;
       }
       this.newStory.hashtags.push(tag.toLowerCase());
@@ -905,6 +928,10 @@ export default {
             useToast().success("Story published successfully!");
           }
           
+          // Get the new story ID for navigation
+          const newStoryID = data.data.storyID;
+          const storyTitle = this.newStory.title.trim();
+          
           // Post-success operations in separate try block to prevent double toasts
           try {
             // Reset form
@@ -915,12 +942,15 @@ export default {
             const modal = window.bootstrap.Modal.getInstance(modalEl);
             if (modal) modal.hide();
             
-            // Reload stories
-            this.storiesOffset = 0;
-            await this.loadStories();
+            // Navigate to the newly created story
+            const slugTitle = this.slugify(storyTitle);
+            this.$router.push(`/stories/${newStoryID}/${slugTitle}`);
           } catch (postSuccessError) {
             // Don't show error toast - story was already created successfully
             console.error("Error in post-success operations:", postSuccessError);
+            // Still try to navigate even if modal close fails
+            const slugTitle = this.slugify(storyTitle);
+            this.$router.push(`/stories/${newStoryID}/${slugTitle}`);
           }
           
         } else {
@@ -950,6 +980,10 @@ export default {
         saveAsDraft: false,
       };
       this.newHashtag = '';
+      // Clear the rich text editor content
+      if (this.$refs.storyEditor) {
+        this.$refs.storyEditor.clearContent();
+      }
     },
 
     openMyNewsletters() {

@@ -125,7 +125,7 @@ export default {
     async imageHandler() {
       const input = document.createElement('input');
       input.setAttribute('type', 'file');
-      input.setAttribute('accept', 'image/png');
+      input.setAttribute('accept', 'image/png,image/jpeg,image/jpg,image/webp');
       
       input.onchange = async () => {
         const file = input.files[0];
@@ -137,9 +137,10 @@ export default {
           return;
         }
 
-        // Check file format
-        if (file.type !== 'image/png') {
-          alert('Only PNG images are allowed');
+        // Check file format - accept PNG, JPG, JPEG, WebP
+        const allowedTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/webp'];
+        if (!allowedTypes.includes(file.type)) {
+          alert('Only PNG, JPG, JPEG, and WebP images are allowed');
           return;
         }
 
@@ -149,16 +150,22 @@ export default {
 
         const reader = new FileReader();
         reader.onload = async (e) => {
-          const base64String = e.target.result.replace(/^data:image\/png;base64,/, '');
+          // Strip the data URL prefix (works for any image type)
+          const base64String = e.target.result.replace(/^data:image\/[a-zA-Z]+;base64,/, '');
           
           try {
-            const response = await this.$axios.post(
+            const response = await fetch(
               `${process.env.VUE_APP_API_URL}/editProducerTextSections/uploadSectionImage`,
-              { image64: base64String }
+              {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ image64: base64String })
+              }
             );
+            const data = await response.json();
 
-            if (response.data.code === 200 && response.data.imageUrl) {
-              this.quill.insertEmbed(index, 'image', response.data.imageUrl);
+            if (data.code === 200 && data.imageUrl) {
+              this.quill.insertEmbed(index, 'image', data.imageUrl);
               this.quill.setSelection(index + 1, 0);
               this.adjustHeight(); // Adjust height after image insertion
             } else {

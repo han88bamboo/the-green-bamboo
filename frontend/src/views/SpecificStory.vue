@@ -56,9 +56,9 @@
         <i class="bi bi-arrow-left me-1"></i> Back
       </button>
       
-      <!-- Owner Actions (Edit/Delete) - only visible to story owner -->
-      <div v-if="isOwner && !loading && !error" class="owner-actions">
-        <button class="btn btn-sm btn-outline-primary me-2" @click="editStory">
+      <!-- Owner Actions (Edit/Delete) - only visible to story owner, hidden during editing -->
+      <div v-if="isOwner && !loading && !error && !isEditingStory" class="owner-actions">
+        <button class="btn btn-sm btn-outline-primary me-2" @click="startEditStory">
           <i class="bi bi-pencil me-1"></i> Edit
         </button>
         <button class="btn btn-sm btn-outline-danger" @click="confirmDelete">
@@ -92,8 +92,8 @@
         <article class="story-article">
           <!-- Story Header -->
           <header class="story-header mb-4">
-            <!-- Topic/Newsletter Context -->
-            <div class="context-badges mb-3">
+            <!-- Topic/Newsletter Context (View Mode) -->
+            <div v-if="!isEditingStory" class="context-badges mb-3">
               <router-link 
                 v-if="story.topicID"
                 :to="`/stories/topics/${story.topicID}/${slugify(story.topicName)}`"
@@ -110,10 +110,33 @@
               </router-link>
             </div>
 
-            <!-- Story Title -->
-            <h1 class="text-start story-title fw-bold mb-3">{{ story.storyTitle }}</h1>
+            <!-- Story Title - View Mode -->
+            <div v-if="!isEditingStory" class="text-start d-flex align-items-start gap-2 mb-3">
+              <h1 class="story-title fw-bold mb-0 flex-grow-1">{{ story.storyTitle }}</h1>
+              <button 
+                v-if="isOwner"
+                class="btn btn-sm p-0 text-secondary edit-icon-btn"
+                @click="startEditStory"
+                title="Edit story"
+              >
+                <i class="bi bi-pencil"></i>
+              </button>
+            </div>
+            
+            <!-- Story Title - Edit Mode -->
+            <div v-if="isEditingStory" class="mb-3">
+              <label class="form-label fw-bold">Title</label>
+              <input 
+                type="text"
+                class="form-control form-control-lg fw-bold"
+                v-model="editStory.title"
+                placeholder="Story title..."
+                maxlength="500"
+              />
+              <div class="form-text text-end">{{ editStory.title.length }}/500</div>
+            </div>
 
-            <!-- Author Info -->
+            <!-- Author Info (always visible) -->
             <div class="text-start author-info d-flex mb-3">
               <img 
                 :src="story.creatorPhoto || defaultProfilePhoto" 
@@ -140,23 +163,170 @@
             </div>
           </header>
 
-          <!-- Story Featured Image -->
-          <div v-if="story.storyPhotos && story.storyPhotos.length > 0" class="story-featured-image mb-4">
+          <!-- Feature Image - View Mode -->
+          <div v-if="!isEditingStory && story.storyPhotos && story.storyPhotos.length > 0" class="story-featured-image mb-4">
             <img 
               :src="story.storyPhotos[0]" 
               :alt="story.storyTitle"
-              class="img-fluid rounded shadow-sm"
-              style="width: 100%; max-height: 500px; object-fit: cover;"
+              class="featured-image-medium rounded shadow-sm"
+            />
+          </div>
+          
+          <!-- Feature Image - Edit Mode -->
+          <div v-if="isEditingStory" class="mb-4">
+            <label class="form-label fw-bold">Feature Image</label>
+            <div v-if="editStory.featureImage" class="position-relative d-inline-block">
+              <img 
+                :src="editStory.featureImage" 
+                alt="Feature image"
+                class="featured-image-medium rounded shadow-sm"
+              />
+              <button 
+                class="btn btn-sm btn-danger position-absolute top-0 end-0 m-2 rounded-circle"
+                @click="removeEditFeatureImage"
+                title="Remove image"
+              >
+                <i class="bi bi-x"></i>
+              </button>
+            </div>
+            <div v-else class="mb-2">
+              <label class="upload-placeholder d-flex align-items-center justify-content-center rounded border border-dashed p-4" style="cursor: pointer; background: #f8f9fa;">
+                <input 
+                  type="file" 
+                  accept="image/png,image/jpeg,image/jpg,image/webp" 
+                  class="d-none"
+                  @change="handleEditFeatureImageUpload"
+                />
+                <div class="text-center text-muted">
+                  <i class="bi bi-image" style="font-size: 2rem;"></i>
+                  <div class="mt-2">Click to upload feature image</div>
+                  <small>PNG, JPG, WebP • Max 5MB</small>
+                </div>
+              </label>
+            </div>
+          </div>
+
+          <!-- Story Content - View Mode -->
+          <div v-if="!isEditingStory" class="text-start d-flex align-items-start gap-2 mb-4">
+            <div class="story-content flex-grow-1" v-html="story.storyContent"></div>
+            <button 
+              v-if="isOwner && story.storyContent"
+              class="btn btn-sm p-0 text-secondary edit-icon-btn"
+              @click="startEditStory"
+              title="Edit content"
+            >
+              <i class="bi bi-pencil"></i>
+            </button>
+          </div>
+          
+          <!-- Story Content - Edit Mode -->
+          <div v-if="isEditingStory" class="mb-4">
+            <label class="form-label fw-bold">Content</label>
+            <InlineRichTextEditor
+              ref="storyContentEditor"
+              :initial-content="editStory.content"
+              @content-changed="onEditStoryContentChange"
+              :section-id="'edit-story-content'"
             />
           </div>
 
-          <!-- Story Content (Rich Text) -->
-          <!-- TODO: Render rich text content properly (similar to how reviews are displayed) -->
-          <div class="text-start story-content mb-4" v-html="story.storyContent">
+          <!-- Linked Drinks - Edit Mode -->
+          <div v-if="isEditingStory" class="mb-4">
+            <label class="form-label fw-bold">Linked Drinks (Max 5)</label>
+            <!-- Selected drinks display -->
+            <div v-if="editStory.linkedListings.length > 0" class="d-flex flex-wrap gap-2 mb-2">
+              <div 
+                v-for="(drink, index) in editStory.linkedListings" 
+                :key="drink.id"
+                class="drink-tag d-flex align-items-center gap-2 rounded px-2 py-1"
+              >
+                <img 
+                  :src="drink.photo || drink.listingImage || defaultDrinkImage" 
+                  :alt="drink.listingName"
+                  class="rounded"
+                  style="width: 24px; height: 24px; object-fit: cover;"
+                />
+                <span class="small">{{ drink.listingName }}</span>
+                <button 
+                  type="button"
+                  class="btn btn-sm p-0 text-danger"
+                  @click="removeEditLinkedDrink(index)"
+                >
+                  <i class="bi bi-x"></i>
+                </button>
+              </div>
+            </div>
+            <!-- Autocomplete selector -->
+            <AutocompleteSearchSelector
+              v-if="editStory.linkedListings.length < 5"
+              placeholder="Search for drinks to link..."
+              @drink-selected="onEditLinkedDrinkSelected"
+            />
           </div>
 
-          <!-- Additional Photos Gallery -->
-          <div v-if="story.storyPhotos && story.storyPhotos.length > 1" class="photo-gallery mb-4">
+          <!-- Hashtags - Edit Mode -->
+          <div v-if="isEditingStory" class="mb-4">
+            <label class="form-label fw-bold">Hashtags</label>
+            <div class="d-flex flex-wrap gap-2 mb-2">
+              <span 
+                v-for="(tag, index) in editStory.hashtags" 
+                :key="tag"
+                class="badge bg-light text-dark border d-flex align-items-center gap-1"
+              >
+                #{{ tag }}
+                <button 
+                  type="button"
+                  class="btn btn-sm p-0 text-secondary"
+                  @click="removeEditHashtag(index)"
+                >
+                  <i class="bi bi-x"></i>
+                </button>
+              </span>
+            </div>
+            <div class="input-group input-group-sm" style="max-width: 250px;">
+              <span class="input-group-text">#</span>
+              <input 
+                type="text" 
+                class="form-control"
+                v-model="editStory.hashtagInput"
+                placeholder="Add hashtag"
+                @keypress.enter.prevent="addEditHashtag"
+              />
+              <button 
+                class="btn btn-outline-secondary"
+                type="button"
+                @click="addEditHashtag"
+              >
+                Add
+              </button>
+            </div>
+            <div class="form-text">Only letters and numbers allowed. Max 10 hashtags.</div>
+          </div>
+
+          <!-- Edit Actions -->
+          <div v-if="isEditingStory" class="edit-actions d-flex gap-2 mb-4 pt-2 border-top">
+            <button 
+              class="btn btn-secondary btn-sm"
+              @click="cancelEditStory"
+              :disabled="savingStory"
+            >
+              Cancel
+            </button>
+            <button 
+              class="btn btn-primary btn-sm"
+              @click="saveEditStory"
+              :disabled="!editStory.title.trim() || !editStory.content.trim() || savingStory"
+            >
+              <span v-if="savingStory">
+                <span class="spinner-border spinner-border-sm me-1"></span>
+                Saving...
+              </span>
+              <span v-else>Save Changes</span>
+            </button>
+          </div>
+
+          <!-- Additional Photos Gallery (View Mode Only) -->
+          <div v-if="!isEditingStory && story.storyPhotos && story.storyPhotos.length > 1" class="photo-gallery mb-4">
             <h6 class="fw-bold mb-3">More Photos</h6>
             <div class="row g-2">
               <div 
@@ -175,8 +345,8 @@
             </div>
           </div>
 
-          <!-- Hashtags -->
-          <div v-if="story.hashtags && story.hashtags.length > 0" class="hashtags-section mb-4">
+          <!-- Hashtags (View Mode Only) -->
+          <div v-if="!isEditingStory && story.hashtags && story.hashtags.length > 0" class="hashtags-section mb-4">
             <span 
               v-for="hashtag in story.hashtags" 
               :key="hashtag"
@@ -186,10 +356,10 @@
             </span>
           </div>
 
-          <hr />
+          <hr v-if="!isEditingStory" />
 
-          <!-- Engagement Actions -->
-          <div class="engagement-actions d-flex align-items-center gap-4 mb-4">
+          <!-- Engagement Actions (View Mode Only) -->
+          <div v-if="!isEditingStory" class="engagement-actions d-flex align-items-center gap-4 mb-4">
             <!-- Like Button -->
             <button 
               class="btn d-flex align-items-center gap-2"
@@ -214,10 +384,10 @@
             </button>
           </div>
 
-          <hr />
+          <hr v-if="!isEditingStory" />
 
-          <!-- Comments Section -->
-          <section id="comments-section" class="comments-section">
+          <!-- Comments Section (View Mode Only) -->
+          <section v-if="!isEditingStory" id="comments-section" class="comments-section">
             <h4 class="fw-bold mb-4">
               <i class="bi bi-chat-square-text me-2"></i>
               Comments ({{ story.commentCount || 0 }})
@@ -302,7 +472,7 @@
                       <div class="d-flex align-items-center gap-1">
                         <button 
                           class="btn btn-sm p-0 comment-vote-btn"
-                          @click="likeComment(comment)"
+                          @click="voteComment(comment, 'up')"
                           :disabled="userID === 'defaultUser'"
                           title="Upvote"
                         >
@@ -316,7 +486,7 @@
                         </span>
                         <button 
                           class="btn btn-sm p-0 comment-vote-btn"
-                          @click="dislikeComment(comment)"
+                          @click="voteComment(comment, 'down')"
                           :disabled="userID === 'defaultUser'"
                           title="Downvote"
                         >
@@ -324,13 +494,164 @@
                         </button>
                       </div>
                       
-                      <!-- Delete Button (own comments or story owner) -->
+                      <!-- Reply Button -->
                       <button 
-                        v-if="isCommentOwner(comment)"
+                        v-if="userID !== 'defaultUser'"
+                        class="btn btn-sm p-0 text-muted comment-action-btn"
+                        @click="startReply(comment)"
+                      >
+                        <i class="bi bi-chat me-1"></i>Reply
+                      </button>
+                      
+                      <!-- Delete Button (comment author or admin) -->
+                      <button 
+                        v-if="canDeleteComment(comment)"
                         class="btn btn-sm p-0 text-muted comment-action-btn"
                         @click="deleteComment(comment)"
                       >
                         <i class="bi bi-trash me-1"></i>Delete
+                      </button>
+                    </div>
+                    
+                    <!-- Reply Input (shown when replying to this comment) -->
+                    <div v-if="replyingToCommentId === comment.id" class="reply-input mt-3">
+                      <div class="d-flex gap-2">
+                        <img 
+                          :src="currentUserPhoto || defaultProfilePhoto" 
+                          alt="Your avatar"
+                          class="rounded-circle"
+                          style="width: 32px; height: 32px; object-fit: cover;"
+                        />
+                        <div class="flex-grow-1">
+                          <textarea 
+                            class="form-control form-control-sm mb-2" 
+                            rows="2" 
+                            :placeholder="`Reply to ${comment.displayName || comment.username}...`"
+                            v-model="replyContent"
+                            maxlength="5000"
+                            :ref="'replyTextarea-' + comment.id"
+                          ></textarea>
+                          <div class="d-flex justify-content-between align-items-center">
+                            <small class="text-muted">{{ replyContent.length }}/5000</small>
+                            <div class="d-flex gap-2">
+                              <button 
+                                class="btn btn-sm btn-outline-secondary" 
+                                @click="cancelReply"
+                              >
+                                Cancel
+                              </button>
+                              <button 
+                                class="btn btn-sm btn-primary" 
+                                @click="submitReply(comment)"
+                                :disabled="!replyContent.trim() || submittingReply"
+                              >
+                                <span v-if="submittingReply">
+                                  <span class="spinner-border spinner-border-sm me-1"></span>
+                                </span>
+                                <span v-else>Reply</span>
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <!-- Replies Section (2nd level - flattened) -->
+                    <div v-if="comment.replies && comment.replies.length > 0" class="replies-section mt-3">
+                      <div 
+                        v-for="reply in comment.replies" 
+                        :key="reply.id"
+                        class="reply-item"
+                      >
+                        <div class="d-flex">
+                          <!-- Reply Author Avatar -->
+                          <img 
+                            :src="reply.userPhoto || defaultProfilePhoto" 
+                            :alt="reply.username || 'Replier'"
+                            class="rounded-circle me-2 reply-avatar"
+                            @click="goToUserProfile(reply)"
+                          />
+                          
+                          <div class="flex-grow-1">
+                            <!-- Reply Header -->
+                            <div class="comment-header d-flex align-items-center flex-wrap gap-1 mb-1">
+                              <a 
+                                href="#" 
+                                @click.prevent="goToUserProfile(reply)" 
+                                class="fw-bold text-decoration-none comment-author"
+                              >
+                                {{ reply.displayName || reply.username || 'Unknown' }}
+                              </a>
+                              <span class="text-muted small">•</span>
+                              <span class="text-muted small">{{ formatTimeAgo(reply.dateCreated) }}</span>
+                            </div>
+                            
+                            <!-- Reply Content -->
+                            <div class="text-start comment-content mb-2 small">{{ reply.commentContent }}</div>
+                            
+                            <!-- Reply Actions -->
+                            <div class="comment-actions d-flex align-items-center gap-3 small">
+                              <!-- Vote Buttons -->
+                              <div class="d-flex align-items-center gap-1">
+                                <button 
+                                  class="btn btn-sm p-0 comment-vote-btn"
+                                  @click="voteComment(reply, 'up')"
+                                  :disabled="userID === 'defaultUser'"
+                                >
+                                  <i class="bi bi-arrow-up" :class="{ 'text-primary fw-bold': reply.userVote === 'up' }"></i>
+                                </button>
+                                <span 
+                                  class="vote-count-small fw-bold"
+                                  :class="getVoteCountClass(reply.voteCount)"
+                                >
+                                  {{ reply.voteCount || 0 }}
+                                </span>
+                                <button 
+                                  class="btn btn-sm p-0 comment-vote-btn"
+                                  @click="voteComment(reply, 'down')"
+                                  :disabled="userID === 'defaultUser'"
+                                >
+                                  <i class="bi bi-arrow-down" :class="{ 'text-danger fw-bold': reply.userVote === 'down' }"></i>
+                                </button>
+                              </div>
+                              
+                              <!-- Reply to Reply (prepends @username to parent) -->
+                              <button 
+                                v-if="userID !== 'defaultUser'"
+                                class="btn btn-sm p-0 text-muted comment-action-btn"
+                                @click="startReplyToReply(comment, reply)"
+                              >
+                                <i class="bi bi-chat me-1"></i>Reply
+                              </button>
+                              
+                              <!-- Delete Button -->
+                              <button 
+                                v-if="canDeleteComment(reply)"
+                                class="btn btn-sm p-0 text-muted comment-action-btn"
+                                @click="deleteReply(comment, reply)"
+                              >
+                                <i class="bi bi-trash me-1"></i>Delete
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <!-- Load More Replies Button -->
+                      <button 
+                        v-if="comment.hasMoreReplies"
+                        class="btn btn-sm btn-link text-muted ps-0 mt-2"
+                        @click="loadMoreReplies(comment)"
+                        :disabled="comment.loadingMoreReplies"
+                      >
+                        <span v-if="comment.loadingMoreReplies">
+                          <span class="spinner-border spinner-border-sm me-1"></span>
+                          Loading...
+                        </span>
+                        <span v-else>
+                          <i class="bi bi-arrow-return-right me-1"></i>
+                          Load more replies ({{ comment.replyCount - comment.replies.length }})
+                        </span>
                       </button>
                     </div>
                   </div>
@@ -486,12 +807,16 @@
 
 <script>
 import NavBar from "@/components/NavBar.vue";
+import InlineRichTextEditor from "@/components/InlineRichTextEditor.vue";
+import AutocompleteSearchSelector from "@/components/AutocompleteSearchSelector.vue";
 import { useToast } from "vue-toastification";
 
 export default {
   name: "SpecificStory",
   components: {
     NavBar,
+    InlineRichTextEditor,
+    AutocompleteSearchSelector,
   },
   data() {
     return {
@@ -534,13 +859,33 @@ export default {
       commentsOffset: 0,
       newComment: '',
       submittingComment: false,
-      replyingTo: null,  // For nested replies
+      replyingToCommentId: null,  // Track which comment we're replying to
+      replyContent: '',  // Content of the reply
+      submittingReply: false,
+      isAdmin: false,  // Track if current user is admin
       
       // Loading States
       loading: true,
       error: false,
       liking: false,
       deleting: false,
+      
+      // Edit Story State
+      isEditingStory: false,
+      savingStory: false,
+      editStory: {
+        title: '',
+        content: '',
+        featureImage: null,
+        featureImageFile: null,
+        linkedListings: [],
+        topicID: null,
+        newsletterID: null,
+        hashtags: [],
+        publicationDate: null,
+        hashtagInput: '',
+      },
+      originalStoryState: null,
       
       // User State
       userID: "defaultUser",
@@ -580,6 +925,21 @@ export default {
     const accUsername = localStorage.getItem("88B_accUsername");
     if (accUsername) {
       this.username = accUsername;
+    }
+
+    // Check if user is admin
+    const isAdminStr = localStorage.getItem("88B_isAdmin");
+    this.isAdmin = isAdminStr === "true";
+
+    // Get current user photo
+    const storedUser = localStorage.getItem("88B_loggedInUser");
+    if (storedUser) {
+      try {
+        const userData = JSON.parse(storedUser);
+        this.currentUserPhoto = userData.photo || null;
+      } catch (e) {
+        console.error("Error parsing user data:", e);
+      }
     }
 
     // Initialize delete modal
@@ -716,7 +1076,6 @@ export default {
         if (data.code === 201) {
           useToast().success("Comment posted!");
           this.newComment = '';
-          this.replyingTo = null;
           // Reload comments to get the new one
           this.commentsOffset = 0;
           await this.loadComments();
@@ -732,14 +1091,16 @@ export default {
       }
     },
 
-    async likeComment(comment) {
+    // Unified vote method for both comments and replies (toggle upvote/downvote)
+    async voteComment(comment, voteType) {
       if (this.userID === 'defaultUser') {
         useToast().warning("Please login to vote on comments");
         return;
       }
       
       try {
-        const response = await fetch(`${this.currentURL}/stories/likeStoryComment`, {
+        const endpoint = voteType === 'up' ? '/stories/likeStoryComment' : '/stories/dislikeStoryComment';
+        const response = await fetch(`${this.currentURL}${endpoint}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -763,35 +1124,106 @@ export default {
       }
     },
 
-    async dislikeComment(comment) {
-      if (this.userID === 'defaultUser') {
-        useToast().warning("Please login to vote on comments");
-        return;
-      }
+    // Reply methods (same pattern as SpecificAssemblyPost.vue)
+    startReply(comment) {
+      this.replyingToCommentId = comment.id;
+      this.replyContent = '';
+      this.$nextTick(() => {
+        const textareaRef = this.$refs['replyTextarea-' + comment.id];
+        const textarea = Array.isArray(textareaRef) ? textareaRef[0] : textareaRef;
+        if (textarea && textarea.focus) textarea.focus();
+      });
+    },
+
+    startReplyToReply(parentComment, reply) {
+      // Reply to a reply prepends @username to parent comment
+      this.replyingToCommentId = parentComment.id;
+      const username = reply.displayName || reply.username || 'user';
+      this.replyContent = `@${username} `;
+      this.$nextTick(() => {
+        const textareaRef = this.$refs['replyTextarea-' + parentComment.id];
+        const textarea = Array.isArray(textareaRef) ? textareaRef[0] : textareaRef;
+        if (textarea && textarea.focus) {
+          textarea.focus();
+          // Move cursor to end
+          textarea.setSelectionRange(textarea.value.length, textarea.value.length);
+        }
+      });
+    },
+
+    cancelReply() {
+      this.replyingToCommentId = null;
+      this.replyContent = '';
+    },
+
+    async submitReply(parentComment) {
+      if (!this.replyContent.trim()) return;
       
+      this.submittingReply = true;
       try {
-        const response = await fetch(`${this.currentURL}/stories/dislikeStoryComment`, {
+        const response = await fetch(`${this.currentURL}/stories/createStoryComment`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            commentID: comment.id,
+            storyID: this.story.id,
             userID: this.userID,
-            userType: this.userType
+            userType: this.userType,
+            commentContent: this.replyContent.trim(),
+            parentCommentID: parentComment.id
           })
         });
         
         const data = await response.json();
         
-        if (data.code === 200) {
-          // Update local state
-          comment.likeCount = data.data.likeCount;
-          comment.dislikeCount = data.data.dislikeCount;
-          comment.voteCount = data.data.voteCount;
-          comment.userVote = data.data.userVote;
+        if (data.code === 201) {
+          useToast().success("Reply posted!");
+          this.replyContent = '';
+          this.replyingToCommentId = null;
+          // Reload comments to get the new reply
+          this.commentsOffset = 0;
+          await this.loadComments();
+          this.story.commentCount++;
+        } else {
+          useToast().error(data.message || "Failed to post reply");
         }
       } catch (error) {
-        console.error("Error voting on comment:", error);
+        console.error("Error posting reply:", error);
+        useToast().error("Failed to post reply");
+      } finally {
+        this.submittingReply = false;
       }
+    },
+
+    async loadMoreReplies(comment) {
+      // Set loading state
+      this.$set ? this.$set(comment, 'loadingMoreReplies', true) : (comment.loadingMoreReplies = true);
+      
+      try {
+        const currentRepliesCount = comment.replies ? comment.replies.length : 0;
+        const response = await fetch(
+          `${this.currentURL}/stories/getCommentReplies/${comment.id}/${currentRepliesCount}?userID=${this.userID}&userType=${this.userType}`
+        );
+        
+        const data = await response.json();
+        
+        if (data.code === 200) {
+          // Append new replies
+          if (!comment.replies) comment.replies = [];
+          comment.replies = [...comment.replies, ...(data.data || [])];
+          comment.hasMoreReplies = comment.replies.length < comment.replyCount;
+        }
+      } catch (error) {
+        console.error("Error loading more replies:", error);
+      } finally {
+        comment.loadingMoreReplies = false;
+      }
+    },
+
+    // Check if user can delete this comment (comment author or admin)
+    canDeleteComment(comment) {
+      if (this.userID === 'defaultUser') return false;
+      const isCommentAuthor = String(comment.userID) === String(this.userID) && comment.userType === this.userType;
+      return isCommentAuthor || this.isAdmin;
     },
 
     async deleteComment(comment) {
@@ -824,17 +1256,252 @@ export default {
       }
     },
 
-    isCommentOwner(comment) {
-      if (this.userID === 'defaultUser') return false;
-      // Comment author or story author can delete
-      const isCommentAuthor = String(comment.userID) === String(this.userID) && comment.userType === this.userType;
-      return isCommentAuthor || this.isOwner;
+    async deleteReply(parentComment, reply) {
+      if (!confirm('Delete this reply?')) return;
+      
+      try {
+        const response = await fetch(`${this.currentURL}/stories/deleteStoryComment`, {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            commentID: reply.id,
+            userID: this.userID,
+            userType: this.userType
+          })
+        });
+        
+        const data = await response.json();
+        
+        if (data.code === 200) {
+          useToast().success("Reply deleted");
+          // Remove from local list
+          parentComment.replies = parentComment.replies.filter(r => r.id !== reply.id);
+          parentComment.replyCount--;
+          this.story.commentCount--;
+        } else {
+          useToast().error(data.message || "Failed to delete reply");
+        }
+      } catch (error) {
+        console.error("Error deleting reply:", error);
+        useToast().error("Failed to delete reply");
+      }
     },
 
+    // ===== STORY EDITING METHODS =====
+    
+    startEditStory() {
+      // Initialize edit state with current story data
+      this.editStory = {
+        title: this.story.storyTitle || '',
+        content: this.story.storyContent || '',
+        featureImage: (this.story.storyPhotos && this.story.storyPhotos.length > 0) ? this.story.storyPhotos[0] : null,
+        featureImageFile: null,
+        linkedListings: [...(this.story.linkedListings || [])],
+        topicID: this.story.topicID || null,
+        newsletterID: this.story.newsletterID || null,
+        hashtags: [...(this.story.hashtags || [])],
+        publicationDate: this.story.publicationDate || null,
+        hashtagInput: '',
+      };
+      this.originalStoryState = JSON.stringify(this.editStory);
+      this.isEditingStory = true;
+    },
+
+    cancelEditStory() {
+      const currentState = JSON.stringify({
+        title: this.editStory.title,
+        content: this.editStory.content,
+        featureImage: this.editStory.featureImage,
+        linkedListings: this.editStory.linkedListings,
+        topicID: this.editStory.topicID,
+        newsletterID: this.editStory.newsletterID,
+        hashtags: this.editStory.hashtags,
+        publicationDate: this.editStory.publicationDate,
+      });
+      
+      if (currentState !== this.originalStoryState) {
+        if (!confirm('You have unsaved changes. Are you sure you want to cancel?')) {
+          return;
+        }
+      }
+      
+      this.isEditingStory = false;
+      this.editStory = {
+        title: '',
+        content: '',
+        featureImage: null,
+        featureImageFile: null,
+        linkedListings: [],
+        topicID: null,
+        newsletterID: null,
+        hashtags: [],
+        publicationDate: null,
+        hashtagInput: '',
+      };
+      this.originalStoryState = null;
+    },
+
+    onEditStoryContentChange(content) {
+      this.editStory.content = content;
+    },
+
+    handleEditFeatureImageUpload(event) {
+      const toast = useToast();
+      const file = event.target.files[0];
+      if (!file) return;
+      
+      // Validate file type
+      const validTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/webp'];
+      if (!validTypes.includes(file.type)) {
+        toast.warning('Please select a PNG, JPG, JPEG, or WebP image.');
+        return;
+      }
+      
+      // Validate file size (5MB max)
+      if (file.size > 5 * 1024 * 1024) {
+        toast.warning('Image must be less than 5MB.');
+        return;
+      }
+      
+      this.editStory.featureImageFile = file;
+      
+      // Preview
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        this.editStory.featureImage = e.target.result;
+      };
+      reader.readAsDataURL(file);
+      
+      event.target.value = '';
+    },
+
+    removeEditFeatureImage() {
+      this.editStory.featureImage = null;
+      this.editStory.featureImageFile = null;
+    },
+
+    onEditLinkedDrinkSelected(drink) {
+      if (drink && !this.editStory.linkedListings.find(d => d.id === drink.id)) {
+        if (this.editStory.linkedListings.length >= 5) {
+          useToast().warning("Maximum 5 drinks can be linked.");
+          return;
+        }
+        this.editStory.linkedListings.push(drink);
+      }
+    },
+
+    removeEditLinkedDrink(index) {
+      this.editStory.linkedListings.splice(index, 1);
+    },
+
+    addEditHashtag() {
+      const raw = this.editStory.hashtagInput.trim().replace(/^#/, '');
+      const tag = raw.toLowerCase();
+      
+      if (!tag) {
+        this.editStory.hashtagInput = '';
+        return;
+      }
+      
+      // Validate alphanumeric only
+      const alphanumericRegex = /^[a-z0-9]+$/i;
+      if (!alphanumericRegex.test(tag)) {
+        useToast().warning("Hashtags can only contain letters and numbers.");
+        this.editStory.hashtagInput = '';
+        return;
+      }
+      
+      if (this.editStory.hashtags.length >= 10) {
+        useToast().warning("Maximum 10 hashtags allowed.");
+        this.editStory.hashtagInput = '';
+        return;
+      }
+      
+      if (!this.editStory.hashtags.includes(tag)) {
+        this.editStory.hashtags.push(tag);
+      }
+      this.editStory.hashtagInput = '';
+    },
+
+    removeEditHashtag(index) {
+      this.editStory.hashtags.splice(index, 1);
+    },
+
+    async saveEditStory() {
+      const toast = useToast();
+      
+      if (!this.editStory.title.trim()) {
+        toast.error('Title is required.');
+        return;
+      }
+      
+      if (!this.editStory.content.trim()) {
+        toast.error('Content is required.');
+        return;
+      }
+      
+      this.savingStory = true;
+      
+      try {
+        const payload = {
+          storyID: this.story.id,
+          userID: this.userID,
+          userType: this.userType,
+          title: this.editStory.title.trim(),
+          content: this.editStory.content,
+          listingIDs: this.editStory.linkedListings.map(d => d.id),
+          topicID: this.editStory.topicID,
+          newsletterID: this.editStory.newsletterID,
+          hashtags: this.editStory.hashtags,
+        };
+        
+        // Handle feature image
+        if (this.editStory.featureImageFile) {
+          // New image uploaded - convert to base64
+          payload.featureImage = await this.fileToBase64(this.editStory.featureImageFile);
+        } else if (this.editStory.featureImage === null) {
+          // Image was removed
+          payload.featureImage = null;
+        }
+        // If featureImage is still a URL, we don't send it (no change)
+        
+        const response = await fetch(`${this.currentURL}/stories/editStory`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+        
+        const data = await response.json();
+        
+        if (data.code === 200) {
+          toast.success('Story updated successfully!');
+          this.isEditingStory = false;
+          
+          // Reload story data
+          await this.loadStory();
+        } else {
+          toast.error(data.message || 'Failed to update story.');
+        }
+      } catch (error) {
+        console.error('Error updating story:', error);
+        toast.error('Failed to update story. Please try again.');
+      } finally {
+        this.savingStory = false;
+      }
+    },
+
+    fileToBase64(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = error => reject(error);
+      });
+    },
+
+    // Legacy method - now redirects to inline edit
     editStory() {
-      // For now, show toast - inline editing will be implemented later
-      useToast().info("Story editing coming soon!");
-      // TODO: Implement inline editing similar to assembly posts
+      this.startEditStory();
     },
 
     confirmDelete() {
@@ -991,6 +1658,14 @@ export default {
   line-height: 1.3;
 }
 
+/* Medium-style Featured Image (landscape crop like the screenshot) */
+.featured-image-medium {
+  width: 100%;
+  aspect-ratio: 16 / 9;  /* Landscape ratio similar to Medium */
+  object-fit: cover;
+  object-position: center;
+}
+
 /* Story Content Rich Text Styles */
 .story-content {
   font-size: 1.1rem;
@@ -1088,6 +1763,34 @@ export default {
   text-decoration: underline;
 }
 
+/* Replies Section (same as SpecificAssemblyPost.vue) */
+.replies-section {
+  border-left: 2px solid #e9ecef;
+  padding-left: 16px;
+  margin-left: 4px;
+}
+
+.reply-item {
+  padding: 12px 0;
+}
+
+.reply-item:last-child {
+  padding-bottom: 0;
+}
+
+.reply-avatar {
+  width: 28px;
+  height: 28px;
+  object-fit: cover;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+/* Reply Input */
+.reply-input textarea {
+  resize: none;
+}
+
 /* Hover Background */
 .hover-bg {
   cursor: pointer;
@@ -1096,6 +1799,33 @@ export default {
 
 .hover-bg:hover {
   background-color: #f8f9fa;
+}
+
+/* Edit Icon Button */
+.edit-icon-btn {
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  line-height: 1;
+}
+
+.story-article:hover .edit-icon-btn,
+.edit-icon-btn:focus {
+  opacity: 1;
+}
+
+/* Drink Tags for Editing */
+.drink-tag {
+  background-color: #f8f9fa;
+  border: 1px solid #e9ecef;
+}
+
+.drink-tag:hover {
+  background-color: #e9ecef;
+}
+
+/* Edit Actions */
+.edit-actions {
+  border-color: #e9ecef !important;
 }
 
 /* Mobile Responsiveness */
