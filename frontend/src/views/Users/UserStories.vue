@@ -538,8 +538,8 @@ import NavBar from "@/components/NavBar.vue";
 import LoadingWithFunFact from '@/components/LoadingWithFunFact.vue';
 import UserProfileHeader from '@/components/UserProfileHeader.vue';
 import UserProfileNavbar from '@/components/UserProfileNavbar.vue';
-import InlineRichTextEditor from "@/components/InlineRichTextEditor.vue";
-import AutocompleteSearchSelector from "@/components/AutocompleteSearchSelector.vue";
+// import InlineRichTextEditor from "@/components/InlineRichTextEditor.vue";
+// import AutocompleteSearchSelector from "@/components/AutocompleteSearchSelector.vue";
 import { useToast } from "vue-toastification";
 
 export default {
@@ -549,8 +549,8 @@ export default {
     LoadingWithFunFact,
     UserProfileHeader,
     UserProfileNavbar,
-    InlineRichTextEditor,
-    AutocompleteSearchSelector,
+    // InlineRichTextEditor,
+    // AutocompleteSearchSelector,
   },
   data() {
     return {

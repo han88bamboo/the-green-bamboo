@@ -123,7 +123,7 @@
     <div class="row">
       <!-- Main Content Column -->
       <div class="col-lg-8">
-        <!-- Create Story Button (only for newsletter owner) -->
+        <!-- Create Story Button (only for newsletter owner) 
         <div v-if="isOwner" class="card mb-4 shadow-sm create-story-card">
           <div class="card-body d-flex align-items-center gap-3">
             <img 
@@ -146,7 +146,7 @@
           </div>
         </div>
 
-        <!-- Non-owner info message -->
+         Non-owner info message 
         <div v-else-if="userID !== 'defaultUser'" class="alert alert-light mb-4">
           <i class="bi bi-info-circle me-2"></i>
           Only the newsletter owner can publish stories here.
@@ -154,7 +154,7 @@
             Create your own newsletter
           </router-link> to start publishing!
         </div>
-
+        -->
         <!-- Sorting Options -->
         <div class="d-flex align-items-center gap-2 mb-3">
           <span class="text-muted small">Sort by:</span>
