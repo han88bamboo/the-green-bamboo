@@ -3,34 +3,30 @@
   CreateNewsletter.vue - Create New Story Newsletter
   =====================================================================================
   Purpose: Form page to create a new story newsletter.
-           Similar to CreateAssembly.vue structure.
+           Similar to CreateTopic.vue structure.
   
   Route: /stories/newsletters/create
   
   Features:
-  - Newsletter name input (with uniqueness validation)
-  - Newsletter description textarea
-  - Drink type multi-select (optional)
-  - Newsletter cover image upload
-  - Topic association (optional - link newsletter to a topic)
+  - Newsletter name input (4-255 chars, emojis allowed, per-creator uniqueness)
+  - Newsletter description textarea (max 500 chars)
+  - Newsletter banner image upload (for hero sections)
+  - Newsletter display photo upload (for cards)
   - Preview card
   - Form validation
   
   Backend Endpoints Used:
-  - POST /createNewsletter - Create new newsletter
-  - GET /checkNewsletterNameAvailability/<name> - Check name uniqueness
-  - GET /getAllTopics - Get topics for association dropdown
+  - POST /stories/createNewsletter - Create new newsletter
   
   Related Files:
   - backend/scripts/stories.py - Backend API endpoints
   - frontend/src/router/modules/story.js - Route registration
-  - frontend/src/views/CreateAssembly.vue - Reference for structure/styling
+  - frontend/src/views/CreateTopic.vue - Reference for structure/styling
   - frontend/src/views/BrowseStoryNewsletters.vue - Newsletters listing page
   - frontend/src/views/SpecificStoryNewsletter.vue - Individual newsletter page
   
   Database Tables:
   - newsletters
-  - topics (for association)
   
   Access Control:
   - Any logged-in user can create a newsletter
@@ -92,21 +88,18 @@
                   class="form-control"
                   :class="{ 
                     'is-invalid': nameError,
-                    'is-valid': nameAvailable && formData.newsletterName.length > 0
+                    'is-valid': nameAvailable && formData.newsletterName.length >= 4
                   }"
                   v-model="formData.newsletterName"
-                  @input="checkNameAvailability"
-                  placeholder="Enter newsletter name"
-                  maxlength="100"
+                  @input="validateName"
+                  placeholder="Enter newsletter name (4-255 characters)"
+                  maxlength="255"
                   required
                 />
-                <div v-if="nameError" class="invalid-feedback">{{ nameError }}</div>
-                <div v-else-if="nameAvailable" class="valid-feedback">Newsletter name is available!</div>
-                <div v-else-if="checkingName" class="form-text">
-                  <span class="spinner-border spinner-border-sm me-1"></span> Checking availability...
-                </div>
+                <div v-if="nameError" class="invalid-feedback d-block">{{ nameError }}</div>
+                <div v-else-if="nameAvailable" class="valid-feedback d-block">Newsletter name looks good!</div>
                 <small class="form-text text-muted">
-                  Names must be unique (case-insensitive). {{ formData.newsletterName.length }}/100 characters
+                  {{ formData.newsletterName.length }}/255 characters. Emojis allowed. Must be unique among your newsletters.
                 </small>
               </div>
 
@@ -127,103 +120,89 @@
                 <small class="form-text text-muted">{{ formData.newsletterDesc.length }}/500 characters</small>
               </div>
 
-              <!-- Associated Topic (Optional) -->
-              <div class="mb-4">
-                <label for="associatedTopic" class="form-label fw-bold">
-                  Associated Topic <span class="text-muted fw-normal">(Optional)</span>
-                </label>
-                <p class="small text-muted mb-2">Link your newsletter to an existing topic for better discoverability</p>
-                
-                <!-- TODO: Implement topic selector with autocomplete -->
-                <!-- Model after AutocompleteSearchSelector component -->
-                <select 
-                  id="associatedTopic"
-                  class="form-select"
-                  v-model="formData.associatedTopicId"
-                >
-                  <option value="">-- No topic association --</option>
-                  <option 
-                    v-for="topic in availableTopics" 
-                    :key="topic.id"
-                    :value="topic.id"
-                  >
-                    {{ topic.topicName }}
-                  </option>
-                </select>
-              </div>
-
-              <!-- Drink Types (Optional) -->
+              <!-- Newsletter Banner Image -->
               <div class="mb-4">
                 <label class="form-label fw-bold">
-                  Drink Types <span class="text-muted fw-normal">(Optional)</span>
+                  Newsletter Banner Image <span class="text-muted fw-normal">(Optional)</span>
                 </label>
-                <p class="small text-muted mb-2">Select drink types related to your newsletter content</p>
+                <p class="small text-muted mb-2">Upload a banner image for the newsletter hero section (recommended: 1200x400px)</p>
                 
-                <!-- TODO: Implement multi-select for drink types -->
-                <div class="drink-types-selector border rounded p-3">
-                  <div class="row">
-                    <div 
-                      v-for="drinkType in availableDrinkTypes" 
-                      :key="drinkType"
-                      class="col-6 col-md-4 mb-2"
-                    >
-                      <div class="form-check">
-                        <input 
-                          type="checkbox"
-                          class="form-check-input"
-                          :id="`drink-${drinkType}`"
-                          :value="drinkType"
-                          v-model="formData.drinkTypes"
-                        />
-                        <label class="form-check-label" :for="`drink-${drinkType}`">
-                          {{ drinkType }}
-                        </label>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Newsletter Cover Image -->
-              <div class="mb-4">
-                <label class="form-label fw-bold">
-                  Newsletter Cover Image <span class="text-muted fw-normal">(Optional)</span>
-                </label>
-                <p class="small text-muted mb-2">Upload a cover image for your newsletter (recommended: 800x600px)</p>
-                
-                <!-- Image Upload Area -->
-                <!-- TODO: Implement image upload using S3 -->
                 <div 
                   class="upload-area border border-2 border-dashed rounded p-4 text-center"
-                  :class="{ 'border-primary': isDragging }"
-                  @dragover.prevent="isDragging = true"
-                  @dragleave="isDragging = false"
-                  @drop.prevent="handleDrop"
+                  :class="{ 'border-primary': isDraggingBanner }"
+                  @dragover.prevent="isDraggingBanner = true"
+                  @dragleave="isDraggingBanner = false"
+                  @drop.prevent="handleBannerDrop"
                 >
-                  <div v-if="!formData.coverImagePreview">
-                    <i class="bi bi-cloud-upload text-muted" style="font-size: 2.5rem;"></i>
-                    <p class="text-muted mt-2 mb-0">Drag & drop an image here, or</p>
+                  <div v-if="!formData.bannerImagePreview">
+                    <i class="bi bi-panorama text-muted" style="font-size: 2.5rem;"></i>
+                    <p class="text-muted mt-2 mb-0">Drag & drop a banner image here, or</p>
                     <label class="btn btn-outline-primary mt-2">
-                      <i class="bi bi-image me-1"></i> Choose Image
+                      <i class="bi bi-image me-1"></i> Choose Banner
                       <input 
                         type="file" 
                         accept="image/*"
-                        @change="handleImageSelect"
+                        @change="handleBannerSelect"
                         hidden
                       />
                     </label>
                   </div>
                   <div v-else class="position-relative">
                     <img 
-                      :src="formData.coverImagePreview" 
-                      alt="Cover preview"
+                      :src="formData.bannerImagePreview" 
+                      alt="Banner preview"
                       class="img-fluid rounded"
-                      style="max-height: 200px;"
+                      style="max-height: 150px;"
                     />
                     <button 
                       type="button"
                       class="btn btn-danger btn-sm position-absolute top-0 end-0 m-2"
-                      @click="removeImage"
+                      @click="removeBannerImage"
+                    >
+                      <i class="bi bi-x"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Newsletter Display Photo -->
+              <div class="mb-4">
+                <label class="form-label fw-bold">
+                  Newsletter Display Photo <span class="text-muted fw-normal">(Optional)</span>
+                </label>
+                <p class="small text-muted mb-2">Upload a display photo for newsletter cards (recommended: 800x600px)</p>
+                
+                <div 
+                  class="upload-area border border-2 border-dashed rounded p-4 text-center"
+                  :class="{ 'border-primary': isDraggingDisplay }"
+                  @dragover.prevent="isDraggingDisplay = true"
+                  @dragleave="isDraggingDisplay = false"
+                  @drop.prevent="handleDisplayDrop"
+                >
+                  <div v-if="!formData.displayImagePreview">
+                    <i class="bi bi-card-image text-muted" style="font-size: 2.5rem;"></i>
+                    <p class="text-muted mt-2 mb-0">Drag & drop a display photo here, or</p>
+                    <label class="btn btn-outline-primary mt-2">
+                      <i class="bi bi-image me-1"></i> Choose Photo
+                      <input 
+                        type="file" 
+                        accept="image/*"
+                        @change="handleDisplaySelect"
+                        hidden
+                      />
+                    </label>
+                  </div>
+                  <div v-else class="position-relative">
+                    <img 
+                      :src="formData.displayImagePreview" 
+                      alt="Display photo preview"
+                      class="img-fluid rounded"
+                      style="max-height: 150px;"
+                    />
+                    <button 
+                      type="button"
+                      class="btn btn-danger btn-sm position-absolute top-0 end-0 m-2"
+                      @click="removeDisplayImage"
                     >
                       <i class="bi bi-x"></i>
                     </button>
@@ -295,24 +274,6 @@
                 <small class="text-muted">By {{ currentUsername || 'You' }}</small>
               </div>
               
-              <!-- Drink Types Preview -->
-              <div v-if="formData.drinkTypes.length > 0" class="mb-2">
-                <span 
-                  v-for="drinkType in formData.drinkTypes" 
-                  :key="drinkType"
-                  class="badge bg-primary me-1 mb-1"
-                >
-                  {{ drinkType }}
-                </span>
-              </div>
-
-              <!-- Associated Topic Preview -->
-              <div v-if="formData.associatedTopicId && getAssociatedTopicName()" class="mb-2">
-                <span class="badge bg-warning text-dark">
-                  <i class="bi bi-hash me-1"></i>{{ getAssociatedTopicName() }}
-                </span>
-              </div>
-              
               <!-- Stats Preview -->
               <div class="d-flex gap-3 small text-muted">
                 <span><i class="bi bi-people-fill me-1"></i> 0 subscribers</span>
@@ -330,8 +291,7 @@
               <ul class="small text-muted mb-0 ps-3">
                 <li class="mb-2">Choose a name that reflects your content focus</li>
                 <li class="mb-2">Write a compelling description to attract subscribers</li>
-                <li class="mb-2">Associate with a topic to reach a wider audience</li>
-                <li class="mb-2">Use an eye-catching cover image</li>
+                <li class="mb-2">Use an eye-catching banner and display photo</li>
                 <li>Post consistently to keep subscribers engaged</li>
               </ul>
             </div>
@@ -376,42 +336,21 @@ export default {
       formData: {
         newsletterName: '',
         newsletterDesc: '',
-        drinkTypes: [],
-        associatedTopicId: '',
-        coverImage: null,
-        coverImagePreview: null,
+        // Banner image (1200x400px) - displayed on newsletter detail page
+        bannerImage: null,
+        bannerImagePreview: null,
+        // Display photo (800x600px) - shown on cards in browse/list views
+        displayImage: null,
+        displayImagePreview: null,
       },
       
       // Validation
       nameError: '',
-      nameAvailable: false,
-      checkingName: false,
-      nameCheckTimeout: null,
       
       // UI State
       submitting: false,
-      isDragging: false,
-      
-      // Available Topics
-      availableTopics: [],
-      loadingTopics: false,
-      
-      // Available Drink Types
-      // TODO: Fetch from backend or use shared constants
-      availableDrinkTypes: [
-        'Wine',
-        'Beer',
-        'Whiskey',
-        'Gin',
-        'Vodka',
-        'Rum',
-        'Tequila',
-        'Brandy',
-        'Liqueur',
-        'Cocktails',
-        'Sake',
-        'Other Spirits'
-      ],
+      isDraggingBanner: false,
+      isDraggingDisplay: false,
       
       // Default images
       defaultProfilePhoto: "https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultProfilePhoto.png?v=1748434288",
@@ -421,14 +360,19 @@ export default {
 
   computed: {
     isFormValid() {
-      return this.formData.newsletterName.trim().length > 0 &&
-             this.formData.newsletterDesc.trim().length > 0 &&
-             this.nameAvailable &&
+      const name = this.formData.newsletterName.trim();
+      const desc = this.formData.newsletterDesc.trim();
+      return name.length >= 4 &&
+             name.length <= 255 &&
+             desc.length > 0 &&
              !this.nameError;
     },
 
     previewCoverStyle() {
-      const imageUrl = this.formData.coverImagePreview || this.defaultCoverImage;
+      // Use banner image for preview, fall back to display image, then default
+      const imageUrl = this.formData.bannerImagePreview || 
+                       this.formData.displayImagePreview || 
+                       this.defaultCoverImage;
       return {
         backgroundImage: `url(${imageUrl})`,
         backgroundSize: 'cover',
@@ -438,7 +382,7 @@ export default {
     },
   },
 
-  async mounted() {
+  mounted() {
     // Get user info from localStorage
     const accID = localStorage.getItem("88B_accID");
     if (accID) {
@@ -455,169 +399,162 @@ export default {
       this.currentUsername = accUsername;
     }
 
-    // Load available topics for association dropdown
-    await this.loadAvailableTopics();
+    const accPhoto = localStorage.getItem("88B_accPhoto");
+    if (accPhoto) {
+      this.currentUserPhoto = accPhoto;
+    }
   },
 
   methods: {
-    async loadAvailableTopics() {
-      // TODO: Implement API call to get topics for dropdown
-      this.loadingTopics = true;
-      try {
-        // const response = await fetch(`${process.env.VUE_APP_BACKEND_LINK}/getAllTopics/0`);
-        // const data = await response.json();
-        // this.availableTopics = data.data || [];
-        
-        // Placeholder
-        this.availableTopics = [];
-      } catch (error) {
-        console.error("Error loading topics:", error);
-      } finally {
-        this.loadingTopics = false;
-      }
-    },
-
-    checkNameAvailability() {
-      // Debounce the check
-      if (this.nameCheckTimeout) {
-        clearTimeout(this.nameCheckTimeout);
-      }
-
-      this.nameAvailable = false;
+    /**
+     * Validate newsletter name
+     * Rules: 4-255 characters, emojis allowed, per-creator uniqueness
+     * Uniqueness is checked on backend at submit time (not real-time)
+     */
+    validateName() {
       this.nameError = '';
-
       const name = this.formData.newsletterName.trim();
       
-      // Basic validation
       if (!name) {
         return;
       }
 
-      if (name.length < 3) {
-        this.nameError = 'Newsletter name must be at least 3 characters';
+      if (name.length < 4) {
+        this.nameError = 'Newsletter name must be at least 4 characters';
         return;
       }
 
-      if (name.length > 100) {
-        this.nameError = 'Newsletter name must be less than 100 characters';
+      if (name.length > 255) {
+        this.nameError = 'Newsletter name must be 255 characters or less';
         return;
       }
 
-      // Check for invalid characters
-      if (!/^[a-zA-Z0-9\s\-_'&]+$/.test(name)) {
-        this.nameError = 'Newsletter name contains invalid characters';
-        return;
-      }
-
-      this.checkingName = true;
-
-      this.nameCheckTimeout = setTimeout(async () => {
-        // TODO: Implement API call to /checkNewsletterNameAvailability/<name>
-        try {
-          // const response = await fetch(`${process.env.VUE_APP_BACKEND_LINK}/checkNewsletterNameAvailability/${encodeURIComponent(name)}`);
-          // const data = await response.json();
-          // if (data.available) {
-          //   this.nameAvailable = true;
-          // } else {
-          //   this.nameError = 'This newsletter name is already taken';
-          // }
-
-          // Placeholder - assume available
-          this.nameAvailable = true;
-        } catch (error) {
-          console.error("Error checking name availability:", error);
-          this.nameError = 'Error checking availability';
-        } finally {
-          this.checkingName = false;
-        }
-      }, 500);
+      // Name is valid (uniqueness checked on submit)
     },
 
-    getAssociatedTopicName() {
-      if (!this.formData.associatedTopicId) return null;
-      const topic = this.availableTopics.find(t => t.id === this.formData.associatedTopicId);
-      return topic ? topic.topicName : null;
-    },
-
-    handleImageSelect(event) {
+    // ==================== Banner Image Handling ====================
+    handleBannerSelect(event) {
       const file = event.target.files[0];
       if (file) {
-        this.processImage(file);
+        this.processBannerImage(file);
       }
     },
 
-    handleDrop(event) {
-      this.isDragging = false;
+    handleBannerDrop(event) {
+      this.isDraggingBanner = false;
       const file = event.dataTransfer.files[0];
       if (file && file.type.startsWith('image/')) {
-        this.processImage(file);
+        this.processBannerImage(file);
       }
     },
 
-    processImage(file) {
+    processBannerImage(file) {
       // Validate file size (max 5MB)
       if (file.size > 5 * 1024 * 1024) {
         useToast().error("Image must be less than 5MB");
         return;
       }
 
-      // Create preview
+      // Create preview and store base64
       const reader = new FileReader();
       reader.onload = (e) => {
-        this.formData.coverImagePreview = e.target.result;
-        this.formData.coverImage = file;
+        this.formData.bannerImagePreview = e.target.result;
+        this.formData.bannerImage = e.target.result; // Store base64 for API
       };
       reader.readAsDataURL(file);
     },
 
-    removeImage() {
-      this.formData.coverImage = null;
-      this.formData.coverImagePreview = null;
+    removeBannerImage() {
+      this.formData.bannerImage = null;
+      this.formData.bannerImagePreview = null;
     },
 
+    // ==================== Display Photo Handling ====================
+    handleDisplaySelect(event) {
+      const file = event.target.files[0];
+      if (file) {
+        this.processDisplayImage(file);
+      }
+    },
+
+    handleDisplayDrop(event) {
+      this.isDraggingDisplay = false;
+      const file = event.dataTransfer.files[0];
+      if (file && file.type.startsWith('image/')) {
+        this.processDisplayImage(file);
+      }
+    },
+
+    processDisplayImage(file) {
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        useToast().error("Image must be less than 5MB");
+        return;
+      }
+
+      // Create preview and store base64
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        this.formData.displayImagePreview = e.target.result;
+        this.formData.displayImage = e.target.result; // Store base64 for API
+      };
+      reader.readAsDataURL(file);
+    },
+
+    removeDisplayImage() {
+      this.formData.displayImage = null;
+      this.formData.displayImagePreview = null;
+    },
+
+    // ==================== Form Submission ====================
     async submitForm() {
       if (!this.isFormValid) return;
 
       this.submitting = true;
 
       try {
-        // TODO: Implement API call to /createNewsletter
-        // 1. First upload image to S3 if provided
-        // 2. Then create newsletter with image URL
+        const formPayload = {
+          newsletterName: this.formData.newsletterName.trim(),
+          newsletterDesc: this.formData.newsletterDesc.trim(),
+          creatorUserID: this.userID,
+          creatorUserType: this.userType,
+          // Base64 images - backend will upload to S3
+          bannerImage64: this.formData.bannerImage || null,
+          displayImage64: this.formData.displayImage || null,
+        };
         
-        // const formPayload = {
-        //   newsletterName: this.formData.newsletterName.trim(),
-        //   newsletterDesc: this.formData.newsletterDesc.trim(),
-        //   drinkTypes: this.formData.drinkTypes,
-        //   associatedTopicId: this.formData.associatedTopicId || null,
-        //   newsletterPhoto: uploadedImageUrl,
-        //   createdByID: this.userID,
-        //   createdByType: this.userType,
-        // };
+        const response = await this.$axios.post(
+          `${process.env.VUE_APP_API_URL}/stories/createNewsletter`,
+          formPayload
+        );
         
-        // const response = await fetch(`${process.env.VUE_APP_BACKEND_LINK}/createNewsletter`, {
-        //   method: 'POST',
-        //   headers: { 'Content-Type': 'application/json' },
-        //   body: JSON.stringify(formPayload),
-        // });
-        // const data = await response.json();
-        
-        // if (data.code === 201) {
-        //   useToast().success("Newsletter created successfully!");
-        //   this.$router.push(`/stories/newsletters/${data.newsletterId}/${this.slugify(this.formData.newsletterName)}`);
-        // }
-
-        useToast().info("Newsletter creation coming soon!");
+        if (response.data.code === 201) {
+          useToast().success("Newsletter created successfully!");
+          const newsletterId = response.data.data.newsletterID;
+          const slug = this.slugify(this.formData.newsletterName);
+          this.$router.push(`/stories/newsletters/${newsletterId}/${slug}`);
+        } else if (response.data.code === 409) {
+          // Duplicate name for this creator
+          this.nameError = 'You already have a newsletter with this name';
+          useToast().error("Newsletter name already exists for your account");
+        } else {
+          useToast().error(response.data.message || "Failed to create newsletter");
+        }
       } catch (error) {
         console.error("Error creating newsletter:", error);
-        useToast().error("Failed to create newsletter. Please try again.");
+        if (error.response?.data?.code === 409) {
+          this.nameError = 'You already have a newsletter with this name';
+          useToast().error("Newsletter name already exists for your account");
+        } else {
+          useToast().error("Failed to create newsletter. Please try again.");
+        }
       } finally {
         this.submitting = false;
       }
     },
 
     goBack() {
-      this.$router.push('/stories/newsletters');
+      this.$router.back();
     },
 
     slugify(text) {
@@ -671,11 +608,5 @@ export default {
 .sticky-preview {
   position: sticky;
   top: 100px;
-}
-
-/* Drink Types Selector */
-.drink-types-selector {
-  max-height: 200px;
-  overflow-y: auto;
 }
 </style>

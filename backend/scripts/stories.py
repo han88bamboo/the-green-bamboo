@@ -967,101 +967,472 @@ def get_topic_stories(topicID, offset):
 
 # -----------------------------------------------------------------------------------------
 # [POST] createNewsletter
-# Purpose: Create a new newsletter for the user's stories
+# Purpose: Create a new newsletter for the user's stories (any logged-in user can create)
 # Used: CreateNewsletter.vue, UserStories.vue (modal)
 # Input:
 #   1. creatorUserID - the user's ID
 #   2. creatorUserType - 'user', 'producer' or 'venue'
-#   3. newsletterName - name of the newsletter (4-255 chars)
-#   4. newsletterDesc - description (optional)
-#   5. image64 - base64 banner image (optional)
-#   6. isFree - boolean (default true for MVP)
-#   7. subscriptionPrice - decimal (ignored for MVP, all treated as free)
+#   3. newsletterName - name of the newsletter (4-255 chars, emojis allowed)
+#   4. newsletterDesc - description (optional, max 500 chars)
+#   5. bannerImage64 - base64 banner image for hero sections (optional)
+#   6. displayImage64 - base64 display photo for cards (optional)
 # Output:
 #   201 - Newsletter created successfully
-#   400 - Validation error or duplicate name
+#   400 - Validation error or duplicate name (per-creator unique)
 #   500 - Server error
+# Note: All newsletters are free for MVP. Stripe fields in newsletterPatrons table
+#       are reserved for future paid newsletter functionality.
 # -----------------------------------------------------------------------------------------
 @blueprint.route('/createNewsletter', methods=['POST'])
 def create_newsletter():
-    # TODO: Implement createNewsletter endpoint
-    # - Validate newsletter name (4-255 chars)
-    # - Check for duplicate newsletter name (case-insensitive, global)
-    # - Upload banner image to S3 if provided
-    # - Insert into newsletters table
-    # - Return created newsletter ID
-    return jsonify({
-        'code': 501,
-        'message': 'createNewsletter endpoint not yet implemented'
-    }), 501
+    try:
+        data = request.get_json()
+        
+        # Get required fields
+        creator_id = data.get('creatorUserID')
+        creator_type = data.get('creatorUserType')
+        newsletter_name = data.get('newsletterName', '').strip()
+        
+        # Get optional fields
+        newsletter_desc = data.get('newsletterDesc', '').strip() or None
+        
+        # Validate required fields
+        if not creator_id or not creator_type:
+            return jsonify({
+                'code': 400,
+                'message': 'Missing required fields: creatorUserID and creatorUserType are required.'
+            }), 400
+        
+        # Validate creator type
+        if creator_type not in ['user', 'producer', 'venue']:
+            return jsonify({
+                'code': 400,
+                'message': 'Invalid creatorUserType. Must be user, producer, or venue.'
+            }), 400
+        
+        # Validate newsletter name (4-255 chars, emojis allowed)
+        if not newsletter_name or len(newsletter_name) < 4:
+            return jsonify({
+                'code': 400,
+                'message': 'Newsletter name must be at least 4 characters.'
+            }), 400
+        if len(newsletter_name) > 255:
+            return jsonify({
+                'code': 400,
+                'message': 'Newsletter name cannot exceed 255 characters.'
+            }), 400
+        
+        # Validate description length (max 500 chars)
+        if newsletter_desc and len(newsletter_desc) > 500:
+            return jsonify({
+                'code': 400,
+                'message': 'Description cannot exceed 500 characters.'
+            }), 400
+        
+        # Normalize name for per-creator uniqueness check
+        normalized_name = normalize_name_for_uniqueness(newsletter_name)
+        
+        with db_manager.get_cursor() as cursor:
+            # Check for duplicate newsletter name (per-creator, case-insensitive, ignoring emojis)
+            cursor.execute('''
+                SELECT id FROM "newsletters" 
+                WHERE "creatorUserID" = %s 
+                  AND "creatorUserType" = %s
+                  AND LOWER(REGEXP_REPLACE("newsletterName", '[^\w\s]', '', 'g')) = %s
+            ''', (creator_id, creator_type, normalized_name))
+            
+            existing = cursor.fetchone()
+            if existing:
+                return jsonify({
+                    'code': 400,
+                    'data': {'newsletterName': newsletter_name},
+                    'message': 'You already have a newsletter with this name.'
+                }), 400
+            
+            # Upload banner image if provided
+            banner_url = None
+            if 'bannerImage64' in data and data['bannerImage64']:
+                base64_string = re.sub(r'^data:image\/[a-zA-Z]+;base64,', '', data['bannerImage64'])
+                banner_url = s3Images.uploadBase64ImageToS3(base64_string)
+            
+            # Upload display photo if provided
+            display_photo_url = None
+            if 'displayImage64' in data and data['displayImage64']:
+                base64_string = re.sub(r'^data:image\/[a-zA-Z]+;base64,', '', data['displayImage64'])
+                display_photo_url = s3Images.uploadBase64ImageToS3(base64_string)
+            
+            # Get current timestamp
+            date_created = datetime.now()
+            
+            # Insert new newsletter (isFree=true for MVP)
+            cursor.execute('''
+                INSERT INTO "newsletters" 
+                ("newsletterName", "newsletterDesc", "newsletterBanner", "newsletterDisplayPhoto", 
+                 "dateCreated", "creatorUserID", "creatorUserType", "isFree")
+                VALUES (%s, %s, %s, %s, %s, %s, %s, true)
+                RETURNING id
+            ''', (newsletter_name, newsletter_desc, banner_url, display_photo_url, 
+                  date_created, creator_id, creator_type))
+            
+            newsletter_id = cursor.fetchone()['id']
+        
+        return jsonify({
+            'code': 201,
+            'data': {
+                'newsletterID': newsletter_id,
+                'message': 'Newsletter created successfully'
+            }
+        }), 201
+    
+    except Exception as e:
+        logging.exception("createNewsletter: Error - %s", str(e))
+        return jsonify({
+            'code': 500,
+            'message': 'An error occurred creating the newsletter.'
+        }), 500
 
 
 # -----------------------------------------------------------------------------------------
 # [GET] getNewsletters/<offset>
-# Purpose: Get paginated list of newsletters with creator info
+# Purpose: Get paginated list of newsletters with creator info (server-side sorting)
 # Used: BrowseStoryNewsletters.vue
-# Input: offset (path param) - starting position (0, 12, 24, ...)
+# Input: 
+#   offset (path param) - starting position (0, 12, 24, ...)
+#   sortBy (query param) - 'recent' (default), 'alphabetical', or 'subscribers'
+#   userID (query param, optional) - for checking isSubscribed on each newsletter
+#   userType (query param, optional) - for checking isSubscribed
 # Output:
-#   200 - List of newsletters with creator info and preview stories
+#   200 - List of newsletters with creator info, subscriberCount, storyCount, isFree, isSubscribed
 #   500 - Server error
 # -----------------------------------------------------------------------------------------
 @blueprint.route('/getNewsletters/<offset>', methods=['GET'])
 def get_newsletters(offset):
-    # TODO: Implement getNewsletters endpoint
-    # - Query newsletters table with pagination (12 per page)
-    # - Join with creator info (users/producers/venues)
-    # - Get story count per newsletter
-    # - Get patron count per newsletter
-    # - Get preview stories with photos (up to 3)
-    # - Sort by most recent (dateCreated DESC)
-    return jsonify({
-        'code': 501,
-        'message': 'getNewsletters endpoint not yet implemented'
-    }), 501
+    try:
+        offset = int(offset)
+        limit = 12  # Fixed page size
+        
+        # Get sort parameter (default: recent)
+        sort_by = request.args.get('sortBy', 'recent')
+        
+        # Get optional user params for isSubscribed check
+        user_id = request.args.get('userID')
+        user_type = request.args.get('userType')
+        
+        # Determine ORDER BY clause based on sortBy
+        if sort_by == 'alphabetical':
+            order_clause = 'n."newsletterName" ASC'
+        elif sort_by == 'subscribers':
+            order_clause = '"subscriberCount" DESC, n."dateCreated" DESC'
+        else:  # 'recent' (default)
+            order_clause = 'n."dateCreated" DESC'
+        
+        with db_manager.get_cursor() as cursor:
+            # Main query - newsletters with subscriber and story counts computed via subqueries
+            query = f'''
+                SELECT 
+                    n."id",
+                    n."newsletterName",
+                    n."newsletterDesc",
+                    n."newsletterBanner",
+                    n."newsletterDisplayPhoto",
+                    n."dateCreated",
+                    n."creatorUserID",
+                    n."creatorUserType",
+                    n."isFree",
+                    (SELECT COUNT(*) FROM "newsletterPatrons" WHERE "newsletterID" = n."id" AND "subscriptionStatus" = 'active') as "subscriberCount",
+                    (SELECT COUNT(*) FROM "stories" WHERE "newsletterID" = n."id" AND "publicationDate" IS NOT NULL AND "publicationDate" <= NOW()) as "storyCount",
+                    CASE 
+                        WHEN n."creatorUserType" = 'user' THEN u."username"
+                        WHEN n."creatorUserType" = 'producer' THEN p."username"
+                        WHEN n."creatorUserType" = 'venue' THEN v."username"
+                        ELSE NULL
+                    END as "creatorUsername",
+                    CASE 
+                        WHEN n."creatorUserType" = 'user' THEN u."displayName"
+                        WHEN n."creatorUserType" = 'producer' THEN p."producerName"
+                        WHEN n."creatorUserType" = 'venue' THEN v."venueName"
+                        ELSE NULL
+                    END as "creatorDisplayName",
+                    CASE 
+                        WHEN n."creatorUserType" = 'user' THEN u."photo"
+                        WHEN n."creatorUserType" = 'producer' THEN p."photo"
+                        WHEN n."creatorUserType" = 'venue' THEN v."photo"
+                        ELSE NULL
+                    END as "creatorPhoto"
+                FROM "newsletters" n
+                LEFT JOIN "users" u ON n."creatorUserType" = 'user' AND n."creatorUserID" = u."id"
+                LEFT JOIN "producers" p ON n."creatorUserType" = 'producer' AND n."creatorUserID" = p."id"
+                LEFT JOIN "venues" v ON n."creatorUserType" = 'venue' AND n."creatorUserID" = v."id"
+                ORDER BY {order_clause}
+                LIMIT %s OFFSET %s
+            '''
+            
+            cursor.execute(query, (limit, offset))
+            newsletters = cursor.fetchall()
+            
+            if not newsletters:
+                return jsonify({
+                    'code': 200,
+                    'data': [],
+                    'message': 'No newsletters found'
+                }), 200
+            
+            # Build result with isSubscribed check if user provided
+            result = []
+            for newsletter in newsletters:
+                newsletter_dict = dict(newsletter)
+                
+                # Check if current user is subscribed
+                newsletter_dict['isSubscribed'] = False
+                if user_id and user_type:
+                    cursor.execute('''
+                        SELECT id FROM "newsletterPatrons"
+                        WHERE "newsletterID" = %s AND "patronUserID" = %s AND "patronUserType" = %s
+                        AND "subscriptionStatus" = 'active'
+                    ''', (newsletter['id'], user_id, user_type))
+                    subscription = cursor.fetchone()
+                    newsletter_dict['isSubscribed'] = subscription is not None
+                
+                result.append(newsletter_dict)
+        
+        return jsonify({
+            'code': 200,
+            'data': result
+        }), 200
+    
+    except Exception as e:
+        logging.exception("getNewsletters: Error - %s", str(e))
+        return jsonify({
+            'code': 500,
+            'message': 'An error occurred retrieving newsletters.'
+        }), 500
 
 
 # -----------------------------------------------------------------------------------------
 # [GET] getNewsletterswSearch/<offset>/<search>
-# Purpose: Search newsletters by name
+# Purpose: Search newsletters by name (server-side sorting)
 # Used: BrowseStoryNewsletters.vue
-# Input: offset, search (path params)
+# Input: 
+#   offset, search (path params)
+#   sortBy (query param) - 'recent' (default), 'alphabetical', or 'subscribers'
+#   userID (query param, optional) - for checking isSubscribed
+#   userType (query param, optional) - for checking isSubscribed
 # Output:
 #   200 - List of matching newsletters
 #   500 - Server error
 # -----------------------------------------------------------------------------------------
 @blueprint.route('/getNewsletterswSearch/<offset>/<search>', methods=['GET'])
 def get_newsletters_with_search(offset, search):
-    # TODO: Implement getNewsletterswSearch endpoint
-    # - Same as getNewsletters but with WHERE clause for search
-    # - Use ILIKE for case-insensitive search on newsletterName
-    return jsonify({
-        'code': 501,
-        'message': 'getNewsletterswSearch endpoint not yet implemented'
-    }), 501
+    try:
+        offset = int(offset)
+        limit = 12  # Fixed page size
+        search_term = f'%{search}%'
+        
+        # Get sort parameter (default: recent)
+        sort_by = request.args.get('sortBy', 'recent')
+        
+        # Get optional user params for isSubscribed check
+        user_id = request.args.get('userID')
+        user_type = request.args.get('userType')
+        
+        # Determine ORDER BY clause based on sortBy
+        if sort_by == 'alphabetical':
+            order_clause = 'n."newsletterName" ASC'
+        elif sort_by == 'subscribers':
+            order_clause = '"subscriberCount" DESC, n."dateCreated" DESC'
+        else:  # 'recent' (default)
+            order_clause = 'n."dateCreated" DESC'
+        
+        with db_manager.get_cursor() as cursor:
+            # Main query with search filter on newsletterName and newsletterDesc
+            query = f'''
+                SELECT 
+                    n."id",
+                    n."newsletterName",
+                    n."newsletterDesc",
+                    n."newsletterBanner",
+                    n."newsletterDisplayPhoto",
+                    n."dateCreated",
+                    n."creatorUserID",
+                    n."creatorUserType",
+                    n."isFree",
+                    (SELECT COUNT(*) FROM "newsletterPatrons" WHERE "newsletterID" = n."id" AND "subscriptionStatus" = 'active') as "subscriberCount",
+                    (SELECT COUNT(*) FROM "stories" WHERE "newsletterID" = n."id" AND "publicationDate" IS NOT NULL AND "publicationDate" <= NOW()) as "storyCount",
+                    CASE 
+                        WHEN n."creatorUserType" = 'user' THEN u."username"
+                        WHEN n."creatorUserType" = 'producer' THEN p."username"
+                        WHEN n."creatorUserType" = 'venue' THEN v."username"
+                        ELSE NULL
+                    END as "creatorUsername",
+                    CASE 
+                        WHEN n."creatorUserType" = 'user' THEN u."displayName"
+                        WHEN n."creatorUserType" = 'producer' THEN p."producerName"
+                        WHEN n."creatorUserType" = 'venue' THEN v."venueName"
+                        ELSE NULL
+                    END as "creatorDisplayName",
+                    CASE 
+                        WHEN n."creatorUserType" = 'user' THEN u."photo"
+                        WHEN n."creatorUserType" = 'producer' THEN p."photo"
+                        WHEN n."creatorUserType" = 'venue' THEN v."photo"
+                        ELSE NULL
+                    END as "creatorPhoto"
+                FROM "newsletters" n
+                LEFT JOIN "users" u ON n."creatorUserType" = 'user' AND n."creatorUserID" = u."id"
+                LEFT JOIN "producers" p ON n."creatorUserType" = 'producer' AND n."creatorUserID" = p."id"
+                LEFT JOIN "venues" v ON n."creatorUserType" = 'venue' AND n."creatorUserID" = v."id"
+                WHERE (n."newsletterName" ILIKE %s OR n."newsletterDesc" ILIKE %s)
+                ORDER BY {order_clause}
+                LIMIT %s OFFSET %s
+            '''
+            
+            cursor.execute(query, (search_term, search_term, limit, offset))
+            newsletters = cursor.fetchall()
+            
+            if not newsletters:
+                return jsonify({
+                    'code': 200,
+                    'data': [],
+                    'message': 'No newsletters found matching search criteria'
+                }), 200
+            
+            # Build result with isSubscribed check
+            result = []
+            for newsletter in newsletters:
+                newsletter_dict = dict(newsletter)
+                
+                # Check if current user is subscribed
+                newsletter_dict['isSubscribed'] = False
+                if user_id and user_type:
+                    cursor.execute('''
+                        SELECT id FROM "newsletterPatrons"
+                        WHERE "newsletterID" = %s AND "patronUserID" = %s AND "patronUserType" = %s
+                        AND "subscriptionStatus" = 'active'
+                    ''', (newsletter['id'], user_id, user_type))
+                    subscription = cursor.fetchone()
+                    newsletter_dict['isSubscribed'] = subscription is not None
+                
+                result.append(newsletter_dict)
+        
+        return jsonify({
+            'code': 200,
+            'data': result
+        }), 200
+    
+    except Exception as e:
+        logging.exception("getNewsletterswSearch: Error - %s", str(e))
+        return jsonify({
+            'code': 500,
+            'message': 'An error occurred searching newsletters.'
+        }), 500
 
 
 # -----------------------------------------------------------------------------------------
 # [GET] getSpecificNewsletterInfo/<newsletterID>
 # Purpose: Get detailed info for a specific newsletter
 # Used: SpecificStoryNewsletter.vue
-# Input: newsletterID (path param)
+# Input: 
+#   newsletterID (path param)
+#   userID (query param, optional) - for checking isSubscribed and isOwner
+#   userType (query param, optional) - for checking isSubscribed and isOwner
 # Output:
-#   200 - Newsletter details with creator info, patron count, story count
+#   200 - Newsletter details with creator info, subscriberCount, storyCount, isFree, isSubscribed, isOwner
 #   404 - Newsletter not found
 #   500 - Server error
 # -----------------------------------------------------------------------------------------
 @blueprint.route('/getSpecificNewsletterInfo/<newsletterID>', methods=['GET'])
 def get_specific_newsletter_info(newsletterID):
-    # TODO: Implement getSpecificNewsletterInfo endpoint
-    # - Query newsletter by ID
-    # - Get creator info
-    # - Count patrons (subscribers)
-    # - Count stories
-    # - Return full newsletter details
-    return jsonify({
-        'code': 501,
-        'message': 'getSpecificNewsletterInfo endpoint not yet implemented'
-    }), 501
+    try:
+        newsletter_id = int(newsletterID)
+        
+        # Get optional user params for isSubscribed/isOwner check
+        user_id = request.args.get('userID')
+        user_type = request.args.get('userType')
+        
+        with db_manager.get_cursor() as cursor:
+            # Get newsletter with computed counts and creator info
+            cursor.execute('''
+                SELECT 
+                    n."id",
+                    n."newsletterName",
+                    n."newsletterDesc",
+                    n."newsletterBanner",
+                    n."newsletterDisplayPhoto",
+                    n."dateCreated",
+                    n."creatorUserID",
+                    n."creatorUserType",
+                    n."isFree",
+                    (SELECT COUNT(*) FROM "newsletterPatrons" WHERE "newsletterID" = n."id" AND "subscriptionStatus" = 'active') as "subscriberCount",
+                    (SELECT COUNT(*) FROM "stories" WHERE "newsletterID" = n."id" AND "publicationDate" IS NOT NULL AND "publicationDate" <= NOW()) as "storyCount",
+                    CASE 
+                        WHEN n."creatorUserType" = 'user' THEN u."username"
+                        WHEN n."creatorUserType" = 'producer' THEN p."username"
+                        WHEN n."creatorUserType" = 'venue' THEN v."username"
+                        ELSE NULL
+                    END as "creatorUsername",
+                    CASE 
+                        WHEN n."creatorUserType" = 'user' THEN u."displayName"
+                        WHEN n."creatorUserType" = 'producer' THEN p."producerName"
+                        WHEN n."creatorUserType" = 'venue' THEN v."venueName"
+                        ELSE NULL
+                    END as "creatorDisplayName",
+                    CASE 
+                        WHEN n."creatorUserType" = 'user' THEN u."photo"
+                        WHEN n."creatorUserType" = 'producer' THEN p."photo"
+                        WHEN n."creatorUserType" = 'venue' THEN v."photo"
+                        ELSE NULL
+                    END as "creatorPhoto"
+                FROM "newsletters" n
+                LEFT JOIN "users" u ON n."creatorUserType" = 'user' AND n."creatorUserID" = u."id"
+                LEFT JOIN "producers" p ON n."creatorUserType" = 'producer' AND n."creatorUserID" = p."id"
+                LEFT JOIN "venues" v ON n."creatorUserType" = 'venue' AND n."creatorUserID" = v."id"
+                WHERE n."id" = %s
+            ''', (newsletter_id,))
+            
+            newsletter = cursor.fetchone()
+            
+            if not newsletter:
+                return jsonify({
+                    'code': 404,
+                    'message': 'Newsletter not found'
+                }), 404
+            
+            newsletter_dict = dict(newsletter)
+            
+            # Check if current user is subscribed
+            newsletter_dict['isSubscribed'] = False
+            if user_id and user_type:
+                cursor.execute('''
+                    SELECT id FROM "newsletterPatrons"
+                    WHERE "newsletterID" = %s AND "patronUserID" = %s AND "patronUserType" = %s
+                    AND "subscriptionStatus" = 'active'
+                ''', (newsletter_id, user_id, user_type))
+                subscription = cursor.fetchone()
+                newsletter_dict['isSubscribed'] = subscription is not None
+            
+            # Check if current user is the owner
+            newsletter_dict['isOwner'] = False
+            if user_id and user_type:
+                newsletter_dict['isOwner'] = (
+                    str(newsletter['creatorUserID']) == str(user_id) and
+                    newsletter['creatorUserType'] == user_type
+                )
+        
+        return jsonify({
+            'code': 200,
+            'data': newsletter_dict
+        }), 200
+    
+    except ValueError:
+        return jsonify({
+            'code': 400,
+            'message': 'Invalid newsletter ID'
+        }), 400
+    except Exception as e:
+        logging.exception("getSpecificNewsletterInfo: Error - %s", str(e))
+        return jsonify({
+            'code': 500,
+            'message': 'An error occurred retrieving newsletter info.'
+        }), 500
 
 
 # -----------------------------------------------------------------------------------------
@@ -1076,18 +1447,116 @@ def get_specific_newsletter_info(newsletterID):
 # -----------------------------------------------------------------------------------------
 @blueprint.route('/getNewsletterStories/<newsletterID>/<offset>', methods=['GET'])
 def get_newsletter_stories(newsletterID, offset):
-    # TODO: Implement getNewsletterStories endpoint
-    # - Verify newsletter exists
-    # - Query stories where newsletterID matches
-    # - Include creator info for each story
-    # - Include like count
-    # - Include comment count
-    # - Sort by publishingDate DESC (most recent first)
-    # - Paginate (12 per page)
-    return jsonify({
-        'code': 501,
-        'message': 'getNewsletterStories endpoint not yet implemented'
-    }), 501
+    try:
+        # Validate parameters
+        try:
+            newsletter_id = int(newsletterID)
+            offset_val = int(offset)
+        except ValueError:
+            return jsonify({
+                'code': 400,
+                'message': 'Invalid newsletterID or offset. Must be numbers.'
+            }), 400
+        
+        limit = 12  # Stories per page
+        
+        with db_manager.get_cursor() as cursor:
+            # Verify newsletter exists
+            cursor.execute(
+                "SELECT id FROM newsletters WHERE id = %s",
+                (newsletter_id,)
+            )
+            if not cursor.fetchone():
+                return jsonify({
+                    'code': 404,
+                    'message': 'Newsletter not found.'
+                }), 404
+            
+            # Get total count of published stories for this newsletter
+            cursor.execute(
+                """
+                SELECT COUNT(*) as total
+                FROM stories
+                WHERE "newsletterID" = %s
+                AND "publicationDate" <= NOW()
+                """,
+                (newsletter_id,)
+            )
+            total_count = cursor.fetchone()['total']
+            
+            # Get paginated published stories with creator info
+            cursor.execute(
+                """
+                SELECT 
+                    s.id,
+                    s."storyTitle",
+                    s."storyContent",
+                    s."storyPhotos",
+                    s."publicationDate",
+                    s."creatorUserID",
+                    s."creatorUserType",
+                    CASE 
+                        WHEN s."creatorUserType" = 'user' THEN u.username
+                        WHEN s."creatorUserType" = 'producer' THEN p.username
+                        WHEN s."creatorUserType" = 'venue' THEN v.username
+                        ELSE NULL
+                    END as "creatorUsername",
+                    CASE 
+                        WHEN s."creatorUserType" = 'user' THEN u.photo
+                        WHEN s."creatorUserType" = 'producer' THEN p.photo
+                        WHEN s."creatorUserType" = 'venue' THEN v.photo
+                        ELSE NULL
+                    END as "creatorPhoto",
+                    (SELECT COUNT(*) FROM "storiesLikes" WHERE "storyID" = s.id) as "likeCount",
+                    (SELECT COUNT(*) FROM "storyComments" WHERE "storyID" = s.id) as "commentCount"
+                FROM stories s
+                LEFT JOIN users u ON s."creatorUserType" = 'user' AND s."creatorUserID" = u.id
+                LEFT JOIN producers p ON s."creatorUserType" = 'producer' AND s."creatorUserID" = p.id
+                LEFT JOIN venues v ON s."creatorUserType" = 'venue' AND s."creatorUserID" = v.id
+                WHERE s."newsletterID" = %s
+                AND s."publicationDate" <= NOW()
+                ORDER BY s."publicationDate" DESC
+                LIMIT %s OFFSET %s
+                """,
+                (newsletter_id, limit, offset_val)
+            )
+            stories = cursor.fetchall()
+            
+            # Format stories for response
+            formatted_stories = []
+            for story in stories:
+                # Get first photo from array for preview
+                photo = None
+                if story['storyPhotos'] and len(story['storyPhotos']) > 0:
+                    photo = story['storyPhotos'][0]
+                
+                formatted_stories.append({
+                    'id': story['id'],
+                    'title': story['storyTitle'],
+                    'content': story['storyContent'],
+                    'photo': photo,
+                    'publicationDate': story['publicationDate'].isoformat() if story['publicationDate'] else None,
+                    'createdByID': story['creatorUserID'],
+                    'createdByType': story['creatorUserType'],
+                    'creatorUsername': story['creatorUsername'],
+                    'creatorPhoto': story['creatorPhoto'],
+                    'likeCount': story['likeCount'],
+                    'commentCount': story['commentCount']
+                })
+            
+            return jsonify({
+                'code': 200,
+                'stories': formatted_stories,
+                'totalCount': total_count,
+                'hasMore': (offset_val + limit) < total_count
+            }), 200
+            
+    except Exception as e:
+        logging.exception("getNewsletterStories: Error - %s", str(e))
+        return jsonify({
+            'code': 500,
+            'message': 'An error occurred retrieving newsletter stories.'
+        }), 500
 
 
 # -----------------------------------------------------------------------------------------
@@ -1101,18 +1570,43 @@ def get_newsletter_stories(newsletterID, offset):
 # -----------------------------------------------------------------------------------------
 @blueprint.route('/getUserNewsletters/<userID>/<userType>', methods=['GET'])
 def get_user_newsletters(userID, userType):
-    # TODO: Implement getUserNewsletters endpoint
-    # - Query newsletters where creatorUserID and creatorUserType match
-    # - Return id and newsletterName for dropdown
-    return jsonify({
-        'code': 501,
-        'message': 'getUserNewsletters endpoint not yet implemented'
-    }), 501
+    try:
+        # Validate userType
+        if userType not in ['user', 'producer', 'venue']:
+            return jsonify({
+                'code': 400,
+                'message': 'Invalid userType. Must be user, producer, or venue.'
+            }), 400
+        
+        with db_manager.get_cursor() as cursor:
+            cursor.execute('''
+                SELECT "id", "newsletterName", "newsletterDisplayPhoto", "newsletterBanner"
+                FROM "newsletters"
+                WHERE "creatorUserID" = %s AND "creatorUserType" = %s
+                ORDER BY "dateCreated" DESC
+            ''', (userID, userType))
+            
+            newsletters = cursor.fetchall()
+            
+            # Convert to list of dicts
+            result = [dict(n) for n in newsletters] if newsletters else []
+        
+        return jsonify({
+            'code': 200,
+            'data': result
+        }), 200
+    
+    except Exception as e:
+        logging.exception("getUserNewsletters: Error - %s", str(e))
+        return jsonify({
+            'code': 500,
+            'message': 'An error occurred retrieving user newsletters.'
+        }), 500
 
 
 # -----------------------------------------------------------------------------------------
 # [POST] subscribeNewsletter
-# Purpose: Subscribe to a newsletter
+# Purpose: Subscribe to a newsletter (instant, no approval needed)
 # Used: SpecificStoryNewsletter.vue
 # Input:
 #   1. newsletterID - the newsletter to subscribe to
@@ -1123,20 +1617,102 @@ def get_user_newsletters(userID, userType):
 #   400 - Already subscribed or missing data
 #   404 - Newsletter not found
 #   500 - Server error
-# Note: For MVP, all newsletters are free. Stripe integration for paid newsletters coming later.
+# Note: For MVP, all newsletters are free. Stripe fields in newsletterPatrons table
+#       are reserved for future paid newsletter functionality.
 # -----------------------------------------------------------------------------------------
 @blueprint.route('/subscribeNewsletter', methods=['POST'])
 def subscribe_newsletter():
-    # TODO: Implement subscribeNewsletter endpoint
-    # - Verify newsletter exists
-    # - Check if already subscribed (patron)
-    # - Insert into newsletterPatrons table
-    # - For MVP: isFree=true assumed, no payment processing
-    # TODO: Add Stripe integration for paid newsletters
-    return jsonify({
-        'code': 501,
-        'message': 'subscribeNewsletter endpoint not yet implemented'
-    }), 501
+    try:
+        data = request.get_json()
+        
+        # Validate required fields
+        newsletter_id = data.get('newsletterID')
+        user_id = data.get('userID')
+        user_type = data.get('userType')
+        
+        if not all([newsletter_id, user_id, user_type]):
+            return jsonify({
+                'code': 400,
+                'message': 'Missing required fields: newsletterID, userID, userType'
+            }), 400
+        
+        # Validate userType
+        if user_type not in ['user', 'producer', 'venue']:
+            return jsonify({
+                'code': 400,
+                'message': 'Invalid userType. Must be user, producer, or venue.'
+            }), 400
+        
+        with db_manager.get_cursor() as cursor:
+            # Verify newsletter exists
+            cursor.execute(
+                "SELECT id FROM newsletters WHERE id = %s",
+                (newsletter_id,)
+            )
+            if not cursor.fetchone():
+                return jsonify({
+                    'code': 404,
+                    'message': 'Newsletter not found.'
+                }), 404
+            
+            # Check if already subscribed (active patron)
+            cursor.execute(
+                """
+                SELECT id, "subscriptionStatus" FROM "newsletterPatrons"
+                WHERE "newsletterID" = %s AND "patronUserID" = %s AND "patronUserType" = %s
+                """,
+                (newsletter_id, user_id, user_type)
+            )
+            existing = cursor.fetchone()
+            
+            if existing:
+                if existing['subscriptionStatus'] == 'active':
+                    return jsonify({
+                        'code': 400,
+                        'message': 'Already subscribed to this newsletter.'
+                    }), 400
+                else:
+                    # Reactivate existing subscription
+                    cursor.execute(
+                        """
+                        UPDATE "newsletterPatrons"
+                        SET "subscriptionStatus" = 'active', "subscriptionDate" = NOW()
+                        WHERE id = %s
+                        RETURNING id
+                        """,
+                        (existing['id'],)
+                    )
+                    updated = cursor.fetchone()
+                    return jsonify({
+                        'code': 201,
+                        'message': 'Successfully resubscribed to newsletter.',
+                        'patronID': updated['id']
+                    }), 201
+            
+            # Insert new subscription (Stripe fields left NULL for free newsletters)
+            cursor.execute(
+                """
+                INSERT INTO "newsletterPatrons" 
+                ("newsletterID", "patronUserID", "patronUserType", "subscriptionStatus")
+                VALUES (%s, %s, %s, 'active')
+                RETURNING id
+                """,
+                (newsletter_id, user_id, user_type)
+            )
+            new_patron = cursor.fetchone()
+            
+            return jsonify({
+                'code': 201,
+                'message': 'Successfully subscribed to newsletter.',
+                'patronID': new_patron['id']
+            }), 201
+            
+    except Exception as e:
+        logging.exception("subscribeNewsletter: Error - %s", str(e))
+        return jsonify({
+            'code': 500,
+            'message': 'An error occurred while subscribing to newsletter.'
+        }), 500
 
 
 # -----------------------------------------------------------------------------------------
@@ -1154,13 +1730,58 @@ def subscribe_newsletter():
 # -----------------------------------------------------------------------------------------
 @blueprint.route('/unsubscribeNewsletter', methods=['DELETE'])
 def unsubscribe_newsletter():
-    # TODO: Implement unsubscribeNewsletter endpoint
-    # - Check if subscribed (patron)
-    # - Delete from newsletterPatrons table
-    return jsonify({
-        'code': 501,
-        'message': 'unsubscribeNewsletter endpoint not yet implemented'
-    }), 501
+    try:
+        data = request.get_json()
+        
+        # Validate required fields
+        newsletter_id = data.get('newsletterID')
+        user_id = data.get('userID')
+        user_type = data.get('userType')
+        
+        if not all([newsletter_id, user_id, user_type]):
+            return jsonify({
+                'code': 400,
+                'message': 'Missing required fields: newsletterID, userID, userType'
+            }), 400
+        
+        # Validate userType
+        if user_type not in ['user', 'producer', 'venue']:
+            return jsonify({
+                'code': 400,
+                'message': 'Invalid userType. Must be user, producer, or venue.'
+            }), 400
+        
+        with db_manager.get_cursor() as cursor:
+            # Update subscription status to 'cancelled' (soft delete for future analytics)
+            cursor.execute(
+                """
+                UPDATE "newsletterPatrons"
+                SET "subscriptionStatus" = 'cancelled'
+                WHERE "newsletterID" = %s AND "patronUserID" = %s AND "patronUserType" = %s
+                AND "subscriptionStatus" = 'active'
+                RETURNING id
+                """,
+                (newsletter_id, user_id, user_type)
+            )
+            updated = cursor.fetchone()
+            
+            if not updated:
+                return jsonify({
+                    'code': 400,
+                    'message': 'Not subscribed to this newsletter.'
+                }), 400
+            
+            return jsonify({
+                'code': 200,
+                'message': 'Successfully unsubscribed from newsletter.'
+            }), 200
+            
+    except Exception as e:
+        logging.exception("unsubscribeNewsletter: Error - %s", str(e))
+        return jsonify({
+            'code': 500,
+            'message': 'An error occurred while unsubscribing from newsletter.'
+        }), 500
 
 
 # =========================================================================================

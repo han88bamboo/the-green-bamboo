@@ -8,18 +8,19 @@
   Route: /stories/newsletters/:newsletterId/:newsletterName
   
   Features:
-  - Hero banner with newsletter info
-  - Subscribe/Unsubscribe button (TODO: Implement email subscription feature)
-  - Create Story button (only for newsletter creator)
+  - Hero banner with newsletter info (uses newsletterBanner)
+  - Subscribe/Unsubscribe button (in-app subscription, email delivery future TODO)
+  - Create Story button (only for newsletter owner)
   - Stories feed sorted by most recent
   - Sorting options (Newest, Most Liked)
   - Story cards with like/comment counts
+  - 404 handling for newsletter not found
   
   Backend Endpoints Used:
-  - GET /getSpecificNewsletterInfo/<newsletterID> - Get newsletter details
-  - GET /getNewsletterStories/<newsletterID>/<offset> - Get stories in newsletter
-  - POST /subscribeNewsletter - Subscribe to newsletter
-  - DELETE /unsubscribeNewsletter - Unsubscribe from newsletter
+  - GET /stories/getSpecificNewsletterInfo/<newsletterID>?userID=X&userType=Y - Get newsletter details + isOwner, isSubscribed
+  - GET /stories/getNewsletterStories/<newsletterID>/<offset> - Get stories in newsletter
+  - POST /stories/subscribeNewsletter - Subscribe to newsletter (inserts into newsletterPatrons)
+  - DELETE /stories/unsubscribeNewsletter - Unsubscribe from newsletter (sets status='cancelled')
   
   Related Files:
   - backend/scripts/stories.py - Backend API endpoints
@@ -29,21 +30,23 @@
   - frontend/src/views/SpecificStory.vue - Individual story page
   
   Database Tables:
-  - newsletters
-  - newsletterSubscribers
+  - newsletters (includes newsletterBanner, newsletterDisplayPhoto)
+  - newsletterPatrons (NOT newsletterSubscribers)
   - stories
   - storiesLikes
   - storyComments
   
-  NOTE: Subscription for newsletters in this MVP will just be an in-app subscription.
+  NOTE: Subscription for newsletters in this MVP is in-app only.
   Email delivery feature is TODO for future implementation.
+  
+  NOTE: isOwner flag is returned from backend - no need to compute locally.
   =====================================================================================
 -->
 <template>
   <NavBar />
   
   <!-- Hero Banner -->
-  <div class="hero-banner" :style="heroBannerStyle">
+  <div v-if="!notFound && !initialLoading" class="hero-banner" :style="heroBannerStyle">
     <div class="hero-overlay">
       <div class="container">
         <div class="hero-content py-4">
@@ -54,17 +57,6 @@
           </div>
           <h1 class="hero-title fw-bold text-white mb-2">{{ newsletterInfo.newsletterName || 'Loading...' }}</h1>
           <p class="hero-desc text-white-50 mb-3">{{ newsletterInfo.newsletterDesc || '' }}</p>
-          
-          <!-- Drink Type Tags -->
-          <div v-if="newsletterInfo.drinkTypes && newsletterInfo.drinkTypes.length > 0" class="drink-tags mb-3">
-            <span 
-              v-for="drinkType in newsletterInfo.drinkTypes" 
-              :key="drinkType" 
-              class="badge bg-primary text-white me-2 mb-1"
-            >
-              {{ drinkType }}
-            </span>
-          </div>
           
           <!-- Stats & Actions Row -->
           <div class="d-flex align-items-center flex-wrap gap-3">
@@ -104,7 +96,7 @@
               </button>
             </div>
             <span v-else-if="isOwner" class="badge bg-success ms-auto px-3 py-2">
-              <i class="bi bi-star-fill me-1"></i> Your Newsletter
+              <i class="bi bi-star-fill me-1"></i> You Manage This Newsletter
             </span>
             <button
               v-else
@@ -127,7 +119,7 @@
     </div>
   </div>
 
-  <div class="container px-4 mt-4">
+  <div v-if="!notFound && !initialLoading" class="container px-4 mt-4">
     <div class="row">
       <!-- Main Content Column -->
       <div class="col-lg-8">
@@ -352,25 +344,31 @@
             </button>
           </div>
         </div>
-
-        <!-- Related Topic (if linked) -->
-        <div v-if="newsletterInfo.topicId" class="card shadow-sm mb-4">
-          <div class="card-header bg-light">
-            <h6 class="mb-0 fw-bold">Related Topic</h6>
-          </div>
-          <div class="card-body">
-            <router-link 
-              :to="`/stories/topics/${newsletterInfo.topicId}/${slugify(newsletterInfo.topicName)}`"
-              class="text-decoration-none"
-            >
-              <div class="d-flex align-items-center">
-                <i class="bi bi-hash text-warning me-2 fs-4"></i>
-                <span class="fw-bold">{{ newsletterInfo.topicName }}</span>
-              </div>
-            </router-link>
-          </div>
-        </div>
       </div>
+    </div>
+  </div>
+
+  <!-- Initial Loading State -->
+  <div v-if="initialLoading && !notFound" class="container px-4 mt-5">
+    <div class="text-center py-5">
+      <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+      <p class="mt-3 text-muted">Loading newsletter...</p>
+    </div>
+  </div>
+
+  <!-- Newsletter Not Found State -->
+  <div v-if="notFound" class="container px-4 mt-5">
+    <div class="text-center py-5">
+      <i class="bi bi-journal-x text-muted" style="font-size: 5rem;"></i>
+      <h2 class="mt-4 text-muted">Newsletter Not Found</h2>
+      <p class="text-muted mb-4">
+        The newsletter you're looking for doesn't exist or may have been removed.
+      </p>
+      <button class="btn btn-primary" @click="$router.push('/stories/newsletters')">
+        <i class="bi bi-arrow-left me-2"></i>Browse Newsletters
+      </button>
     </div>
   </div>
 
@@ -394,8 +392,8 @@ export default {
         id: null,
         newsletterName: '',
         newsletterDesc: '',
-        drinkTypes: [],
-        newsletterPhoto: null,
+        newsletterBanner: null,       // Banner image for hero
+        newsletterDisplayPhoto: null, // Display photo (optional)
         dateCreated: null,
         subscriberCount: 0,
         storyCount: 0,
@@ -403,8 +401,7 @@ export default {
         createdByType: null,
         creatorUsername: '',
         creatorPhoto: null,
-        topicId: null,
-        topicName: null,
+        isFree: true,                 // Always true for MVP
       },
       
       // Stories
@@ -420,8 +417,13 @@ export default {
       userType: null,
       username: null,
       currentUserPhoto: null,
-      isSubscribed: false,
+      isSubscribed: false,    // From backend response
+      isOwner: false,         // From backend response (not computed)
       subscribing: false,
+      
+      // Page State
+      initialLoading: true,
+      notFound: false,
       
       // Default images
       defaultProfilePhoto: "https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultProfilePhoto.png?v=1748434288",
@@ -431,20 +433,13 @@ export default {
 
   computed: {
     heroBannerStyle() {
-      const bannerUrl = this.newsletterInfo.newsletterPhoto || this.defaultBannerImage;
+      const bannerUrl = this.newsletterInfo.newsletterBanner || this.defaultBannerImage;
       return {
         backgroundImage: `url(${bannerUrl})`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         minHeight: '300px',
       };
-    },
-
-    isOwner() {
-      // Check if current user is the newsletter creator
-      if (!this.newsletterInfo.createdByID || this.userID === 'defaultUser') return false;
-      return String(this.newsletterInfo.createdByID) === String(this.userID) &&
-             this.newsletterInfo.createdByType === this.userType;
     },
   },
 
@@ -465,48 +460,86 @@ export default {
       this.username = accUsername;
     }
 
+    const accPhoto = localStorage.getItem("88B_accPhoto");
+    if (accPhoto) {
+      this.currentUserPhoto = accPhoto;
+    }
+
     // Load newsletter data
     await this.loadNewsletterInfo();
-    await this.loadStories();
+    
+    // Only load stories if newsletter was found
+    if (!this.notFound) {
+      await this.loadStories();
+    }
+    
+    this.initialLoading = false;
   },
 
   methods: {
     async loadNewsletterInfo() {
-      // TODO: Implement API call to /getSpecificNewsletterInfo/<newsletterID>
       const newsletterId = this.$route.params.newsletterId;
       
       try {
-        // const response = await fetch(`${process.env.VUE_APP_BACKEND_LINK}/getSpecificNewsletterInfo/${newsletterId}`);
-        // const data = await response.json();
-        // this.newsletterInfo = data.data;
+        // Build query params for isSubscribed and isOwner checks
+        let queryParams = '';
+        if (this.userID !== 'defaultUser') {
+          queryParams = `?userID=${this.userID}&userType=${this.userType}`;
+        }
         
-        // Placeholder
-        this.newsletterInfo = {
-          id: newsletterId,
-          newsletterName: this.$route.params.newsletterName.replace(/-/g, ' '),
-          newsletterDesc: 'Newsletter description coming soon...',
-          drinkTypes: [],
-          subscriberCount: 0,
-          storyCount: 0,
-        };
+        const response = await this.$axios.get(
+          `${process.env.VUE_APP_API_URL}/stories/getSpecificNewsletterInfo/${newsletterId}${queryParams}`
+        );
+        
+        if (response.data.code === 200 && response.data.data) {
+          const data = response.data.data;
+          this.newsletterInfo = {
+            id: data.newsletterID,
+            newsletterName: data.newsletterName,
+            newsletterDesc: data.newsletterDesc,
+            newsletterBanner: data.newsletterBanner,
+            newsletterDisplayPhoto: data.newsletterDisplayPhoto,
+            dateCreated: data.dateCreated,
+            subscriberCount: data.subscriberCount || 0,
+            storyCount: data.storyCount || 0,
+            createdByID: data.creatorUserID,
+            createdByType: data.creatorUserType,
+            creatorUsername: data.creatorUsername,
+            creatorPhoto: data.creatorPhoto,
+            isFree: data.isFree !== false, // Default to true
+          };
+          // isSubscribed and isOwner come from backend
+          this.isSubscribed = data.isSubscribed || false;
+          this.isOwner = data.isOwner || false;
+        } else if (response.data.code === 404) {
+          this.notFound = true;
+        } else {
+          console.error("Unexpected response:", response.data);
+          this.notFound = true;
+        }
       } catch (error) {
         console.error("Error loading newsletter info:", error);
+        if (error.response?.status === 404 || error.response?.data?.code === 404) {
+          this.notFound = true;
+        } else {
+          useToast().error("Failed to load newsletter. Please try again.");
+        }
       }
     },
 
     async loadStories() {
-      // TODO: Implement API call to /getNewsletterStories/<newsletterID>/<offset>
       this.loading = true;
-      // eslint-disable-next-line no-unused-vars
-      const _newsletterId = this.$route.params.newsletterId;
+      const newsletterId = this.$route.params.newsletterId;
       
       try {
-        // const response = await fetch(`${process.env.VUE_APP_BACKEND_LINK}/getNewsletterStories/${newsletterId}/${this.currentOffset}`);
-        // const data = await response.json();
-        // this.stories = data.data || [];
+        const response = await this.$axios.get(
+          `${process.env.VUE_APP_API_URL}/stories/getNewsletterStories/${newsletterId}/${this.currentOffset}`
+        );
         
-        // Placeholder
-        this.stories = [];
+        if (response.data.code === 200) {
+          this.stories = response.data.data || [];
+          this.hasMoreStories = response.data.hasMore || false;
+        }
       } catch (error) {
         console.error("Error loading stories:", error);
       } finally {
@@ -517,48 +550,94 @@ export default {
     async loadMoreStories() {
       this.loadingMore = true;
       this.currentOffset += 12;
-      // TODO: Append more stories
-      this.loadingMore = false;
+      const newsletterId = this.$route.params.newsletterId;
+      
+      try {
+        const response = await this.$axios.get(
+          `${process.env.VUE_APP_API_URL}/stories/getNewsletterStories/${newsletterId}/${this.currentOffset}`
+        );
+        
+        if (response.data.code === 200) {
+          const newStories = response.data.data || [];
+          this.stories = [...this.stories, ...newStories];
+          this.hasMoreStories = response.data.hasMore || false;
+        }
+      } catch (error) {
+        console.error("Error loading more stories:", error);
+      } finally {
+        this.loadingMore = false;
+      }
     },
 
     async subscribeNewsletter() {
-      // TODO: Implement API call to /subscribeNewsletter
+      if (this.userID === 'defaultUser') {
+        this.$router.push('/login');
+        return;
+      }
+      
       this.subscribing = true;
       try {
-        useToast().info("Newsletter subscription coming soon! (In-app only for MVP, email delivery planned for future)");
-        // After successful subscription:
-        // this.isSubscribed = true;
-        // this.newsletterInfo.subscriberCount++;
+        const response = await this.$axios.post(
+          `${process.env.VUE_APP_API_URL}/stories/subscribeNewsletter`,
+          {
+            newsletterID: this.newsletterInfo.id,
+            userID: this.userID,
+            userType: this.userType,
+          }
+        );
+        
+        if (response.data.code === 201 || response.data.code === 200) {
+          this.isSubscribed = true;
+          this.newsletterInfo.subscriberCount++;
+          useToast().success("Subscribed to newsletter!");
+        } else {
+          useToast().error(response.data.message || "Failed to subscribe");
+        }
       } catch (error) {
         console.error("Error subscribing:", error);
+        useToast().error("Failed to subscribe. Please try again.");
       } finally {
         this.subscribing = false;
       }
     },
 
     showUnsubscribeConfirm() {
-      // TODO: Implement unsubscribe confirmation modal
       if (confirm('Are you sure you want to unsubscribe from this newsletter?')) {
         this.unsubscribeNewsletter();
       }
     },
 
     async unsubscribeNewsletter() {
-      // TODO: Implement API call to /unsubscribeNewsletter
       try {
-        useToast().info("Newsletter unsubscription coming soon!");
-        // After successful unsubscription:
-        // this.isSubscribed = false;
-        // this.newsletterInfo.subscriberCount--;
+        const response = await this.$axios.delete(
+          `${process.env.VUE_APP_API_URL}/stories/unsubscribeNewsletter`,
+          {
+            data: {
+              newsletterID: this.newsletterInfo.id,
+              userID: this.userID,
+              userType: this.userType,
+            }
+          }
+        );
+        
+        if (response.data.code === 200) {
+          this.isSubscribed = false;
+          this.newsletterInfo.subscriberCount = Math.max(0, this.newsletterInfo.subscriberCount - 1);
+          useToast().success("Unsubscribed from newsletter");
+        } else {
+          useToast().error(response.data.message || "Failed to unsubscribe");
+        }
       } catch (error) {
         console.error("Error unsubscribing:", error);
+        useToast().error("Failed to unsubscribe. Please try again.");
       }
     },
 
     openCreateStoryModal() {
-      // TODO: Implement create story modal (can reuse from UserStories.vue)
-      // Newsletter should be pre-selected and read-only since user is creating from this newsletter
-      useToast().info("Story creation modal coming soon! Newsletter will be pre-selected.");
+      // TODO: Navigate to user profile stories page with query params to pre-select this newsletter
+      // Example: /profile/{userType}/{userID}/{username}?tab=stories&createStory=true&newsletterID={id}
+      // For now, show a toast message
+      useToast().info("Story creation feature coming soon! Newsletter will be pre-selected.");
     },
 
     viewStory(story) {
@@ -579,7 +658,7 @@ export default {
     },
 
     goBack() {
-      this.$router.push('/stories/newsletters');
+      this.$router.back();
     },
 
     goToCreatorProfile() {

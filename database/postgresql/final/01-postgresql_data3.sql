@@ -2135,7 +2135,8 @@ CREATE TABLE "newsletters" (
     "id" SERIAL PRIMARY KEY,
     "newsletterName" VARCHAR(255) NOT NULL,
     "newsletterDesc" TEXT,
-    "newsletterBanner" TEXT, -- S3 URL
+    "newsletterDisplayPhoto" TEXT, -- S3 URL for newsletter display photo (square or circle-cropped format, used in BrowseStoryNewsletters cards)
+    "newsletterBanner" TEXT, -- S3 URL for newsletter hero banner image (wide format, used in SpecificStoryNewsletter hero section)
     "dateCreated" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     "creatorUserID" INTEGER NOT NULL, -- user/producer/venue id
     "creatorUserType" VARCHAR(255) NOT NULL, -- 'user', 'producer', or 'venue'

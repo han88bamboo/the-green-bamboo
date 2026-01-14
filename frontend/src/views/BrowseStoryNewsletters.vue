@@ -9,15 +9,14 @@
   
   Features:
   - Search bar for filtering newsletters by name
-  - Grid of newsletter cards showing preview images
-  - Sort by most recent / alphabetical / most subscribers
-  - Filter by drink type (optional)
+  - Grid of newsletter cards showing cover images
+  - Sort by most recent / alphabetical / most subscribers (server-side)
   - Create Newsletter button (for any logged-in user)
-  - Infinite scroll or pagination
+  - Pagination with "Load More" button
   
   Backend Endpoints Used:
-  - GET /getAllNewsletters/<offset> - Get paginated list of newsletters
-  - GET /searchNewsletters/<query>/<offset> - Search newsletters by name
+  - GET /stories/getNewsletters/<offset>?sortBy=X&userID=Y&userType=Z - Get paginated list
+  - GET /stories/getNewsletterswSearch/<offset>/<search>?sortBy=X&userID=Y&userType=Z - Search
   
   Related Files:
   - backend/scripts/stories.py - Backend API endpoints
@@ -28,7 +27,7 @@
   
   Database Tables:
   - newsletters
-  - newsletterSubscribers
+  - newsletterPatrons (subscribers)
   - stories
   =====================================================================================
 -->
@@ -182,26 +181,6 @@
                 </span>
               </div>
             </div>
-
-            <!-- Card Footer with Topics -->
-            <div 
-              v-if="newsletter.drinkTypes && newsletter.drinkTypes.length > 0" 
-              class="card-footer bg-white border-top-0"
-            >
-              <span 
-                v-for="drinkType in newsletter.drinkTypes.slice(0, 3)" 
-                :key="drinkType" 
-                class="badge bg-warning text-dark me-1"
-              >
-                {{ drinkType }}
-              </span>
-              <span 
-                v-if="newsletter.drinkTypes.length > 3" 
-                class="badge bg-secondary"
-              >
-                +{{ newsletter.drinkTypes.length - 3 }}
-              </span>
-            </div>
           </div>
         </div>
       </div>
@@ -254,6 +233,7 @@ export default {
     return {
       // User Info
       userID: "defaultUser",
+      userType: null,
       
       // Newsletters
       newsletters: [],
@@ -279,30 +259,51 @@ export default {
     if (accID) {
       this.userID = accID;
     }
+    
+    const accType = localStorage.getItem("88B_accType");
+    if (accType) {
+      this.userType = accType;
+    }
 
     await this.loadNewsletters();
   },
 
   methods: {
     async loadNewsletters() {
-      // TODO: Implement API call to /getAllNewsletters/<offset>
       this.loading = true;
       this.currentOffset = 0;
       
       try {
-        // const endpoint = this.searchQuery 
-        //   ? `${process.env.VUE_APP_BACKEND_LINK}/searchNewsletters/${encodeURIComponent(this.searchQuery)}/${this.currentOffset}`
-        //   : `${process.env.VUE_APP_BACKEND_LINK}/getAllNewsletters/${this.currentOffset}`;
-        // const response = await fetch(endpoint);
-        // const data = await response.json();
-        // this.newsletters = data.data || [];
-        // this.hasMore = data.hasMore || false;
+        // Build query params for sorting and isSubscribed check
+        const params = new URLSearchParams();
+        params.append('sortBy', this.sortBy);
+        if (this.userID !== 'defaultUser' && this.userType) {
+          params.append('userID', this.userID);
+          params.append('userType', this.userType);
+        }
         
-        // Placeholder - show empty state for now
-        this.newsletters = [];
-        this.hasMore = false;
+        let url;
+        if (this.searchQuery.trim()) {
+          url = `${process.env.VUE_APP_API_URL}/stories/getNewsletterswSearch/${this.currentOffset}/${encodeURIComponent(this.searchQuery.trim())}?${params.toString()}`;
+        } else {
+          url = `${process.env.VUE_APP_API_URL}/stories/getNewsletters/${this.currentOffset}?${params.toString()}`;
+        }
+        
+        const response = await this.$axios.get(url);
+        
+        if (response.data.code === 200) {
+          this.newsletters = response.data.data || [];
+          // Check if there might be more (if we got a full page)
+          this.hasMore = this.newsletters.length === 12;
+        } else {
+          console.error("Error loading newsletters:", response.data.message);
+          this.newsletters = [];
+          this.hasMore = false;
+        }
       } catch (error) {
         console.error("Error loading newsletters:", error);
+        this.newsletters = [];
+        this.hasMore = false;
       } finally {
         this.loading = false;
       }
@@ -313,13 +314,31 @@ export default {
       this.currentOffset += 12;
       
       try {
-        // TODO: Append more newsletters to the list
-        // const response = await fetch(...);
-        // const data = await response.json();
-        // this.newsletters.push(...data.data);
-        // this.hasMore = data.hasMore;
+        // Build query params
+        const params = new URLSearchParams();
+        params.append('sortBy', this.sortBy);
+        if (this.userID !== 'defaultUser' && this.userType) {
+          params.append('userID', this.userID);
+          params.append('userType', this.userType);
+        }
+        
+        let url;
+        if (this.searchQuery.trim()) {
+          url = `${process.env.VUE_APP_API_URL}/stories/getNewsletterswSearch/${this.currentOffset}/${encodeURIComponent(this.searchQuery.trim())}?${params.toString()}`;
+        } else {
+          url = `${process.env.VUE_APP_API_URL}/stories/getNewsletters/${this.currentOffset}?${params.toString()}`;
+        }
+        
+        const response = await this.$axios.get(url);
+        
+        if (response.data.code === 200) {
+          const newNewsletters = response.data.data || [];
+          this.newsletters.push(...newNewsletters);
+          this.hasMore = newNewsletters.length === 12;
+        }
       } catch (error) {
         console.error("Error loading more newsletters:", error);
+        this.currentOffset -= 12; // Reset offset on error
       } finally {
         this.loadingMore = false;
       }
@@ -346,7 +365,8 @@ export default {
     },
 
     getCoverStyle(newsletter) {
-      const imageUrl = newsletter.newsletterPhoto || this.defaultCoverImage;
+      // Use newsletterDisplayPhoto first, fall back to newsletterBanner, then default
+      const imageUrl = newsletter.newsletterDisplayPhoto || newsletter.newsletterBanner || this.defaultCoverImage;
       return {
         backgroundImage: `url(${imageUrl})`,
         backgroundSize: 'cover',

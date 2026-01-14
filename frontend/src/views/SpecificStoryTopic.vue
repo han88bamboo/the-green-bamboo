@@ -40,7 +40,7 @@
   <NavBar />
   
   <!-- Hero Banner -->
-  <div class="hero-banner" :style="heroBannerStyle">
+  <div v-if="!notFound && !initialLoading" class="hero-banner" :style="heroBannerStyle">
     <div class="hero-overlay">
       <div class="container">
         <div class="hero-content py-4">
@@ -113,7 +113,7 @@
     </div>
   </div>
 
-  <div class="container px-4 mt-4">
+  <div v-if="!notFound && !initialLoading" class="container px-4 mt-4">
     <div class="row">
       <!-- Main Content Column -->
       <div class="col-lg-8">
@@ -323,8 +323,32 @@
     </div>
   </div>
 
+  <!-- Initial Loading State -->
+  <div v-if="initialLoading && !notFound" class="container px-4 mt-5">
+    <div class="text-center py-5">
+      <div class="spinner-border text-warning" style="width: 3rem; height: 3rem;" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+      <p class="mt-3 text-muted">Loading topic...</p>
+    </div>
+  </div>
+
+  <!-- Topic Not Found State -->
+  <div v-if="notFound" class="container px-4 mt-5">
+    <div class="text-center py-5">
+      <i class="bi bi-hash text-muted" style="font-size: 5rem;"></i>
+      <h2 class="mt-4 text-muted">Topic Not Found</h2>
+      <p class="text-muted mb-4">
+        The topic you're looking for doesn't exist or may have been removed.
+      </p>
+      <button class="btn btn-warning" @click="$router.push('/stories/topics')">
+        <i class="bi bi-arrow-left me-2"></i>Browse Topics
+      </button>
+    </div>
+  </div>
+
   <!-- TODO: Create Story Modal - implement similar to UserStories.vue modal -->
-  <!-- For now, clicking "Create Story" will show an alert -->
+  <!-- For now, clicking "Create Story" will navigate to /stories/my-stories with query params -->
 </template>
 
 <script>
@@ -369,6 +393,10 @@ export default {
       isSubscribed: false,
       subscribing: false,
       
+      // Page State
+      initialLoading: true,
+      notFound: false,
+      
       // Default images
       defaultProfilePhoto: "https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultProfilePhoto.png?v=1748434288",
       defaultBannerImage: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1200",
@@ -406,7 +434,13 @@ export default {
 
     // Load topic data
     await this.loadTopicInfo();
-    await this.loadStories();
+    
+    // Only load stories if topic was found
+    if (!this.notFound) {
+      await this.loadStories();
+    }
+    
+    this.initialLoading = false;
   },
 
   methods: {
@@ -447,15 +481,13 @@ export default {
           };
           this.isSubscribed = data.data.isSubscribed || false;
         } else if (data.code === 404) {
-          // Topic not found - redirect to 404 page or topics list
-          useToast().error("Topic not found");
-          this.$router.push('/stories/topics');
+          // Topic not found - show not found state
+          this.notFound = true;
         }
       } catch (error) {
         console.error("Error loading topic info:", error);
         if (error.response && error.response.status === 404) {
-          useToast().error("Topic not found");
-          this.$router.push('/stories/topics');
+          this.notFound = true;
         } else {
           useToast().error("Failed to load topic information");
         }
@@ -620,7 +652,9 @@ export default {
     },
 
     openCreateStoryModal() {
-      // Navigate to UserStories.vue with the topic pre-selected
+      // TODO: Update navigation to use user profile stories page pattern:
+      // /profile/{userType}/{userID}/{username}?tab=stories&createStory=true&topicID={id}&topicName={name}
+      // For now, navigate to UserStories.vue with the topic pre-selected
       this.$router.push({
         path: '/stories/my-stories',
         query: { 
