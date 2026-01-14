@@ -131,21 +131,25 @@
                   </div>
                   
                   <!-- Story Title -->
-                  <h5 class="story-title fw-bold mb-2 line-clamp-2">
+                  <h5 class="text-start story-title fw-bold mb-2 line-clamp-2">
                     {{ story.title || story.storyTitle }}
                   </h5>
                   
                   <!-- Story Preview (150 chars) -->
-                  <p class="story-preview text-muted mb-2 flex-grow-1 line-clamp-3">
-                    {{ story.preview || getExcerpt(story.content || story.storyContent, 150) }}
+                  <p class="text-start story-preview text-muted mb-2 flex-grow-1 line-clamp-3">
+                    {{ story.previewExcerpt || getExcerpt(story.content || story.storyContent, 150) }}
                   </p>
                   
                   <!-- Story Meta (bottom) -->
                   <div class="story-meta d-flex align-items-center flex-wrap gap-2 mt-auto">
-                    <!-- Publication Date -->
+                    <!-- Author Username -->
+                    <small class="text-muted">
+                      {{ story.creatorDisplayName || story.creatorUsername }}
+                    </small>
+                    
+                    <!-- Separator and Publication Date -->
                     <small class="text-muted" v-if="!isDraft(story)">
-                      <i class="bi bi-calendar3 me-1"></i>
-                      {{ formatDate(story.publicationDate) }}
+                      · {{ formatDate(story.publicationDate) }}
                     </small>
                     
                     <!-- Topic Badge -->
@@ -165,8 +169,8 @@
                     </span>
                     
                     <!-- Reading Time -->
-                    <small v-if="story.readTime" class="text-muted">
-                      <i class="bi bi-clock me-1"></i>{{ story.readTime }} min read
+                    <small v-if="story.readingTime" class="text-muted">
+                      · {{ story.readingTime }} min read
                     </small>
                   </div>
                 </div>
@@ -756,8 +760,11 @@ export default {
     },
 
     getFeatureImage(story) {
-      // Get feature image from storyPhotos array (first image)
-      const photos = story.storyPhotos || story.featureImage;
+      // Get feature image from featurePhoto or storyPhotos array (first image)
+      if (story.featurePhoto) {
+        return story.featurePhoto;
+      }
+      const photos = story.storyPhotos;
       if (Array.isArray(photos) && photos.length > 0) {
         return photos[0];
       }
@@ -1006,7 +1013,7 @@ export default {
 /* Story title */
 .story-title {
   color: #222;
-  font-size: 1.1rem;
+  font-size: 1.35rem;
   line-height: 1.3;
 }
 
@@ -1077,7 +1084,7 @@ export default {
   }
   
   .story-title {
-    font-size: 1rem;
+    font-size: 1.15rem;
   }
   
   .story-preview {

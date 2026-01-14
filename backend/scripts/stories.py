@@ -2622,12 +2622,17 @@ def get_user_stories(userID, userType, offset):
                 
                 # Generate preview excerpt (first 150 chars, strip HTML)
                 preview_excerpt = ''
+                reading_time = 1  # Default to 1 min
                 if story_dict['storyContent']:
                     # Strip HTML tags
                     text_content = re.sub(r'<[^>]+>', '', story_dict['storyContent'])
                     preview_excerpt = text_content[:150].strip()
                     if len(text_content) > 150:
                         preview_excerpt += '...'
+                    
+                    # Calculate reading time (average 200 words per minute)
+                    word_count = len(text_content.split())
+                    reading_time = max(1, round(word_count / 200))
                 
                 # Determine status
                 is_draft = story_dict['publicationDate'] is None
@@ -2641,6 +2646,7 @@ def get_user_stories(userID, userType, offset):
                     'storyTitle': story_dict['storyTitle'],
                     'previewExcerpt': preview_excerpt,
                     'featurePhoto': feature_photo,
+                    'readingTime': reading_time,
                     'publicationDate': story_dict['publicationDate'].isoformat() if story_dict['publicationDate'] else None,
                     'creationDate': story_dict['creationDate'].isoformat() if story_dict['creationDate'] else None,
                     'topicID': story_dict['topicID'],
