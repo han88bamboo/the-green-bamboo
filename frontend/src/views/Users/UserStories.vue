@@ -95,8 +95,7 @@
             <!-- Create Story Button -->
             <button 
               class="btn primary-btn-less-round-blue fw-bold"
-              data-bs-toggle="modal"
-              data-bs-target="#createStoryModal"
+              @click="$router.push('/stories/create')"
             >
               <i class="bi bi-plus-circle me-1"></i> Create Story
             </button>
@@ -203,8 +202,7 @@
           <button 
             v-if="ownProfile"
             class="btn primary-btn-less-round-blue fw-bold mt-3"
-            data-bs-toggle="modal"
-            data-bs-target="#createStoryModal"
+            @click="$router.push('/stories/create')"
           >
             <i class="bi bi-plus-circle me-1"></i> Create Your First Story
           </button>
@@ -229,10 +227,10 @@
   </div>
 
   <!-- =====================================================================================
-       CREATE STORY MODAL
+       CREATE STORY MODAL - COMMENTED OUT (Now using /stories/create page instead)
        Modeled after the "Create a Post" modal in SpecificAssembly.vue
        ===================================================================================== -->
-  <div class="modal fade" id="createStoryModal" tabindex="-1" aria-hidden="true">
+  <!-- <div class="modal fade" id="createStoryModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
       <div class="modal-content">
         <div class="modal-header">
@@ -241,7 +239,7 @@
         </div>
         <div class="modal-body">
           
-          <!-- Story Title -->
+         
           <div class="mb-3">
             <label class="form-label fw-bold">Title <span class="text-danger">*</span></label>
             <input 
@@ -254,7 +252,7 @@
             <div class="form-text text-end">{{ newStory.title.length }}/500</div>
           </div>
           
-          <!-- Story Content (Rich Text) -->
+         
           <div class="mb-3">
             <label class="form-label fw-bold">Content</label>
             <InlineRichTextEditor
@@ -265,12 +263,12 @@
             />
           </div>
 
-          <!-- Feature Image Upload (Single) -->
+          
           <div class="mb-3">
             <label class="form-label fw-bold">Feature Image</label>
             <div class="form-text mb-2">This image will appear on story cards when browsing.</div>
             <div class="d-flex align-items-start gap-3">
-              <!-- Feature Image Preview -->
+          
               <div v-if="newStory.featureImagePreview" class="position-relative">
                 <img 
                   :src="newStory.featureImagePreview" 
@@ -287,7 +285,7 @@
                   <i class="bi bi-x"></i>
                 </button>
               </div>
-              <!-- Upload Button -->
+              
               <label 
                 v-else
                 class="upload-placeholder d-flex align-items-center justify-content-center rounded border border-dashed"
@@ -307,7 +305,7 @@
             </div>
           </div>
 
-          <!-- Link Drinks -->
+          
           <div class="mb-3">
             <label class="form-label fw-bold">Link Drinks (Optional, max 5)</label>
             <AutocompleteSearchSelector
@@ -317,7 +315,7 @@
             />
             <div class="form-text">Link drinks you're discussing in your story</div>
             
-            <!-- Selected Drinks Display (styled like SpecificAssembly.vue) -->
+          
             <div v-if="newStory.selectedDrinks.length > 0" class="selected-drinks mt-3">
               <div 
                 v-for="drink in newStory.selectedDrinks" 
@@ -352,7 +350,7 @@
             </div>
           </div>
 
-          <!-- Hashtags Input -->
+          
           <div class="mb-3">
             <label class="form-label fw-bold">Hashtags (Optional)</label>
             <div class="input-group">
@@ -373,7 +371,7 @@
             </div>
             <div class="form-text">Type a hashtag and click Add or press Enter</div>
             
-            <!-- Display added hashtags -->
+            
             <div v-if="newStory.hashtags.length > 0" class="mt-2 d-flex flex-wrap gap-2">
               <span 
                 v-for="(tag, index) in newStory.hashtags" 
@@ -391,7 +389,7 @@
             </div>
           </div>
 
-          <!-- Topic Selection -->
+          
           <div class="mb-3">
             <label class="form-label fw-bold">Topic (Optional)</label>
             <select class="form-select" v-model="newStory.topicID">
@@ -407,7 +405,7 @@
             <div class="form-text">Categorize your story under a topic for better discoverability</div>
           </div>
 
-          <!-- Newsletter Selection -->
+          
           <div class="mb-3">
             <label class="form-label fw-bold">Newsletter (Optional)</label>
             <select class="form-select" v-model="newStory.newsletterID">
@@ -430,7 +428,7 @@
             </button>
           </div>
 
-          <!-- Publication Date (Schedule or Publish Now) -->
+        
           <div class="mb-3">
             <label class="form-label fw-bold">Publication</label>
             <div class="form-check mb-2">
@@ -461,7 +459,7 @@
               </label>
             </div>
             
-            <!-- Schedule Date Picker -->
+           
             <div class="mt-3" v-if="!newStory.saveAsDraft">
               <label class="form-label small">Or schedule for later:</label>
               <input 
@@ -502,7 +500,7 @@
         </div>
       </div>
     </div>
-  </div>
+  </div> -->
 
   <!-- =====================================================================================
        MY NEWSLETTERS MODAL
