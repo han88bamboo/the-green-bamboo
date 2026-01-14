@@ -56,14 +56,38 @@
         <i class="bi bi-arrow-left me-1"></i> Back
       </button>
       
-      <!-- Owner Actions (Edit/Delete) - only visible to story owner, hidden during editing -->
-      <div v-if="isOwner && !loading && !error && !isEditingStory" class="owner-actions">
-        <button class="btn btn-sm btn-outline-primary me-2" @click="startEditStory">
-          <i class="bi bi-pencil me-1"></i> Edit
-        </button>
-        <button class="btn btn-sm btn-outline-danger" @click="confirmDelete">
-          <i class="bi bi-trash me-1"></i> Delete
-        </button>
+      <!-- Owner Actions (Edit/Delete) - only visible to story owner -->
+      <div v-if="isStoryOwner && !loading && !error" class="owner-actions">
+        <!-- View Mode: Edit/Delete buttons -->
+        <template v-if="!isEditingStory">
+          <button class="btn btn-sm btn-outline-primary me-2" @click="startEditStory">
+            <i class="bi bi-pencil me-1"></i> Edit
+          </button>
+          <button class="btn btn-sm btn-outline-danger" @click="confirmDelete">
+            <i class="bi bi-trash me-1"></i> Delete
+          </button>
+        </template>
+        <!-- Edit Mode: Cancel/Save buttons -->
+        <template v-else>
+          <button 
+            class="btn btn-sm btn-outline-secondary me-2"
+            @click="cancelEditStory"
+            :disabled="savingStory"
+          >
+            Cancel
+          </button>
+          <button 
+            class="btn btn-sm btn-primary"
+            @click="saveEditStory"
+            :disabled="!editStory.title.trim() || !editStory.content.trim() || savingStory"
+          >
+            <span v-if="savingStory">
+              <span class="spinner-border spinner-border-sm me-1"></span>
+              Saving...
+            </span>
+            <span v-else><i class="bi bi-check-lg me-1"></i>Save Changes</span>
+          </button>
+        </template>
       </div>
     </div>
 
@@ -78,8 +102,8 @@
     <!-- Error State -->
     <div v-else-if="error" class="text-center py-5">
       <i class="bi bi-exclamation-triangle text-danger" style="font-size: 4rem;"></i>
-      <h4 class="text-muted mt-3">Story not found</h4>
-      <p class="text-muted">This story may have been deleted or doesn't exist.</p>
+      <h4 class="text-muted mt-3">{{ errorMessage === 'Story not found' ? 'This story isn\'t published yet' : 'Story not found' }}</h4>
+      <p class="text-muted">{{ errorMessage === 'Story not found' ? 'This story may be a draft or scheduled for later publication.' : 'This story may have been deleted or doesn\'t exist.' }}</p>
       <router-link to="/stories/topics" class="btn btn-primary mt-2">
         Browse Topics
       </router-link>
@@ -87,6 +111,82 @@
 
     <!-- Main Content -->
     <div v-else class="row">
+      <!-- Draft/Scheduled Banner -->
+      <div v-if="(isDraft || isScheduled) && isStoryOwner" class="col-12 mb-4">
+        <div 
+          class="alert d-flex align-items-center justify-content-between flex-wrap gap-3"
+          :class="isDraft ? 'alert-warning' : 'alert-info'"
+        >
+          <div class="d-flex align-items-center gap-2">
+            <i :class="isDraft ? 'bi bi-file-earmark-text' : 'bi bi-clock'" style="font-size: 1.25rem;"></i>
+            <div>
+              <strong v-if="isDraft">Draft</strong>
+              <strong v-else>Scheduled</strong>
+              <span class="ms-2 text-muted" v-if="isScheduled">
+                — Publishes {{ formattedScheduleDate }}
+              </span>
+            </div>
+          </div>
+          
+          <!-- Publication Controls -->
+          <div class="d-flex align-items-center gap-2 flex-wrap">
+            <!-- Publish Now Button -->
+            <button 
+              class="btn btn-sm btn-success" 
+              @click="publishNow"
+              :disabled="publishing"
+            >
+              <span v-if="publishing" class="spinner-border spinner-border-sm me-1"></span>
+              <i v-else class="bi bi-send me-1"></i>
+              Publish Now
+            </button>
+            
+            <!-- Schedule Button (if draft or want to change schedule) -->
+            <button 
+              class="btn btn-sm"
+              :class="showPublicationControls ? 'btn-secondary' : 'btn-outline-secondary'"
+              @click="showPublicationControls = !showPublicationControls"
+            >
+              <i class="bi bi-calendar-event me-1"></i>
+              {{ isScheduled ? 'Change Schedule' : 'Schedule' }}
+            </button>
+          </div>
+        </div>
+        
+        <!-- Schedule Date Picker (expandable) -->
+        <div v-if="showPublicationControls" class="card border-0 shadow-sm mb-3">
+          <div class="card-body">
+            <div class="row align-items-end g-3">
+              <div class="col-md-6">
+                <label class="form-label fw-bold">Schedule Publication Date & Time</label>
+                <input 
+                  type="datetime-local" 
+                  class="form-control"
+                  v-model="scheduleDate"
+                  :min="minScheduleDate"
+                />
+              </div>
+              <div class="col-md-6 d-flex gap-2">
+                <button 
+                  class="btn btn-primary"
+                  @click="schedulePublication"
+                  :disabled="!scheduleDate || publishing"
+                >
+                  <span v-if="publishing" class="spinner-border spinner-border-sm me-1"></span>
+                  <i v-else class="bi bi-calendar-check me-1"></i>
+                  {{ isScheduled ? 'Update Schedule' : 'Schedule' }}
+                </button>
+                <button 
+                  class="btn btn-outline-secondary"
+                  @click="showPublicationControls = false"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
       <!-- Story Content Column -->
       <div class="col-lg-8">
         <article class="story-article">
@@ -114,7 +214,7 @@
             <div v-if="!isEditingStory" class="text-start d-flex align-items-start gap-2 mb-3">
               <h1 class="story-title fw-bold mb-0 flex-grow-1">{{ story.storyTitle }}</h1>
               <button 
-                v-if="isOwner"
+                v-if="isStoryOwner"
                 class="btn btn-sm p-0 text-secondary edit-icon-btn"
                 @click="startEditStory"
                 title="Edit story"
@@ -210,7 +310,7 @@
           <div v-if="!isEditingStory" class="text-start d-flex align-items-start gap-2 mb-4">
             <div class="story-content flex-grow-1" v-html="story.storyContent"></div>
             <button 
-              v-if="isOwner && story.storyContent"
+              v-if="isStoryOwner && story.storyContent"
               class="btn btn-sm p-0 text-secondary edit-icon-btn"
               @click="startEditStory"
               title="Edit content"
@@ -301,28 +401,6 @@
               </button>
             </div>
             <div class="form-text">Only letters and numbers allowed. Max 10 hashtags.</div>
-          </div>
-
-          <!-- Edit Actions -->
-          <div v-if="isEditingStory" class="edit-actions d-flex gap-2 mb-4 pt-2 border-top">
-            <button 
-              class="btn btn-secondary btn-sm"
-              @click="cancelEditStory"
-              :disabled="savingStory"
-            >
-              Cancel
-            </button>
-            <button 
-              class="btn btn-primary btn-sm"
-              @click="saveEditStory"
-              :disabled="!editStory.title.trim() || !editStory.content.trim() || savingStory"
-            >
-              <span v-if="savingStory">
-                <span class="spinner-border spinner-border-sm me-1"></span>
-                Saving...
-              </span>
-              <span v-else>Save Changes</span>
-            </button>
           </div>
 
           <!-- Additional Photos Gallery (View Mode Only) -->
@@ -867,8 +945,20 @@ export default {
       // Loading States
       loading: true,
       error: false,
+      errorMessage: '',
       liking: false,
       deleting: false,
+      
+      // Draft/Schedule State (from API)
+      isDraft: false,
+      isScheduled: false,
+      isOwner: false,
+      
+      // Publication Controls (for editing)
+      showPublicationControls: false,
+      publicationMode: 'publish', // 'publish', 'schedule'
+      scheduleDate: '',
+      publishing: false,
       
       // Edit Story State
       isEditingStory: false,
@@ -903,10 +993,36 @@ export default {
   },
 
   computed: {
-    isOwner() {
+    // Check if current user is owner (use API response if available, otherwise calculate)
+    isStoryOwner() {
+      // If we have isOwner from API, use it
+      if (this.isOwner) return true;
+      // Fallback calculation
       if (!this.story.creatorUserID || this.userID === 'defaultUser') return false;
       return String(this.story.creatorUserID) === String(this.userID) &&
              this.story.creatorUserType === this.userType;
+    },
+    
+    // Format schedule date for display
+    formattedScheduleDate() {
+      if (!this.story.publicationDate) return '';
+      const date = new Date(this.story.publicationDate);
+      return date.toLocaleDateString('en-US', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true
+      });
+    },
+    
+    // Minimum schedule date (must be in the future)
+    minScheduleDate() {
+      const now = new Date();
+      now.setMinutes(now.getMinutes() + 5); // At least 5 minutes from now
+      return now.toISOString().slice(0, 16);
     },
   },
 
@@ -961,10 +1077,10 @@ export default {
       this.error = false;
       
       try {
-        // Build URL with optional viewer params
+        // Build URL with optional user params (backend expects userID/userType)
         let url = `${this.currentURL}/stories/getStory/${storyId}`;
         if (this.userID !== 'defaultUser') {
-          url += `?viewerID=${this.userID}&viewerType=${this.userType}`;
+          url += `?userID=${this.userID}&userType=${this.userType}`;
         }
         
         const response = await fetch(url);
@@ -972,15 +1088,122 @@ export default {
         
         if (data.code === 200) {
           this.story = data.data;
+          // Set draft/scheduled status from API response
+          this.isDraft = data.data.isDraft || false;
+          this.isScheduled = data.data.isScheduled || false;
+          this.isOwner = data.data.isOwner || false;
+          
+          // Pre-fill schedule date if story is scheduled
+          if (this.isScheduled && this.story.publicationDate) {
+            const schedDate = new Date(this.story.publicationDate);
+            this.scheduleDate = schedDate.toISOString().slice(0, 16);
+          }
         } else {
           console.error('Failed to load story:', data.message);
           this.error = true;
+          this.errorMessage = data.message || 'Story not found';
         }
       } catch (error) {
         console.error("Error loading story:", error);
         this.error = true;
+        this.errorMessage = 'Failed to load story';
       } finally {
         this.loading = false;
+      }
+    },
+    
+    // Publish story immediately
+    async publishNow() {
+      if (!this.isStoryOwner || this.publishing) return;
+      
+      // Confirmation prompt
+      if (!confirm('Are you sure you want to publish this story now? This action cannot be undone.')) {
+        return;
+      }
+      
+      this.publishing = true;
+      try {
+        const response = await fetch(`${this.currentURL}/stories/editStory`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            storyID: this.story.id,
+            userID: this.userID,
+            userType: this.userType,
+            publicationDate: new Date().toISOString() // Publish now
+          })
+        });
+        
+        const data = await response.json();
+        
+        if (data.code === 200) {
+          // Update local state
+          this.isDraft = false;
+          this.isScheduled = false;
+          this.story.publicationDate = new Date().toISOString();
+          this.showPublicationControls = false;
+          
+          // Show success feedback
+          alert('Story published successfully!');
+        } else {
+          console.error('Failed to publish story:', data.message);
+          alert('Failed to publish story: ' + (data.message || 'Unknown error'));
+        }
+      } catch (error) {
+        console.error('Error publishing story:', error);
+        alert('Failed to publish story. Please try again.');
+      } finally {
+        this.publishing = false;
+      }
+    },
+    
+    // Schedule story for future publication
+    async schedulePublication() {
+      if (!this.isStoryOwner || this.publishing || !this.scheduleDate) return;
+      
+      const scheduledTime = new Date(this.scheduleDate);
+      if (scheduledTime <= new Date()) {
+        alert('Please select a future date and time.');
+        return;
+      }
+      
+      this.publishing = true;
+      try {
+        const response = await fetch(`${this.currentURL}/stories/editStory`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            storyID: this.story.id,
+            userID: this.userID,
+            userType: this.userType,
+            publicationDate: scheduledTime.toISOString()
+          })
+        });
+        
+        const data = await response.json();
+        
+        if (data.code === 200) {
+          // Update local state
+          this.isDraft = false;
+          this.isScheduled = true;
+          this.story.publicationDate = scheduledTime.toISOString();
+          this.showPublicationControls = false;
+          
+          // Show success feedback
+          alert('Story scheduled for ' + this.formattedScheduleDate);
+        } else {
+          console.error('Failed to schedule story:', data.message);
+          alert('Failed to schedule story: ' + (data.message || 'Unknown error'));
+        }
+      } catch (error) {
+        console.error('Error scheduling story:', error);
+        alert('Failed to schedule story. Please try again.');
+      } finally {
+        this.publishing = false;
       }
     },
 

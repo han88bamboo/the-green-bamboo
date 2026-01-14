@@ -2284,7 +2284,7 @@ def edit_story():
                         'code': 400,
                         'message': 'Title cannot be empty.'
                     }), 400
-                update_fields.append('"title" = %s')
+                update_fields.append('"storyTitle" = %s')
                 update_values.append(title.strip())
             
             if 'content' in data:
@@ -2294,7 +2294,7 @@ def edit_story():
                         'code': 400,
                         'message': 'Content cannot be empty.'
                     }), 400
-                update_fields.append('"content" = %s')
+                update_fields.append('"storyContent" = %s')
                 update_values.append(content)
             
             if 'featureImage' in data:
