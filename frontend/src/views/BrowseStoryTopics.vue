@@ -61,9 +61,9 @@
                 </button>
               </div>
 
-              <!-- Create Topic button -->
+              <!-- Create Topic button (Admin only) -->
               <router-link 
-                v-if="userID && userID !== 'defaultUser'"
+                v-if="userID && userID !== 'defaultUser' && isAdmin"
                 to="/stories/topics/create"
                 class="btn primary-btn-less-round-blue fw-bold btn-md"
               >
@@ -239,7 +239,7 @@
             {{ searchTerm ? 'Try a different search term' : 'Be the first to create a topic!' }}
           </p>
           <router-link 
-            v-if="userID && userID !== 'defaultUser'"
+            v-if="userID && userID !== 'defaultUser' && isAdmin"
             to="/stories/topics/create"
             class="btn primary-btn-less-round-blue fw-bold mt-2"
           >
@@ -249,10 +249,10 @@
       </div>
 
       <!-- Load More Button -->
-      <div v-if="hasMoreTopics && filteredTopics.length > 0" class="text-center mt-4 mb-5">
+      <div v-if="hasMore && filteredTopics.length > 0" class="text-center mt-4 mb-5">
         <button 
           class="btn btn-outline-primary" 
-          @click="loadMoreTopics"
+          @click="loadMore"
           :disabled="loadingMore"
         >
           <span v-if="loadingMore">
@@ -280,11 +280,11 @@ export default {
       // User info
       userID: "defaultUser",
       userType: null,
+      isAdmin: false,
       
       // Topics data
       topics: [],
       filteredTopics: [],
-      paginatedTopics: [],
       
       // UI State
       loading: true,
@@ -292,15 +292,23 @@ export default {
       error: null,
       searchTerm: '',
       sortBy: 'recent',
+      searchTimeout: null, // For debouncing search
       
       // Pagination
-      currentOffset: 0,
-      pageSize: 12,
-      hasMoreTopics: false,
+      currentPage: 1,
+      itemsPerPage: 12,
+      hasMore: true, // Track if more topics available
       
       // Default images
       defaultProfilePhoto: "https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultProfilePhoto.png?v=1748434288",
     };
+  },
+
+  computed: {
+    paginatedTopics() {
+      // Return all filtered topics - pagination is handled by backend
+      return this.filteredTopics;
+    },
   },
 
   async mounted() {
@@ -315,23 +323,52 @@ export default {
       this.userType = accType;
     }
 
+    // Check if user is admin (for showing Create Topic button)
+    const isAdminStr = localStorage.getItem("88B_isAdmin");
+    this.isAdmin = isAdminStr === 'true';
+
     await this.loadTopics();
   },
 
   methods: {
     async loadTopics() {
-      // TODO: Implement API call to /getTopics/<offset>
       this.loading = true;
       this.error = null;
       
       try {
-        // const response = await fetch(`${process.env.VUE_APP_BACKEND_LINK}/getTopics/${this.currentOffset}`);
-        // const data = await response.json();
-        // this.topics = data.data || [];
+        let response;
+        const offset = (this.currentPage - 1) * this.itemsPerPage;
         
-        // Placeholder: empty topics for now
-        this.topics = [];
-        this.filterTopics();
+        if (this.searchTerm.trim()) {
+          // Use search endpoint
+          response = await this.$axios.get(
+            `${process.env.VUE_APP_API_URL}/stories/getTopicswSearch/${offset}/${encodeURIComponent(this.searchTerm.trim())}`
+          );
+        } else {
+          // Use regular get endpoint
+          response = await this.$axios.get(
+            `${process.env.VUE_APP_API_URL}/stories/getTopics/${offset}`
+          );
+        }
+        
+        if (response.data.code === 200) {
+          const newTopics = response.data.data;
+          
+          if (this.currentPage === 1) {
+            this.topics = newTopics;
+          } else {
+            // Append for "load more"
+            this.topics = [...this.topics, ...newTopics];
+          }
+          
+          // Check if there are more to load
+          this.hasMore = newTopics.length === this.itemsPerPage;
+          
+          this.filteredTopics = [...this.topics];
+          this.applySorting();
+        } else {
+          this.error = response.data.message || 'Failed to load topics.';
+        }
       } catch (error) {
         console.error("Error loading topics:", error);
         this.error = "Failed to load topics. Please try again.";
@@ -340,42 +377,51 @@ export default {
       }
     },
 
+    // Debounced search - triggers API call after user stops typing
     filterTopics() {
-      // TODO: Implement search filter
-      let filtered = [...this.topics];
-      
-      if (this.searchTerm) {
-        const search = this.searchTerm.toLowerCase();
-        filtered = filtered.filter(topic => 
-          topic.topicName.toLowerCase().includes(search) ||
-          (topic.topicDesc && topic.topicDesc.toLowerCase().includes(search))
-        );
+      // Clear existing timeout
+      if (this.searchTimeout) {
+        clearTimeout(this.searchTimeout);
       }
       
-      // Sort
-      if (this.sortBy === 'alphabetical') {
-        filtered.sort((a, b) => a.topicName.localeCompare(b.topicName));
-      } else {
-        // Most recent (by dateCreated DESC)
-        filtered.sort((a, b) => new Date(b.dateCreated) - new Date(a.dateCreated));
-      }
+      // Debounce the search - wait 300ms after user stops typing
+      this.searchTimeout = setTimeout(() => {
+        this.currentPage = 1;
+        this.loadTopics();
+      }, 300);
+    },
+
+    // Apply client-side sorting to already-fetched data
+    applySorting() {
+      let sorted = [...this.filteredTopics];
       
-      this.filteredTopics = filtered;
-      this.paginatedTopics = filtered.slice(0, this.pageSize);
-      this.hasMoreTopics = filtered.length > this.pageSize;
+      sorted.sort((a, b) => {
+        switch (this.sortBy) {
+          case 'alphabetical':
+            return a.topicName.localeCompare(b.topicName);
+          case 'recent':
+          default:
+            return new Date(b.dateCreated) - new Date(a.dateCreated);
+        }
+      });
+      
+      this.filteredTopics = sorted;
     },
 
     setSortBy(sort) {
       this.sortBy = sort;
-      this.filterTopics();
+      this.applySorting();
+    },
+
+    loadMore() {
+      this.currentPage++;
+      this.loadMoreTopics();
     },
 
     async loadMoreTopics() {
-      // TODO: Implement pagination
       this.loadingMore = true;
       try {
-        this.currentOffset += this.pageSize;
-        // API call...
+        await this.loadTopics();
       } catch (error) {
         console.error("Error loading more topics:", error);
       } finally {
@@ -480,6 +526,23 @@ export default {
   }
   .mobile-mt-3 {
     margin-top: 1rem !important;
+  }
+}
+
+/* Let the search NOT take full width on mobile */
+.search-compact {
+  flex: 0 1 70%;
+  max-width: 70%;
+}
+
+.search-compact .form-control {
+  min-width: 0;
+}
+
+@media (min-width: 768px) {
+  .search-compact {
+    flex: 0 0 400px;
+    max-width: 400px;
   }
 }
 </style>

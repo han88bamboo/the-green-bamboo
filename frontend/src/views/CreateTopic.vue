@@ -10,14 +10,13 @@
   Features:
   - Topic name input (with uniqueness validation)
   - Topic description textarea
-  - Drink type multi-select (optional)
+  - Drink type multi-select (optional, fetched from backend)
   - Topic banner image upload
   - Preview card
   - Form validation
   
   Backend Endpoints Used:
-  - POST /createTopic - Create new topic
-  - GET /checkTopicNameAvailability/<name> - Check name uniqueness
+  - POST /stories/createTopic - Create new topic
   
   Related Files:
   - backend/scripts/stories.py - Backend API endpoints
@@ -30,7 +29,7 @@
   - topics
   
   Access Control:
-  - Any logged-in user can create a topic
+  - Admin only (users.isAdmin = true)
   =====================================================================================
 -->
 <template>
@@ -67,6 +66,22 @@
       </div>
     </div>
 
+    <!-- Admin Required Message -->
+    <div v-else-if="!isAdmin" class="row">
+      <div class="col-lg-8 mx-auto">
+        <div class="card shadow-sm">
+          <div class="card-body text-center py-5">
+            <i class="bi bi-shield-lock text-muted" style="font-size: 4rem;"></i>
+            <h4 class="mt-3">Admin Access Required</h4>
+            <p class="text-muted">Only administrators can create topics.</p>
+            <router-link to="/stories/topics" class="btn btn-outline-primary mt-2">
+              <i class="bi bi-arrow-left me-2"></i> Back to Topics
+            </router-link>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Create Form -->
     <div v-else class="row">
       <!-- Form Column -->
@@ -87,22 +102,19 @@
                     class="form-control"
                     :class="{ 
                       'is-invalid': nameError,
-                      'is-valid': nameAvailable && formData.topicName.length > 0
+                      'is-valid': nameAvailable && formData.topicName.length >= 4
                     }"
                     v-model="formData.topicName"
-                    @input="checkNameAvailability"
-                    placeholder="Enter topic name"
-                    maxlength="100"
+                    @input="validateName"
+                    placeholder="Enter topic name (4-255 characters)"
+                    maxlength="255"
                     required
                   />
                 </div>
                 <div v-if="nameError" class="invalid-feedback d-block">{{ nameError }}</div>
-                <div v-else-if="nameAvailable" class="valid-feedback d-block">Topic name is available!</div>
-                <div v-else-if="checkingName" class="form-text">
-                  <span class="spinner-border spinner-border-sm me-1"></span> Checking availability...
-                </div>
+                <div v-else-if="nameAvailable" class="valid-feedback d-block">Topic name looks good!</div>
                 <small class="form-text text-muted">
-                  Names must be unique (case-insensitive). {{ formData.topicName.length }}/100 characters
+                  {{ formData.topicName.length }}/255 characters. Emojis allowed.
                 </small>
               </div>
 
@@ -130,29 +142,31 @@
                 </label>
                 <p class="small text-muted mb-2">Select drink types related to this topic</p>
                 
-                <!-- TODO: Implement multi-select for drink types -->
-                <!-- Model after existing drink type selectors in the app -->
-                <div class="drink-types-selector border rounded p-3">
-                  <div class="row">
-                    <div 
-                      v-for="drinkType in availableDrinkTypes" 
-                      :key="drinkType"
-                      class="col-6 col-md-4 mb-2"
-                    >
-                      <div class="form-check">
-                        <input 
-                          type="checkbox"
-                          class="form-check-input"
-                          :id="`drink-${drinkType}`"
-                          :value="drinkType"
-                          v-model="formData.drinkTypes"
-                        />
-                        <label class="form-check-label" :for="`drink-${drinkType}`">
-                          {{ drinkType }}
-                        </label>
-                      </div>
-                    </div>
+                <!-- Loading state for drink types -->
+                <div v-if="loadingDrinkTypes" class="text-muted">
+                  <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                  Loading drink types...
+                </div>
+                
+                <!-- Drink types checkboxes (pill-style like CreateAssembly) -->
+                <div v-else class="d-flex flex-wrap gap-2">
+                  <div 
+                    v-for="drinkType in drinkTypesList" 
+                    :key="drinkType.drinkType"
+                    class="drink-type-pill"
+                    :class="{ 'selected': formData.drinkTypes.includes(drinkType.drinkType) }"
+                    @click="toggleDrinkType(drinkType.drinkType)"
+                  >
+                    {{ drinkType.drinkType }}
                   </div>
+                </div>
+                
+                <!-- Selected drink types display -->
+                <div v-if="formData.drinkTypes.length > 0" class="mt-2">
+                  <small class="text-success">
+                    <i class="bi bi-check-circle me-1"></i>
+                    Selected: {{ formData.drinkTypes.join(', ') }}
+                  </small>
                 </div>
               </div>
 
@@ -304,6 +318,7 @@ export default {
       // User State
       userID: "defaultUser",
       userType: null,
+      isAdmin: false,
       
       // Form Data
       formData: {
@@ -317,29 +332,16 @@ export default {
       // Validation
       nameError: '',
       nameAvailable: false,
-      checkingName: false,
-      nameCheckTimeout: null,
       
       // UI State
       submitting: false,
       isDragging: false,
+      loading: false,
+      error: null,
       
-      // Available Drink Types
-      // TODO: Fetch from backend or use shared constants
-      availableDrinkTypes: [
-        'Wine',
-        'Beer',
-        'Whiskey',
-        'Gin',
-        'Vodka',
-        'Rum',
-        'Tequila',
-        'Brandy',
-        'Liqueur',
-        'Cocktails',
-        'Sake',
-        'Other Spirits'
-      ],
+      // Drink types from database
+      drinkTypesList: [],
+      loadingDrinkTypes: false,
       
       // Default images
       defaultBannerImage: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800",
@@ -348,10 +350,10 @@ export default {
 
   computed: {
     isFormValid() {
-      return this.formData.topicName.trim().length > 0 &&
-             this.formData.topicDesc.trim().length > 0 &&
-             this.nameAvailable &&
-             !this.nameError;
+      return this.formData.topicName.trim().length >= 4 &&
+             this.formData.topicName.trim().length <= 255 &&
+             !this.nameError &&
+             this.nameAvailable;
     },
 
     previewBannerStyle() {
@@ -376,15 +378,26 @@ export default {
     if (accType) {
       this.userType = accType;
     }
+
+    // Check if user is admin
+    const isAdminStr = localStorage.getItem("88B_isAdmin");
+    this.isAdmin = isAdminStr === 'true';
+
+    // Redirect if not logged in
+    if (!this.userID || this.userID === 'defaultUser') {
+      const toast = useToast();
+      toast.error('Please log in to create a topic.');
+      this.$router.push('/stories/topics');
+      return;
+    }
+
+    // Load drink types from API
+    this.getDrinkTypes();
   },
 
   methods: {
-    checkNameAvailability() {
-      // Debounce the check
-      if (this.nameCheckTimeout) {
-        clearTimeout(this.nameCheckTimeout);
-      }
-
+    // Validate topic name (4-255 chars, emojis allowed)
+    validateName() {
       this.nameAvailable = false;
       this.nameError = '';
 
@@ -395,44 +408,47 @@ export default {
         return;
       }
 
-      if (name.length < 3) {
-        this.nameError = 'Topic name must be at least 3 characters';
+      if (name.length < 4) {
+        this.nameError = 'Topic name must be at least 4 characters';
         return;
       }
 
-      if (name.length > 100) {
-        this.nameError = 'Topic name must be less than 100 characters';
+      if (name.length > 255) {
+        this.nameError = 'Topic name cannot exceed 255 characters';
         return;
       }
 
-      // Check for invalid characters
-      if (!/^[a-zA-Z0-9\s\-_]+$/.test(name)) {
-        this.nameError = 'Topic name can only contain letters, numbers, spaces, hyphens, and underscores';
-        return;
+      // Name is valid - we'll check uniqueness on submit (like assemblies)
+      this.nameAvailable = true;
+    },
+
+    // Toggle drink type selection (like CreateAssembly)
+    toggleDrinkType(drinkType) {
+      const index = this.formData.drinkTypes.indexOf(drinkType);
+      if (index > -1) {
+        // Remove if already selected
+        this.formData.drinkTypes.splice(index, 1);
+      } else {
+        // Add if not selected
+        this.formData.drinkTypes.push(drinkType);
       }
+    },
 
-      this.checkingName = true;
-
-      this.nameCheckTimeout = setTimeout(async () => {
-        // TODO: Implement API call to /checkTopicNameAvailability/<name>
-        try {
-          // const response = await fetch(`${process.env.VUE_APP_BACKEND_LINK}/checkTopicNameAvailability/${encodeURIComponent(name)}`);
-          // const data = await response.json();
-          // if (data.available) {
-          //   this.nameAvailable = true;
-          // } else {
-          //   this.nameError = 'This topic name is already taken';
-          // }
-
-          // Placeholder - assume available
-          this.nameAvailable = true;
-        } catch (error) {
-          console.error("Error checking name availability:", error);
-          this.nameError = 'Error checking availability';
-        } finally {
-          this.checkingName = false;
-        }
-      }, 500);
+    // Get drink types from database (like CreateAssembly)
+    async getDrinkTypes() {
+      this.loadingDrinkTypes = true;
+      try {
+        const response = await this.$axios.get(
+          `${process.env.VUE_APP_API_URL}/getData/getDrinkTypes`
+        );
+        // API returns array directly
+        this.drinkTypesList = response.data || [];
+      } catch (error) {
+        console.error('Error fetching drink types:', error);
+        // Don't show error - drink types are optional
+      } finally {
+        this.loadingDrinkTypes = false;
+      }
     },
 
     handleImageSelect(event) {
@@ -457,11 +473,11 @@ export default {
         return;
       }
 
-      // Create preview
+      // Create preview and convert to base64
       const reader = new FileReader();
       reader.onload = (e) => {
         this.formData.topicBannerPreview = e.target.result;
-        this.formData.topicBanner = file;
+        this.formData.topicBanner = e.target.result; // Store base64 for upload
       };
       reader.readAsDataURL(file);
     },
@@ -475,44 +491,62 @@ export default {
       if (!this.isFormValid) return;
 
       this.submitting = true;
+      this.error = null;
 
       try {
-        // TODO: Implement API call to /createTopic
-        // 1. First upload image to S3 if provided
-        // 2. Then create topic with image URL
-        
-        // const formPayload = {
-        //   topicName: this.formData.topicName.trim(),
-        //   topicDesc: this.formData.topicDesc.trim(),
-        //   drinkTypes: this.formData.drinkTypes,
-        //   topicBanner: uploadedImageUrl,
-        //   createdByID: this.userID,
-        //   createdByType: this.userType,
-        // };
-        
-        // const response = await fetch(`${process.env.VUE_APP_BACKEND_LINK}/createTopic`, {
-        //   method: 'POST',
-        //   headers: { 'Content-Type': 'application/json' },
-        //   body: JSON.stringify(formPayload),
-        // });
-        // const data = await response.json();
-        
-        // if (data.code === 201) {
-        //   useToast().success("Topic created successfully!");
-        //   this.$router.push(`/stories/topics/${data.topicId}/${this.slugify(this.formData.topicName)}`);
-        // }
+        // Build the request payload (image is base64, backend handles S3 upload)
+        const topicPayload = {
+          creatorID: this.userID,
+          creatorType: this.userType,
+          topicName: this.formData.topicName.trim(),
+          topicDesc: this.formData.topicDesc.trim() || null,
+          drinkTypes: this.formData.drinkTypes,
+        };
 
-        useToast().info("Topic creation coming soon!");
+        // Add banner image if provided (as base64)
+        if (this.formData.topicBanner) {
+          topicPayload.image64 = this.formData.topicBanner;
+        }
+
+        const response = await this.$axios.post(
+          `${process.env.VUE_APP_API_URL}/stories/createTopic`,
+          topicPayload
+        );
+
+        if (response.data.code === 201) {
+          const toast = useToast();
+          toast.success('Topic created successfully!');
+          
+          // Navigate to the new topic page
+          this.$router.push(`/stories/topics/${response.data.data.topicID}/${this.slugify(this.formData.topicName)}`);
+        } else {
+          // Handle validation errors from backend (e.g., duplicate name)
+          this.error = response.data.message || 'Failed to create topic. Please try again.';
+          if (response.data.message && response.data.message.includes('already exists')) {
+            this.nameError = response.data.message;
+            this.nameAvailable = false;
+          }
+          useToast().error(this.error);
+        }
       } catch (error) {
-        console.error("Error creating topic:", error);
-        useToast().error("Failed to create topic. Please try again.");
+        console.error('Error creating topic:', error);
+        if (error.response && error.response.data && error.response.data.message) {
+          this.error = error.response.data.message;
+          if (this.error.includes('already exists')) {
+            this.nameError = this.error;
+            this.nameAvailable = false;
+          }
+        } else {
+          this.error = 'Failed to create topic. Please try again later.';
+        }
+        useToast().error(this.error);
       } finally {
         this.submitting = false;
       }
     },
 
     goBack() {
-      this.$router.push('/stories/topics');
+      this.$router.back();
     },
 
     slugify(text) {
@@ -568,9 +602,36 @@ export default {
   top: 100px;
 }
 
-/* Drink Types Selector */
-.drink-types-selector {
-  max-height: 200px;
-  overflow-y: auto;
+/* Drink Type Pills (like CreateAssembly) */
+.drink-type-pill {
+  padding: 8px 16px;
+  border: 2px solid #dee2e6;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background-color: #fff;
+  font-size: 14px;
+}
+
+.drink-type-pill:hover {
+  border-color: #0d6efd;
+  background-color: #f8f9fa;
+}
+
+.drink-type-pill.selected {
+  border-color: #0d6efd;
+  background-color: #0d6efd;
+  color: white;
+}
+
+.btn-primary {
+  background-color: #0d6efd;
+  border-color: #0d6efd;
+}
+
+.btn-primary:disabled {
+  background-color: #6c757d;
+  border-color: #6c757d;
+  cursor: not-allowed;
 }
 </style>

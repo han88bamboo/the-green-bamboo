@@ -54,6 +54,7 @@
 
 import os
 import re
+import logging
 from flask import Blueprint, request, jsonify
 from datetime import datetime
 from scripts import notifications
@@ -265,32 +266,141 @@ def process_hashtags(cursor, hashtags_list):
 
 # -----------------------------------------------------------------------------------------
 # [POST] createTopic
-# Purpose: Create a new topic for categorizing stories
+# Purpose: Create a new topic for categorizing stories (Admin only)
 # Used: CreateTopic.vue
 # Input:
-#   1. creatorID - the user's ID in the 'users', 'producers' or 'venues' table
-#   2. creatorType - 'user', 'producer' or 'venue'
-#   3. topicName - name of the topic (4-255 chars)
-#   4. topicDesc - description (optional)
+#   1. creatorID - the user's ID in the 'users' table (must be admin)
+#   2. creatorType - must be 'user' (only users can be admins)
+#   3. topicName - name of the topic (4-255 chars, emojis allowed)
+#   4. topicDesc - description (optional, max 500 chars)
 #   5. drinkTypes - array of drink types like ['Wine', 'Whisky'] (optional)
 #   6. image64 - base64 banner image (optional)
 # Output: Possible return codes:
 #   201 - Topic created successfully
-#   400 - Validation error
+#   400 - Validation error (missing data, invalid name, duplicate name)
+#   403 - Not authorized (not an admin)
 #   500 - Server error
 # -----------------------------------------------------------------------------------------
 @blueprint.route('/createTopic', methods=['POST'])
 def create_topic():
-    # TODO: Implement createTopic endpoint
-    # - Validate topic name (4-255 chars)
-    # - Check for duplicate topic name (case-insensitive, global)
-    # - Upload banner image to S3 if provided
-    # - Insert into topics table
-    # - Return created topic ID
-    return jsonify({
-        'code': 501,
-        'message': 'createTopic endpoint not yet implemented'
-    }), 501
+    try:
+        data = request.get_json()
+        
+        # Get required fields
+        creator_id = data.get('creatorID')
+        creator_type = data.get('creatorType')
+        topic_name = data.get('topicName', '').strip()
+        
+        # Get optional fields
+        topic_desc = data.get('topicDesc', '').strip() or None
+        drink_types = data.get('drinkTypes', [])  # Array of drink types
+        
+        # Validate required fields
+        if not creator_id or not creator_type:
+            return jsonify({
+                'code': 400,
+                'message': 'Missing required fields: creatorID and creatorType are required.'
+            }), 400
+        
+        # Validate topic name length (4-255 chars) - frontend handles other validation
+        if not topic_name or len(topic_name) < 4:
+            return jsonify({
+                'code': 400,
+                'message': 'Topic name must be at least 4 characters.'
+            }), 400
+        if len(topic_name) > 255:
+            return jsonify({
+                'code': 400,
+                'message': 'Topic name cannot exceed 255 characters.'
+            }), 400
+        
+        # Validate description length (max 500 chars)
+        if topic_desc and len(topic_desc) > 500:
+            return jsonify({
+                'code': 400,
+                'message': 'Description cannot exceed 500 characters.'
+            }), 400
+        
+        # Normalize name for uniqueness check
+        normalized_name = normalize_name_for_uniqueness(topic_name)
+        
+        with db_manager.get_cursor() as cursor:
+            # Check if user is admin (only admins can create topics)
+            if creator_type != 'user':
+                return jsonify({
+                    'code': 403,
+                    'message': 'Only admin users can create topics.'
+                }), 403
+            
+            cursor.execute('''
+                SELECT "isAdmin" FROM "users" WHERE "id" = %s
+            ''', (creator_id,))
+            user_data = cursor.fetchone()
+            
+            if not user_data:
+                return jsonify({
+                    'code': 404,
+                    'message': 'User not found.'
+                }), 404
+            
+            if not user_data['isAdmin']:
+                return jsonify({
+                    'code': 403,
+                    'message': 'Only admin users can create topics.'
+                }), 403
+            
+            # Check for duplicate topic name (case-insensitive, ignoring emojis)
+            cursor.execute('''
+                SELECT id FROM "topics" 
+                WHERE LOWER(REGEXP_REPLACE("topicName", '[^\w\s]', '', 'g')) = %s
+            ''', (normalized_name,))
+            
+            existing = cursor.fetchone()
+            if existing:
+                return jsonify({
+                    'code': 400,
+                    'data': {
+                        'topicName': topic_name
+                    },
+                    'message': 'A topic with this name already exists.'
+                }), 400
+            
+            # Upload banner image if provided
+            banner_url = None
+            if 'image64' in data and data['image64']:
+                base64_string = re.sub(r'^data:image\/[a-zA-Z]+;base64,', '', data['image64'])
+                banner_url = s3Images.uploadBase64ImageToS3(base64_string)
+            
+            # Get current timestamp
+            date_created = datetime.now()
+            
+            # Convert drink_types list to PostgreSQL array format (or None if empty)
+            drink_types_array = drink_types if drink_types and len(drink_types) > 0 else None
+            
+            # Insert new topic - createdByType is 'admin' for admin-created topics
+            cursor.execute('''
+                INSERT INTO "topics" 
+                ("topicName", "topicDesc", "drinkTypes", "topicBanner", "dateCreated", "createdByID", "createdByType")
+                VALUES (%s, %s, %s, %s, %s, NULL, 'admin')
+                RETURNING id
+            ''', (topic_name, topic_desc, drink_types_array, banner_url, date_created))
+            
+            topic_id = cursor.fetchone()['id']
+        
+        return jsonify({
+            'code': 201,
+            'data': {
+                'topicID': topic_id,
+                'message': 'Topic created successfully'
+            }
+        }), 201
+    
+    except Exception as e:
+        print(f"Error creating topic: {str(e)}")
+        return jsonify({
+            'code': 500,
+            'message': 'An error occurred creating the topic.'
+        }), 500
 
 
 # -----------------------------------------------------------------------------------------
@@ -304,22 +414,85 @@ def create_topic():
 # -----------------------------------------------------------------------------------------
 @blueprint.route('/getTopics/<offset>', methods=['GET'])
 def get_topics(offset):
-    # TODO: Implement getTopics endpoint
-    # - Query topics table with pagination (12 per page)
-    # - Join with creator info (users/producers/venues)
-    # - Get story count per topic
-    # - Get subscriber count per topic  
-    # - Get preview stories with photos (up to 3)
-    # - Sort by most recent (dateCreated DESC)
-    return jsonify({
-        'code': 501,
-        'message': 'getTopics endpoint not yet implemented'
-    }), 501
+    try:
+        offset = int(offset)
+        limit = 12  # Fixed page size
+        
+        with db_manager.get_cursor() as cursor:
+            # Main query - topics with subscriber and story counts computed via subqueries
+            # Creator info is only shown if NOT admin-created (createdByType != 'admin')
+            cursor.execute('''
+                SELECT 
+                    t."id",
+                    t."topicName",
+                    t."topicDesc",
+                    t."drinkTypes",
+                    t."topicBanner",
+                    t."dateCreated",
+                    t."createdByID",
+                    t."createdByType",
+                    (SELECT COUNT(*) FROM "topicSubscribers" WHERE "topicID" = t."id") as "subscriberCount",
+                    (SELECT COUNT(*) FROM "stories" WHERE "topicID" = t."id" AND "publicationDate" IS NOT NULL AND "publicationDate" <= NOW()) as "storyCount",
+                    CASE 
+                        WHEN t."createdByType" = 'user' THEN u."username"
+                        WHEN t."createdByType" = 'producer' THEN p."username"
+                        WHEN t."createdByType" = 'venue' THEN v."username"
+                        ELSE NULL
+                    END as "creatorUsername",
+                    CASE 
+                        WHEN t."createdByType" = 'user' THEN u."displayName"
+                        WHEN t."createdByType" = 'producer' THEN p."producerName"
+                        WHEN t."createdByType" = 'venue' THEN v."venueName"
+                        ELSE NULL
+                    END as "creatorDisplayName",
+                    CASE 
+                        WHEN t."createdByType" = 'user' THEN u."photo"
+                        WHEN t."createdByType" = 'producer' THEN p."photo"
+                        WHEN t."createdByType" = 'venue' THEN v."photo"
+                        ELSE NULL
+                    END as "creatorPhoto"
+                FROM "topics" t
+                LEFT JOIN "users" u ON t."createdByType" = 'user' AND t."createdByID" = u."id"
+                LEFT JOIN "producers" p ON t."createdByType" = 'producer' AND t."createdByID" = p."id"
+                LEFT JOIN "venues" v ON t."createdByType" = 'venue' AND t."createdByID" = v."id"
+                ORDER BY t."dateCreated" DESC
+                LIMIT %s OFFSET %s
+            ''', (limit, offset))
+            
+            topics = cursor.fetchall()
+            
+            if not topics:
+                return jsonify({
+                    'code': 200,
+                    'data': [],
+                    'message': 'No topics found'
+                }), 200
+            
+            # Get preview stories for each topic (up to 3 with photos)
+            result = []
+            for topic in topics:
+                topic_dict = dict(topic)
+                topic_dict['previewStories'] = get_story_preview_photos(
+                    cursor, topic_id=topic['id'], limit=3
+                )
+                result.append(topic_dict)
+        
+        return jsonify({
+            'code': 200,
+            'data': result
+        }), 200
+    
+    except Exception as e:
+        print(f"Error getting topics: {str(e)}")
+        return jsonify({
+            'code': 500,
+            'message': 'An error occurred retrieving topics.'
+        }), 500
 
 
 # -----------------------------------------------------------------------------------------
 # [GET] getTopicswSearch/<offset>/<search>
-# Purpose: Search topics by name
+# Purpose: Search topics by name or description
 # Used: BrowseStoryTopics.vue
 # Input: offset, search (path params)
 # Output:
@@ -328,37 +501,185 @@ def get_topics(offset):
 # -----------------------------------------------------------------------------------------
 @blueprint.route('/getTopicswSearch/<offset>/<search>', methods=['GET'])
 def get_topics_with_search(offset, search):
-    # TODO: Implement getTopicswSearch endpoint
-    # - Same as getTopics but with WHERE clause for search
-    # - Use ILIKE for case-insensitive search on topicName
-    return jsonify({
-        'code': 501,
-        'message': 'getTopicswSearch endpoint not yet implemented'
-    }), 501
+    try:
+        offset = int(offset)
+        limit = 12  # Fixed page size
+        search_term = f'%{search}%'
+        
+        with db_manager.get_cursor() as cursor:
+            # Main query with search filter on topicName and topicDesc (like assemblies)
+            cursor.execute('''
+                SELECT 
+                    t."id",
+                    t."topicName",
+                    t."topicDesc",
+                    t."drinkTypes",
+                    t."topicBanner",
+                    t."dateCreated",
+                    t."createdByID",
+                    t."createdByType",
+                    (SELECT COUNT(*) FROM "topicSubscribers" WHERE "topicID" = t."id") as "subscriberCount",
+                    (SELECT COUNT(*) FROM "stories" WHERE "topicID" = t."id" AND "publicationDate" IS NOT NULL AND "publicationDate" <= NOW()) as "storyCount",
+                    CASE 
+                        WHEN t."createdByType" = 'user' THEN u."username"
+                        WHEN t."createdByType" = 'producer' THEN p."username"
+                        WHEN t."createdByType" = 'venue' THEN v."username"
+                        ELSE NULL
+                    END as "creatorUsername",
+                    CASE 
+                        WHEN t."createdByType" = 'user' THEN u."displayName"
+                        WHEN t."createdByType" = 'producer' THEN p."producerName"
+                        WHEN t."createdByType" = 'venue' THEN v."venueName"
+                        ELSE NULL
+                    END as "creatorDisplayName",
+                    CASE 
+                        WHEN t."createdByType" = 'user' THEN u."photo"
+                        WHEN t."createdByType" = 'producer' THEN p."photo"
+                        WHEN t."createdByType" = 'venue' THEN v."photo"
+                        ELSE NULL
+                    END as "creatorPhoto"
+                FROM "topics" t
+                LEFT JOIN "users" u ON t."createdByType" = 'user' AND t."createdByID" = u."id"
+                LEFT JOIN "producers" p ON t."createdByType" = 'producer' AND t."createdByID" = p."id"
+                LEFT JOIN "venues" v ON t."createdByType" = 'venue' AND t."createdByID" = v."id"
+                WHERE (t."topicName" ILIKE %s OR t."topicDesc" ILIKE %s)
+                ORDER BY t."dateCreated" DESC
+                LIMIT %s OFFSET %s
+            ''', (search_term, search_term, limit, offset))
+            
+            topics = cursor.fetchall()
+            
+            if not topics:
+                return jsonify({
+                    'code': 200,
+                    'data': [],
+                    'message': 'No topics found matching search criteria'
+                }), 200
+            
+            # Get preview stories for each topic
+            result = []
+            for topic in topics:
+                topic_dict = dict(topic)
+                topic_dict['previewStories'] = get_story_preview_photos(
+                    cursor, topic_id=topic['id'], limit=3
+                )
+                result.append(topic_dict)
+        
+        return jsonify({
+            'code': 200,
+            'data': result
+        }), 200
+    
+    except Exception as e:
+        print(f"Error searching topics: {str(e)}")
+        return jsonify({
+            'code': 500,
+            'message': 'An error occurred searching topics.'
+        }), 500
 
 
 # -----------------------------------------------------------------------------------------
 # [GET] getSpecificTopicInfo/<topicID>
 # Purpose: Get detailed info for a specific topic
 # Used: SpecificStoryTopic.vue
-# Input: topicID (path param)
+# Input: 
+#   topicID (path param)
+#   userID (query param, optional) - for checking isSubscribed
+#   userType (query param, optional) - for checking isSubscribed
 # Output:
-#   200 - Topic details with creator info, subscriber count, story count
+#   200 - Topic details with creator info, subscriber count, story count, isSubscribed
 #   404 - Topic not found
 #   500 - Server error
 # -----------------------------------------------------------------------------------------
 @blueprint.route('/getSpecificTopicInfo/<topicID>', methods=['GET'])
 def get_specific_topic_info(topicID):
-    # TODO: Implement getSpecificTopicInfo endpoint
-    # - Query topic by ID
-    # - Get creator info
-    # - Count subscribers
-    # - Count stories
-    # - Return full topic details
-    return jsonify({
-        'code': 501,
-        'message': 'getSpecificTopicInfo endpoint not yet implemented'
-    }), 501
+    try:
+        topic_id = int(topicID)
+        
+        # Get optional user params for isSubscribed check
+        user_id = request.args.get('userID')
+        user_type = request.args.get('userType')
+        
+        with db_manager.get_cursor() as cursor:
+            # Get topic with computed counts and creator info
+            cursor.execute('''
+                SELECT 
+                    t."id",
+                    t."topicName",
+                    t."topicDesc",
+                    t."drinkTypes",
+                    t."topicBanner",
+                    t."dateCreated",
+                    t."createdByID",
+                    t."createdByType",
+                    (SELECT COUNT(*) FROM "topicSubscribers" WHERE "topicID" = t."id") as "subscriberCount",
+                    (SELECT COUNT(*) FROM "stories" WHERE "topicID" = t."id" AND "publicationDate" IS NOT NULL AND "publicationDate" <= NOW()) as "storyCount",
+                    CASE 
+                        WHEN t."createdByType" = 'user' THEN u."username"
+                        WHEN t."createdByType" = 'producer' THEN p."username"
+                        WHEN t."createdByType" = 'venue' THEN v."username"
+                        ELSE NULL
+                    END as "creatorUsername",
+                    CASE 
+                        WHEN t."createdByType" = 'user' THEN u."displayName"
+                        WHEN t."createdByType" = 'producer' THEN p."producerName"
+                        WHEN t."createdByType" = 'venue' THEN v."venueName"
+                        ELSE NULL
+                    END as "creatorDisplayName",
+                    CASE 
+                        WHEN t."createdByType" = 'user' THEN u."photo"
+                        WHEN t."createdByType" = 'producer' THEN p."photo"
+                        WHEN t."createdByType" = 'venue' THEN v."photo"
+                        ELSE NULL
+                    END as "creatorPhoto"
+                FROM "topics" t
+                LEFT JOIN "users" u ON t."createdByType" = 'user' AND t."createdByID" = u."id"
+                LEFT JOIN "producers" p ON t."createdByType" = 'producer' AND t."createdByID" = p."id"
+                LEFT JOIN "venues" v ON t."createdByType" = 'venue' AND t."createdByID" = v."id"
+                WHERE t."id" = %s
+            ''', (topic_id,))
+            
+            topic = cursor.fetchone()
+            
+            if not topic:
+                return jsonify({
+                    'code': 404,
+                    'message': 'Topic not found'
+                }), 404
+            
+            topic_dict = dict(topic)
+            
+            # Check if current user is subscribed
+            topic_dict['isSubscribed'] = False
+            if user_id and user_type:
+                cursor.execute('''
+                    SELECT id FROM "topicSubscribers"
+                    WHERE "topicID" = %s AND "userID" = %s AND "userType" = %s
+                ''', (topic_id, user_id, user_type))
+                subscription = cursor.fetchone()
+                topic_dict['isSubscribed'] = subscription is not None
+            
+            # Get preview stories (up to 3 with photos for sidebar)
+            topic_dict['previewStories'] = get_story_preview_photos(
+                cursor, topic_id=topic_id, limit=3
+            )
+        
+        return jsonify({
+            'code': 200,
+            'data': topic_dict
+        }), 200
+    
+    except ValueError:
+        return jsonify({
+            'code': 400,
+            'message': 'Invalid topic ID'
+        }), 400
+    except Exception as e:
+        print(f"Error getting topic info: {str(e)}")
+        return jsonify({
+            'code': 500,
+            'message': 'An error occurred retrieving topic info.'
+        }), 500
 
 
 # -----------------------------------------------------------------------------------------
@@ -377,14 +698,76 @@ def get_specific_topic_info(topicID):
 # -----------------------------------------------------------------------------------------
 @blueprint.route('/subscribeTopic', methods=['POST'])
 def subscribe_topic():
-    # TODO: Implement subscribeTopic endpoint
-    # - Verify topic exists
-    # - Check if already subscribed
-    # - Insert into topicSubscribers table
-    return jsonify({
-        'code': 501,
-        'message': 'subscribeTopic endpoint not yet implemented'
-    }), 501
+    try:
+        data = request.get_json()
+        
+        # Validate required fields
+        topic_id = data.get('topicID')
+        user_id = data.get('userID')
+        user_type = data.get('userType')
+        
+        if not all([topic_id, user_id, user_type]):
+            return jsonify({
+                'code': 400,
+                'message': 'Missing required fields: topicID, userID, userType'
+            }), 400
+        
+        # Validate userType
+        if user_type not in ['user', 'producer', 'venue']:
+            return jsonify({
+                'code': 400,
+                'message': 'Invalid userType. Must be user, producer, or venue.'
+            }), 400
+        
+        with db_manager.get_cursor() as cursor:
+            # Verify topic exists
+            cursor.execute(
+                "SELECT id FROM topics WHERE id = %s",
+                (topic_id,)
+            )
+            if not cursor.fetchone():
+                return jsonify({
+                    'code': 404,
+                    'message': 'Topic not found.'
+                }), 404
+            
+            # Check if already subscribed
+            cursor.execute(
+                """
+                SELECT id FROM "topicSubscribers"
+                WHERE "topicID" = %s AND "userID" = %s AND "userType" = %s
+                """,
+                (topic_id, user_id, user_type)
+            )
+            if cursor.fetchone():
+                return jsonify({
+                    'code': 400,
+                    'message': 'Already subscribed to this topic.'
+                }), 400
+            
+            # Insert subscription (isAdmin defaults to false)
+            cursor.execute(
+                """
+                INSERT INTO "topicSubscribers" ("topicID", "userID", "userType", "isAdmin")
+                VALUES (%s, %s, %s, false)
+                RETURNING id
+                """,
+                (topic_id, user_id, user_type)
+            )
+            new_subscription = cursor.fetchone()
+            
+            return jsonify({
+                'code': 201,
+                'message': 'Successfully subscribed to topic.',
+                'subscriptionID': new_subscription['id']
+            }), 201
+            
+    except Exception as e:
+        logging.exception("subscribeTopic: Error - %s", str(e))
+        return jsonify({
+            'code': 500,
+            'message': 'An error occurred while subscribing to topic.'
+        }), 500
 
 
 # -----------------------------------------------------------------------------------------
@@ -402,13 +785,56 @@ def subscribe_topic():
 # -----------------------------------------------------------------------------------------
 @blueprint.route('/unsubscribeTopic', methods=['DELETE'])
 def unsubscribe_topic():
-    # TODO: Implement unsubscribeTopic endpoint
-    # - Check if subscribed
-    # - Delete from topicSubscribers table
-    return jsonify({
-        'code': 501,
-        'message': 'unsubscribeTopic endpoint not yet implemented'
-    }), 501
+    try:
+        data = request.get_json()
+        
+        # Validate required fields
+        topic_id = data.get('topicID')
+        user_id = data.get('userID')
+        user_type = data.get('userType')
+        
+        if not all([topic_id, user_id, user_type]):
+            return jsonify({
+                'code': 400,
+                'message': 'Missing required fields: topicID, userID, userType'
+            }), 400
+        
+        # Validate userType
+        if user_type not in ['user', 'producer', 'venue']:
+            return jsonify({
+                'code': 400,
+                'message': 'Invalid userType. Must be user, producer, or venue.'
+            }), 400
+        
+        with db_manager.get_cursor() as cursor:
+            # Check if subscribed and delete
+            cursor.execute(
+                """
+                DELETE FROM "topicSubscribers"
+                WHERE "topicID" = %s AND "userID" = %s AND "userType" = %s
+                RETURNING id
+                """,
+                (topic_id, user_id, user_type)
+            )
+            deleted = cursor.fetchone()
+            
+            if not deleted:
+                return jsonify({
+                    'code': 400,
+                    'message': 'Not subscribed to this topic.'
+                }), 400
+            
+            return jsonify({
+                'code': 200,
+                'message': 'Successfully unsubscribed from topic.'
+            }), 200
+            
+    except Exception as e:
+        logging.exception("unsubscribeTopic: Error - %s", str(e))
+        return jsonify({
+            'code': 500,
+            'message': 'An error occurred while unsubscribing from topic.'
+        }), 500
 
 
 # -----------------------------------------------------------------------------------------
@@ -423,18 +849,111 @@ def unsubscribe_topic():
 # -----------------------------------------------------------------------------------------
 @blueprint.route('/getTopicStories/<topicID>/<offset>', methods=['GET'])
 def get_topic_stories(topicID, offset):
-    # TODO: Implement getTopicStories endpoint
-    # - Verify topic exists
-    # - Query stories where topicID matches
-    # - Include creator info for each story
-    # - Include like count
-    # - Include comment count
-    # - Sort by publishingDate DESC (most recent first)
-    # - Paginate (12 per page)
-    return jsonify({
-        'code': 501,
-        'message': 'getTopicStories endpoint not yet implemented'
-    }), 501
+    try:
+        # Validate topicID is a number
+        try:
+            topic_id = int(topicID)
+            offset_val = int(offset)
+        except ValueError:
+            return jsonify({
+                'code': 400,
+                'message': 'Invalid topicID or offset. Must be numbers.'
+            }), 400
+        
+        limit = 12  # Stories per page
+        
+        with db_manager.get_cursor() as cursor:
+            # Verify topic exists
+            cursor.execute(
+                "SELECT id FROM topics WHERE id = %s",
+                (topic_id,)
+            )
+            if not cursor.fetchone():
+                return jsonify({
+                    'code': 404,
+                    'message': 'Topic not found.'
+                }), 404
+            
+            # Get total count of published stories for this topic
+            cursor.execute(
+                """
+                SELECT COUNT(*) as total
+                FROM stories
+                WHERE "topicID" = %s
+                AND "publicationDate" <= NOW()
+                """,
+                (topic_id,)
+            )
+            total_count = cursor.fetchone()['total']
+            
+            # Get paginated published stories with creator info
+            cursor.execute(
+                """
+                SELECT 
+                    s.id,
+                    s.title,
+                    s.content,
+                    s.photo,
+                    s."publicationDate",
+                    s."createdByID",
+                    s."createdByType",
+                    CASE 
+                        WHEN s."createdByType" = 'user' THEN u.username
+                        WHEN s."createdByType" = 'producer' THEN p.username
+                        WHEN s."createdByType" = 'venue' THEN v.username
+                        ELSE NULL
+                    END as "creatorUsername",
+                    CASE 
+                        WHEN s."createdByType" = 'user' THEN u.photo
+                        WHEN s."createdByType" = 'producer' THEN p.photo
+                        WHEN s."createdByType" = 'venue' THEN v.photo
+                        ELSE NULL
+                    END as "creatorPhoto",
+                    (SELECT COUNT(*) FROM "storyLikes" WHERE "storyID" = s.id) as "likeCount",
+                    (SELECT COUNT(*) FROM "storyComments" WHERE "storyID" = s.id) as "commentCount"
+                FROM stories s
+                LEFT JOIN users u ON s."createdByType" = 'user' AND s."createdByID" = u.id
+                LEFT JOIN producers p ON s."createdByType" = 'producer' AND s."createdByID" = p.id
+                LEFT JOIN venues v ON s."createdByType" = 'venue' AND s."createdByID" = v.id
+                WHERE s."topicID" = %s
+                AND s."publicationDate" <= NOW()
+                ORDER BY s."publicationDate" DESC
+                LIMIT %s OFFSET %s
+                """,
+                (topic_id, limit, offset_val)
+            )
+            stories = cursor.fetchall()
+            
+            # Format stories for response
+            formatted_stories = []
+            for story in stories:
+                formatted_stories.append({
+                    'id': story['id'],
+                    'title': story['title'],
+                    'content': story['content'],
+                    'photo': story['photo'],
+                    'publicationDate': story['publicationDate'].isoformat() if story['publicationDate'] else None,
+                    'createdByID': story['createdByID'],
+                    'createdByType': story['createdByType'],
+                    'creatorUsername': story['creatorUsername'],
+                    'creatorPhoto': story['creatorPhoto'],
+                    'likeCount': story['likeCount'],
+                    'commentCount': story['commentCount']
+                })
+            
+            return jsonify({
+                'code': 200,
+                'stories': formatted_stories,
+                'totalCount': total_count,
+                'hasMore': (offset_val + limit) < total_count
+            }), 200
+            
+    except Exception as e:
+        logging.exception("getTopicStories: Error - %s", str(e))
+        return jsonify({
+            'code': 500,
+            'message': 'An error occurred retrieving topic stories.'
+        }), 500
 
 
 # =========================================================================================

@@ -411,43 +411,80 @@ export default {
 
   methods: {
     async loadTopicInfo() {
-      // TODO: Implement API call to /getSpecificTopicInfo/<topicID>
       const topicId = this.$route.params.topicId;
       
       try {
-        // const response = await fetch(`${process.env.VUE_APP_BACKEND_LINK}/getSpecificTopicInfo/${topicId}`);
-        // const data = await response.json();
-        // this.topicInfo = data.data;
+        // Build URL with optional userID/userType for isSubscribed check
+        let url = `${process.env.VUE_APP_API_URL}/stories/getSpecificTopicInfo/${topicId}`;
+        const params = new URLSearchParams();
         
-        // Placeholder
-        this.topicInfo = {
-          id: topicId,
-          topicName: this.$route.params.topicName.replace(/-/g, ' '),
-          topicDesc: 'Topic description coming soon...',
-          drinkTypes: [],
-          subscriberCount: 0,
-          storyCount: 0,
-        };
+        if (this.userID !== 'defaultUser' && this.userType) {
+          params.append('userID', this.userID);
+          params.append('userType', this.userType);
+        }
+        
+        if (params.toString()) {
+          url += `?${params.toString()}`;
+        }
+        
+        const response = await this.$axios.get(url);
+        const data = response.data;
+        
+        if (data.code === 200 && data.topic) {
+          this.topicInfo = {
+            id: data.topic.id,
+            topicName: data.topic.topicName,
+            topicDesc: data.topic.topicDesc,
+            drinkTypes: data.topic.drinkTypes || [],
+            topicBanner: data.topic.topicBanner,
+            dateCreated: data.topic.dateCreated,
+            subscriberCount: data.topic.subscriberCount || 0,
+            storyCount: data.topic.storyCount || 0,
+            createdByID: data.topic.createdByID,
+            createdByType: data.topic.createdByType,
+            creatorUsername: data.topic.creatorUsername,
+            previewStories: data.topic.previewStories || [],
+          };
+          this.isSubscribed = data.topic.isSubscribed || false;
+        } else if (data.code === 404) {
+          // Topic not found - redirect to 404 page or topics list
+          useToast().error("Topic not found");
+          this.$router.push('/stories/topics');
+        }
       } catch (error) {
         console.error("Error loading topic info:", error);
+        if (error.response && error.response.status === 404) {
+          useToast().error("Topic not found");
+          this.$router.push('/stories/topics');
+        } else {
+          useToast().error("Failed to load topic information");
+        }
       }
     },
 
     async loadStories() {
-      // TODO: Implement API call to /getTopicStories/<topicID>/<offset>
       this.loading = true;
-      // eslint-disable-next-line no-unused-vars
-      const _topicId = this.$route.params.topicId;
+      const topicId = this.$route.params.topicId;
+      this.currentOffset = 0;
       
       try {
-        // const response = await fetch(`${process.env.VUE_APP_BACKEND_LINK}/getTopicStories/${topicId}/${this.currentOffset}`);
-        // const data = await response.json();
-        // this.stories = data.data || [];
+        const response = await this.$axios.get(
+          `${process.env.VUE_APP_API_URL}/stories/getTopicStories/${topicId}/${this.currentOffset}`
+        );
+        const data = response.data;
         
-        // Placeholder
-        this.stories = [];
+        if (data.code === 200) {
+          this.stories = this.transformStories(data.stories || []);
+          this.hasMoreStories = data.hasMore || false;
+          
+          // Apply client-side sorting
+          this.applySorting();
+        } else {
+          console.error("Error loading stories:", data.message);
+        }
       } catch (error) {
         console.error("Error loading stories:", error);
+        useToast().error("Failed to load stories");
       } finally {
         this.loading = false;
       }
@@ -455,48 +492,143 @@ export default {
 
     async loadMoreStories() {
       this.loadingMore = true;
+      const topicId = this.$route.params.topicId;
       this.currentOffset += 12;
-      // TODO: Append more stories
-      this.loadingMore = false;
+      
+      try {
+        const response = await this.$axios.get(
+          `${process.env.VUE_APP_API_URL}/stories/getTopicStories/${topicId}/${this.currentOffset}`
+        );
+        const data = response.data;
+        
+        if (data.code === 200) {
+          const newStories = this.transformStories(data.stories || []);
+          this.stories = [...this.stories, ...newStories];
+          this.hasMoreStories = data.hasMore || false;
+          
+          // Re-apply sorting
+          this.applySorting();
+        }
+      } catch (error) {
+        console.error("Error loading more stories:", error);
+        useToast().error("Failed to load more stories");
+        this.currentOffset -= 12; // Reset offset on error
+      } finally {
+        this.loadingMore = false;
+      }
+    },
+
+    transformStories(stories) {
+      // Transform API response to match the template format
+      return stories.map(story => ({
+        id: story.id,
+        storyTitle: story.title,
+        storyContentPreview: story.content ? story.content.substring(0, 200) : '',
+        storyPhotos: story.photo ? [story.photo] : [],
+        publishingDate: story.publicationDate,
+        likeCount: story.likeCount || 0,
+        commentCount: story.commentCount || 0,
+        userLiked: false, // TODO: Check if current user liked this story
+        creatorInfo: {
+          id: story.createdByID,
+          userType: story.createdByType,
+          username: story.creatorUsername,
+          displayName: story.creatorUsername,
+          photo: story.creatorPhoto,
+        }
+      }));
+    },
+
+    applySorting() {
+      if (this.sortBy === 'newest') {
+        this.stories.sort((a, b) => new Date(b.publishingDate) - new Date(a.publishingDate));
+      } else if (this.sortBy === 'mostLiked') {
+        this.stories.sort((a, b) => b.likeCount - a.likeCount);
+      }
     },
 
     async subscribeTopic() {
-      // TODO: Implement API call to /subscribeTopic
+      if (this.userID === 'defaultUser') {
+        this.$router.push('/login');
+        return;
+      }
+      
       this.subscribing = true;
       try {
-        useToast().info("Topic subscription coming soon!");
-        // After successful subscription:
-        // this.isSubscribed = true;
-        // this.topicInfo.subscriberCount++;
+        const response = await this.$axios.post(
+          `${process.env.VUE_APP_API_URL}/stories/subscribeTopic`,
+          {
+            topicID: this.topicInfo.id,
+            userID: this.userID,
+            userType: this.userType
+          }
+        );
+        
+        if (response.data.code === 201) {
+          this.isSubscribed = true;
+          this.topicInfo.subscriberCount++;
+          useToast().success("Successfully subscribed to topic!");
+        } else {
+          useToast().error(response.data.message || "Failed to subscribe");
+        }
       } catch (error) {
         console.error("Error subscribing:", error);
+        if (error.response && error.response.data) {
+          useToast().error(error.response.data.message || "Failed to subscribe");
+        } else {
+          useToast().error("Failed to subscribe to topic");
+        }
       } finally {
         this.subscribing = false;
       }
     },
 
     showUnsubscribeConfirm() {
-      // TODO: Implement unsubscribe confirmation modal
       if (confirm('Are you sure you want to unsubscribe from this topic?')) {
         this.unsubscribeTopic();
       }
     },
 
     async unsubscribeTopic() {
-      // TODO: Implement API call to /unsubscribeTopic
       try {
-        useToast().info("Topic unsubscription coming soon!");
-        // After successful unsubscription:
-        // this.isSubscribed = false;
-        // this.topicInfo.subscriberCount--;
+        const response = await this.$axios.delete(
+          `${process.env.VUE_APP_API_URL}/stories/unsubscribeTopic`,
+          {
+            data: {
+              topicID: this.topicInfo.id,
+              userID: this.userID,
+              userType: this.userType
+            }
+          }
+        );
+        
+        if (response.data.code === 200) {
+          this.isSubscribed = false;
+          this.topicInfo.subscriberCount--;
+          useToast().success("Successfully unsubscribed from topic");
+        } else {
+          useToast().error(response.data.message || "Failed to unsubscribe");
+        }
       } catch (error) {
         console.error("Error unsubscribing:", error);
+        if (error.response && error.response.data) {
+          useToast().error(error.response.data.message || "Failed to unsubscribe");
+        } else {
+          useToast().error("Failed to unsubscribe from topic");
+        }
       }
     },
 
     openCreateStoryModal() {
-      // TODO: Implement create story modal (can reuse from UserStories.vue)
-      useToast().info("Story creation modal coming soon! Topic will be pre-selected.");
+      // Navigate to UserStories.vue with the topic pre-selected
+      this.$router.push({
+        path: '/stories/my-stories',
+        query: { 
+          createNew: 'true',
+          topicID: this.topicInfo.id,
+          topicName: this.topicInfo.topicName
+        }
+      });
     },
 
     viewStory(story) {
@@ -517,7 +649,7 @@ export default {
     },
 
     goBack() {
-      this.$router.push('/stories/topics');
+      this.$router.back();
     },
 
     goToUserProfile(creatorInfo) {
