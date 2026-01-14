@@ -46,10 +46,10 @@
         <div class="hero-content py-4">
           <div class="text-start">
             <button class="btn btn-sm btn-light mb-3" @click="goBack">
-              <i class="bi bi-arrow-left me-1"></i> Back to Topics
+              <i class="bi bi-arrow-left me-1"></i> Back to All Topics
             </button>
           </div>
-          <h1 class="hero-title fw-bold text-white mb-2">{{ topicInfo.topicName || 'Loading...' }}</h1>
+          <h1 class="hero-title fw-bold text-white mb-2">Stories on {{ topicInfo.topicName || 'Loading...' }}</h1>
           <p class="hero-desc text-white-50 mb-3">{{ topicInfo.topicDesc || '' }}</p>
           
           <!-- Drink Type Tags -->
@@ -73,10 +73,10 @@
               <i class="bi bi-journal-richtext me-1"></i>
               {{ topicInfo.storyCount || 0 }} Stories
             </span>
-            <span class="text-white-50">
+            <!-- <span class="text-white-50">
               <i class="bi bi-calendar me-1"></i>
               Created {{ formatDate(topicInfo.dateCreated) }}
-            </span>
+            </span> -->
             
             <!-- Subscribe/Unsubscribe Button -->
             <button
@@ -399,7 +399,7 @@ export default {
       
       // Default images
       defaultProfilePhoto: "https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultProfilePhoto.png?v=1748434288",
-      defaultBannerImage: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1200",
+      defaultBannerImage: "https://i0.wp.com/highestspirits.com/wp-content/uploads/2018/10/jnpup.jpg?fit=1920%2C1281",
     };
   },
 
