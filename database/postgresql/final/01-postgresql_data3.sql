@@ -2186,7 +2186,8 @@ CREATE TABLE "stories" (
     "storyContent" TEXT, -- Rich HTML content
     "storyPhotos" TEXT[], -- S3 URLs array
     "listingIDs" INTEGER[], -- Array of listing IDs (drinks) that can be linked to this story
-    "publishingDate" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    "creationDate" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    "publicationDate" TIMESTAMP DEFAULT NULL, -- When story is scheduled to be published or was published - story would not be visible until the publicationDate on which it will be automatically published
     "editedAt" TIMESTAMP DEFAULT NULL, -- Timestamp when story was last edited (null if never edited)
     "freeOrPaid" VARCHAR(50) DEFAULT 'free' CHECK ("freeOrPaid" IN ('free', 'paid')), -- Must be 'free' or 'paid'
     "hashtags" VARCHAR(255)[], -- array of hashtags associated with the story
