@@ -40,7 +40,7 @@
       <div class="row mb-4">
         <div class="col-12">
           <div class="row justify-content-left mb-2">
-            <h3 class="text-start fw-bold mobile-fs-4">Story Topics: Discover Ideas & Inspiration 📚</h3>
+            <h3 class="text-start fw-bold mobile-fs-4">Story Topics 📚</h3>
             <h5 class="text-start fw-bold mobile-fs-6">Browse topics about wine, whisky, cocktails, and more...</h5>
           </div>
 
@@ -325,12 +325,34 @@ export default {
 
     // Check if user is admin (for showing Create Topic button)
     const isAdminStr = localStorage.getItem("88B_isAdmin");
-    this.isAdmin = isAdminStr === 'true';
+    if (isAdminStr !== null) {
+      this.isAdmin = isAdminStr === 'true';
+    } else if (this.userID !== 'defaultUser' && this.userType === 'user') {
+      // Fallback: fetch admin status from API if not in localStorage
+      await this.checkAdminStatus();
+    }
 
     await this.loadTopics();
   },
 
   methods: {
+    async checkAdminStatus() {
+      try {
+        const response = await this.$axios.get(
+          `${process.env.VUE_APP_API_URL}/getData/getUser/${this.userID}`
+        );
+        if (response.data && response.data.isAdmin) {
+          this.isAdmin = true;
+          localStorage.setItem("88B_isAdmin", "true");
+        } else {
+          this.isAdmin = false;
+          localStorage.setItem("88B_isAdmin", "false");
+        }
+      } catch (error) {
+        console.error("Error checking admin status:", error);
+      }
+    },
+
     async loadTopics() {
       this.loading = true;
       this.error = null;

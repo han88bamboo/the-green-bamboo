@@ -430,22 +430,22 @@ export default {
         const response = await this.$axios.get(url);
         const data = response.data;
         
-        if (data.code === 200 && data.topic) {
+        if (data.code === 200 && data.data) {
           this.topicInfo = {
-            id: data.topic.id,
-            topicName: data.topic.topicName,
-            topicDesc: data.topic.topicDesc,
-            drinkTypes: data.topic.drinkTypes || [],
-            topicBanner: data.topic.topicBanner,
-            dateCreated: data.topic.dateCreated,
-            subscriberCount: data.topic.subscriberCount || 0,
-            storyCount: data.topic.storyCount || 0,
-            createdByID: data.topic.createdByID,
-            createdByType: data.topic.createdByType,
-            creatorUsername: data.topic.creatorUsername,
-            previewStories: data.topic.previewStories || [],
+            id: data.data.id,
+            topicName: data.data.topicName,
+            topicDesc: data.data.topicDesc,
+            drinkTypes: data.data.drinkTypes || [],
+            topicBanner: data.data.topicBanner,
+            dateCreated: data.data.dateCreated,
+            subscriberCount: data.data.subscriberCount || 0,
+            storyCount: data.data.storyCount || 0,
+            createdByID: data.data.createdByID,
+            createdByType: data.data.createdByType,
+            creatorUsername: data.data.creatorUsername,
+            previewStories: data.data.previewStories || [],
           };
-          this.isSubscribed = data.topic.isSubscribed || false;
+          this.isSubscribed = data.data.isSubscribed || false;
         } else if (data.code === 404) {
           // Topic not found - redirect to 404 page or topics list
           useToast().error("Topic not found");

@@ -212,7 +212,7 @@ def get_story_preview_photos(cursor, topic_id=None, newsletter_id=None, limit=3)
             WHERE "topicID" = %s
               AND "storyPhotos" IS NOT NULL 
               AND array_length("storyPhotos", 1) > 0
-            ORDER BY "publishingDate" DESC
+            ORDER BY "publicationDate" DESC
             LIMIT %s
         ''', (topic_id, limit))
     elif newsletter_id:
@@ -222,7 +222,7 @@ def get_story_preview_photos(cursor, topic_id=None, newsletter_id=None, limit=3)
             WHERE "newsletterID" = %s
               AND "storyPhotos" IS NOT NULL 
               AND array_length("storyPhotos", 1) > 0
-            ORDER BY "publishingDate" DESC
+            ORDER BY "publicationDate" DESC
             LIMIT %s
         ''', (newsletter_id, limit))
     else:
@@ -891,30 +891,30 @@ def get_topic_stories(topicID, offset):
                 """
                 SELECT 
                     s.id,
-                    s.title,
-                    s.content,
-                    s.photo,
+                    s."storyTitle",
+                    s."storyContent",
+                    s."storyPhotos",
                     s."publicationDate",
-                    s."createdByID",
-                    s."createdByType",
+                    s."creatorUserID",
+                    s."creatorUserType",
                     CASE 
-                        WHEN s."createdByType" = 'user' THEN u.username
-                        WHEN s."createdByType" = 'producer' THEN p.username
-                        WHEN s."createdByType" = 'venue' THEN v.username
+                        WHEN s."creatorUserType" = 'user' THEN u.username
+                        WHEN s."creatorUserType" = 'producer' THEN p.username
+                        WHEN s."creatorUserType" = 'venue' THEN v.username
                         ELSE NULL
                     END as "creatorUsername",
                     CASE 
-                        WHEN s."createdByType" = 'user' THEN u.photo
-                        WHEN s."createdByType" = 'producer' THEN p.photo
-                        WHEN s."createdByType" = 'venue' THEN v.photo
+                        WHEN s."creatorUserType" = 'user' THEN u.photo
+                        WHEN s."creatorUserType" = 'producer' THEN p.photo
+                        WHEN s."creatorUserType" = 'venue' THEN v.photo
                         ELSE NULL
                     END as "creatorPhoto",
-                    (SELECT COUNT(*) FROM "storyLikes" WHERE "storyID" = s.id) as "likeCount",
+                    (SELECT COUNT(*) FROM "storiesLikes" WHERE "storyID" = s.id) as "likeCount",
                     (SELECT COUNT(*) FROM "storyComments" WHERE "storyID" = s.id) as "commentCount"
                 FROM stories s
-                LEFT JOIN users u ON s."createdByType" = 'user' AND s."createdByID" = u.id
-                LEFT JOIN producers p ON s."createdByType" = 'producer' AND s."createdByID" = p.id
-                LEFT JOIN venues v ON s."createdByType" = 'venue' AND s."createdByID" = v.id
+                LEFT JOIN users u ON s."creatorUserType" = 'user' AND s."creatorUserID" = u.id
+                LEFT JOIN producers p ON s."creatorUserType" = 'producer' AND s."creatorUserID" = p.id
+                LEFT JOIN venues v ON s."creatorUserType" = 'venue' AND s."creatorUserID" = v.id
                 WHERE s."topicID" = %s
                 AND s."publicationDate" <= NOW()
                 ORDER BY s."publicationDate" DESC
@@ -927,14 +927,19 @@ def get_topic_stories(topicID, offset):
             # Format stories for response
             formatted_stories = []
             for story in stories:
+                # Get first photo from array for preview
+                photo = None
+                if story['storyPhotos'] and len(story['storyPhotos']) > 0:
+                    photo = story['storyPhotos'][0]
+                
                 formatted_stories.append({
                     'id': story['id'],
-                    'title': story['title'],
-                    'content': story['content'],
-                    'photo': story['photo'],
+                    'title': story['storyTitle'],
+                    'content': story['storyContent'],
+                    'photo': photo,
                     'publicationDate': story['publicationDate'].isoformat() if story['publicationDate'] else None,
-                    'createdByID': story['createdByID'],
-                    'createdByType': story['createdByType'],
+                    'createdByID': story['creatorUserID'],
+                    'createdByType': story['creatorUserType'],
                     'creatorUsername': story['creatorUsername'],
                     'creatorPhoto': story['creatorPhoto'],
                     'likeCount': story['likeCount'],

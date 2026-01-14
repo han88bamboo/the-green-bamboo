@@ -95,7 +95,6 @@
                   Topic Name <span class="text-danger">*</span>
                 </label>
                 <div class="input-group">
-                  <span class="input-group-text">#</span>
                   <input 
                     type="text" 
                     id="topicName"
@@ -254,7 +253,7 @@
             >
               <div class="banner-overlay p-3 d-flex align-items-end">
                 <h5 class="text-white fw-bold mb-0">
-                  #{{ formData.topicName || 'Your Topic Name' }}
+                  {{ formData.topicName || 'Your Topic Name' }}
                 </h5>
               </div>
             </div>
@@ -343,8 +342,8 @@ export default {
       drinkTypesList: [],
       loadingDrinkTypes: false,
       
-      // Default images
-      defaultBannerImage: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800",
+      // Default images https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800
+      defaultBannerImage: "https://i0.wp.com/highestspirits.com/wp-content/uploads/2018/10/jnpup.jpg?fit=1920%2C1281",
     };
   },
 
@@ -367,7 +366,7 @@ export default {
     },
   },
 
-  mounted() {
+  async mounted() {
     // Get user info from localStorage
     const accID = localStorage.getItem("88B_accID");
     if (accID) {
@@ -381,7 +380,12 @@ export default {
 
     // Check if user is admin
     const isAdminStr = localStorage.getItem("88B_isAdmin");
-    this.isAdmin = isAdminStr === 'true';
+    if (isAdminStr !== null) {
+      this.isAdmin = isAdminStr === 'true';
+    } else if (this.userID !== 'defaultUser' && this.userType === 'user') {
+      // Fallback: fetch admin status from API if not in localStorage
+      await this.checkAdminStatus();
+    }
 
     // Redirect if not logged in
     if (!this.userID || this.userID === 'defaultUser') {
@@ -396,6 +400,23 @@ export default {
   },
 
   methods: {
+    async checkAdminStatus() {
+      try {
+        const response = await this.$axios.get(
+          `${process.env.VUE_APP_API_URL}/getData/getUser/${this.userID}`
+        );
+        if (response.data && response.data.isAdmin) {
+          this.isAdmin = true;
+          localStorage.setItem("88B_isAdmin", "true");
+        } else {
+          this.isAdmin = false;
+          localStorage.setItem("88B_isAdmin", "false");
+        }
+      } catch (error) {
+        console.error("Error checking admin status:", error);
+      }
+    },
+
     // Validate topic name (4-255 chars, emojis allowed)
     validateName() {
       this.nameAvailable = false;

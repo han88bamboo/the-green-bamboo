@@ -1110,6 +1110,9 @@
             if (this.accType == "user") {
               if (response.data.isAdmin) {
                 this.isAdmin = true;
+                localStorage.setItem("88B_isAdmin", "true");
+              } else {
+                localStorage.setItem("88B_isAdmin", "false");
               }
               if (
                 Array.isArray(response.data.modType) &&
