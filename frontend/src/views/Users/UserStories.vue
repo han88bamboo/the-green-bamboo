@@ -79,7 +79,7 @@
         <!-- Page Header and Actions -->
         <div class="d-flex justify-content-between align-items-center mb-4">
           <h5 class="fw-bold mobile-fs-6 mb-0">
-            <i class="bi bi-journal-richtext"></i> Stories by @{{ displayUser.username }}
+            <i class="bi bi-journal-richtext"></i> All Stories by @{{ displayUser.username }}
           </h5>
           
           <!-- Action Buttons (only for own profile) -->

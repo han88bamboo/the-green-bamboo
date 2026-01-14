@@ -147,14 +147,14 @@
           <button 
             class="btn btn-sm"
             :class="sortBy === 'newest' ? 'btn-dark' : 'btn-outline-secondary'"
-            @click="sortBy = 'newest'; loadStories()"
+            @click="changeSortBy('newest')"
           >
             <i class="bi bi-clock me-1"></i> Newest
           </button>
           <button 
             class="btn btn-sm"
             :class="sortBy === 'mostLiked' ? 'btn-dark' : 'btn-outline-secondary'"
-            @click="sortBy = 'mostLiked'; loadStories()"
+            @click="changeSortBy('mostLiked')"
           >
             <i class="bi bi-heart me-1"></i> Most Liked
           </button>
@@ -170,69 +170,77 @@
             <p class="mt-3 text-muted">Loading stories...</p>
           </div>
 
-          <!-- Stories List -->
+          <!-- Stories List (Medium-style row layout) -->
           <div v-else>
-            <!-- Story Cards -->
-            <!-- TODO: Implement story cards (model after AllReviews.vue review cards) -->
-            <div 
-              v-for="story in stories" 
-              :key="story.id"
-              class="story-card card mb-3 shadow-sm"
-            >
-              <div class="card-body">
-                <!-- Story Meta -->
-                <div class="text-start story-meta text-muted small mb-2">
-                  <span>Posted by </span>
-                  <a 
-                    href="#" 
-                    @click.stop.prevent="goToUserProfile(story.creatorInfo)" 
-                    class="text-decoration-none fw-bold"
-                  >
-                    {{ getCreatorDisplayName(story.creatorInfo) }}
-                  </a>
-                  <span class="mx-1">•</span>
-                  <span>{{ formatTimeAgo(story.publishingDate) }}</span>
-                </div>
-
-                <!-- Story Title (clickable) -->
-                <h5 
-                  class="text-start story-title fw-bold mb-2 clickable-title"
-                  @click="viewStory(story)"
-                >{{ story.storyTitle }}</h5>
-
-                <!-- Story Preview (truncated) -->
-                <p v-if="story.storyContentPreview" class="text-start story-preview text-muted mb-2">
-                  {{ stripHtml(story.storyContentPreview) }}
-                </p>
-
-                <!-- Story Image Preview -->
-                <div 
-                  v-if="story.storyPhotos && story.storyPhotos.length > 0" 
-                  class="story-image mb-2"
-                  @click="viewStory(story)"
-                >
-                  <img 
-                    :src="story.storyPhotos[0]" 
-                    :alt="story.storyTitle"
-                    class="img-fluid rounded"
-                    style="max-height: 300px; object-fit: cover; width: 100%;"
-                  />
-                </div>
-
-                <!-- Story Actions -->
-                <div class="story-actions d-flex align-items-center gap-3 mt-2">
-                  <span class="action-btn text-muted" @click.stop="likeStory(story)">
-                    <i class="bi me-1" :class="story.userLiked ? 'bi-heart-fill text-danger' : 'bi-heart'"></i>
-                    {{ story.likeCount || 0 }} Likes
-                  </span>
-                  <span class="action-btn text-muted" @click.stop="viewStory(story)">
-                    <i class="bi bi-chat-square me-1"></i>
-                    {{ story.commentCount || 0 }} Comments
-                  </span>
-                  <span class="action-btn text-muted" @click.stop="shareStory(story)">
-                    <i class="bi bi-share me-1"></i>
-                    Share
-                  </span>
+            <div v-if="stories.length > 0" class="stories-list">
+              <div 
+                v-for="story in stories" 
+                :key="story.id"
+                class="story-card card mb-3 shadow-sm"
+                @click="viewStory(story)"
+                role="button"
+              >
+                <div class="card-body p-0">
+                  <div class="row g-0">
+                    <!-- Story Content (left side) -->
+                    <div class="col-8 col-md-9 p-3 d-flex flex-column">
+                      <!-- Story Title -->
+                      <h5 class="text-start story-title fw-bold mb-2 line-clamp-2">
+                        {{ story.storyTitle }}
+                      </h5>
+                      
+                      <!-- Story Preview (150 chars) -->
+                      <p class="text-start story-preview text-muted mb-2 flex-grow-1 line-clamp-3">
+                        {{ story.previewExcerpt || getExcerpt(story.storyContent, 150) }}
+                      </p>
+                      
+                      <!-- Story Meta (bottom) -->
+                      <div class="story-meta d-flex align-items-center flex-wrap gap-2 mt-auto">
+                        <!-- Author Username -->
+                        <small class="text-muted">
+                          {{ story.creatorDisplayName || story.creatorUsername }}
+                        </small>
+                        
+                        <!-- Published Date -->
+                        <small class="text-muted">
+                          · {{ formatDate(story.publicationDate) }}
+                        </small>
+                        
+                        <!-- Newsletter Badge (show newsletter if story is part of one) -->
+                        <span 
+                          v-if="story.newsletterName" 
+                          class="badge bg-success-subtle text-success"
+                          @click.stop="goToNewsletter(story)"
+                        >
+                          <i class="bi bi-newspaper me-1"></i>{{ story.newsletterName }}
+                        </span>
+                        
+                        <!-- Reading Time -->
+                        <small v-if="story.readingTime" class="text-muted">
+                          · {{ story.readingTime }} min read
+                        </small>
+                        
+                        <!-- Like/Comment Counts (read-only) -->
+                        <small class="text-muted">
+                          <i class="bi bi-heart me-1"></i>{{ story.likeCount || 0 }}
+                        </small>
+                        <small class="text-muted">
+                          <i class="bi bi-chat-square me-1"></i>{{ story.commentCount || 0 }}
+                        </small>
+                      </div>
+                    </div>
+                    
+                    <!-- Feature Image (right side) -->
+                    <div class="col-4 col-md-3 d-flex align-items-center justify-content-center p-2">
+                      <div class="story-image-wrapper">
+                        <img 
+                          :src="getFeatureImage(story)" 
+                          :alt="story.storyTitle"
+                          class="story-feature-image rounded"
+                        />
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -401,6 +409,7 @@ export default {
       // Default images
       defaultProfilePhoto: "https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultProfilePhoto.png?v=1748434288",
       defaultBannerImage: "https://i0.wp.com/highestspirits.com/wp-content/uploads/2018/10/jnpup.jpg?fit=1920%2C1281",
+      defaultFeatureImage: "https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultFeatureImage.png?v=1737012345",
     };
   },
 
@@ -501,19 +510,18 @@ export default {
       this.currentOffset = 0;
       
       try {
+        // Build URL with sortBy query param
+        const queryParams = `?sortBy=${this.sortBy}`;
         const response = await this.$axios.get(
-          `${process.env.VUE_APP_API_URL}/stories/getTopicStories/${topicId}/${this.currentOffset}`
+          `${process.env.VUE_APP_API_URL}/stories/getTopicStories/${topicId}/${this.currentOffset}${queryParams}`
         );
-        const data = response.data;
         
-        if (data.code === 200) {
-          this.stories = this.transformStories(data.stories || []);
-          this.hasMoreStories = data.hasMore || false;
-          
-          // Apply client-side sorting
-          this.applySorting();
+        if (response.data.code === 200) {
+          // New API returns 'data' array with consistent field names
+          this.stories = response.data.data || [];
+          this.hasMoreStories = response.data.hasMore || false;
         } else {
-          console.error("Error loading stories:", data.message);
+          console.error("Error loading stories:", response.data.message);
         }
       } catch (error) {
         console.error("Error loading stories:", error);
@@ -529,18 +537,15 @@ export default {
       this.currentOffset += 12;
       
       try {
+        const queryParams = `?sortBy=${this.sortBy}`;
         const response = await this.$axios.get(
-          `${process.env.VUE_APP_API_URL}/stories/getTopicStories/${topicId}/${this.currentOffset}`
+          `${process.env.VUE_APP_API_URL}/stories/getTopicStories/${topicId}/${this.currentOffset}${queryParams}`
         );
-        const data = response.data;
         
-        if (data.code === 200) {
-          const newStories = this.transformStories(data.stories || []);
+        if (response.data.code === 200) {
+          const newStories = response.data.data || [];
           this.stories = [...this.stories, ...newStories];
-          this.hasMoreStories = data.hasMore || false;
-          
-          // Re-apply sorting
-          this.applySorting();
+          this.hasMoreStories = response.data.hasMore || false;
         }
       } catch (error) {
         console.error("Error loading more stories:", error);
@@ -551,32 +556,10 @@ export default {
       }
     },
 
-    transformStories(stories) {
-      // Transform API response to match the template format
-      return stories.map(story => ({
-        id: story.id,
-        storyTitle: story.title,
-        storyContentPreview: story.content ? story.content.substring(0, 200) : '',
-        storyPhotos: story.photo ? [story.photo] : [],
-        publishingDate: story.publicationDate,
-        likeCount: story.likeCount || 0,
-        commentCount: story.commentCount || 0,
-        userLiked: false, // TODO: Check if current user liked this story
-        creatorInfo: {
-          id: story.createdByID,
-          userType: story.createdByType,
-          username: story.creatorUsername,
-          displayName: story.creatorUsername,
-          photo: story.creatorPhoto,
-        }
-      }));
-    },
-
-    applySorting() {
-      if (this.sortBy === 'newest') {
-        this.stories.sort((a, b) => new Date(b.publishingDate) - new Date(a.publishingDate));
-      } else if (this.sortBy === 'mostLiked') {
-        this.stories.sort((a, b) => b.likeCount - a.likeCount);
+    changeSortBy(newSort) {
+      if (this.sortBy !== newSort) {
+        this.sortBy = newSort;
+        this.loadStories();
       }
     },
 
@@ -653,17 +636,8 @@ export default {
     },
 
     openCreateStoryModal() {
-      // TODO: Update navigation to use user profile stories page pattern:
-      // /profile/{userType}/{userID}/{username}?tab=stories&createStory=true&topicID={id}&topicName={name}
-      // For now, navigate to UserStories.vue with the topic pre-selected
-      this.$router.push({
-        path: '/stories/my-stories',
-        query: { 
-          createNew: 'true',
-          topicID: this.topicInfo.id,
-          topicName: this.topicInfo.topicName
-        }
-      });
+      // Navigate to Create Story page with topic pre-selected
+      this.$router.push(`/stories/create?topicID=${this.topicInfo.id}`);
     },
 
     viewStory(story) {
@@ -671,25 +645,15 @@ export default {
       this.$router.push(`/stories/${story.id}/${slugTitle}`);
     },
 
-    // eslint-disable-next-line no-unused-vars
-    likeStory(_story) {
-      // TODO: Implement like/unlike story
-      useToast().info("Story liking coming soon!");
-    },
-
-    shareStory(story) {
-      const url = `${window.location.origin}/stories/${story.id}/${this.slugify(story.storyTitle)}`;
-      navigator.clipboard.writeText(url);
-      useToast().success("Link copied to clipboard!");
+    goToNewsletter(story) {
+      if (story.newsletterID && story.newsletterName) {
+        const slugName = this.slugify(story.newsletterName);
+        this.$router.push(`/stories/newsletters/${story.newsletterID}/${slugName}`);
+      }
     },
 
     goBack() {
       this.$router.back();
-    },
-
-    goToUserProfile(creatorInfo) {
-      if (!creatorInfo) return;
-      this.$router.push(`/profile/${creatorInfo.userType}/${creatorInfo.id}/${creatorInfo.username}`);
     },
 
     goToCreatorProfile() {
@@ -705,9 +669,31 @@ export default {
       return '#';
     },
 
-    getCreatorDisplayName(creatorInfo) {
-      if (!creatorInfo) return 'Unknown';
-      return creatorInfo.displayName || creatorInfo.username || 'Unknown';
+    // ==========================================
+    // Story Card Helper Methods (matching UserStories.vue)
+    // ==========================================
+
+    getFeatureImage(story) {
+      // Get feature image from featurePhoto or storyPhotos array (first image)
+      if (story.featurePhoto) {
+        return story.featurePhoto;
+      }
+      const photos = story.storyPhotos;
+      if (Array.isArray(photos) && photos.length > 0) {
+        return photos[0];
+      }
+      if (typeof photos === 'string' && photos) {
+        return photos;
+      }
+      return this.defaultFeatureImage;
+    },
+
+    getExcerpt(content, maxLength = 150) {
+      if (!content) return '';
+      // Strip HTML tags for preview
+      const stripped = content.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+      if (stripped.length <= maxLength) return stripped;
+      return stripped.substring(0, maxLength).trim() + '...';
     },
 
     formatDate(dateString) {
@@ -775,9 +761,13 @@ export default {
   max-width: 600px;
 }
 
-/* Story Card Styles */
+/* =====================================================================================
+   STORY CARD STYLES - Medium-style row layout (matching UserStories.vue)
+   ===================================================================================== */
 .story-card {
   transition: transform 0.2s, box-shadow 0.2s;
+  cursor: pointer;
+  border: 1px solid #e9ecef;
 }
 
 .story-card:hover {
@@ -785,27 +775,109 @@ export default {
   box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
 }
 
-.clickable-title {
-  cursor: pointer;
+/* Story title */
+.story-title {
+  color: #222;
+  font-size: 2rem;
+  line-height: 1.3;
 }
 
-.clickable-title:hover {
-  color: #0d6efd;
+/* Story preview text */
+.story-preview {
+  font-size: 0.9rem;
+  line-height: 1.5;
 }
 
-.action-btn {
-  cursor: pointer;
-  transition: color 0.2s;
+/* Line clamp utilities */
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
-.action-btn:hover {
-  color: #0d6efd !important;
+.line-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
-/* Mobile responsiveness */
+/* Feature image styling */
+.story-image-wrapper {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.story-feature-image {
+  width: 100%;
+  max-width: 150px;
+  height: 100px;
+  object-fit: cover;
+}
+
+/* Badges - subtle background colors (Bootstrap 5.3 style) */
+.bg-primary-subtle {
+  background-color: rgba(13, 110, 253, 0.1) !important;
+}
+
+.bg-success-subtle {
+  background-color: rgba(25, 135, 84, 0.1) !important;
+}
+
+/* =====================================================================================
+   MOBILE RESPONSIVENESS
+   ===================================================================================== */
 @media (max-width: 768px) {
   .hero-title {
     font-size: 1.75rem;
+  }
+  
+  .story-title {
+    font-size: 2rem;
+  }
+  
+  .story-preview {
+    font-size: 0.85rem;
+  }
+  
+  .story-feature-image {
+    max-width: 100px;
+    height: 70px;
+  }
+  
+  .story-meta {
+    font-size: 0.75rem;
+  }
+  
+  .story-meta .badge {
+    font-size: 0.65rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .story-card .row {
+    flex-direction: column-reverse;
+  }
+  
+  .story-card .col-8,
+  .story-card .col-4 {
+    width: 100%;
+  }
+  
+  .story-image-wrapper {
+    margin-bottom: 0.5rem;
+  }
+  
+  .story-feature-image {
+    max-width: 100%;
+    width: 100%;
+    height: 150px;
   }
 }
 </style>

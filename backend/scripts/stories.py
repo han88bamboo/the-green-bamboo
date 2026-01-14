@@ -875,8 +875,10 @@ def get_all_topics_for_dropdown():
 # Purpose: Get paginated stories under a specific topic
 # Used: SpecificStoryTopic.vue
 # Input: topicID, offset (path params)
+# Optional query params:
+#   - sortBy - 'newest' (default) or 'mostLiked'
 # Output:
-#   200 - List of stories under the topic
+#   200 - List of published stories under the topic (format matches getUserStories)
 #   404 - Topic not found
 #   500 - Server error
 # -----------------------------------------------------------------------------------------
@@ -895,6 +897,9 @@ def get_topic_stories(topicID, offset):
         
         limit = 12  # Stories per page
         
+        # Get optional query params
+        sort_by = request.args.get('sortBy', 'newest')  # 'newest' or 'mostLiked'
+        
         with db_manager.get_cursor() as cursor:
             # Verify topic exists
             cursor.execute(
@@ -908,80 +913,123 @@ def get_topic_stories(topicID, offset):
                 }), 404
             
             # Get total count of published stories for this topic
+            # Only show published stories (publicationDate is not null and <= now)
             cursor.execute(
                 """
                 SELECT COUNT(*) as total
                 FROM stories
                 WHERE "topicID" = %s
+                AND "publicationDate" IS NOT NULL
                 AND "publicationDate" <= NOW()
                 """,
                 (topic_id,)
             )
             total_count = cursor.fetchone()['total']
             
-            # Get paginated published stories with creator info
-            cursor.execute(
-                """
+            # Build ORDER BY clause based on sortBy
+            if sort_by == 'mostLiked':
+                order_clause = '''
+                    ORDER BY (SELECT COUNT(*) FROM "storiesLikes" WHERE "storyID" = s.id) DESC,
+                             s."publicationDate" DESC
+                '''
+            else:  # newest (default)
+                order_clause = 'ORDER BY s."publicationDate" DESC'
+            
+            # Get paginated published stories with all necessary fields (matching getUserStories format)
+            query = f'''
                 SELECT 
-                    s.id,
+                    s."id",
                     s."storyTitle",
                     s."storyContent",
                     s."storyPhotos",
+                    s."topicID",
+                    s."newsletterID",
                     s."publicationDate",
+                    s."creationDate",
                     s."creatorUserID",
                     s."creatorUserType",
+                    n."newsletterName",
                     CASE 
-                        WHEN s."creatorUserType" = 'user' THEN u.username
-                        WHEN s."creatorUserType" = 'producer' THEN p.username
-                        WHEN s."creatorUserType" = 'venue' THEN v.username
+                        WHEN s."creatorUserType" = 'user' THEN u."username"
+                        WHEN s."creatorUserType" = 'producer' THEN p."username"
+                        WHEN s."creatorUserType" = 'venue' THEN v."username"
                         ELSE NULL
                     END as "creatorUsername",
                     CASE 
-                        WHEN s."creatorUserType" = 'user' THEN u.photo
-                        WHEN s."creatorUserType" = 'producer' THEN p.photo
-                        WHEN s."creatorUserType" = 'venue' THEN v.photo
+                        WHEN s."creatorUserType" = 'user' THEN u."displayName"
+                        WHEN s."creatorUserType" = 'producer' THEN p."producerName"
+                        WHEN s."creatorUserType" = 'venue' THEN v."venueName"
+                        ELSE NULL
+                    END as "creatorDisplayName",
+                    CASE 
+                        WHEN s."creatorUserType" = 'user' THEN u."photo"
+                        WHEN s."creatorUserType" = 'producer' THEN p."photo"
+                        WHEN s."creatorUserType" = 'venue' THEN v."photo"
                         ELSE NULL
                     END as "creatorPhoto",
                     (SELECT COUNT(*) FROM "storiesLikes" WHERE "storyID" = s.id) as "likeCount",
                     (SELECT COUNT(*) FROM "storyComments" WHERE "storyID" = s.id) as "commentCount"
                 FROM stories s
-                LEFT JOIN users u ON s."creatorUserType" = 'user' AND s."creatorUserID" = u.id
-                LEFT JOIN producers p ON s."creatorUserType" = 'producer' AND s."creatorUserID" = p.id
-                LEFT JOIN venues v ON s."creatorUserType" = 'venue' AND s."creatorUserID" = v.id
+                LEFT JOIN "newsletters" n ON s."newsletterID" = n."id"
+                LEFT JOIN "users" u ON s."creatorUserType" = 'user' AND s."creatorUserID" = u."id"
+                LEFT JOIN "producers" p ON s."creatorUserType" = 'producer' AND s."creatorUserID" = p."id"
+                LEFT JOIN "venues" v ON s."creatorUserType" = 'venue' AND s."creatorUserID" = v."id"
                 WHERE s."topicID" = %s
+                AND s."publicationDate" IS NOT NULL
                 AND s."publicationDate" <= NOW()
-                ORDER BY s."publicationDate" DESC
+                {order_clause}
                 LIMIT %s OFFSET %s
-                """,
-                (topic_id, limit, offset_val)
-            )
+            '''
+            cursor.execute(query, (topic_id, limit, offset_val))
             stories = cursor.fetchall()
             
-            # Format stories for response
+            # Format stories for response (matching getUserStories format exactly)
             formatted_stories = []
             for story in stories:
-                # Get first photo from array for preview
-                photo = None
-                if story['storyPhotos'] and len(story['storyPhotos']) > 0:
-                    photo = story['storyPhotos'][0]
+                story_dict = dict(story)
+                
+                # Get feature photo (first photo)
+                feature_photo = None
+                if story_dict['storyPhotos'] and len(story_dict['storyPhotos']) > 0:
+                    feature_photo = story_dict['storyPhotos'][0]
+                
+                # Generate preview excerpt (first 150 chars, strip HTML)
+                preview_excerpt = ''
+                reading_time = 1  # Default to 1 min
+                if story_dict['storyContent']:
+                    # Strip HTML tags
+                    text_content = re.sub(r'<[^>]+>', '', story_dict['storyContent'])
+                    preview_excerpt = text_content[:150].strip()
+                    if len(text_content) > 150:
+                        preview_excerpt += '...'
+                    
+                    # Calculate reading time (average 200 words per minute)
+                    word_count = len(text_content.split())
+                    reading_time = max(1, round(word_count / 200))
                 
                 formatted_stories.append({
-                    'id': story['id'],
-                    'title': story['storyTitle'],
-                    'content': story['storyContent'],
-                    'photo': photo,
-                    'publicationDate': story['publicationDate'].isoformat() if story['publicationDate'] else None,
-                    'createdByID': story['creatorUserID'],
-                    'createdByType': story['creatorUserType'],
-                    'creatorUsername': story['creatorUsername'],
-                    'creatorPhoto': story['creatorPhoto'],
-                    'likeCount': story['likeCount'],
-                    'commentCount': story['commentCount']
+                    'id': story_dict['id'],
+                    'storyTitle': story_dict['storyTitle'],
+                    'previewExcerpt': preview_excerpt,
+                    'featurePhoto': feature_photo,
+                    'readingTime': reading_time,
+                    'publicationDate': story_dict['publicationDate'].isoformat() if story_dict['publicationDate'] else None,
+                    'creationDate': story_dict['creationDate'].isoformat() if story_dict['creationDate'] else None,
+                    'topicID': story_dict['topicID'],
+                    'newsletterID': story_dict['newsletterID'],
+                    'newsletterName': story_dict['newsletterName'],
+                    'creatorUserID': story_dict['creatorUserID'],
+                    'creatorUserType': story_dict['creatorUserType'],
+                    'creatorUsername': story_dict['creatorUsername'],
+                    'creatorDisplayName': story_dict['creatorDisplayName'],
+                    'creatorPhoto': story_dict['creatorPhoto'],
+                    'likeCount': story_dict['likeCount'],
+                    'commentCount': story_dict['commentCount'],
                 })
             
             return jsonify({
                 'code': 200,
-                'stories': formatted_stories,
+                'data': formatted_stories,
                 'totalCount': total_count,
                 'hasMore': (offset_val + limit) < total_count
             }), 200
