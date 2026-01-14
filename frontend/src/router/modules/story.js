@@ -4,6 +4,7 @@
 // Routes for Stories feature (long-form content publishing system)
 // 
 // Route Structure:
+//   /stories/create                                    → CreateStory.vue (NEW)
 //   /stories/topics                                    → BrowseStoryTopics.vue
 //   /stories/topics/create                             → CreateTopic.vue
 //   /stories/topics/:topicId/:topicName                → SpecificStoryTopic.vue
@@ -17,6 +18,19 @@
 // -----------------------------------------------------------------------------------------
 
 const routes = [
+  // ========================================
+  // CREATE STORY ROUTE (must be before :storyId to avoid conflict)
+  // ========================================
+  {
+    path: "/stories/create",
+    name: "createStory",
+    component: () => import(/* webpackChunkName: "stories" */ "@/views/CreateStory.vue"),
+    meta: {
+      title: "Create Story",
+      requiresAuth: true
+    }
+  },
+
   // ========================================
   // TOPICS ROUTES
   // ========================================
