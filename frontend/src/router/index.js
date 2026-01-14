@@ -13,6 +13,7 @@ import partner from "./modules/partner";
 import misc from "./modules/misc";
 import legacy from "./modules/legacy";
 import assembly from "./modules/assembly";
+import story from "./modules/story";
 
 const routes = [
   ...main,
@@ -29,6 +30,7 @@ const routes = [
   ...misc,
   ...legacy,
   ...assembly,
+  ...story,
   { 
     path: '/:pathMatch(.*)*',
     name: 'not-found',

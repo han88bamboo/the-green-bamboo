@@ -11,6 +11,14 @@ const routes = [
     component: () => import(/* webpackChunkName: "profile" */ "@/views/Users/UserCellarPreview.vue"),
   },
   {
+    path: "/profile/user/:userID/:username/stories",
+    name: "userStories",
+    component: () => import(/* webpackChunkName: "profile" */ "@/views/Users/UserStories.vue"),
+    meta: {
+      title: "User Stories"
+    }
+  },
+  {
     path: "/profile/user/:userID/:username/activity",
     name: "userActivity",
     component: () => import(/* webpackChunkName: "profile" */ "@/views/Users/UserActivity.vue"),

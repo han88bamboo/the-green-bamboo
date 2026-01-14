@@ -32,7 +32,14 @@
       >
         Cellar
       </router-link>
-      
+
+      <router-link
+        :to="`/profile/user/${userID}/${username}/stories`"
+        class="profile-nav-link"
+        exact
+      >
+        Stories
+      </router-link>
      
         <router-link
         :to="`/profile/user/${userID}/${username}/lists`"
@@ -96,6 +103,7 @@ export default {
       return path === basePath || 
              (path.startsWith(basePath) && 
               !path.includes('/cellar-preview') &&
+              !path.includes('/stories') &&
               !path.includes('/allreviews') && 
               !path.includes('/activity') && 
               !path.includes('/lists') && 
