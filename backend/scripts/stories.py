@@ -1841,7 +1841,7 @@ def get_user_newsletters_for_dropdown(userID, userType):
             cursor.execute('''
                 SELECT id, "newsletterName"
                 FROM "newsletters"
-                WHERE "createdByID" = %s AND "createdByType" = %s
+                WHERE "creatorUserID" = %s AND "creatorUserType" = %s
                 ORDER BY "newsletterName" ASC
             ''', (user_id, userType))
             newsletters = cursor.fetchall()

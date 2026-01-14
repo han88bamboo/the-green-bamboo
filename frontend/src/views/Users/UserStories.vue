@@ -557,8 +557,8 @@ export default {
       // Default images
       defaultProfilePhoto:
         "https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultProfilePhoto.png?v=1748434288",
-      defaultDrinkImage:
-        "https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultDrinkImage.png?v=1750084739",
+      defaultFeatureImage:
+        "https://cdn.shopify.com/s/files/1/0353/9510/9003/files/fred-moon-0yqa0rMCsYk-unsplash.jpg?v=1763054984",
 
       // User data
       displayUserID: null,
@@ -764,7 +764,7 @@ export default {
       if (typeof photos === 'string' && photos) {
         return photos;
       }
-      return this.defaultDrinkImage;
+      return this.defaultFeatureImage;
     },
 
     getExcerpt(content, maxLength = 150) {
@@ -889,7 +889,7 @@ export default {
         const data = await response.json();
         
         if (data.code === 201) {
-          // Success
+          // Success - show toast first
           if (this.newStory.saveAsDraft) {
             useToast().success("Draft saved successfully!");
           } else if (this.newStory.publicationDate) {
@@ -898,17 +898,23 @@ export default {
             useToast().success("Story published successfully!");
           }
           
-          // Reset form
-          this.resetNewStoryForm();
-          
-          // Close modal
-          const modalEl = document.getElementById('createStoryModal');
-          const modal = window.bootstrap.Modal.getInstance(modalEl);
-          if (modal) modal.hide();
-          
-          // Reload stories
-          this.storiesOffset = 0;
-          await this.loadStories();
+          // Post-success operations in separate try block to prevent double toasts
+          try {
+            // Reset form
+            this.resetNewStoryForm();
+            
+            // Close modal
+            const modalEl = document.getElementById('createStoryModal');
+            const modal = window.bootstrap.Modal.getInstance(modalEl);
+            if (modal) modal.hide();
+            
+            // Reload stories
+            this.storiesOffset = 0;
+            await this.loadStories();
+          } catch (postSuccessError) {
+            // Don't show error toast - story was already created successfully
+            console.error("Error in post-success operations:", postSuccessError);
+          }
           
         } else {
           useToast().error(data.message || "Failed to create story.");
