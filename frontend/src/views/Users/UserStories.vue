@@ -644,7 +644,7 @@ export default {
     openMyNewsletters() {
       // TODO: Open modal or navigate to newsletters management
       // For now, open a modal
-      const modal = new bootstrap.Modal(document.getElementById('myNewslettersModal'));
+      const modal = new window.bootstrap.Modal(document.getElementById('myNewslettersModal'));
       modal.show();
     },
 

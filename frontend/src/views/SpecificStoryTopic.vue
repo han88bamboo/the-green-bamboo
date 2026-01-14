@@ -436,7 +436,8 @@ export default {
     async loadStories() {
       // TODO: Implement API call to /getTopicStories/<topicID>/<offset>
       this.loading = true;
-      const topicId = this.$route.params.topicId;
+      // eslint-disable-next-line no-unused-vars
+      const _topicId = this.$route.params.topicId;
       
       try {
         // const response = await fetch(`${process.env.VUE_APP_BACKEND_LINK}/getTopicStories/${topicId}/${this.currentOffset}`);
@@ -503,7 +504,8 @@ export default {
       this.$router.push(`/stories/${story.id}/${slugTitle}`);
     },
 
-    likeStory(story) {
+    // eslint-disable-next-line no-unused-vars
+    likeStory(_story) {
       // TODO: Implement like/unlike story
       useToast().info("Story liking coming soon!");
     },

@@ -474,7 +474,6 @@
 <script>
 import NavBar from "@/components/NavBar.vue";
 import { useToast } from "vue-toastification";
-import { Modal } from "bootstrap";
 
 export default {
   name: "SpecificStory",
@@ -568,7 +567,7 @@ export default {
     // Initialize delete modal
     this.$nextTick(() => {
       if (this.$refs.deleteModal) {
-        this.deleteModalInstance = new Modal(this.$refs.deleteModal);
+        this.deleteModalInstance = new window.bootstrap.Modal(this.$refs.deleteModal);
       }
     });
 
@@ -678,7 +677,8 @@ export default {
       }
     },
 
-    async likeComment(comment) {
+    // eslint-disable-next-line no-unused-vars
+    async likeComment(_comment) {
       // TODO: Implement like comment
       if (this.userID === 'defaultUser') {
         useToast().warning("Please login to like comments");
@@ -687,7 +687,8 @@ export default {
       useToast().info("Comment liking coming soon!");
     },
 
-    async dislikeComment(comment) {
+    // eslint-disable-next-line no-unused-vars
+    async dislikeComment(_comment) {
       // TODO: Implement dislike comment
       if (this.userID === 'defaultUser') {
         useToast().warning("Please login to dislike comments");
@@ -696,7 +697,8 @@ export default {
       useToast().info("Comment disliking coming soon!");
     },
 
-    async deleteComment(comment) {
+    // eslint-disable-next-line no-unused-vars
+    async deleteComment(_comment) {
       // TODO: Implement delete comment
       if (confirm('Delete this comment?')) {
         useToast().info("Comment deletion coming soon!");
