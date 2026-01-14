@@ -117,7 +117,8 @@
     <div class="row">
       <!-- Main Content Column -->
       <div class="col-lg-8">
-        <!-- Create Story Button (for any logged-in user) -->
+        <!-- commented out because this page should feel more like a news feed
+        Create Story Button (for any logged-in user) 
         <div v-if="userID !== 'defaultUser'" class="card mb-4 shadow-sm create-story-card">
           <div class="card-body d-flex align-items-center gap-3">
             <img 
@@ -138,7 +139,7 @@
               <i class="bi bi-pencil-square"></i>
             </button>
           </div>
-        </div>
+        </div>-->
 
         <!-- Sorting Options -->
         <div class="d-flex align-items-center gap-2 mb-3">

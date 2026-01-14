@@ -494,7 +494,7 @@ export default {
         if (response.data.code === 200 && response.data.data) {
           const data = response.data.data;
           this.newsletterInfo = {
-            id: data.newsletterID,
+            id: data.id,  // Backend returns 'id' not 'newsletterID'
             newsletterName: data.newsletterName,
             newsletterDesc: data.newsletterDesc,
             newsletterBanner: data.newsletterBanner,
