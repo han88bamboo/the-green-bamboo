@@ -2866,6 +2866,14 @@ def create_story_comment():
         comment_content = data.get('commentContent', '').strip()
         parent_comment_id = data.get('parentCommentID')  # Optional for replies
         
+        # Convert to proper types to avoid dict adaptation errors
+        if story_id is not None:
+            story_id = int(story_id)
+        if user_id is not None:
+            user_id = int(user_id)
+        if parent_comment_id is not None:
+            parent_comment_id = int(parent_comment_id)
+        
         if not all([story_id, user_id, user_type]):
             return jsonify({
                 'code': 400,
@@ -3010,9 +3018,19 @@ def get_story_comments(storyID, offset):
                 comment_dict = dict(comment)
                 comment_id = comment['id']
                 
-                # Get commenter info
+                # Get commenter info and flatten into comment_dict
                 commenter_info = get_user_info_by_id(cursor, comment['userID'], comment['userType'])
-                comment_dict['commenterInfo'] = commenter_info
+                if commenter_info:
+                    comment_dict['username'] = commenter_info.get('username')
+                    comment_dict['displayName'] = commenter_info.get('displayName')
+                    comment_dict['userPhoto'] = commenter_info.get('photo')
+                else:
+                    comment_dict['username'] = None
+                    comment_dict['displayName'] = None
+                    comment_dict['userPhoto'] = None
+                
+                # Rename commentDate to dateCreated for frontend compatibility
+                comment_dict['dateCreated'] = comment_dict.pop('commentDate', None)
                 
                 # Get like and dislike counts
                 cursor.execute('SELECT COUNT(*) as count FROM "storyCommentsLikes" WHERE "commentID" = %s', (comment_id,))
@@ -3075,9 +3093,19 @@ def get_story_comments(storyID, offset):
                 for reply in replies:
                     reply_dict = dict(reply)
                     
-                    # Get reply commenter info
+                    # Get reply commenter info and flatten into reply_dict
                     reply_commenter_info = get_user_info_by_id(cursor, reply['userID'], reply['userType'])
-                    reply_dict['commenterInfo'] = reply_commenter_info
+                    if reply_commenter_info:
+                        reply_dict['username'] = reply_commenter_info.get('username')
+                        reply_dict['displayName'] = reply_commenter_info.get('displayName')
+                        reply_dict['userPhoto'] = reply_commenter_info.get('photo')
+                    else:
+                        reply_dict['username'] = None
+                        reply_dict['displayName'] = None
+                        reply_dict['userPhoto'] = None
+                    
+                    # Rename commentDate to dateCreated for frontend compatibility
+                    reply_dict['dateCreated'] = reply_dict.pop('commentDate', None)
                     
                     # Get reply votes
                     cursor.execute('SELECT COUNT(*) as count FROM "storyCommentsLikes" WHERE "commentID" = %s', (reply['id'],))
@@ -3114,8 +3142,8 @@ def get_story_comments(storyID, offset):
                         reply_dict['canDelete'] = is_reply_commenter or is_story_author
                     
                     # Format date
-                    if reply_dict['commentDate']:
-                        reply_dict['commentDate'] = reply_dict['commentDate'].isoformat()
+                    if reply_dict['dateCreated']:
+                        reply_dict['dateCreated'] = reply_dict['dateCreated'].isoformat()
                     
                     replies_list.append(reply_dict)
                 
@@ -3123,8 +3151,8 @@ def get_story_comments(storyID, offset):
                 comment_dict['hasMoreReplies'] = len(replies_list) < comment_dict['replyCount']
                 
                 # Format date
-                if comment_dict['commentDate']:
-                    comment_dict['commentDate'] = comment_dict['commentDate'].isoformat()
+                if comment_dict['dateCreated']:
+                    comment_dict['dateCreated'] = comment_dict['dateCreated'].isoformat()
                 
                 result.append(comment_dict)
         

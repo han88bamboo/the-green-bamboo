@@ -243,7 +243,7 @@
                   <div class="d-flex justify-content-end mt-2">
                     <button 
                       class="btn btn-primary"
-                      @click="submitComment"
+                      @click="submitComment(null)"
                       :disabled="!newComment.trim() || submittingComment"
                     >
                       <span v-if="submittingComment">
@@ -263,82 +263,97 @@
             </div>
 
             <!-- Comments List -->
-            <!-- TODO: Implement comments with likes/dislikes (model after assembly post comments) -->
             <div class="comments-list">
+              <!-- Root Comment -->
               <div 
                 v-for="comment in comments" 
                 :key="comment.id"
-                class="comment-item mb-3 p-3 bg-light rounded"
+                class="comment-item"
               >
-                <!-- Comment Header -->
-                <div class="d-flex align-items-center mb-2">
+                <div class="d-flex">
+                  <!-- Commenter Avatar -->
                   <img 
                     :src="comment.userPhoto || defaultProfilePhoto" 
-                    alt="Commenter"
-                    class="rounded-circle me-2"
-                    style="width: 32px; height: 32px; object-fit: cover; cursor: pointer;"
+                    :alt="comment.username || 'Commenter'"
+                    class="rounded-circle me-3 comment-avatar"
                     @click="goToUserProfile(comment)"
                   />
-                  <div>
-                    <a 
-                      href="#" 
-                      @click.prevent="goToUserProfile(comment)" 
-                      class="fw-bold text-decoration-none small"
-                    >
-                      {{ comment.username || 'Unknown' }}
-                    </a>
-                    <div class="text-muted small">{{ formatTimeAgo(comment.dateCreated) }}</div>
-                  </div>
                   
-                  <!-- Delete button (for comment owner) -->
-                  <button 
-                    v-if="isCommentOwner(comment)"
-                    class="btn btn-sm btn-outline-danger ms-auto"
-                    @click="deleteComment(comment)"
-                    title="Delete comment"
-                  >
-                    <i class="bi bi-trash"></i>
-                  </button>
-                </div>
-
-                <!-- Comment Content -->
-                <p class="comment-content mb-2">{{ comment.commentContent }}</p>
-
-                <!-- Comment Actions (Like/Dislike) -->
-                <div class="comment-actions d-flex gap-3 small">
-                  <button 
-                    class="btn btn-sm p-0 text-muted"
-                    :class="{ 'text-success': comment.userLiked }"
-                    @click="likeComment(comment)"
-                  >
-                    <i class="bi" :class="comment.userLiked ? 'bi-hand-thumbs-up-fill' : 'bi-hand-thumbs-up'"></i>
-                    {{ comment.likeCount || 0 }}
-                  </button>
-                  <button 
-                    class="btn btn-sm p-0 text-muted"
-                    :class="{ 'text-danger': comment.userDisliked }"
-                    @click="dislikeComment(comment)"
-                  >
-                    <i class="bi" :class="comment.userDisliked ? 'bi-hand-thumbs-down-fill' : 'bi-hand-thumbs-down'"></i>
-                    {{ comment.dislikeCount || 0 }}
-                  </button>
+                  <div class="flex-grow-1">
+                    <!-- Comment Header -->
+                    <div class="comment-header d-flex align-items-center flex-wrap gap-1 mb-1">
+                      <a 
+                        href="#" 
+                        @click.prevent="goToUserProfile(comment)" 
+                        class="fw-bold text-decoration-none comment-author"
+                      >
+                        {{ comment.displayName || comment.username || 'Unknown' }}
+                      </a>
+                      <span class="text-muted small">•</span>
+                      <span class="text-muted small">{{ formatTimeAgo(comment.dateCreated) }}</span>
+                    </div>
+                    
+                    <!-- Comment Content -->
+                    <div class="text-start comment-content mb-2">{{ comment.commentContent }}</div>
+                    
+                    <!-- Comment Actions -->
+                    <div class="comment-actions d-flex align-items-center gap-3 small">
+                      <!-- Vote Buttons -->
+                      <div class="d-flex align-items-center gap-1">
+                        <button 
+                          class="btn btn-sm p-0 comment-vote-btn"
+                          @click="likeComment(comment)"
+                          :disabled="userID === 'defaultUser'"
+                          title="Upvote"
+                        >
+                          <i class="bi bi-arrow-up" :class="{ 'text-primary fw-bold': comment.userVote === 'up' }"></i>
+                        </button>
+                        <span 
+                          class="vote-count-small fw-bold"
+                          :class="getVoteCountClass(comment.voteCount)"
+                        >
+                          {{ comment.voteCount || 0 }}
+                        </span>
+                        <button 
+                          class="btn btn-sm p-0 comment-vote-btn"
+                          @click="dislikeComment(comment)"
+                          :disabled="userID === 'defaultUser'"
+                          title="Downvote"
+                        >
+                          <i class="bi bi-arrow-down" :class="{ 'text-danger fw-bold': comment.userVote === 'down' }"></i>
+                        </button>
+                      </div>
+                      
+                      <!-- Delete Button (own comments or story owner) -->
+                      <button 
+                        v-if="isCommentOwner(comment)"
+                        class="btn btn-sm p-0 text-muted comment-action-btn"
+                        @click="deleteComment(comment)"
+                      >
+                        <i class="bi bi-trash me-1"></i>Delete
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </div>
 
               <!-- Empty Comments State -->
-              <div v-if="comments.length === 0 && !loadingComments" class="text-center py-4 text-muted">
-                <i class="bi bi-chat-square text-muted" style="font-size: 2rem;"></i>
-                <p class="mt-2">No comments yet. Be the first to comment!</p>
+              <div v-if="comments.length === 0 && !loadingComments" class="text-center py-5 text-muted">
+                <i class="bi bi-chat-square-text" style="font-size: 3rem;"></i>
+                <p class="mt-3">No comments yet. Be the first to share your thoughts!</p>
               </div>
 
               <!-- Load More Comments -->
-              <div v-if="hasMoreComments && comments.length > 0" class="text-center mt-3">
+              <div v-if="hasMoreComments && comments.length > 0" class="text-center mt-4">
                 <button 
-                  class="btn btn-outline-secondary"
+                  class="btn btn-outline-primary"
                   @click="loadMoreComments"
                   :disabled="loadingComments"
                 >
-                  <span v-if="loadingComments">Loading...</span>
+                  <span v-if="loadingComments">
+                    <span class="spinner-border spinner-border-sm me-1"></span>
+                    Loading...
+                  </span>
                   <span v-else>Load More Comments</span>
                 </button>
               </div>
@@ -719,7 +734,7 @@ export default {
 
     async likeComment(comment) {
       if (this.userID === 'defaultUser') {
-        useToast().warning("Please login to like comments");
+        useToast().warning("Please login to vote on comments");
         return;
       }
       
@@ -740,16 +755,17 @@ export default {
           // Update local state
           comment.likeCount = data.data.likeCount;
           comment.dislikeCount = data.data.dislikeCount;
+          comment.voteCount = data.data.voteCount;
           comment.userVote = data.data.userVote;
         }
       } catch (error) {
-        console.error("Error liking comment:", error);
+        console.error("Error voting on comment:", error);
       }
     },
 
     async dislikeComment(comment) {
       if (this.userID === 'defaultUser') {
-        useToast().warning("Please login to dislike comments");
+        useToast().warning("Please login to vote on comments");
         return;
       }
       
@@ -770,10 +786,11 @@ export default {
           // Update local state
           comment.likeCount = data.data.likeCount;
           comment.dislikeCount = data.data.dislikeCount;
+          comment.voteCount = data.data.voteCount;
           comment.userVote = data.data.userVote;
         }
       } catch (error) {
-        console.error("Error disliking comment:", error);
+        console.error("Error voting on comment:", error);
       }
     },
 
@@ -953,6 +970,12 @@ export default {
         .replace(/-+/g, '-')
         .trim();
     },
+
+    getVoteCountClass(voteCount) {
+      if (voteCount > 0) return 'text-primary';
+      if (voteCount < 0) return 'text-danger';
+      return 'text-muted';
+    },
   },
 };
 </script>
@@ -1000,12 +1023,69 @@ export default {
 
 /* Comment Styles */
 .comment-item {
-  border-left: 3px solid transparent;
-  transition: border-color 0.2s;
+  padding: 16px 0;
+  border-bottom: 1px solid #eee;
 }
 
-.comment-item:hover {
-  border-left-color: #0d6efd;
+.comment-item:last-child {
+  border-bottom: none;
+}
+
+.comment-avatar {
+  width: 40px;
+  height: 40px;
+  object-fit: cover;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.comment-author {
+  color: #212529;
+  font-size: 0.9rem;
+}
+
+.comment-author:hover {
+  text-decoration: underline !important;
+}
+
+.comment-content {
+  color: #495057;
+  line-height: 1.6;
+  word-break: break-word;
+}
+
+/* Comment Actions */
+.comment-vote-btn {
+  color: #6c757d;
+  background: none;
+  border: none;
+  line-height: 1;
+}
+
+.comment-vote-btn:hover:not(:disabled) {
+  color: #495057;
+}
+
+.comment-vote-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.vote-count-small {
+  font-size: 0.85rem;
+  min-width: 20px;
+  text-align: center;
+}
+
+.comment-action-btn {
+  background: none;
+  border: none;
+  font-size: 0.8rem;
+}
+
+.comment-action-btn:hover {
+  color: #212529 !important;
+  text-decoration: underline;
 }
 
 /* Hover Background */
@@ -1027,6 +1107,22 @@ export default {
   .story-content {
     font-size: 1rem;
     line-height: 1.7;
+  }
+  
+  .comment-avatar {
+    width: 32px;
+    height: 32px;
+  }
+}
+
+/* Extra small devices */
+@media (max-width: 576px) {
+  .comment-item {
+    padding: 12px 0;
+  }
+  
+  .comment-actions {
+    flex-wrap: wrap;
   }
 }
 </style>
