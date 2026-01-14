@@ -89,6 +89,7 @@
               :initial-content="story.content"
               @content-changed="onStoryContentChange"
               :section-id="'create-story'"
+              :floating-toolbar="true"
             />
           </div>
 
