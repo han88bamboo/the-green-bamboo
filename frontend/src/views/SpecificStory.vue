@@ -260,7 +260,7 @@
             <AutocompleteSearchSelector
               v-if="editStory.linkedListings.length < 5"
               placeholder="Search for drinks to link..."
-              @drink-selected="onEditLinkedDrinkSelected"
+              @select="onEditLinkedDrinkSelected"
             />
           </div>
 
