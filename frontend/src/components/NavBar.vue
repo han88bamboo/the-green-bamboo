@@ -291,6 +291,12 @@
                     <router-link :to="'/assemblies'" class="dropdown-item">Assemblies</router-link>
                   </li>
                   <li>
+                    <router-link :to="'/stories/topics'" class="dropdown-item">All Topics</router-link>
+                  </li>
+                  <li>
+                    <router-link :to="'/stories/newsletters'" class="dropdown-item">All Newsletters</router-link>
+                  </li>
+                  <li>
                     <span @click="externalURL('https://88bamboo.co/')" class="dropdown-item">Latest News</span>
                   </li>
                   <li v-if="onRequest && accType == 'user'">
@@ -424,6 +430,18 @@
                   <router-link to="/events/view" style="text-decoration: none; font-weight: normal">
                     {{ accType === 'producer' || accType === 'venue' ? 'Create An Event' : 'Find Events' }}
                   </router-link>
+                </li>
+
+                <!-- Stories (Collapsible) -->
+                <li class="drawer-section-title mt-2 d-flex align-items-center text-start" @click="toggleStories">
+                  <span>Stories</span>
+                  <span style="margin-left: 8px;">{{ showStories ? '▾' : '▸' }}</span>
+                </li>
+                <li v-show="showStories" class="text-start pt-1">
+                  <router-link to="/stories/topics" style="text-decoration: none; font-weight: normal">All Topics</router-link>
+                </li>
+                <li v-show="showStories" class="text-start">
+                  <router-link to="/stories/newsletters" style="text-decoration: none; font-weight: normal">All Newsletters</router-link>
                 </li>
 
                 <li class="drawer-section-title pt-2 text-start">
@@ -574,6 +592,33 @@
             Assemblies
           </button>
         </router-link>
+
+        <!-- Stories Dropdown -->
+        <button
+          type="button"
+          class="btn primary-btn border-0 fw-bold dropdown-toggle position-relative"
+          aria-expanded="false"
+          @click="storiesDropdownOpen = !storiesDropdownOpen"
+          @keydown.enter.prevent="storiesDropdownOpen = !storiesDropdownOpen"
+          @mouseleave="startStoriesCloseTimer"
+          @mouseenter="cancelStoriesCloseTimer"
+        >
+          Stories
+          
+          <!-- Dropdown with drawer styling -->
+          <ul class="list-group clubs-events-dropdown" v-if="storiesDropdownOpen"
+              @mouseenter="cancelStoriesCloseTimer"
+              @mouseleave="startStoriesCloseTimer">
+            <li class="list-group-item list-group-item-action text-start"
+                @click="navigateToTopics">
+              All Topics
+            </li>
+            <li class="list-group-item list-group-item-action text-start"
+                @click="navigateToNewsletters">
+              All Newsletters
+            </li>
+          </ul>
+        </button>
 
         <router-link :to="'/Latest-News'">
           <button class="btn primary-btn border-0 fw-bold" type="button" @click="forceLoad('/Latest-News')">
@@ -928,10 +973,13 @@
           showExplore: false,
           showStats: false,
           showClubsEvents:false,
+          showStories: false,
           showAdmin: false,
           showSubmitDrink: false,
           dropdownOpen: false,
           dropdownTimer: null,
+          storiesDropdownOpen: false,
+          storiesDropdownTimer: null,
           submitDrinkDropdownOpen: false,
           submitDrinkDropdownTimer: null,
 
@@ -1141,6 +1189,10 @@
         },
         toggleClubsEvents() {
           this.showClubsEvents = !this.showClubsEvents;
+        },
+
+        toggleStories() {
+          this.showStories = !this.showStories;
         },
 
         toggleSubmitDrink() {
@@ -1530,6 +1582,31 @@
           if (this.dropdownTimer) {
             clearTimeout(this.dropdownTimer);
             this.dropdownTimer = null;
+          }
+        },
+
+        // Navigation methods for stories dropdown
+        navigateToTopics() {
+          this.storiesDropdownOpen = false;
+          this.$router.push('/stories/topics');
+        },
+
+        navigateToNewsletters() {
+          this.storiesDropdownOpen = false;
+          this.$router.push('/stories/newsletters');
+        },
+
+        // Timer methods for stories dropdown delay
+        startStoriesCloseTimer() {
+          this.storiesDropdownTimer = setTimeout(() => {
+            this.storiesDropdownOpen = false;
+          }, 500); // 0.5 second delay
+        },
+
+        cancelStoriesCloseTimer() {
+          if (this.storiesDropdownTimer) {
+            clearTimeout(this.storiesDropdownTimer);
+            this.storiesDropdownTimer = null;
           }
         },
       },
