@@ -50,11 +50,19 @@
   <NavBar />
   
   <div class="container px-4 py-4">
-    <!-- Back Navigation -->
-    <div class="row mb-3">
-      <div class="col">
-        <button class="btn btn-outline-secondary btn-sm" @click="goBack">
-          <i class="bi bi-arrow-left me-1"></i> Back
+    <!-- Back Navigation + Owner Actions -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <button class="btn btn-outline-secondary btn-sm" @click="goBack">
+        <i class="bi bi-arrow-left me-1"></i> Back
+      </button>
+      
+      <!-- Owner Actions (Edit/Delete) - only visible to story owner -->
+      <div v-if="isOwner && !loading && !error" class="owner-actions">
+        <button class="btn btn-sm btn-outline-primary me-2" @click="editStory">
+          <i class="bi bi-pencil me-1"></i> Edit
+        </button>
+        <button class="btn btn-sm btn-outline-danger" @click="confirmDelete">
+          <i class="bi bi-trash me-1"></i> Delete
         </button>
       </div>
     </div>
@@ -129,16 +137,6 @@
                   <span v-if="story.readTime">{{ story.readTime }} min read</span>
                 </div>
               </div>
-            </div>
-
-            <!-- Action Buttons (Edit/Delete for owner) -->
-            <div v-if="isOwner" class="owner-actions mb-3">
-              <button class="btn btn-sm btn-outline-primary me-2" @click="editStory">
-                <i class="bi bi-pencil me-1"></i> Edit
-              </button>
-              <button class="btn btn-sm btn-outline-danger" @click="confirmDelete">
-                <i class="bi bi-trash me-1"></i> Delete
-              </button>
             </div>
           </header>
 
