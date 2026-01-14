@@ -54,13 +54,15 @@
           role="button"
         >
           <div class="d-flex align-items-center w-100">
-            <img 
-              :src="item.photo || defaultDrinkPhoto" 
-              :alt="item.listingName"
-              class="rounded me-2"
-              style="width: 32px; height: 32px; object-fit: cover;"
-            />
-            <div class="d-flex flex-column flex-grow-1 overflow-hidden">
+            <div style="width: 32px; height: 32px; flex-shrink: 0; margin-right: 12px;">
+              <img 
+                :src="item.photo || defaultDrinkPhoto" 
+                :alt="item.listingName"
+                class="rounded"
+                style="width: 100%; height: 100%; object-fit: cover;"
+              />
+            </div>
+            <div class="d-flex flex-column" style="flex: 1; min-width: 0;">
               <span class="fw-medium text-dark item-name text-truncate">{{ item.listingName }}</span>
               <small class="text-muted producer-name text-truncate">
                 <template v-if="item.producerName">{{ item.producerName }}</template>
@@ -69,7 +71,7 @@
                 <template v-if="item.abv"> · {{ item.abv }}%</template>
               </small>
             </div>
-            <small v-if="item.originCountry" class="text-muted item-detail ms-2">{{ item.originCountry }}</small>
+            <small v-if="item.originCountry" class="text-muted item-detail" style="margin-left: 12px; flex-shrink: 0;">{{ item.originCountry }}</small>
           </div>
         </div>
       </div>
@@ -355,11 +357,20 @@ export default {
   font-size: 0.9rem;
   font-weight: 500;
   color: #212529;
+  line-height: 1.2;
+  display: block;
+  margin: 0;
+  padding: 0;
 }
 
 .producer-name {
   font-size: 0.75rem;
   color: #6c757d;
+  line-height: 1.2;
+  margin-top: 2px;
+  display: block;
+  margin-left: 0;
+  padding: 0;
 }
 
 .item-detail {
