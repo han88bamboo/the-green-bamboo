@@ -103,33 +103,85 @@
           </div>
         </div>
 
-        <!-- Stories List -->
+        <!-- Stories List (Medium-style row layout) -->
         <div v-if="stories.length > 0" class="stories-list">
-          <!-- TODO: Implement story cards (model after review cards in AllReviews.vue) -->
-          <!-- Each story card should display:
-               - Story title (clickable, navigates to SpecificStory.vue)
-               - Story preview (truncated content)
-               - Story photo (first image if available)
-               - Like count
-               - Comment count
-               - Publishing date
-               - Topic name (if any)
-               - Newsletter name (if any)
-               - Hashtags
-          -->
           <div 
             v-for="story in stories" 
             :key="story.id"
             class="story-card card mb-3 shadow-sm"
+            :class="{ 
+              'draft-story-card': isDraft(story),
+              'scheduled-story-card': isScheduled(story)
+            }"
+            @click="viewStory(story)"
+            role="button"
           >
-            <div class="card-body">
-              <!-- TODO: Implement story card content -->
-              <h5 class="card-title">{{ story.storyTitle }}</h5>
-              <p class="text-muted small">
-                Published {{ formatDate(story.publishingDate) }}
-              </p>
-              <!-- Placeholder for story content -->
-              <p class="card-text text-muted">Story card content coming soon...</p>
+            <div class="card-body p-0">
+              <div class="row g-0">
+                <!-- Story Content (left side) -->
+                <div class="col-8 col-md-9 p-3 d-flex flex-column">
+                  <!-- Status badges (draft/scheduled) - only visible to owner -->
+                  <div v-if="ownProfile && (isDraft(story) || isScheduled(story))" class="mb-2">
+                    <span v-if="isDraft(story)" class="badge bg-secondary me-2">
+                      <i class="bi bi-file-earmark-text me-1"></i>Draft
+                    </span>
+                    <span v-else-if="isScheduled(story)" class="badge bg-info text-dark me-2">
+                      <i class="bi bi-clock me-1"></i>Scheduled for {{ formatDate(story.publicationDate) }}
+                    </span>
+                  </div>
+                  
+                  <!-- Story Title -->
+                  <h5 class="story-title fw-bold mb-2 line-clamp-2">
+                    {{ story.title || story.storyTitle }}
+                  </h5>
+                  
+                  <!-- Story Preview (150 chars) -->
+                  <p class="story-preview text-muted mb-2 flex-grow-1 line-clamp-3">
+                    {{ story.preview || getExcerpt(story.content || story.storyContent, 150) }}
+                  </p>
+                  
+                  <!-- Story Meta (bottom) -->
+                  <div class="story-meta d-flex align-items-center flex-wrap gap-2 mt-auto">
+                    <!-- Publication Date -->
+                    <small class="text-muted" v-if="!isDraft(story)">
+                      <i class="bi bi-calendar3 me-1"></i>
+                      {{ formatDate(story.publicationDate) }}
+                    </small>
+                    
+                    <!-- Topic Badge -->
+                    <span 
+                      v-if="story.topicName" 
+                      class="badge bg-primary-subtle text-primary"
+                    >
+                      <i class="bi bi-folder me-1"></i>{{ story.topicName }}
+                    </span>
+                    
+                    <!-- Newsletter Badge -->
+                    <span 
+                      v-if="story.newsletterName" 
+                      class="badge bg-success-subtle text-success"
+                    >
+                      <i class="bi bi-envelope me-1"></i>{{ story.newsletterName }}
+                    </span>
+                    
+                    <!-- Reading Time -->
+                    <small v-if="story.readTime" class="text-muted">
+                      <i class="bi bi-clock me-1"></i>{{ story.readTime }} min read
+                    </small>
+                  </div>
+                </div>
+                
+                <!-- Feature Image (right side) -->
+                <div class="col-4 col-md-3 d-flex align-items-center justify-content-center p-2">
+                  <div class="story-image-wrapper">
+                    <img 
+                      :src="getFeatureImage(story)" 
+                      :alt="story.title || story.storyTitle"
+                      class="story-feature-image rounded"
+                    />
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -216,42 +268,44 @@
             ></textarea>
           </div>
 
-          <!-- Image Upload -->
+          <!-- Feature Image Upload (Single) -->
           <div class="mb-3">
-            <label class="form-label fw-bold">Images (Max 5)</label>
-            <!-- TODO: Implement image upload (same as Assembly post creation) -->
-            <div class="d-flex flex-wrap gap-2 mb-2">
-              <div 
-                v-for="(image, index) in newStory.images" 
-                :key="index"
-                class="position-relative"
-              >
+            <label class="form-label fw-bold">Feature Image</label>
+            <div class="form-text mb-2">This image will appear on story cards when browsing.</div>
+            <div class="d-flex align-items-start gap-3">
+              <!-- Feature Image Preview -->
+              <div v-if="newStory.featureImagePreview" class="position-relative">
                 <img 
-                  :src="image.preview" 
+                  :src="newStory.featureImagePreview" 
                   class="rounded"
-                  style="width: 80px; height: 80px; object-fit: cover;"
+                  style="width: 120px; height: 80px; object-fit: cover;"
+                  alt="Feature image preview"
                 />
                 <button 
                   class="btn btn-sm btn-danger position-absolute top-0 end-0 rounded-circle p-0"
                   style="width: 20px; height: 20px; line-height: 1;"
-                  @click="removeImage(index)"
+                  @click="removeFeatureImage"
+                  type="button"
                 >
                   <i class="bi bi-x"></i>
                 </button>
               </div>
+              <!-- Upload Button -->
               <label 
-                v-if="newStory.images.length < 5"
+                v-else
                 class="upload-placeholder d-flex align-items-center justify-content-center rounded border border-dashed"
-                style="width: 80px; height: 80px; cursor: pointer;"
+                style="width: 120px; height: 80px; cursor: pointer;"
               >
                 <input 
                   type="file" 
                   accept="image/*" 
                   class="d-none"
-                  @change="handleImageUpload"
-                  multiple
+                  @change="handleFeatureImageUpload"
                 />
-                <i class="bi bi-plus-lg text-muted"></i>
+                <div class="text-center text-muted">
+                  <i class="bi bi-image fs-4"></i>
+                  <div class="small">Add image</div>
+                </div>
               </label>
             </div>
           </div>
@@ -274,16 +328,26 @@
             <div class="form-text">Link drinks you're discussing in your story</div>
             
             <!-- Selected Drinks Display -->
-            <!-- TODO: Display selected drinks (same as Assembly post creation) -->
             <div v-if="newStory.selectedDrinks.length > 0" class="selected-drinks mt-3">
-              <!-- Selected drinks cards will go here -->
+              <div 
+                v-for="drink in newStory.selectedDrinks" 
+                :key="drink.id"
+                class="badge bg-light text-dark border me-2 mb-2 d-inline-flex align-items-center"
+              >
+                {{ drink.listingName }}
+                <button 
+                  type="button" 
+                  class="btn-close ms-2" 
+                  style="font-size: 0.5rem;"
+                  @click="removeDrink(drink.id)"
+                ></button>
+              </div>
             </div>
           </div>
 
           <!-- Hashtags Input -->
           <div class="mb-3">
             <label class="form-label fw-bold">Hashtags (Optional)</label>
-            <!-- TODO: Implement hashtag input similar to varietal tags in BulkCreateListingNew -->
             <div class="input-group">
               <input 
                 type="text" 
@@ -323,9 +387,15 @@
           <!-- Topic Selection -->
           <div class="mb-3">
             <label class="form-label fw-bold">Topic (Optional)</label>
-            <!-- TODO: Implement topic dropdown -->
-            <select class="form-select" v-model="newStory.topicID" disabled>
-              <option value="">Select a topic... (Coming soon)</option>
+            <select class="form-select" v-model="newStory.topicID">
+              <option value="">Select a topic...</option>
+              <option 
+                v-for="topic in allTopics" 
+                :key="topic.id" 
+                :value="topic.id"
+              >
+                {{ topic.topicName }}
+              </option>
             </select>
             <div class="form-text">Categorize your story under a topic for better discoverability</div>
           </div>
@@ -333,9 +403,15 @@
           <!-- Newsletter Selection -->
           <div class="mb-3">
             <label class="form-label fw-bold">Newsletter (Optional)</label>
-            <!-- TODO: Implement newsletter dropdown populated from getUserNewsletters endpoint -->
-            <select class="form-select" v-model="newStory.newsletterID" disabled>
-              <option value="">Select a newsletter... (Coming soon)</option>
+            <select class="form-select" v-model="newStory.newsletterID">
+              <option value="">Select a newsletter...</option>
+              <option 
+                v-for="newsletter in userNewsletters" 
+                :key="newsletter.id" 
+                :value="newsletter.id"
+              >
+                {{ newsletter.newsletterName }}
+              </option>
             </select>
             <div class="form-text">Add this story to one of your newsletters</div>
             <button 
@@ -345,6 +421,50 @@
             >
               <i class="bi bi-plus-circle me-1"></i> Create a new newsletter
             </button>
+          </div>
+
+          <!-- Publication Date (Schedule or Publish Now) -->
+          <div class="mb-3">
+            <label class="form-label fw-bold">Publication</label>
+            <div class="form-check mb-2">
+              <input 
+                class="form-check-input" 
+                type="radio" 
+                name="publicationType" 
+                id="publishNow"
+                v-model="newStory.saveAsDraft"
+                :value="false"
+                checked
+              />
+              <label class="form-check-label" for="publishNow">
+                Publish now
+              </label>
+            </div>
+            <div class="form-check mb-2">
+              <input 
+                class="form-check-input" 
+                type="radio" 
+                name="publicationType" 
+                id="saveAsDraft"
+                v-model="newStory.saveAsDraft"
+                :value="true"
+              />
+              <label class="form-check-label" for="saveAsDraft">
+                Save as draft
+              </label>
+            </div>
+            
+            <!-- Schedule Date Picker -->
+            <div class="mt-3" v-if="!newStory.saveAsDraft">
+              <label class="form-label small">Or schedule for later:</label>
+              <input 
+                type="datetime-local" 
+                class="form-control"
+                v-model="newStory.publicationDate"
+                :min="getMinDateTime()"
+              />
+              <div class="form-text">Leave empty to publish immediately</div>
+            </div>
           </div>
 
         </div>
@@ -358,9 +478,19 @@
           >
             <span v-if="submittingStory">
               <span class="spinner-border spinner-border-sm me-1"></span>
-              Publishing...
+              {{ newStory.saveAsDraft ? 'Saving...' : (newStory.publicationDate ? 'Scheduling...' : 'Publishing...') }}
             </span>
-            <span v-else>Publish Story</span>
+            <span v-else>
+              <template v-if="newStory.saveAsDraft">
+                <i class="bi bi-file-earmark me-1"></i>Save Draft
+              </template>
+              <template v-else-if="newStory.publicationDate">
+                <i class="bi bi-clock me-1"></i>Schedule Story
+              </template>
+              <template v-else>
+                <i class="bi bi-send me-1"></i>Publish Story
+              </template>
+            </span>
           </button>
         </div>
       </div>
@@ -422,7 +552,7 @@ export default {
   data() {
     return {
       dataLoaded: false,
-      currentURL: "",
+      currentURL: process.env.VUE_APP_API_URL,
 
       // Default images
       defaultProfilePhoto:
@@ -446,22 +576,26 @@ export default {
       hasMoreStories: false,
       loadingMore: false,
 
+      // Dropdown data
+      allTopics: [],
+      userNewsletters: [],
+
       // New story form data
       newStory: {
         title: '',
         content: '',
-        images: [],
+        featureImage: null,
+        featureImagePreview: null,
         selectedDrinks: [],
         listingIDs: [],
         hashtags: [],
         topicID: '',
         newsletterID: '',
+        publicationDate: '',  // Empty = publish now, has value = scheduled
+        saveAsDraft: false,
       },
       newHashtag: '',
       submittingStory: false,
-
-      // User's newsletters (for dropdown)
-      userNewsletters: [],
     };
   },
 
@@ -503,12 +637,17 @@ export default {
   methods: {
     async loadInitialData() {
       try {
-        // TODO: Implement API calls
-        // 1. Load display user info
-        // 2. Load user's stories via /getUserStories/<userID>/<userType>/<offset>
-        // 3. If own profile, load user's newsletters via /getUserNewsletters/<userID>/<userType>
+        // Load display user info first
+        await this.loadDisplayUser();
         
-        // Placeholder: Set dataLoaded to true
+        // Load user's stories via /getUserStories/<userID>/<userType>/<offset>
+        await this.loadStories();
+        
+        // If own profile, load topics and newsletters for dropdown
+        if (this.ownProfile) {
+          await this.loadDropdownData();
+        }
+        
         this.dataLoaded = true;
       } catch (error) {
         console.error("Error loading user stories data:", error);
@@ -516,17 +655,124 @@ export default {
       }
     },
 
+    async loadDisplayUser() {
+      try {
+        const response = await fetch(
+          `${this.currentURL}/getPublicUserInfo/${this.displayUserID}`
+        );
+        const data = await response.json();
+        if (data.code === 200) {
+          this.displayUser = data.data;
+        }
+      } catch (error) {
+        console.error("Error loading user info:", error);
+      }
+    },
+
+    async loadStories() {
+      try {
+        // Build URL with viewer params for draft visibility
+        let url = `${this.currentURL}/stories/getUserStories/${this.displayUserID}/user/${this.storiesOffset}`;
+        if (this.ownProfile && this.userID) {
+          url += `?viewerID=${this.userID}&viewerType=${this.userType || 'user'}`;
+        }
+        
+        const response = await fetch(url);
+        const data = await response.json();
+        
+        if (data.code === 200) {
+          this.stories = data.data || [];
+          this.hasMoreStories = this.stories.length >= 12;
+        } else {
+          console.error("Error loading stories:", data.message);
+          this.stories = [];
+        }
+      } catch (error) {
+        console.error("Error loading stories:", error);
+        this.stories = [];
+      }
+    },
+
+    async loadDropdownData() {
+      try {
+        // Load all topics for dropdown
+        const topicsResponse = await fetch(`${this.currentURL}/stories/getAllTopicsForDropdown`);
+        const topicsData = await topicsResponse.json();
+        if (topicsData.code === 200) {
+          this.allTopics = topicsData.data || [];
+        }
+        
+        // Load user's newsletters for dropdown
+        const newslettersResponse = await fetch(
+          `${this.currentURL}/stories/getUserNewslettersForDropdown/${this.userID}/${this.userType || 'user'}`
+        );
+        const newslettersData = await newslettersResponse.json();
+        if (newslettersData.code === 200) {
+          this.userNewsletters = newslettersData.data || [];
+        }
+      } catch (error) {
+        console.error("Error loading dropdown data:", error);
+      }
+    },
+
     async loadMoreStories() {
-      // TODO: Implement pagination
-      // Increment storiesOffset and fetch more stories
       this.loadingMore = true;
       try {
-        // API call to get more stories
+        this.storiesOffset += 12;
+        
+        let url = `${this.currentURL}/stories/getUserStories/${this.displayUserID}/user/${this.storiesOffset}`;
+        if (this.ownProfile && this.userID) {
+          url += `?viewerID=${this.userID}&viewerType=${this.userType || 'user'}`;
+        }
+        
+        const response = await fetch(url);
+        const data = await response.json();
+        
+        if (data.code === 200) {
+          const newStories = data.data || [];
+          this.stories = [...this.stories, ...newStories];
+          this.hasMoreStories = newStories.length >= 12;
+        }
       } catch (error) {
         console.error("Error loading more stories:", error);
       } finally {
         this.loadingMore = false;
       }
+    },
+
+    // ==========================================
+    // Story Card Helper Methods
+    // ==========================================
+
+    isDraft(story) {
+      // Draft = publicationDate is null
+      return !story.publicationDate;
+    },
+
+    isScheduled(story) {
+      // Scheduled = publicationDate is in the future
+      if (!story.publicationDate) return false;
+      return new Date(story.publicationDate) > new Date();
+    },
+
+    getFeatureImage(story) {
+      // Get feature image from storyPhotos array (first image)
+      const photos = story.storyPhotos || story.featureImage;
+      if (Array.isArray(photos) && photos.length > 0) {
+        return photos[0];
+      }
+      if (typeof photos === 'string' && photos) {
+        return photos;
+      }
+      return this.defaultDrinkImage;
+    },
+
+    getExcerpt(content, maxLength = 150) {
+      if (!content) return '';
+      // Strip HTML tags for preview
+      const stripped = content.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+      if (stripped.length <= maxLength) return stripped;
+      return stripped.substring(0, maxLength).trim() + '...';
     },
 
     formatDate(dateString) {
@@ -547,31 +793,24 @@ export default {
       this.newStory.content = content;
     },
 
-    handleImageUpload(event) {
-      // TODO: Implement image upload (same as Assembly post creation)
-      const files = event.target.files;
-      if (!files) return;
+    handleFeatureImageUpload(event) {
+      const file = event.target.files?.[0];
+      if (!file) return;
 
-      for (const file of files) {
-        if (this.newStory.images.length >= 5) break;
-        
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          this.newStory.images.push({
-            file: file,
-            preview: e.target.result
-          });
-        };
-        reader.readAsDataURL(file);
-      }
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        this.newStory.featureImage = e.target.result;  // base64 string
+        this.newStory.featureImagePreview = e.target.result;
+      };
+      reader.readAsDataURL(file);
     },
 
-    removeImage(index) {
-      this.newStory.images.splice(index, 1);
+    removeFeatureImage() {
+      this.newStory.featureImage = null;
+      this.newStory.featureImagePreview = null;
     },
 
     handleDrinkSelect(drink) {
-      // TODO: Implement drink selection
       if (this.newStory.selectedDrinks.length >= 5) return;
       if (this.newStory.selectedDrinks.find(d => d.id === drink.id)) return;
       
@@ -599,8 +838,14 @@ export default {
       this.newStory.hashtags.splice(index, 1);
     },
 
+    getMinDateTime() {
+      // Return minimum datetime for scheduling (now + 1 minute)
+      const now = new Date();
+      now.setMinutes(now.getMinutes() + 1);
+      return now.toISOString().slice(0, 16);
+    },
+
     async submitStory() {
-      // TODO: Implement story submission via /createStory endpoint
       if (!this.newStory.title.trim()) {
         useToast().error("Please enter a title for your story");
         return;
@@ -608,16 +853,66 @@ export default {
 
       this.submittingStory = true;
       try {
-        // API call to create story
-        // const response = await fetch(...);
+        // Prepare publication date
+        let publicationDate = null;
+        if (!this.newStory.saveAsDraft) {
+          if (this.newStory.publicationDate) {
+            // Scheduled for later
+            publicationDate = new Date(this.newStory.publicationDate).toISOString();
+          } else {
+            // Publish now
+            publicationDate = new Date().toISOString();
+          }
+        }
+        // If saveAsDraft is true, publicationDate stays null (draft)
+
+        const payload = {
+          creatorUserID: parseInt(this.userID),
+          creatorUserType: this.userType || 'user',
+          storyTitle: this.newStory.title.trim(),
+          storyContent: this.newStory.content || '',
+          featureImage64: this.newStory.featureImage || null,
+          listingIDs: this.newStory.listingIDs,
+          topicID: this.newStory.topicID || null,
+          newsletterID: this.newStory.newsletterID || null,
+          hashtags: this.newStory.hashtags,
+          publicationDate: publicationDate,
+          freeOrPaid: 'free'
+        };
+
+        const response = await fetch(`${this.currentURL}/stories/createStory`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
         
-        useToast().info("Story creation coming soon!");
+        const data = await response.json();
         
-        // Reset form
-        this.resetNewStoryForm();
-        
-        // Close modal
-        // bootstrap.Modal.getInstance(document.getElementById('createStoryModal')).hide();
+        if (data.code === 201) {
+          // Success
+          if (this.newStory.saveAsDraft) {
+            useToast().success("Draft saved successfully!");
+          } else if (this.newStory.publicationDate) {
+            useToast().success("Story scheduled successfully!");
+          } else {
+            useToast().success("Story published successfully!");
+          }
+          
+          // Reset form
+          this.resetNewStoryForm();
+          
+          // Close modal
+          const modalEl = document.getElementById('createStoryModal');
+          const modal = window.bootstrap.Modal.getInstance(modalEl);
+          if (modal) modal.hide();
+          
+          // Reload stories
+          this.storiesOffset = 0;
+          await this.loadStories();
+          
+        } else {
+          useToast().error(data.message || "Failed to create story.");
+        }
         
       } catch (error) {
         console.error("Error creating story:", error);
@@ -631,31 +926,36 @@ export default {
       this.newStory = {
         title: '',
         content: '',
-        images: [],
+        featureImage: null,
+        featureImagePreview: null,
         selectedDrinks: [],
         listingIDs: [],
         hashtags: [],
         topicID: '',
         newsletterID: '',
+        publicationDate: '',
+        saveAsDraft: false,
       };
       this.newHashtag = '';
     },
 
     openMyNewsletters() {
-      // TODO: Open modal or navigate to newsletters management
-      // For now, open a modal
       const modal = new window.bootstrap.Modal(document.getElementById('myNewslettersModal'));
       modal.show();
     },
 
     createNewNewsletter() {
+      // Close create story modal first
+      const storyModal = window.bootstrap.Modal.getInstance(document.getElementById('createStoryModal'));
+      if (storyModal) storyModal.hide();
       // Navigate to create newsletter page
       this.$router.push('/stories/newsletters/create');
     },
 
     viewStory(story) {
       // Navigate to specific story page
-      const slugTitle = this.slugify(story.storyTitle);
+      const title = story.title || story.storyTitle || 'story';
+      const slugTitle = this.slugify(title);
       this.$router.push(`/stories/${story.id}/${slugTitle}`);
     },
 
@@ -672,10 +972,13 @@ export default {
 </script>
 
 <style scoped>
-/* Story card styles - modeled after AllReviews.vue */
+/* =====================================================================================
+   STORY CARD STYLES - Medium-style row layout
+   ===================================================================================== */
 .story-card {
   transition: transform 0.2s, box-shadow 0.2s;
   cursor: pointer;
+  border: 1px solid #e9ecef;
 }
 
 .story-card:hover {
@@ -683,6 +986,64 @@ export default {
   box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
 }
 
+/* Draft and scheduled stories - faded like past events */
+.draft-story-card,
+.scheduled-story-card {
+  opacity: 0.7;
+}
+
+.draft-story-card:hover,
+.scheduled-story-card:hover {
+  opacity: 0.85;
+}
+
+/* Story title */
+.story-title {
+  color: #222;
+  font-size: 1.1rem;
+  line-height: 1.3;
+}
+
+/* Story preview text */
+.story-preview {
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+/* Line clamp utilities */
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.line-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Feature image styling */
+.story-image-wrapper {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.story-feature-image {
+  width: 100%;
+  max-width: 150px;
+  height: 100px;
+  object-fit: cover;
+}
+
+/* Upload placeholder */
 .upload-placeholder {
   border: 2px dashed #dee2e6 !important;
 }
@@ -692,10 +1053,63 @@ export default {
   background-color: #f8f9fa;
 }
 
-/* Mobile responsiveness */
+/* Badges - subtle background colors (Bootstrap 5.3 style) */
+.bg-primary-subtle {
+  background-color: rgba(13, 110, 253, 0.1) !important;
+}
+
+.bg-success-subtle {
+  background-color: rgba(25, 135, 84, 0.1) !important;
+}
+
+/* =====================================================================================
+   MOBILE RESPONSIVENESS
+   ===================================================================================== */
 @media (max-width: 768px) {
   .mobile-fs-6 {
     font-size: 1rem !important;
+  }
+  
+  .story-title {
+    font-size: 1rem;
+  }
+  
+  .story-preview {
+    font-size: 0.85rem;
+  }
+  
+  .story-feature-image {
+    max-width: 100px;
+    height: 70px;
+  }
+  
+  .story-meta {
+    font-size: 0.75rem;
+  }
+  
+  .story-meta .badge {
+    font-size: 0.65rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .story-card .row {
+    flex-direction: column-reverse;
+  }
+  
+  .story-card .col-8,
+  .story-card .col-4 {
+    width: 100%;
+  }
+  
+  .story-image-wrapper {
+    margin-bottom: 0.5rem;
+  }
+  
+  .story-feature-image {
+    max-width: 100%;
+    width: 100%;
+    height: 150px;
   }
 }
 </style>

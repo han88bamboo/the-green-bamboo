@@ -838,6 +838,39 @@ def unsubscribe_topic():
 
 
 # -----------------------------------------------------------------------------------------
+# [GET] getAllTopicsForDropdown
+# Purpose: Get all topics for dropdown selection (lightweight, no pagination)
+# Used: UserStories.vue (Create Story modal), SpecificStory.vue (editing)
+# Input: None
+# Output:
+#   200 - List of topics with id and topicName only (sorted alphabetically)
+#   500 - Server error
+# -----------------------------------------------------------------------------------------
+@blueprint.route('/getAllTopicsForDropdown', methods=['GET'])
+def get_all_topics_for_dropdown():
+    try:
+        with db_manager.get_cursor() as cursor:
+            cursor.execute('''
+                SELECT id, "topicName"
+                FROM "topics"
+                ORDER BY "topicName" ASC
+            ''')
+            topics = cursor.fetchall()
+        
+        return jsonify({
+            'code': 200,
+            'data': [dict(t) for t in topics]
+        }), 200
+    
+    except Exception as e:
+        logging.exception("getAllTopicsForDropdown: Error - %s", str(e))
+        return jsonify({
+            'code': 500,
+            'message': 'An error occurred retrieving topics.'
+        }), 500
+
+
+# -----------------------------------------------------------------------------------------
 # [GET] getTopicStories/<topicID>/<offset>
 # Purpose: Get paginated stories under a specific topic
 # Used: SpecificStoryTopic.vue
@@ -1784,6 +1817,53 @@ def unsubscribe_newsletter():
         }), 500
 
 
+# -----------------------------------------------------------------------------------------
+# [GET] getUserNewslettersForDropdown/<userID>/<userType>
+# Purpose: Get newsletters owned by a user for dropdown selection
+# Used: UserStories.vue (Create Story modal)
+# Input: userID, userType (path params)
+# Output:
+#   200 - List of user's newsletters with id and newsletterName only (sorted alphabetically)
+#   500 - Server error
+# -----------------------------------------------------------------------------------------
+@blueprint.route('/getUserNewslettersForDropdown/<userID>/<userType>', methods=['GET'])
+def get_user_newsletters_for_dropdown(userID, userType):
+    try:
+        user_id = int(userID)
+        
+        if userType not in ['user', 'producer', 'venue']:
+            return jsonify({
+                'code': 400,
+                'message': 'Invalid userType.'
+            }), 400
+        
+        with db_manager.get_cursor() as cursor:
+            cursor.execute('''
+                SELECT id, "newsletterName"
+                FROM "newsletters"
+                WHERE "createdByID" = %s AND "createdByType" = %s
+                ORDER BY "newsletterName" ASC
+            ''', (user_id, userType))
+            newsletters = cursor.fetchall()
+        
+        return jsonify({
+            'code': 200,
+            'data': [dict(n) for n in newsletters]
+        }), 200
+    
+    except ValueError:
+        return jsonify({
+            'code': 400,
+            'message': 'Invalid userID.'
+        }), 400
+    except Exception as e:
+        logging.exception("getUserNewslettersForDropdown: Error - %s", str(e))
+        return jsonify({
+            'code': 500,
+            'message': 'An error occurred retrieving newsletters.'
+        }), 500
+
+
 # =========================================================================================
 # STORIES ENDPOINTS
 # =========================================================================================
@@ -1797,12 +1877,13 @@ def unsubscribe_newsletter():
 #   2. creatorUserType - 'user', 'producer' or 'venue'
 #   3. storyTitle - title of the story (max 500 chars)
 #   4. storyContent - HTML content from rich text editor
-#   5. images - array of base64 images (optional, max 5)
+#   5. featureImage64 - base64 feature image for cards (optional, max 1)
 #   6. listingIDs - array of listing IDs to link (optional, max 5)
 #   7. topicID - topic to post under (optional)
 #   8. newsletterID - newsletter to add to (optional)
 #   9. hashtags - array of hashtag strings (optional)
-#   10. freeOrPaid - 'free' or 'paid' (default 'free' for MVP)
+#   10. publicationDate - ISO date string for scheduled publishing (optional, NULL = draft)
+#   11. freeOrPaid - 'free' or 'paid' (default 'free' for MVP)
 # Output:
 #   201 - Story created successfully
 #   400 - Validation error
@@ -1810,20 +1891,150 @@ def unsubscribe_newsletter():
 # -----------------------------------------------------------------------------------------
 @blueprint.route('/createStory', methods=['POST'])
 def create_story():
-    # TODO: Implement createStory endpoint
-    # - Validate story title (1-500 chars)
-    # - Validate images (max 5)
-    # - Validate listingIDs (max 5, verify they exist)
-    # - Upload images to S3
-    # - Process hashtags (normalize, insert into storyHashtags table)
-    # - Insert into stories table
-    # - Return created story ID
-    # TODO: Add notification to topic subscribers (if topicID provided)
-    # TODO: Add notification to newsletter patrons (if newsletterID provided)
-    return jsonify({
-        'code': 501,
-        'message': 'createStory endpoint not yet implemented'
-    }), 501
+    try:
+        data = request.get_json()
+        
+        # Get required fields
+        creator_id = data.get('creatorUserID')
+        creator_type = data.get('creatorUserType')
+        story_title = data.get('storyTitle', '').strip()
+        
+        # Get optional fields
+        story_content = data.get('storyContent', '').strip() or None
+        feature_image_64 = data.get('featureImage64')  # Single feature image
+        listing_ids = data.get('listingIDs', [])
+        topic_id = data.get('topicID') or None
+        newsletter_id = data.get('newsletterID') or None
+        hashtags = data.get('hashtags', [])
+        publication_date_str = data.get('publicationDate')  # ISO string or None for draft
+        free_or_paid = data.get('freeOrPaid', 'free')
+        
+        # Validate required fields
+        if not creator_id or not creator_type:
+            return jsonify({
+                'code': 400,
+                'message': 'Missing required fields: creatorUserID and creatorUserType are required.'
+            }), 400
+        
+        # Validate creator type
+        if creator_type not in ['user', 'producer', 'venue']:
+            return jsonify({
+                'code': 400,
+                'message': 'Invalid creatorUserType. Must be user, producer, or venue.'
+            }), 400
+        
+        # Validate story title (1-500 chars)
+        is_valid, error_msg = validate_story_title(story_title)
+        if not is_valid:
+            return jsonify({
+                'code': 400,
+                'message': error_msg
+            }), 400
+        
+        # Validate listing IDs (max 5)
+        if len(listing_ids) > 5:
+            return jsonify({
+                'code': 400,
+                'message': 'Maximum 5 linked drinks allowed.'
+            }), 400
+        
+        # Validate freeOrPaid
+        if free_or_paid not in ['free', 'paid']:
+            return jsonify({
+                'code': 400,
+                'message': 'freeOrPaid must be either "free" or "paid".'
+            }), 400
+        
+        # Parse publication date (None = draft)
+        publication_date = None
+        if publication_date_str:
+            try:
+                publication_date = datetime.fromisoformat(publication_date_str.replace('Z', '+00:00'))
+            except ValueError:
+                return jsonify({
+                    'code': 400,
+                    'message': 'Invalid publicationDate format. Use ISO 8601 format.'
+                }), 400
+        
+        with db_manager.get_cursor() as cursor:
+            # Verify topic exists if provided
+            if topic_id:
+                cursor.execute('SELECT id FROM "topics" WHERE id = %s', (topic_id,))
+                if not cursor.fetchone():
+                    return jsonify({
+                        'code': 400,
+                        'message': 'Topic not found.'
+                    }), 400
+            
+            # Verify newsletter exists and belongs to creator if provided
+            if newsletter_id:
+                cursor.execute('''
+                    SELECT id FROM "newsletters" 
+                    WHERE id = %s AND "creatorUserID" = %s AND "creatorUserType" = %s
+                ''', (newsletter_id, creator_id, creator_type))
+                if not cursor.fetchone():
+                    return jsonify({
+                        'code': 400,
+                        'message': 'Newsletter not found or you are not the owner.'
+                    }), 400
+            
+            # Upload feature image to S3 if provided
+            feature_image_url = None
+            if feature_image_64:
+                base64_string = re.sub(r'^data:image\/[a-zA-Z]+;base64,', '', feature_image_64)
+                feature_image_url = s3Images.uploadBase64ImageToS3(base64_string)
+            
+            # Format storyPhotos as PostgreSQL array (just the feature image for now)
+            story_photos = None
+            if feature_image_url:
+                story_photos = [feature_image_url]
+            
+            # Process hashtags
+            normalized_hashtags = process_hashtags(cursor, hashtags)
+            
+            # Get current timestamp for creationDate
+            creation_date = datetime.now()
+            
+            # Insert story
+            cursor.execute('''
+                INSERT INTO "stories" 
+                ("topicID", "newsletterID", "storyTitle", "storyContent", "storyPhotos", 
+                 "listingIDs", "creationDate", "publicationDate", "freeOrPaid", "hashtags",
+                 "creatorUserID", "creatorUserType")
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                RETURNING id
+            ''', (
+                topic_id, newsletter_id, story_title, story_content, story_photos,
+                listing_ids if listing_ids else None, creation_date, publication_date,
+                free_or_paid, normalized_hashtags if normalized_hashtags else None,
+                creator_id, creator_type
+            ))
+            
+            story_id = cursor.fetchone()['id']
+            
+            # TODO: Add notification to topic subscribers (if topicID provided and published now)
+            # if topic_id and publication_date and publication_date <= datetime.now():
+            #     notifications.notify_topic_subscribers(cursor, topic_id, story_id, story_title)
+            
+            # TODO: Add notification to newsletter patrons (if newsletterID provided and published now)
+            # if newsletter_id and publication_date and publication_date <= datetime.now():
+            #     notifications.notify_newsletter_patrons(cursor, newsletter_id, story_id, story_title)
+        
+        return jsonify({
+            'code': 201,
+            'data': {
+                'storyID': story_id,
+                'isDraft': publication_date is None,
+                'message': 'Story created successfully' + (' as draft' if publication_date is None else '')
+            }
+        }), 201
+    
+    except Exception as e:
+        logging.exception("createStory: Error - %s", str(e))
+        return jsonify({
+            'code': 500,
+            'message': 'An error occurred creating the story.'
+        }), 500
 
 
 # -----------------------------------------------------------------------------------------
@@ -1840,56 +2051,373 @@ def create_story():
 # -----------------------------------------------------------------------------------------
 @blueprint.route('/getStory/<storyID>', methods=['GET'])
 def get_story(storyID):
-    # TODO: Implement getStory endpoint
-    # - Query story by ID
-    # - Get creator info
-    # - Get linked listings info (from listings table)
-    # - Get like count
-    # - Get comment count
-    # - Get topic info (if topicID not null)
-    # - Get newsletter info (if newsletterID not null)
-    # - Check if requesting user has liked (if userID/userType provided)
-    # - For paid stories: check if user is patron or story purchaser
-    #   - If not, return truncated content with "Subscribe to read" flag
-    return jsonify({
-        'code': 501,
-        'message': 'getStory endpoint not yet implemented'
-    }), 501
+    try:
+        story_id = int(storyID)
+        
+        # Get optional user params for like check
+        user_id = request.args.get('userID')
+        user_type = request.args.get('userType')
+        
+        with db_manager.get_cursor() as cursor:
+            # Get story with creator info
+            cursor.execute('''
+                SELECT 
+                    s."id",
+                    s."topicID",
+                    s."newsletterID",
+                    s."storyTitle",
+                    s."storyContent",
+                    s."storyPhotos",
+                    s."listingIDs",
+                    s."creationDate",
+                    s."publicationDate",
+                    s."editedAt",
+                    s."freeOrPaid",
+                    s."hashtags",
+                    s."creatorUserID",
+                    s."creatorUserType",
+                    t."topicName",
+                    n."newsletterName",
+                    (SELECT COUNT(*) FROM "storiesLikes" WHERE "storyID" = s."id") as "likeCount",
+                    (SELECT COUNT(*) FROM "storyComments" WHERE "storyID" = s."id") as "commentCount",
+                    CASE 
+                        WHEN s."creatorUserType" = 'user' THEN u."username"
+                        WHEN s."creatorUserType" = 'producer' THEN p."username"
+                        WHEN s."creatorUserType" = 'venue' THEN v."username"
+                        ELSE NULL
+                    END as "creatorUsername",
+                    CASE 
+                        WHEN s."creatorUserType" = 'user' THEN u."displayName"
+                        WHEN s."creatorUserType" = 'producer' THEN p."producerName"
+                        WHEN s."creatorUserType" = 'venue' THEN v."venueName"
+                        ELSE NULL
+                    END as "creatorDisplayName",
+                    CASE 
+                        WHEN s."creatorUserType" = 'user' THEN u."photo"
+                        WHEN s."creatorUserType" = 'producer' THEN p."photo"
+                        WHEN s."creatorUserType" = 'venue' THEN v."photo"
+                        ELSE NULL
+                    END as "creatorPhoto"
+                FROM "stories" s
+                LEFT JOIN "topics" t ON s."topicID" = t."id"
+                LEFT JOIN "newsletters" n ON s."newsletterID" = n."id"
+                LEFT JOIN "users" u ON s."creatorUserType" = 'user' AND s."creatorUserID" = u."id"
+                LEFT JOIN "producers" p ON s."creatorUserType" = 'producer' AND s."creatorUserID" = p."id"
+                LEFT JOIN "venues" v ON s."creatorUserType" = 'venue' AND s."creatorUserID" = v."id"
+                WHERE s."id" = %s
+            ''', (story_id,))
+            
+            story = cursor.fetchone()
+            
+            if not story:
+                return jsonify({
+                    'code': 404,
+                    'message': 'Story not found'
+                }), 404
+            
+            story_dict = dict(story)
+            
+            # Check if story is a draft or scheduled (only visible to author)
+            is_draft = story_dict['publicationDate'] is None
+            is_scheduled = story_dict['publicationDate'] and story_dict['publicationDate'] > datetime.now()
+            is_owner = False
+            
+            if user_id and user_type:
+                is_owner = (
+                    str(story_dict['creatorUserID']) == str(user_id) and
+                    story_dict['creatorUserType'] == user_type
+                )
+            
+            # If draft or scheduled and not owner, return 404
+            if (is_draft or is_scheduled) and not is_owner:
+                return jsonify({
+                    'code': 404,
+                    'message': 'Story not found'
+                }), 404
+            
+            story_dict['isDraft'] = is_draft
+            story_dict['isScheduled'] = is_scheduled
+            story_dict['isOwner'] = is_owner
+            
+            # Check if user has liked
+            story_dict['userLiked'] = False
+            if user_id and user_type:
+                cursor.execute('''
+                    SELECT id FROM "storiesLikes"
+                    WHERE "storyID" = %s AND "userID" = %s AND "userType" = %s
+                ''', (story_id, user_id, user_type))
+                story_dict['userLiked'] = cursor.fetchone() is not None
+            
+            # Get linked listings info if any
+            story_dict['linkedListings'] = []
+            if story_dict['listingIDs'] and len(story_dict['listingIDs']) > 0:
+                # Build query for all listing IDs
+                placeholders = ','.join(['%s'] * len(story_dict['listingIDs']))
+                cursor.execute(f'''
+                    SELECT 
+                        l."id",
+                        l."listingName",
+                        l."photo",
+                        l."drinkType",
+                        l."abv",
+                        l."originCountry",
+                        p."producerName"
+                    FROM "listings" l
+                    LEFT JOIN "producers" p ON l."producerID" = p."id"
+                    WHERE l."id" IN ({placeholders})
+                ''', tuple(story_dict['listingIDs']))
+                
+                listings = cursor.fetchall()
+                story_dict['linkedListings'] = [dict(l) for l in listings] if listings else []
+            
+            # Calculate estimated read time (words / 200 words per minute, round down)
+            if story_dict['storyContent']:
+                # Strip HTML tags for word count
+                import re as regex_module
+                text_content = regex_module.sub(r'<[^>]+>', '', story_dict['storyContent'])
+                word_count = len(text_content.split())
+                story_dict['readTime'] = max(1, word_count // 200)  # At least 1 minute
+            else:
+                story_dict['readTime'] = 1
+            
+            # Format dates for JSON
+            if story_dict['creationDate']:
+                story_dict['creationDate'] = story_dict['creationDate'].isoformat()
+            if story_dict['publicationDate']:
+                story_dict['publicationDate'] = story_dict['publicationDate'].isoformat()
+            if story_dict['editedAt']:
+                story_dict['editedAt'] = story_dict['editedAt'].isoformat()
+        
+        return jsonify({
+            'code': 200,
+            'data': story_dict
+        }), 200
+    
+    except ValueError:
+        return jsonify({
+            'code': 400,
+            'message': 'Invalid story ID'
+        }), 400
+    except Exception as e:
+        logging.exception("getStory: Error - %s", str(e))
+        return jsonify({
+            'code': 500,
+            'message': 'An error occurred retrieving the story.'
+        }), 500
 
 
 # -----------------------------------------------------------------------------------------
 # [PUT] editStory
-# Purpose: Edit an existing story (author only)
-# Used: SpecificStory.vue
+# Purpose: Update an existing story (author only)
+# Used: SpecificStory.vue (inline editing)
 # Input:
 #   1. storyID - the story to edit
 #   2. userID - the user editing
 #   3. userType - 'user', 'producer', or 'venue'
-#   4. storyTitle - new title (optional)
-#   5. storyContent - new content (optional)
-#   6. images - new images array (optional)
-#   7. listingIDs - new linked listings (optional)
-#   8. hashtags - new hashtags (optional)
+#   Optional fields to update:
+#   - title
+#   - content (HTML)
+#   - featureImage (base64, will be uploaded to S3)
+#   - listingIDs (array of linked drink IDs)
+#   - topicID (can be null to remove)
+#   - newsletterID (can be null to remove)
+#   - hashtags (array of strings)
+#   - publicationDate (ISO string, null for draft)
 # Output:
 #   200 - Story updated successfully
-#   400 - Validation error
+#   400 - Missing data or validation error
 #   403 - Not the author
 #   404 - Story not found
 #   500 - Server error
 # -----------------------------------------------------------------------------------------
 @blueprint.route('/editStory', methods=['PUT'])
 def edit_story():
-    # TODO: Implement editStory endpoint
-    # - Verify story exists
-    # - Verify user is the author (creatorUserID + creatorUserType match)
-    # - Validate updated fields
-    # - Upload new images to S3 if provided
-    # - Update story record
-    # - Set editedAt timestamp
-    return jsonify({
-        'code': 501,
-        'message': 'editStory endpoint not yet implemented'
-    }), 501
+    try:
+        data = request.get_json()
+        
+        story_id = data.get('storyID')
+        user_id = data.get('userID')
+        user_type = data.get('userType')
+        
+        if not all([story_id, user_id, user_type]):
+            return jsonify({
+                'code': 400,
+                'message': 'Missing required fields: storyID, userID, userType'
+            }), 400
+        
+        if user_type not in ['user', 'producer', 'venue']:
+            return jsonify({
+                'code': 400,
+                'message': 'Invalid userType.'
+            }), 400
+        
+        with db_manager.get_cursor() as cursor:
+            # Get existing story
+            cursor.execute('''
+                SELECT id, "creatorUserID", "creatorUserType", "storyPhotos"
+                FROM "stories"
+                WHERE id = %s
+            ''', (story_id,))
+            
+            story = cursor.fetchone()
+            if not story:
+                return jsonify({
+                    'code': 404,
+                    'message': 'Story not found.'
+                }), 404
+            
+            # Check authorization
+            if str(story['creatorUserID']) != str(user_id) or story['creatorUserType'] != user_type:
+                return jsonify({
+                    'code': 403,
+                    'message': 'Not authorized to edit this story.'
+                }), 403
+            
+            # Build update query dynamically
+            update_fields = []
+            update_values = []
+            
+            if 'title' in data:
+                title = data['title']
+                if not title or len(title.strip()) == 0:
+                    return jsonify({
+                        'code': 400,
+                        'message': 'Title cannot be empty.'
+                    }), 400
+                update_fields.append('"title" = %s')
+                update_values.append(title.strip())
+            
+            if 'content' in data:
+                content = data['content']
+                if not content or len(content.strip()) == 0:
+                    return jsonify({
+                        'code': 400,
+                        'message': 'Content cannot be empty.'
+                    }), 400
+                update_fields.append('"content" = %s')
+                update_values.append(content)
+            
+            if 'featureImage' in data:
+                feature_image = data['featureImage']
+                if feature_image:
+                    # Upload new feature image to S3
+                    image_url = s3Images.uploadBase64ImageToS3(feature_image, 'stories')
+                    if not image_url:
+                        return jsonify({
+                            'code': 500,
+                            'message': 'Failed to upload feature image.'
+                        }), 500
+                    update_fields.append('"storyPhotos" = %s')
+                    update_values.append([image_url])  # storyPhotos array with 1 feature image
+                else:
+                    # Clearing feature image
+                    update_fields.append('"storyPhotos" = %s')
+                    update_values.append([])
+            
+            if 'listingIDs' in data:
+                listing_ids = data['listingIDs']
+                if not isinstance(listing_ids, list):
+                    return jsonify({
+                        'code': 400,
+                        'message': 'listingIDs must be an array.'
+                    }), 400
+                update_fields.append('"listingIDs" = %s')
+                update_values.append(listing_ids)
+            
+            if 'topicID' in data:
+                topic_id = data['topicID']
+                if topic_id:
+                    # Verify topic exists
+                    cursor.execute('SELECT id FROM "storyTopics" WHERE id = %s', (topic_id,))
+                    if not cursor.fetchone():
+                        return jsonify({
+                            'code': 400,
+                            'message': 'Invalid topicID.'
+                        }), 400
+                update_fields.append('"topicID" = %s')
+                update_values.append(topic_id)  # Can be null
+            
+            if 'newsletterID' in data:
+                newsletter_id = data['newsletterID']
+                if newsletter_id:
+                    # Verify newsletter exists
+                    cursor.execute('SELECT id FROM "newsletters" WHERE id = %s', (newsletter_id,))
+                    if not cursor.fetchone():
+                        return jsonify({
+                            'code': 400,
+                            'message': 'Invalid newsletterID.'
+                        }), 400
+                update_fields.append('"newsletterID" = %s')
+                update_values.append(newsletter_id)  # Can be null
+            
+            if 'hashtags' in data:
+                hashtags = data['hashtags']
+                if not isinstance(hashtags, list):
+                    return jsonify({
+                        'code': 400,
+                        'message': 'hashtags must be an array.'
+                    }), 400
+                # Normalize hashtags
+                normalized = []
+                for tag in hashtags:
+                    tag = tag.strip()
+                    if tag.startswith('#'):
+                        tag = tag[1:]
+                    if tag:
+                        normalized.append(tag.lower())
+                update_fields.append('"hashtags" = %s')
+                update_values.append(normalized)
+            
+            if 'publicationDate' in data:
+                # publicationDate can be None (draft), a date string (scheduled/published)
+                pub_date = data['publicationDate']
+                if pub_date is not None:
+                    try:
+                        # Parse and validate the date
+                        parsed_date = datetime.fromisoformat(pub_date.replace('Z', '+00:00'))
+                        update_fields.append('"publicationDate" = %s')
+                        update_values.append(parsed_date)
+                    except (ValueError, AttributeError):
+                        return jsonify({
+                            'code': 400,
+                            'message': 'Invalid publicationDate format. Use ISO format.'
+                        }), 400
+                else:
+                    # Set to draft (null)
+                    update_fields.append('"publicationDate" = %s')
+                    update_values.append(None)
+            
+            if not update_fields:
+                return jsonify({
+                    'code': 400,
+                    'message': 'No fields to update.'
+                }), 400
+            
+            # Add editedAt timestamp
+            update_fields.append('"editedAt" = %s')
+            update_values.append(datetime.utcnow())
+            
+            # Build and execute update query
+            update_query = f'''
+                UPDATE "stories"
+                SET {', '.join(update_fields)}
+                WHERE id = %s
+            '''
+            update_values.append(story_id)
+            
+            cursor.execute(update_query, tuple(update_values))
+        
+        return jsonify({
+            'code': 200,
+            'message': 'Story updated successfully.'
+        }), 200
+    
+    except Exception as e:
+        logging.exception("editStory: Error - %s", str(e))
+        return jsonify({
+            'code': 500,
+            'message': 'An error occurred updating the story.'
+        }), 500
 
 
 # -----------------------------------------------------------------------------------------
@@ -1905,18 +2433,65 @@ def edit_story():
 #   403 - Not the author
 #   404 - Story not found
 #   500 - Server error
-# Note: Cascade deletes comments, likes, storyPatrons records
+# Note: Cascades to delete likes, comments, comment likes/dislikes
 # -----------------------------------------------------------------------------------------
 @blueprint.route('/deleteStory', methods=['DELETE'])
 def delete_story():
-    # TODO: Implement deleteStory endpoint
-    # - Verify story exists
-    # - Verify user is the author
-    # - Delete story (cascades to comments, likes, storyPatrons)
-    return jsonify({
-        'code': 501,
-        'message': 'deleteStory endpoint not yet implemented'
-    }), 501
+    try:
+        data = request.get_json()
+        
+        story_id = data.get('storyID')
+        user_id = data.get('userID')
+        user_type = data.get('userType')
+        
+        if not all([story_id, user_id, user_type]):
+            return jsonify({
+                'code': 400,
+                'message': 'Missing required fields: storyID, userID, userType'
+            }), 400
+        
+        if user_type not in ['user', 'producer', 'venue']:
+            return jsonify({
+                'code': 400,
+                'message': 'Invalid userType.'
+            }), 400
+        
+        with db_manager.get_cursor() as cursor:
+            # Get story
+            cursor.execute('''
+                SELECT id, "creatorUserID", "creatorUserType", title
+                FROM "stories"
+                WHERE id = %s
+            ''', (story_id,))
+            
+            story = cursor.fetchone()
+            if not story:
+                return jsonify({
+                    'code': 404,
+                    'message': 'Story not found.'
+                }), 404
+            
+            # Check authorization
+            if str(story['creatorUserID']) != str(user_id) or story['creatorUserType'] != user_type:
+                return jsonify({
+                    'code': 403,
+                    'message': 'Not authorized to delete this story.'
+                }), 403
+            
+            # Delete story (cascades to likes, comments, comment likes/dislikes via ON DELETE CASCADE)
+            cursor.execute('DELETE FROM "stories" WHERE id = %s', (story_id,))
+        
+        return jsonify({
+            'code': 200,
+            'message': 'Story deleted successfully.'
+        }), 200
+    
+    except Exception as e:
+        logging.exception("deleteStory: Error - %s", str(e))
+        return jsonify({
+            'code': 500,
+            'message': 'An error occurred deleting the story.'
+        }), 500
 
 
 # -----------------------------------------------------------------------------------------
@@ -1924,24 +2499,179 @@ def delete_story():
 # Purpose: Get paginated stories by a specific user
 # Used: UserStories.vue
 # Input: userID, userType, offset (path params)
+# Optional query params:
+#   - viewerID, viewerType - to determine if viewing own profile (can see drafts)
 # Output:
-#   200 - List of user's stories (sorted by publishingDate DESC)
+#   200 - List of user's stories (sorted by publicationDate DESC, drafts last)
 #   500 - Server error
 # -----------------------------------------------------------------------------------------
 @blueprint.route('/getUserStories/<userID>/<userType>/<offset>', methods=['GET'])
 def get_user_stories(userID, userType, offset):
-    # TODO: Implement getUserStories endpoint
-    # - Query stories where creatorUserID and creatorUserType match
-    # - Include like count
-    # - Include comment count
-    # - Include topic info (if topicID not null)
-    # - Include newsletter info (if newsletterID not null)
-    # - Sort by publishingDate DESC
-    # - Paginate (12 per page)
-    return jsonify({
-        'code': 501,
-        'message': 'getUserStories endpoint not yet implemented'
-    }), 501
+    try:
+        user_id = int(userID)
+        offset_val = int(offset)
+        limit = 12  # Stories per page
+        
+        # Validate userType
+        if userType not in ['user', 'producer', 'venue']:
+            return jsonify({
+                'code': 400,
+                'message': 'Invalid userType. Must be user, producer, or venue.'
+            }), 400
+        
+        # Check if viewer is the owner (can see drafts/scheduled)
+        viewer_id = request.args.get('viewerID')
+        viewer_type = request.args.get('viewerType')
+        is_own_profile = (
+            viewer_id and viewer_type and
+            str(user_id) == str(viewer_id) and
+            userType == viewer_type
+        )
+        
+        with db_manager.get_cursor() as cursor:
+            # Build query based on whether viewing own profile
+            if is_own_profile:
+                # Owner can see all their stories (drafts, scheduled, published)
+                where_clause = '''
+                    WHERE s."creatorUserID" = %s AND s."creatorUserType" = %s
+                '''
+                # Sort: published first (by date DESC), then scheduled, then drafts
+                order_clause = '''
+                    ORDER BY 
+                        CASE 
+                            WHEN s."publicationDate" IS NULL THEN 2
+                            WHEN s."publicationDate" > NOW() THEN 1
+                            ELSE 0
+                        END,
+                        s."publicationDate" DESC NULLS LAST
+                '''
+            else:
+                # Others can only see published stories
+                where_clause = '''
+                    WHERE s."creatorUserID" = %s 
+                    AND s."creatorUserType" = %s
+                    AND s."publicationDate" IS NOT NULL 
+                    AND s."publicationDate" <= NOW()
+                '''
+                order_clause = 'ORDER BY s."publicationDate" DESC'
+            
+            # Get total count
+            count_query = f'''
+                SELECT COUNT(*) as total
+                FROM "stories" s
+                {where_clause}
+            '''
+            cursor.execute(count_query, (user_id, userType))
+            total_count = cursor.fetchone()['total']
+            
+            # Get paginated stories
+            query = f'''
+                SELECT 
+                    s."id",
+                    s."storyTitle",
+                    s."storyContent",
+                    s."storyPhotos",
+                    s."topicID",
+                    s."newsletterID",
+                    s."publicationDate",
+                    s."creationDate",
+                    s."creatorUserID",
+                    s."creatorUserType",
+                    t."topicName",
+                    n."newsletterName",
+                    CASE 
+                        WHEN s."creatorUserType" = 'user' THEN u."username"
+                        WHEN s."creatorUserType" = 'producer' THEN p."username"
+                        WHEN s."creatorUserType" = 'venue' THEN v."username"
+                        ELSE NULL
+                    END as "creatorUsername",
+                    CASE 
+                        WHEN s."creatorUserType" = 'user' THEN u."displayName"
+                        WHEN s."creatorUserType" = 'producer' THEN p."producerName"
+                        WHEN s."creatorUserType" = 'venue' THEN v."venueName"
+                        ELSE NULL
+                    END as "creatorDisplayName",
+                    CASE 
+                        WHEN s."creatorUserType" = 'user' THEN u."photo"
+                        WHEN s."creatorUserType" = 'producer' THEN p."photo"
+                        WHEN s."creatorUserType" = 'venue' THEN v."photo"
+                        ELSE NULL
+                    END as "creatorPhoto"
+                FROM "stories" s
+                LEFT JOIN "topics" t ON s."topicID" = t."id"
+                LEFT JOIN "newsletters" n ON s."newsletterID" = n."id"
+                LEFT JOIN "users" u ON s."creatorUserType" = 'user' AND s."creatorUserID" = u."id"
+                LEFT JOIN "producers" p ON s."creatorUserType" = 'producer' AND s."creatorUserID" = p."id"
+                LEFT JOIN "venues" v ON s."creatorUserType" = 'venue' AND s."creatorUserID" = v."id"
+                {where_clause}
+                {order_clause}
+                LIMIT %s OFFSET %s
+            '''
+            cursor.execute(query, (user_id, userType, limit, offset_val))
+            stories = cursor.fetchall()
+            
+            # Format stories for response
+            formatted_stories = []
+            for story in stories:
+                story_dict = dict(story)
+                
+                # Get feature photo (first photo)
+                feature_photo = None
+                if story_dict['storyPhotos'] and len(story_dict['storyPhotos']) > 0:
+                    feature_photo = story_dict['storyPhotos'][0]
+                
+                # Generate preview excerpt (first 150 chars, strip HTML)
+                preview_excerpt = ''
+                if story_dict['storyContent']:
+                    # Strip HTML tags
+                    text_content = re.sub(r'<[^>]+>', '', story_dict['storyContent'])
+                    preview_excerpt = text_content[:150].strip()
+                    if len(text_content) > 150:
+                        preview_excerpt += '...'
+                
+                # Determine status
+                is_draft = story_dict['publicationDate'] is None
+                is_scheduled = (
+                    story_dict['publicationDate'] and 
+                    story_dict['publicationDate'] > datetime.now()
+                )
+                
+                formatted_stories.append({
+                    'id': story_dict['id'],
+                    'storyTitle': story_dict['storyTitle'],
+                    'previewExcerpt': preview_excerpt,
+                    'featurePhoto': feature_photo,
+                    'publicationDate': story_dict['publicationDate'].isoformat() if story_dict['publicationDate'] else None,
+                    'creationDate': story_dict['creationDate'].isoformat() if story_dict['creationDate'] else None,
+                    'topicID': story_dict['topicID'],
+                    'topicName': story_dict['topicName'],
+                    'newsletterID': story_dict['newsletterID'],
+                    'newsletterName': story_dict['newsletterName'],
+                    'creatorUsername': story_dict['creatorUsername'],
+                    'creatorDisplayName': story_dict['creatorDisplayName'],
+                    'creatorPhoto': story_dict['creatorPhoto'],
+                    'isDraft': is_draft,
+                    'isScheduled': is_scheduled,
+                })
+            
+            return jsonify({
+                'code': 200,
+                'data': formatted_stories,
+                'totalCount': total_count,
+                'hasMore': (offset_val + limit) < total_count
+            }), 200
+    
+    except ValueError:
+        return jsonify({
+            'code': 400,
+            'message': 'Invalid userID or offset'
+        }), 400
+    except Exception as e:
+        logging.exception("getUserStories: Error - %s", str(e))
+        return jsonify({
+            'code': 500,
+            'message': 'An error occurred retrieving user stories.'
+        }), 500
 
 
 # -----------------------------------------------------------------------------------------
@@ -1960,14 +2690,74 @@ def get_user_stories(userID, userType, offset):
 # -----------------------------------------------------------------------------------------
 @blueprint.route('/likeStory', methods=['POST'])
 def like_story():
-    # TODO: Implement likeStory endpoint
-    # - Verify story exists
-    # - Check if already liked
-    # - Insert into storiesLikes table
-    return jsonify({
-        'code': 501,
-        'message': 'likeStory endpoint not yet implemented'
-    }), 501
+    try:
+        data = request.get_json()
+        
+        story_id = data.get('storyID')
+        user_id = data.get('userID')
+        user_type = data.get('userType')
+        
+        if not all([story_id, user_id, user_type]):
+            return jsonify({
+                'code': 400,
+                'message': 'Missing required fields: storyID, userID, userType'
+            }), 400
+        
+        if user_type not in ['user', 'producer', 'venue']:
+            return jsonify({
+                'code': 400,
+                'message': 'Invalid userType. Must be user, producer, or venue.'
+            }), 400
+        
+        with db_manager.get_cursor() as cursor:
+            # Verify story exists and is published
+            cursor.execute('''
+                SELECT id FROM "stories" 
+                WHERE id = %s AND "publicationDate" IS NOT NULL AND "publicationDate" <= NOW()
+            ''', (story_id,))
+            if not cursor.fetchone():
+                return jsonify({
+                    'code': 404,
+                    'message': 'Story not found or not yet published.'
+                }), 404
+            
+            # Check if already liked
+            cursor.execute('''
+                SELECT id FROM "storiesLikes"
+                WHERE "storyID" = %s AND "userID" = %s AND "userType" = %s
+            ''', (story_id, user_id, user_type))
+            if cursor.fetchone():
+                return jsonify({
+                    'code': 400,
+                    'message': 'Already liked this story.'
+                }), 400
+            
+            # Insert like
+            cursor.execute('''
+                INSERT INTO "storiesLikes" ("storyID", "userID", "userType")
+                VALUES (%s, %s, %s)
+                RETURNING id
+            ''', (story_id, user_id, user_type))
+            like_id = cursor.fetchone()['id']
+            
+            # Get updated like count
+            cursor.execute('''
+                SELECT COUNT(*) as count FROM "storiesLikes" WHERE "storyID" = %s
+            ''', (story_id,))
+            like_count = cursor.fetchone()['count']
+        
+        return jsonify({
+            'code': 201,
+            'message': 'Story liked successfully.',
+            'data': {'likeID': like_id, 'likeCount': like_count}
+        }), 201
+    
+    except Exception as e:
+        logging.exception("likeStory: Error - %s", str(e))
+        return jsonify({
+            'code': 500,
+            'message': 'An error occurred while liking the story.'
+        }), 500
 
 
 # -----------------------------------------------------------------------------------------
@@ -1985,13 +2775,58 @@ def like_story():
 # -----------------------------------------------------------------------------------------
 @blueprint.route('/unlikeStory', methods=['DELETE'])
 def unlike_story():
-    # TODO: Implement unlikeStory endpoint
-    # - Check if liked
-    # - Delete from storiesLikes table
-    return jsonify({
-        'code': 501,
-        'message': 'unlikeStory endpoint not yet implemented'
-    }), 501
+    try:
+        data = request.get_json()
+        
+        story_id = data.get('storyID')
+        user_id = data.get('userID')
+        user_type = data.get('userType')
+        
+        if not all([story_id, user_id, user_type]):
+            return jsonify({
+                'code': 400,
+                'message': 'Missing required fields: storyID, userID, userType'
+            }), 400
+        
+        if user_type not in ['user', 'producer', 'venue']:
+            return jsonify({
+                'code': 400,
+                'message': 'Invalid userType. Must be user, producer, or venue.'
+            }), 400
+        
+        with db_manager.get_cursor() as cursor:
+            # Delete like
+            cursor.execute('''
+                DELETE FROM "storiesLikes"
+                WHERE "storyID" = %s AND "userID" = %s AND "userType" = %s
+                RETURNING id
+            ''', (story_id, user_id, user_type))
+            deleted = cursor.fetchone()
+            
+            if not deleted:
+                return jsonify({
+                    'code': 400,
+                    'message': 'You have not liked this story.'
+                }), 400
+            
+            # Get updated like count
+            cursor.execute('''
+                SELECT COUNT(*) as count FROM "storiesLikes" WHERE "storyID" = %s
+            ''', (story_id,))
+            like_count = cursor.fetchone()['count']
+        
+        return jsonify({
+            'code': 200,
+            'message': 'Story unliked successfully.',
+            'data': {'likeCount': like_count}
+        }), 200
+    
+    except Exception as e:
+        logging.exception("unlikeStory: Error - %s", str(e))
+        return jsonify({
+            'code': 500,
+            'message': 'An error occurred while unliking the story.'
+        }), 500
 
 
 # =========================================================================================
@@ -2016,15 +2851,94 @@ def unlike_story():
 # -----------------------------------------------------------------------------------------
 @blueprint.route('/createStoryComment', methods=['POST'])
 def create_story_comment():
-    # TODO: Implement createStoryComment endpoint
-    # - Verify story exists
-    # - If parentCommentID provided, verify parent comment exists and belongs to same story
-    # - Insert into storyComments table
-    # - Return created comment ID
-    return jsonify({
-        'code': 501,
-        'message': 'createStoryComment endpoint not yet implemented'
-    }), 501
+    try:
+        data = request.get_json()
+        
+        story_id = data.get('storyID')
+        user_id = data.get('userID')
+        user_type = data.get('userType')
+        comment_content = data.get('commentContent', '').strip()
+        parent_comment_id = data.get('parentCommentID')  # Optional for replies
+        
+        if not all([story_id, user_id, user_type]):
+            return jsonify({
+                'code': 400,
+                'message': 'Missing required fields: storyID, userID, userType'
+            }), 400
+        
+        if not comment_content:
+            return jsonify({
+                'code': 400,
+                'message': 'Comment content is required.'
+            }), 400
+        
+        if len(comment_content) > 5000:
+            return jsonify({
+                'code': 400,
+                'message': 'Comment cannot exceed 5000 characters.'
+            }), 400
+        
+        if user_type not in ['user', 'producer', 'venue']:
+            return jsonify({
+                'code': 400,
+                'message': 'Invalid userType. Must be user, producer, or venue.'
+            }), 400
+        
+        with db_manager.get_cursor() as cursor:
+            # Verify story exists and is published
+            cursor.execute('''
+                SELECT id FROM "stories" 
+                WHERE id = %s AND "publicationDate" IS NOT NULL AND "publicationDate" <= NOW()
+            ''', (story_id,))
+            if not cursor.fetchone():
+                return jsonify({
+                    'code': 404,
+                    'message': 'Story not found or not yet published.'
+                }), 404
+            
+            # If this is a reply, verify parent comment exists and belongs to this story
+            if parent_comment_id:
+                cursor.execute('''
+                    SELECT id FROM "storyComments" 
+                    WHERE id = %s AND "storyID" = %s AND "parentCommentID" IS NULL
+                ''', (parent_comment_id, story_id))
+                if not cursor.fetchone():
+                    return jsonify({
+                        'code': 404,
+                        'message': 'Parent comment not found or cannot reply to a reply.'
+                    }), 404
+            
+            # Insert comment
+            cursor.execute('''
+                INSERT INTO "storyComments" 
+                ("storyID", "parentCommentID", "commentContent", "userID", "userType")
+                VALUES (%s, %s, %s, %s, %s)
+                RETURNING id, "commentDate"
+            ''', (story_id, parent_comment_id, comment_content, user_id, user_type))
+            
+            result = cursor.fetchone()
+            comment_id = result['id']
+            comment_date = result['commentDate']
+            
+            # Get commenter info to return with comment
+            commenter_info = get_user_info_by_id(cursor, user_id, user_type)
+        
+        return jsonify({
+            'code': 201,
+            'message': 'Comment posted successfully.',
+            'data': {
+                'commentID': comment_id,
+                'commentDate': comment_date.isoformat() if comment_date else None,
+                'commenterInfo': commenter_info
+            }
+        }), 201
+    
+    except Exception as e:
+        logging.exception("createStoryComment: Error - %s", str(e))
+        return jsonify({
+            'code': 500,
+            'message': 'An error occurred while posting the comment.'
+        }), 500
 
 
 # -----------------------------------------------------------------------------------------
@@ -2041,77 +2955,388 @@ def create_story_comment():
 # -----------------------------------------------------------------------------------------
 @blueprint.route('/getStoryComments/<storyID>/<offset>', methods=['GET'])
 def get_story_comments(storyID, offset):
-    # TODO: Implement getStoryComments endpoint
-    # - Query top-level comments (parentCommentID IS NULL) for the story
-    # - For each comment, get replies (parentCommentID = comment.id)
-    # - Include commenter info for each comment
-    # - Include like count and dislike count
-    # - Check if requesting user has liked/disliked (if userID/userType provided)
-    # - Sort by commentDate DESC
-    # - Paginate (20 per page)
-    return jsonify({
-        'code': 501,
-        'message': 'getStoryComments endpoint not yet implemented'
-    }), 501
+    try:
+        story_id = int(storyID)
+        offset_val = int(offset)
+        limit = 20  # Root comments per page
+        replies_limit = 5  # Initial replies per comment
+        
+        user_id = request.args.get('userID')
+        user_type = request.args.get('userType')
+        
+        with db_manager.get_cursor() as cursor:
+            # Verify story exists
+            cursor.execute('SELECT id, "creatorUserID", "creatorUserType" FROM "stories" WHERE id = %s', (story_id,))
+            story = cursor.fetchone()
+            if not story:
+                return jsonify({
+                    'code': 404,
+                    'message': 'Story not found.'
+                }), 404
+            
+            story_author_id = story['creatorUserID']
+            story_author_type = story['creatorUserType']
+            
+            # Get total comment count
+            cursor.execute('SELECT COUNT(*) as total FROM "storyComments" WHERE "storyID" = %s', (story_id,))
+            total_count = cursor.fetchone()['total']
+            
+            # Get root comments (parentCommentID IS NULL), ordered newest first
+            cursor.execute('''
+                SELECT 
+                    c."id",
+                    c."storyID",
+                    c."parentCommentID",
+                    c."commentContent",
+                    c."commentDate",
+                    c."userID",
+                    c."userType"
+                FROM "storyComments" c
+                WHERE c."storyID" = %s AND c."parentCommentID" IS NULL
+                ORDER BY c."commentDate" DESC
+                LIMIT %s OFFSET %s
+            ''', (story_id, limit, offset_val))
+            
+            root_comments = cursor.fetchall()
+            result = []
+            
+            for comment in root_comments:
+                comment_dict = dict(comment)
+                comment_id = comment['id']
+                
+                # Get commenter info
+                commenter_info = get_user_info_by_id(cursor, comment['userID'], comment['userType'])
+                comment_dict['commenterInfo'] = commenter_info
+                
+                # Get like and dislike counts
+                cursor.execute('SELECT COUNT(*) as count FROM "storyCommentsLikes" WHERE "commentID" = %s', (comment_id,))
+                like_count = cursor.fetchone()['count']
+                
+                cursor.execute('SELECT COUNT(*) as count FROM "storyCommentsDislikes" WHERE "commentID" = %s', (comment_id,))
+                dislike_count = cursor.fetchone()['count']
+                
+                comment_dict['likeCount'] = like_count
+                comment_dict['dislikeCount'] = dislike_count
+                comment_dict['voteCount'] = like_count - dislike_count
+                
+                # Check user's vote status
+                comment_dict['userVote'] = None
+                if user_id and user_type:
+                    cursor.execute('''
+                        SELECT id FROM "storyCommentsLikes" 
+                        WHERE "commentID" = %s AND "userID" = %s AND "userType" = %s
+                    ''', (comment_id, user_id, user_type))
+                    if cursor.fetchone():
+                        comment_dict['userVote'] = 'up'
+                    else:
+                        cursor.execute('''
+                            SELECT id FROM "storyCommentsDislikes" 
+                            WHERE "commentID" = %s AND "userID" = %s AND "userType" = %s
+                        ''', (comment_id, user_id, user_type))
+                        if cursor.fetchone():
+                            comment_dict['userVote'] = 'down'
+                
+                # Check if user can delete (is commenter or story author)
+                comment_dict['canDelete'] = False
+                if user_id and user_type:
+                    is_commenter = (str(comment['userID']) == str(user_id) and comment['userType'] == user_type)
+                    is_story_author = (str(story_author_id) == str(user_id) and story_author_type == user_type)
+                    comment_dict['canDelete'] = is_commenter or is_story_author
+                
+                # Get reply count
+                cursor.execute('SELECT COUNT(*) as count FROM "storyComments" WHERE "parentCommentID" = %s', (comment_id,))
+                comment_dict['replyCount'] = cursor.fetchone()['count']
+                
+                # Get first 5 replies (oldest first for conversation flow)
+                cursor.execute('''
+                    SELECT 
+                        c."id",
+                        c."storyID",
+                        c."parentCommentID",
+                        c."commentContent",
+                        c."commentDate",
+                        c."userID",
+                        c."userType"
+                    FROM "storyComments" c
+                    WHERE c."parentCommentID" = %s
+                    ORDER BY c."commentDate" ASC
+                    LIMIT %s
+                ''', (comment_id, replies_limit))
+                
+                replies = cursor.fetchall()
+                replies_list = []
+                
+                for reply in replies:
+                    reply_dict = dict(reply)
+                    
+                    # Get reply commenter info
+                    reply_commenter_info = get_user_info_by_id(cursor, reply['userID'], reply['userType'])
+                    reply_dict['commenterInfo'] = reply_commenter_info
+                    
+                    # Get reply votes
+                    cursor.execute('SELECT COUNT(*) as count FROM "storyCommentsLikes" WHERE "commentID" = %s', (reply['id'],))
+                    reply_likes = cursor.fetchone()['count']
+                    cursor.execute('SELECT COUNT(*) as count FROM "storyCommentsDislikes" WHERE "commentID" = %s', (reply['id'],))
+                    reply_dislikes = cursor.fetchone()['count']
+                    
+                    reply_dict['likeCount'] = reply_likes
+                    reply_dict['dislikeCount'] = reply_dislikes
+                    reply_dict['voteCount'] = reply_likes - reply_dislikes
+                    
+                    # Check user's vote on reply
+                    reply_dict['userVote'] = None
+                    if user_id and user_type:
+                        cursor.execute('''
+                            SELECT id FROM "storyCommentsLikes" 
+                            WHERE "commentID" = %s AND "userID" = %s AND "userType" = %s
+                        ''', (reply['id'], user_id, user_type))
+                        if cursor.fetchone():
+                            reply_dict['userVote'] = 'up'
+                        else:
+                            cursor.execute('''
+                                SELECT id FROM "storyCommentsDislikes" 
+                                WHERE "commentID" = %s AND "userID" = %s AND "userType" = %s
+                            ''', (reply['id'], user_id, user_type))
+                            if cursor.fetchone():
+                                reply_dict['userVote'] = 'down'
+                    
+                    # Check if user can delete reply
+                    reply_dict['canDelete'] = False
+                    if user_id and user_type:
+                        is_reply_commenter = (str(reply['userID']) == str(user_id) and reply['userType'] == user_type)
+                        is_story_author = (str(story_author_id) == str(user_id) and story_author_type == user_type)
+                        reply_dict['canDelete'] = is_reply_commenter or is_story_author
+                    
+                    # Format date
+                    if reply_dict['commentDate']:
+                        reply_dict['commentDate'] = reply_dict['commentDate'].isoformat()
+                    
+                    replies_list.append(reply_dict)
+                
+                comment_dict['replies'] = replies_list
+                comment_dict['hasMoreReplies'] = len(replies_list) < comment_dict['replyCount']
+                
+                # Format date
+                if comment_dict['commentDate']:
+                    comment_dict['commentDate'] = comment_dict['commentDate'].isoformat()
+                
+                result.append(comment_dict)
+        
+        return jsonify({
+            'code': 200,
+            'data': result,
+            'totalCount': total_count,
+            'hasMore': (offset_val + limit) < total_count
+        }), 200
+    
+    except ValueError:
+        return jsonify({
+            'code': 400,
+            'message': 'Invalid storyID or offset'
+        }), 400
+    except Exception as e:
+        logging.exception("getStoryComments: Error - %s", str(e))
+        return jsonify({
+            'code': 500,
+            'message': 'An error occurred retrieving comments.'
+        }), 500
 
 
 # -----------------------------------------------------------------------------------------
 # [POST] likeStoryComment
-# Purpose: Like a comment (removes dislike if exists)
+# Purpose: Like a comment (removes dislike if exists, toggles like)
 # Used: SpecificStory.vue
 # Input:
 #   1. commentID - the comment to like
 #   2. userID - the user liking
 #   3. userType - 'user', 'producer', or 'venue'
 # Output:
-#   201 - Liked successfully
+#   200 - Like toggled successfully
 #   400 - Missing data
 #   404 - Comment not found
 #   500 - Server error
 # -----------------------------------------------------------------------------------------
 @blueprint.route('/likeStoryComment', methods=['POST'])
 def like_story_comment():
-    # TODO: Implement likeStoryComment endpoint
-    # - Verify comment exists
-    # - Remove existing dislike if any
-    # - Toggle like: if already liked, remove; else add
-    # - Insert/delete from storyCommentsLikes table
-    return jsonify({
-        'code': 501,
-        'message': 'likeStoryComment endpoint not yet implemented'
-    }), 501
+    try:
+        data = request.get_json()
+        
+        comment_id = data.get('commentID')
+        user_id = data.get('userID')
+        user_type = data.get('userType')
+        
+        if not all([comment_id, user_id, user_type]):
+            return jsonify({
+                'code': 400,
+                'message': 'Missing required fields: commentID, userID, userType'
+            }), 400
+        
+        if user_type not in ['user', 'producer', 'venue']:
+            return jsonify({
+                'code': 400,
+                'message': 'Invalid userType.'
+            }), 400
+        
+        with db_manager.get_cursor() as cursor:
+            # Verify comment exists
+            cursor.execute('SELECT id FROM "storyComments" WHERE id = %s', (comment_id,))
+            if not cursor.fetchone():
+                return jsonify({
+                    'code': 404,
+                    'message': 'Comment not found.'
+                }), 404
+            
+            # Remove any existing dislike
+            cursor.execute('''
+                DELETE FROM "storyCommentsDislikes"
+                WHERE "commentID" = %s AND "userID" = %s AND "userType" = %s
+            ''', (comment_id, user_id, user_type))
+            
+            # Check if already liked (toggle)
+            cursor.execute('''
+                SELECT id FROM "storyCommentsLikes"
+                WHERE "commentID" = %s AND "userID" = %s AND "userType" = %s
+            ''', (comment_id, user_id, user_type))
+            existing_like = cursor.fetchone()
+            
+            if existing_like:
+                # Remove like (toggle off)
+                cursor.execute('''
+                    DELETE FROM "storyCommentsLikes" WHERE id = %s
+                ''', (existing_like['id'],))
+                action = 'unliked'
+            else:
+                # Add like
+                cursor.execute('''
+                    INSERT INTO "storyCommentsLikes" ("commentID", "userID", "userType")
+                    VALUES (%s, %s, %s)
+                ''', (comment_id, user_id, user_type))
+                action = 'liked'
+            
+            # Get updated counts
+            cursor.execute('SELECT COUNT(*) as count FROM "storyCommentsLikes" WHERE "commentID" = %s', (comment_id,))
+            like_count = cursor.fetchone()['count']
+            cursor.execute('SELECT COUNT(*) as count FROM "storyCommentsDislikes" WHERE "commentID" = %s', (comment_id,))
+            dislike_count = cursor.fetchone()['count']
+        
+        return jsonify({
+            'code': 200,
+            'message': f'Comment {action}.',
+            'data': {
+                'likeCount': like_count,
+                'dislikeCount': dislike_count,
+                'voteCount': like_count - dislike_count,
+                'userVote': 'up' if action == 'liked' else None
+            }
+        }), 200
+    
+    except Exception as e:
+        logging.exception("likeStoryComment: Error - %s", str(e))
+        return jsonify({
+            'code': 500,
+            'message': 'An error occurred.'
+        }), 500
 
 
 # -----------------------------------------------------------------------------------------
 # [POST] dislikeStoryComment
-# Purpose: Dislike a comment (removes like if exists)
+# Purpose: Dislike a comment (removes like if exists, toggles dislike)
 # Used: SpecificStory.vue
 # Input:
 #   1. commentID - the comment to dislike
 #   2. userID - the user disliking
 #   3. userType - 'user', 'producer', or 'venue'
 # Output:
-#   201 - Disliked successfully
+#   200 - Dislike toggled successfully
 #   400 - Missing data
 #   404 - Comment not found
 #   500 - Server error
 # -----------------------------------------------------------------------------------------
 @blueprint.route('/dislikeStoryComment', methods=['POST'])
 def dislike_story_comment():
-    # TODO: Implement dislikeStoryComment endpoint
-    # - Verify comment exists
-    # - Remove existing like if any
-    # - Toggle dislike: if already disliked, remove; else add
-    # - Insert/delete from storyCommentsDislikes table
-    return jsonify({
-        'code': 501,
-        'message': 'dislikeStoryComment endpoint not yet implemented'
-    }), 501
+    try:
+        data = request.get_json()
+        
+        comment_id = data.get('commentID')
+        user_id = data.get('userID')
+        user_type = data.get('userType')
+        
+        if not all([comment_id, user_id, user_type]):
+            return jsonify({
+                'code': 400,
+                'message': 'Missing required fields: commentID, userID, userType'
+            }), 400
+        
+        if user_type not in ['user', 'producer', 'venue']:
+            return jsonify({
+                'code': 400,
+                'message': 'Invalid userType.'
+            }), 400
+        
+        with db_manager.get_cursor() as cursor:
+            # Verify comment exists
+            cursor.execute('SELECT id FROM "storyComments" WHERE id = %s', (comment_id,))
+            if not cursor.fetchone():
+                return jsonify({
+                    'code': 404,
+                    'message': 'Comment not found.'
+                }), 404
+            
+            # Remove any existing like
+            cursor.execute('''
+                DELETE FROM "storyCommentsLikes"
+                WHERE "commentID" = %s AND "userID" = %s AND "userType" = %s
+            ''', (comment_id, user_id, user_type))
+            
+            # Check if already disliked (toggle)
+            cursor.execute('''
+                SELECT id FROM "storyCommentsDislikes"
+                WHERE "commentID" = %s AND "userID" = %s AND "userType" = %s
+            ''', (comment_id, user_id, user_type))
+            existing_dislike = cursor.fetchone()
+            
+            if existing_dislike:
+                # Remove dislike (toggle off)
+                cursor.execute('''
+                    DELETE FROM "storyCommentsDislikes" WHERE id = %s
+                ''', (existing_dislike['id'],))
+                action = 'undisliked'
+            else:
+                # Add dislike
+                cursor.execute('''
+                    INSERT INTO "storyCommentsDislikes" ("commentID", "userID", "userType")
+                    VALUES (%s, %s, %s)
+                ''', (comment_id, user_id, user_type))
+                action = 'disliked'
+            
+            # Get updated counts
+            cursor.execute('SELECT COUNT(*) as count FROM "storyCommentsLikes" WHERE "commentID" = %s', (comment_id,))
+            like_count = cursor.fetchone()['count']
+            cursor.execute('SELECT COUNT(*) as count FROM "storyCommentsDislikes" WHERE "commentID" = %s', (comment_id,))
+            dislike_count = cursor.fetchone()['count']
+        
+        return jsonify({
+            'code': 200,
+            'message': f'Comment {action}.',
+            'data': {
+                'likeCount': like_count,
+                'dislikeCount': dislike_count,
+                'voteCount': like_count - dislike_count,
+                'userVote': 'down' if action == 'disliked' else None
+            }
+        }), 200
+    
+    except Exception as e:
+        logging.exception("dislikeStoryComment: Error - %s", str(e))
+        return jsonify({
+            'code': 500,
+            'message': 'An error occurred.'
+        }), 500
 
 
 # -----------------------------------------------------------------------------------------
 # [DELETE] deleteStoryComment
-# Purpose: Delete a comment (comment author only)
+# Purpose: Delete a comment (comment author or story author only)
 # Used: SpecificStory.vue
 # Input:
 #   1. commentID - the comment to delete
@@ -2119,18 +3344,70 @@ def dislike_story_comment():
 #   3. userType - 'user', 'producer', or 'venue'
 # Output:
 #   200 - Comment deleted successfully
-#   403 - Not the author
+#   403 - Not authorized
 #   404 - Comment not found
 #   500 - Server error
 # Note: Cascade deletes likes, dislikes, and child replies
 # -----------------------------------------------------------------------------------------
 @blueprint.route('/deleteStoryComment', methods=['DELETE'])
 def delete_story_comment():
-    # TODO: Implement deleteStoryComment endpoint
-    # - Verify comment exists
-    # - Verify user is the author (userID + userType match)
-    # - Delete comment (cascades to likes, dislikes, child comments)
-    return jsonify({
-        'code': 501,
-        'message': 'deleteStoryComment endpoint not yet implemented'
-    }), 501
+    try:
+        data = request.get_json()
+        
+        comment_id = data.get('commentID')
+        user_id = data.get('userID')
+        user_type = data.get('userType')
+        
+        if not all([comment_id, user_id, user_type]):
+            return jsonify({
+                'code': 400,
+                'message': 'Missing required fields: commentID, userID, userType'
+            }), 400
+        
+        if user_type not in ['user', 'producer', 'venue']:
+            return jsonify({
+                'code': 400,
+                'message': 'Invalid userType.'
+            }), 400
+        
+        with db_manager.get_cursor() as cursor:
+            # Get comment and story info
+            cursor.execute('''
+                SELECT c."id", c."userID", c."userType", c."storyID",
+                       s."creatorUserID", s."creatorUserType"
+                FROM "storyComments" c
+                JOIN "stories" s ON c."storyID" = s."id"
+                WHERE c."id" = %s
+            ''', (comment_id,))
+            
+            comment = cursor.fetchone()
+            if not comment:
+                return jsonify({
+                    'code': 404,
+                    'message': 'Comment not found.'
+                }), 404
+            
+            # Check authorization: comment author or story author
+            is_comment_author = (str(comment['userID']) == str(user_id) and comment['userType'] == user_type)
+            is_story_author = (str(comment['creatorUserID']) == str(user_id) and comment['creatorUserType'] == user_type)
+            
+            if not (is_comment_author or is_story_author):
+                return jsonify({
+                    'code': 403,
+                    'message': 'Not authorized to delete this comment.'
+                }), 403
+            
+            # Delete comment (cascades to likes, dislikes, and replies via ON DELETE CASCADE)
+            cursor.execute('DELETE FROM "storyComments" WHERE id = %s', (comment_id,))
+        
+        return jsonify({
+            'code': 200,
+            'message': 'Comment deleted successfully.'
+        }), 200
+    
+    except Exception as e:
+        logging.exception("deleteStoryComment: Error - %s", str(e))
+        return jsonify({
+            'code': 500,
+            'message': 'An error occurred deleting the comment.'
+        }), 500

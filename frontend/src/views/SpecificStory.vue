@@ -87,15 +87,15 @@
             <!-- Topic/Newsletter Context -->
             <div class="context-badges mb-3">
               <router-link 
-                v-if="story.topicId"
-                :to="`/stories/topics/${story.topicId}/${slugify(story.topicName)}`"
+                v-if="story.topicID"
+                :to="`/stories/topics/${story.topicID}/${slugify(story.topicName)}`"
                 class="badge bg-warning text-dark text-decoration-none me-2"
               >
                 <i class="bi bi-hash me-1"></i>{{ story.topicName }}
               </router-link>
               <router-link 
-                v-if="story.newsletterId"
-                :to="`/stories/newsletters/${story.newsletterId}/${slugify(story.newsletterName)}`"
+                v-if="story.newsletterID"
+                :to="`/stories/newsletters/${story.newsletterID}/${slugify(story.newsletterName)}`"
                 class="badge bg-primary text-decoration-none"
               >
                 <i class="bi bi-envelope me-1"></i>{{ story.newsletterName }}
@@ -123,7 +123,8 @@
                   {{ getAuthorDisplayName() }}
                 </a>
                 <div class="text-muted small">
-                  {{ formatDate(story.publishingDate) }}
+                  {{ formatDate(story.publicationDate) }}
+                  <span v-if="story.editedAt" class="ms-1">(edited)</span>
                   <span v-if="story.readTime" class="mx-1">•</span>
                   <span v-if="story.readTime">{{ story.readTime }} min read</span>
                 </div>
@@ -351,7 +352,7 @@
       <!-- Sidebar Column -->
       <div class="col-lg-4 d-none d-lg-block">
         <!-- Drinks Mentioned -->
-        <div v-if="story.drinks && story.drinks.length > 0" class="card shadow-sm mb-4">
+        <div v-if="story.linkedListings && story.linkedListings.length > 0" class="card shadow-sm mb-4">
           <div class="card-header bg-dark text-white">
             <h6 class="mb-0 fw-bold">
               <i class="bi bi-cup-straw me-2"></i>
@@ -359,15 +360,14 @@
             </h6>
           </div>
           <div class="card-body">
-            <!-- TODO: Implement drink cards linking to listing pages -->
             <div 
-              v-for="drink in story.drinks" 
+              v-for="drink in story.linkedListings" 
               :key="drink.id"
               class="drink-item d-flex align-items-center mb-2 p-2 rounded hover-bg"
               @click="goToDrink(drink)"
             >
               <img 
-                :src="drink.listingImage || defaultDrinkImage" 
+                :src="drink.photo || drink.listingImage || defaultDrinkImage" 
                 :alt="drink.listingName"
                 class="rounded me-2"
                 style="width: 40px; height: 40px; object-fit: cover;"
@@ -482,32 +482,36 @@ export default {
   },
   data() {
     return {
+      // API Base URL
+      currentURL: process.env.VUE_APP_API_URL,
+      
       // Story Data
       story: {
         id: null,
         storyTitle: '',
         storyContent: '',
         storyPhotos: [],
-        publishingDate: null,
+        publicationDate: null,
         likeCount: 0,
         commentCount: 0,
         userLiked: false,
         // Creator info
-        createdByID: null,
-        createdByType: null,
+        creatorUserID: null,
+        creatorUserType: null,
         creatorUsername: '',
         creatorDisplayName: '',
         creatorPhoto: null,
         creatorBio: null,
         // Context
-        topicId: null,
+        topicID: null,
         topicName: null,
-        newsletterId: null,
+        newsletterID: null,
         newsletterName: null,
         // Related
-        drinks: [],
+        linkedListings: [],
         hashtags: [],
         readTime: null,
+        editedAt: null,
       },
       
       // Comments
@@ -517,6 +521,7 @@ export default {
       commentsOffset: 0,
       newComment: '',
       submittingComment: false,
+      replyingTo: null,  // For nested replies
       
       // Loading States
       loading: true,
@@ -535,15 +540,15 @@ export default {
       
       // Default images
       defaultProfilePhoto: "https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultProfilePhoto.png?v=1748434288",
-      defaultDrinkImage: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=200",
+      defaultDrinkImage: "https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultDrinkImage.png?v=1750084739",
     };
   },
 
   computed: {
     isOwner() {
-      if (!this.story.createdByID || this.userID === 'defaultUser') return false;
-      return String(this.story.createdByID) === String(this.userID) &&
-             this.story.createdByType === this.userType;
+      if (!this.story.creatorUserID || this.userID === 'defaultUser') return false;
+      return String(this.story.creatorUserID) === String(this.userID) &&
+             this.story.creatorUserType === this.userType;
     },
   },
 
@@ -578,33 +583,26 @@ export default {
 
   methods: {
     async loadStory() {
-      // TODO: Implement API call to /getSpecificStory/<storyID>
       const storyId = this.$route.params.storyId;
       this.loading = true;
       this.error = false;
       
       try {
-        // const response = await fetch(`${process.env.VUE_APP_BACKEND_LINK}/getSpecificStory/${storyId}`);
-        // const data = await response.json();
-        // if (data.code === 200) {
-        //   this.story = data.data;
-        // } else {
-        //   this.error = true;
-        // }
+        // Build URL with optional viewer params
+        let url = `${this.currentURL}/stories/getStory/${storyId}`;
+        if (this.userID !== 'defaultUser') {
+          url += `?viewerID=${this.userID}&viewerType=${this.userType}`;
+        }
         
-        // Placeholder
-        this.story = {
-          id: storyId,
-          storyTitle: this.$route.params.storyTitle?.replace(/-/g, ' ') || 'Story Title',
-          storyContent: '<p>Story content loading soon...</p>',
-          storyPhotos: [],
-          publishingDate: new Date().toISOString(),
-          likeCount: 0,
-          commentCount: 0,
-          userLiked: false,
-          drinks: [],
-          hashtags: [],
-        };
+        const response = await fetch(url);
+        const data = await response.json();
+        
+        if (data.code === 200) {
+          this.story = data.data;
+        } else {
+          console.error('Failed to load story:', data.message);
+          this.error = true;
+        }
       } catch (error) {
         console.error("Error loading story:", error);
         this.error = true;
@@ -614,17 +612,25 @@ export default {
     },
 
     async loadComments() {
-      // TODO: Implement API call to /getStoryComments/<storyID>/<offset>
       this.loadingComments = true;
       
       try {
-        // const response = await fetch(`${process.env.VUE_APP_BACKEND_LINK}/getStoryComments/${this.story.id}/${this.commentsOffset}`);
-        // const data = await response.json();
-        // this.comments = data.data || [];
-        // this.hasMoreComments = data.hasMore || false;
+        let url = `${this.currentURL}/stories/getStoryComments/${this.story.id}/${this.commentsOffset}`;
+        if (this.userID !== 'defaultUser') {
+          url += `?viewerID=${this.userID}&viewerType=${this.userType}`;
+        }
         
-        // Placeholder
-        this.comments = [];
+        const response = await fetch(url);
+        const data = await response.json();
+        
+        if (data.code === 200) {
+          if (this.commentsOffset === 0) {
+            this.comments = data.data || [];
+          } else {
+            this.comments = [...this.comments, ...(data.data || [])];
+          }
+          this.hasMoreComments = data.hasMore || false;
+        }
       } catch (error) {
         console.error("Error loading comments:", error);
       } finally {
@@ -634,13 +640,10 @@ export default {
 
     async loadMoreComments() {
       this.commentsOffset += 10;
-      this.loadingComments = true;
-      // TODO: Append more comments
-      this.loadingComments = false;
+      await this.loadComments();
     },
 
     async toggleLike() {
-      // TODO: Implement like/unlike story
       if (this.userID === 'defaultUser') {
         useToast().warning("Please login to like stories");
         return;
@@ -648,73 +651,175 @@ export default {
       
       this.liking = true;
       try {
-        useToast().info("Story liking coming soon!");
-        // Toggle like state
-        // this.story.userLiked = !this.story.userLiked;
-        // this.story.likeCount += this.story.userLiked ? 1 : -1;
+        const endpoint = this.story.userLiked ? '/stories/unlikeStory' : '/stories/likeStory';
+        const method = this.story.userLiked ? 'DELETE' : 'POST';
+        
+        const response = await fetch(`${this.currentURL}${endpoint}`, {
+          method: method,
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            storyID: this.story.id,
+            userID: this.userID,
+            userType: this.userType
+          })
+        });
+        
+        const data = await response.json();
+        
+        if (data.code === 200 || data.code === 201) {
+          // Update local state
+          this.story.userLiked = !this.story.userLiked;
+          this.story.likeCount = data.data?.likeCount ?? (this.story.likeCount + (this.story.userLiked ? 1 : -1));
+        } else {
+          useToast().error(data.message || "Failed to update like");
+        }
       } catch (error) {
         console.error("Error toggling like:", error);
+        useToast().error("Failed to update like");
       } finally {
         this.liking = false;
       }
     },
 
-    async submitComment() {
-      // TODO: Implement API call to /addStoryComment
+    async submitComment(parentCommentID = null) {
       if (!this.newComment.trim()) return;
       
       this.submittingComment = true;
       try {
-        useToast().info("Comment posting coming soon!");
-        // After successful post:
-        // this.comments.unshift(newCommentData);
-        // this.story.commentCount++;
-        // this.newComment = '';
+        const response = await fetch(`${this.currentURL}/stories/createStoryComment`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            storyID: this.story.id,
+            userID: this.userID,
+            userType: this.userType,
+            commentContent: this.newComment.trim(),
+            parentCommentID: parentCommentID
+          })
+        });
+        
+        const data = await response.json();
+        
+        if (data.code === 201) {
+          useToast().success("Comment posted!");
+          this.newComment = '';
+          this.replyingTo = null;
+          // Reload comments to get the new one
+          this.commentsOffset = 0;
+          await this.loadComments();
+          this.story.commentCount++;
+        } else {
+          useToast().error(data.message || "Failed to post comment");
+        }
       } catch (error) {
         console.error("Error posting comment:", error);
+        useToast().error("Failed to post comment");
       } finally {
         this.submittingComment = false;
       }
     },
 
-    // eslint-disable-next-line no-unused-vars
-    async likeComment(_comment) {
-      // TODO: Implement like comment
+    async likeComment(comment) {
       if (this.userID === 'defaultUser') {
         useToast().warning("Please login to like comments");
         return;
       }
-      useToast().info("Comment liking coming soon!");
+      
+      try {
+        const response = await fetch(`${this.currentURL}/stories/likeStoryComment`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            commentID: comment.id,
+            userID: this.userID,
+            userType: this.userType
+          })
+        });
+        
+        const data = await response.json();
+        
+        if (data.code === 200) {
+          // Update local state
+          comment.likeCount = data.data.likeCount;
+          comment.dislikeCount = data.data.dislikeCount;
+          comment.userVote = data.data.userVote;
+        }
+      } catch (error) {
+        console.error("Error liking comment:", error);
+      }
     },
 
-    // eslint-disable-next-line no-unused-vars
-    async dislikeComment(_comment) {
-      // TODO: Implement dislike comment
+    async dislikeComment(comment) {
       if (this.userID === 'defaultUser') {
         useToast().warning("Please login to dislike comments");
         return;
       }
-      useToast().info("Comment disliking coming soon!");
+      
+      try {
+        const response = await fetch(`${this.currentURL}/stories/dislikeStoryComment`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            commentID: comment.id,
+            userID: this.userID,
+            userType: this.userType
+          })
+        });
+        
+        const data = await response.json();
+        
+        if (data.code === 200) {
+          // Update local state
+          comment.likeCount = data.data.likeCount;
+          comment.dislikeCount = data.data.dislikeCount;
+          comment.userVote = data.data.userVote;
+        }
+      } catch (error) {
+        console.error("Error disliking comment:", error);
+      }
     },
 
-    // eslint-disable-next-line no-unused-vars
-    async deleteComment(_comment) {
-      // TODO: Implement delete comment
-      if (confirm('Delete this comment?')) {
-        useToast().info("Comment deletion coming soon!");
+    async deleteComment(comment) {
+      if (!confirm('Delete this comment?')) return;
+      
+      try {
+        const response = await fetch(`${this.currentURL}/stories/deleteStoryComment`, {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            commentID: comment.id,
+            userID: this.userID,
+            userType: this.userType
+          })
+        });
+        
+        const data = await response.json();
+        
+        if (data.code === 200) {
+          useToast().success("Comment deleted");
+          // Remove from local list
+          this.comments = this.comments.filter(c => c.id !== comment.id);
+          this.story.commentCount--;
+        } else {
+          useToast().error(data.message || "Failed to delete comment");
+        }
+      } catch (error) {
+        console.error("Error deleting comment:", error);
+        useToast().error("Failed to delete comment");
       }
     },
 
     isCommentOwner(comment) {
       if (this.userID === 'defaultUser') return false;
-      return String(comment.createdByID) === String(this.userID) &&
-             comment.createdByType === this.userType;
+      // Comment author or story author can delete
+      const isCommentAuthor = String(comment.userID) === String(this.userID) && comment.userType === this.userType;
+      return isCommentAuthor || this.isOwner;
     },
 
     editStory() {
-      // TODO: Implement edit story functionality
-      // Could open a modal or navigate to an edit page
+      // For now, show toast - inline editing will be implemented later
       useToast().info("Story editing coming soon!");
+      // TODO: Implement inline editing similar to assembly posts
     },
 
     confirmDelete() {
@@ -724,15 +829,31 @@ export default {
     },
 
     async deleteStory() {
-      // TODO: Implement API call to delete story
       this.deleting = true;
       try {
-        useToast().info("Story deletion coming soon!");
-        // After successful deletion:
-        // this.deleteModalInstance.hide();
-        // this.$router.push('/stories/topics');
+        const response = await fetch(`${this.currentURL}/stories/deleteStory`, {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            storyID: this.story.id,
+            userID: this.userID,
+            userType: this.userType
+          })
+        });
+        
+        const data = await response.json();
+        
+        if (data.code === 200) {
+          useToast().success("Story deleted");
+          if (this.deleteModalInstance) this.deleteModalInstance.hide();
+          // Navigate back to user's stories
+          this.$router.push(`/profile/user/${this.userID}/${this.username}/stories`);
+        } else {
+          useToast().error(data.message || "Failed to delete story");
+        }
       } catch (error) {
         console.error("Error deleting story:", error);
+        useToast().error("Failed to delete story");
       } finally {
         this.deleting = false;
       }
@@ -772,14 +893,14 @@ export default {
     },
 
     goToAuthorProfile() {
-      if (this.story.createdByID && this.story.createdByType) {
-        this.$router.push(`/profile/${this.story.createdByType}/${this.story.createdByID}/${this.story.creatorUsername}`);
+      if (this.story.creatorUserID && this.story.creatorUserType) {
+        this.$router.push(`/profile/${this.story.creatorUserType}/${this.story.creatorUserID}/${this.story.creatorUsername}`);
       }
     },
 
     goToUserProfile(comment) {
-      if (comment.createdByID && comment.createdByType) {
-        this.$router.push(`/profile/${comment.createdByType}/${comment.createdByID}/${comment.username}`);
+      if (comment.userID && comment.userType) {
+        this.$router.push(`/profile/${comment.userType}/${comment.userID}/${comment.username}`);
       }
     },
 
