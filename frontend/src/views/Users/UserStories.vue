@@ -171,6 +171,14 @@
                     <small v-if="story.readingTime" class="text-muted">
                       · {{ story.readingTime }} min read
                     </small>
+                    
+                    <!-- Like/Comment Counts (read-only) -->
+                    <small class="text-muted">
+                      <i class="bi bi-heart me-1"></i>{{ story.likeCount || 0 }}
+                    </small>
+                    <small class="text-muted">
+                      <i class="bi bi-chat-square me-1"></i>{{ story.commentCount || 0 }}
+                    </small>
                   </div>
                 </div>
                 

@@ -1473,8 +1473,11 @@ def get_specific_newsletter_info(newsletterID):
 # Purpose: Get paginated stories in a specific newsletter
 # Used: SpecificStoryNewsletter.vue
 # Input: newsletterID, offset (path params)
+# Optional query params:
+#   - viewerID, viewerType - to determine if viewer is newsletter owner (can see drafts/scheduled)
+#   - sortBy - 'newest' (default) or 'mostLiked'
 # Output:
-#   200 - List of stories in the newsletter
+#   200 - List of stories in the newsletter (format matches getUserStories)
 #   404 - Newsletter not found
 #   500 - Server error
 # -----------------------------------------------------------------------------------------
@@ -1493,93 +1496,190 @@ def get_newsletter_stories(newsletterID, offset):
         
         limit = 12  # Stories per page
         
+        # Get optional query params
+        viewer_id = request.args.get('viewerID')
+        viewer_type = request.args.get('viewerType')
+        sort_by = request.args.get('sortBy', 'newest')  # 'newest' or 'mostLiked'
+        
         with db_manager.get_cursor() as cursor:
-            # Verify newsletter exists
+            # Verify newsletter exists and get creator info
             cursor.execute(
-                "SELECT id FROM newsletters WHERE id = %s",
+                """SELECT id, "creatorUserID", "creatorUserType" FROM newsletters WHERE id = %s""",
                 (newsletter_id,)
             )
-            if not cursor.fetchone():
+            newsletter = cursor.fetchone()
+            if not newsletter:
                 return jsonify({
                     'code': 404,
                     'message': 'Newsletter not found.'
                 }), 404
             
-            # Get total count of published stories for this newsletter
-            cursor.execute(
-                """
-                SELECT COUNT(*) as total
-                FROM stories
-                WHERE "newsletterID" = %s
-                AND "publicationDate" <= NOW()
-                """,
-                (newsletter_id,)
+            # Check if viewer is the newsletter owner (can see drafts/scheduled)
+            is_owner = (
+                viewer_id and viewer_type and
+                str(newsletter['creatorUserID']) == str(viewer_id) and
+                newsletter['creatorUserType'] == viewer_type
             )
+            
+            # Build WHERE clause based on whether viewer is owner
+            if is_owner:
+                # Owner can see all stories (drafts, scheduled, published)
+                where_clause = 'WHERE s."newsletterID" = %s'
+                where_params = [newsletter_id]
+            else:
+                # Others can only see published stories
+                where_clause = '''
+                    WHERE s."newsletterID" = %s
+                    AND s."publicationDate" IS NOT NULL 
+                    AND s."publicationDate" <= NOW()
+                '''
+                where_params = [newsletter_id]
+            
+            # Get total count
+            count_query = f'''
+                SELECT COUNT(*) as total
+                FROM stories s
+                {where_clause}
+            '''
+            cursor.execute(count_query, where_params)
             total_count = cursor.fetchone()['total']
             
-            # Get paginated published stories with creator info
-            cursor.execute(
-                """
+            # Build ORDER BY clause based on sortBy and owner status
+            if is_owner:
+                # Owner sees: published first, then scheduled, then drafts
+                if sort_by == 'mostLiked':
+                    order_clause = '''
+                        ORDER BY 
+                            CASE 
+                                WHEN s."publicationDate" IS NULL THEN 2
+                                WHEN s."publicationDate" > NOW() THEN 1
+                                ELSE 0
+                            END,
+                            (SELECT COUNT(*) FROM "storiesLikes" WHERE "storyID" = s.id) DESC,
+                            s."publicationDate" DESC NULLS LAST
+                    '''
+                else:  # newest
+                    order_clause = '''
+                        ORDER BY 
+                            CASE 
+                                WHEN s."publicationDate" IS NULL THEN 2
+                                WHEN s."publicationDate" > NOW() THEN 1
+                                ELSE 0
+                            END,
+                            s."publicationDate" DESC NULLS LAST
+                    '''
+            else:
+                # Non-owners: simple sort
+                if sort_by == 'mostLiked':
+                    order_clause = '''
+                        ORDER BY (SELECT COUNT(*) FROM "storiesLikes" WHERE "storyID" = s.id) DESC,
+                                 s."publicationDate" DESC
+                    '''
+                else:  # newest
+                    order_clause = 'ORDER BY s."publicationDate" DESC'
+            
+            # Get paginated stories with all necessary fields (matching getUserStories format)
+            query = f'''
                 SELECT 
-                    s.id,
+                    s."id",
                     s."storyTitle",
                     s."storyContent",
                     s."storyPhotos",
+                    s."topicID",
+                    s."newsletterID",
                     s."publicationDate",
+                    s."creationDate",
                     s."creatorUserID",
                     s."creatorUserType",
+                    t."topicName",
                     CASE 
-                        WHEN s."creatorUserType" = 'user' THEN u.username
-                        WHEN s."creatorUserType" = 'producer' THEN p.username
-                        WHEN s."creatorUserType" = 'venue' THEN v.username
+                        WHEN s."creatorUserType" = 'user' THEN u."username"
+                        WHEN s."creatorUserType" = 'producer' THEN p."username"
+                        WHEN s."creatorUserType" = 'venue' THEN v."username"
                         ELSE NULL
                     END as "creatorUsername",
                     CASE 
-                        WHEN s."creatorUserType" = 'user' THEN u.photo
-                        WHEN s."creatorUserType" = 'producer' THEN p.photo
-                        WHEN s."creatorUserType" = 'venue' THEN v.photo
+                        WHEN s."creatorUserType" = 'user' THEN u."displayName"
+                        WHEN s."creatorUserType" = 'producer' THEN p."producerName"
+                        WHEN s."creatorUserType" = 'venue' THEN v."venueName"
+                        ELSE NULL
+                    END as "creatorDisplayName",
+                    CASE 
+                        WHEN s."creatorUserType" = 'user' THEN u."photo"
+                        WHEN s."creatorUserType" = 'producer' THEN p."photo"
+                        WHEN s."creatorUserType" = 'venue' THEN v."photo"
                         ELSE NULL
                     END as "creatorPhoto",
                     (SELECT COUNT(*) FROM "storiesLikes" WHERE "storyID" = s.id) as "likeCount",
                     (SELECT COUNT(*) FROM "storyComments" WHERE "storyID" = s.id) as "commentCount"
                 FROM stories s
-                LEFT JOIN users u ON s."creatorUserType" = 'user' AND s."creatorUserID" = u.id
-                LEFT JOIN producers p ON s."creatorUserType" = 'producer' AND s."creatorUserID" = p.id
-                LEFT JOIN venues v ON s."creatorUserType" = 'venue' AND s."creatorUserID" = v.id
-                WHERE s."newsletterID" = %s
-                AND s."publicationDate" <= NOW()
-                ORDER BY s."publicationDate" DESC
+                LEFT JOIN "topics" t ON s."topicID" = t."id"
+                LEFT JOIN "users" u ON s."creatorUserType" = 'user' AND s."creatorUserID" = u."id"
+                LEFT JOIN "producers" p ON s."creatorUserType" = 'producer' AND s."creatorUserID" = p."id"
+                LEFT JOIN "venues" v ON s."creatorUserType" = 'venue' AND s."creatorUserID" = v."id"
+                {where_clause}
+                {order_clause}
                 LIMIT %s OFFSET %s
-                """,
-                (newsletter_id, limit, offset_val)
-            )
+            '''
+            cursor.execute(query, where_params + [limit, offset_val])
             stories = cursor.fetchall()
             
-            # Format stories for response
+            # Format stories for response (matching getUserStories format exactly)
             formatted_stories = []
             for story in stories:
-                # Get first photo from array for preview
-                photo = None
-                if story['storyPhotos'] and len(story['storyPhotos']) > 0:
-                    photo = story['storyPhotos'][0]
+                story_dict = dict(story)
+                
+                # Get feature photo (first photo)
+                feature_photo = None
+                if story_dict['storyPhotos'] and len(story_dict['storyPhotos']) > 0:
+                    feature_photo = story_dict['storyPhotos'][0]
+                
+                # Generate preview excerpt (first 150 chars, strip HTML)
+                preview_excerpt = ''
+                reading_time = 1  # Default to 1 min
+                if story_dict['storyContent']:
+                    # Strip HTML tags
+                    text_content = re.sub(r'<[^>]+>', '', story_dict['storyContent'])
+                    preview_excerpt = text_content[:150].strip()
+                    if len(text_content) > 150:
+                        preview_excerpt += '...'
+                    
+                    # Calculate reading time (average 200 words per minute)
+                    word_count = len(text_content.split())
+                    reading_time = max(1, round(word_count / 200))
+                
+                # Determine status
+                is_draft = story_dict['publicationDate'] is None
+                is_scheduled = (
+                    story_dict['publicationDate'] and 
+                    story_dict['publicationDate'] > datetime.now()
+                )
                 
                 formatted_stories.append({
-                    'id': story['id'],
-                    'title': story['storyTitle'],
-                    'content': story['storyContent'],
-                    'photo': photo,
-                    'publicationDate': story['publicationDate'].isoformat() if story['publicationDate'] else None,
-                    'createdByID': story['creatorUserID'],
-                    'createdByType': story['creatorUserType'],
-                    'creatorUsername': story['creatorUsername'],
-                    'creatorPhoto': story['creatorPhoto'],
-                    'likeCount': story['likeCount'],
-                    'commentCount': story['commentCount']
+                    'id': story_dict['id'],
+                    'storyTitle': story_dict['storyTitle'],
+                    'previewExcerpt': preview_excerpt,
+                    'featurePhoto': feature_photo,
+                    'readingTime': reading_time,
+                    'publicationDate': story_dict['publicationDate'].isoformat() if story_dict['publicationDate'] else None,
+                    'creationDate': story_dict['creationDate'].isoformat() if story_dict['creationDate'] else None,
+                    'topicID': story_dict['topicID'],
+                    'topicName': story_dict['topicName'],
+                    'newsletterID': story_dict['newsletterID'],
+                    'creatorUserID': story_dict['creatorUserID'],
+                    'creatorUserType': story_dict['creatorUserType'],
+                    'creatorUsername': story_dict['creatorUsername'],
+                    'creatorDisplayName': story_dict['creatorDisplayName'],
+                    'creatorPhoto': story_dict['creatorPhoto'],
+                    'likeCount': story_dict['likeCount'],
+                    'commentCount': story_dict['commentCount'],
+                    'isDraft': is_draft,
+                    'isScheduled': is_scheduled,
                 })
             
             return jsonify({
                 'code': 200,
-                'stories': formatted_stories,
+                'data': formatted_stories,
                 'totalCount': total_count,
                 'hasMore': (offset_val + limit) < total_count
             }), 200
@@ -2596,7 +2696,9 @@ def get_user_stories(userID, userType, offset):
                         WHEN s."creatorUserType" = 'producer' THEN p."photo"
                         WHEN s."creatorUserType" = 'venue' THEN v."photo"
                         ELSE NULL
-                    END as "creatorPhoto"
+                    END as "creatorPhoto",
+                    (SELECT COUNT(*) FROM "storiesLikes" WHERE "storyID" = s.id) as "likeCount",
+                    (SELECT COUNT(*) FROM "storyComments" WHERE "storyID" = s.id) as "commentCount"
                 FROM "stories" s
                 LEFT JOIN "topics" t ON s."topicID" = t."id"
                 LEFT JOIN "newsletters" n ON s."newsletterID" = n."id"
@@ -2656,6 +2758,8 @@ def get_user_stories(userID, userType, offset):
                     'creatorUsername': story_dict['creatorUsername'],
                     'creatorDisplayName': story_dict['creatorDisplayName'],
                     'creatorPhoto': story_dict['creatorPhoto'],
+                    'likeCount': story_dict['likeCount'],
+                    'commentCount': story_dict['commentCount'],
                     'isDraft': is_draft,
                     'isScheduled': is_scheduled,
                 })

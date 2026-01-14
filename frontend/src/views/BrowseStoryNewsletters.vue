@@ -152,7 +152,7 @@
             
             <div class="card-body">
               <!-- Description -->
-              <p class="card-text small text-muted mb-2">
+              <p class="text-start card-text small text-muted mb-2">
                 {{ truncateText(newsletter.newsletterDesc, 120) || 'No description' }}
               </p>
               

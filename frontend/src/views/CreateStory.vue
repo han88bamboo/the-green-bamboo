@@ -500,6 +500,17 @@ export default {
     // Load dropdown data
     await this.loadDropdownData();
     
+    // Check for pre-selected newsletter from query param (e.g., from SpecificStoryNewsletter.vue)
+    const preselectedNewsletterID = this.$route.query.newsletterID;
+    if (preselectedNewsletterID) {
+      const newsletterIdInt = parseInt(preselectedNewsletterID);
+      // Verify this newsletter belongs to the user
+      const matchedNewsletter = this.userNewsletters.find(n => n.id === newsletterIdInt);
+      if (matchedNewsletter) {
+        this.story.newsletterID = newsletterIdInt;
+      }
+    }
+    
     // Start auto-save timer
     this.startAutoSave();
     

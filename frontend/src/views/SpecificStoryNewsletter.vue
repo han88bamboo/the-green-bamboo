@@ -161,14 +161,14 @@
           <button 
             class="btn btn-sm"
             :class="sortBy === 'newest' ? 'btn-dark' : 'btn-outline-secondary'"
-            @click="sortBy = 'newest'; loadStories()"
+            @click="changeSortBy('newest')"
           >
             <i class="bi bi-clock me-1"></i> Newest
           </button>
           <button 
             class="btn btn-sm"
             :class="sortBy === 'mostLiked' ? 'btn-dark' : 'btn-outline-secondary'"
-            @click="sortBy = 'mostLiked'; loadStories()"
+            @click="changeSortBy('mostLiked')"
           >
             <i class="bi bi-heart me-1"></i> Most Liked
           </button>
@@ -184,61 +184,90 @@
             <p class="mt-3 text-muted">Loading stories...</p>
           </div>
 
-          <!-- Stories List -->
+          <!-- Stories List (Medium-style row layout) -->
           <div v-else>
-            <!-- Story Cards -->
-            <!-- TODO: Implement story cards (model after SpecificStoryTopic.vue) -->
-            <div 
-              v-for="story in stories" 
-              :key="story.id"
-              class="story-card card mb-3 shadow-sm"
-            >
-              <div class="card-body">
-                <!-- Story Meta -->
-                <div class="text-start story-meta text-muted small mb-2">
-                  <span>Published </span>
-                  <span>{{ formatTimeAgo(story.publishingDate) }}</span>
-                </div>
-
-                <!-- Story Title (clickable) -->
-                <h5 
-                  class="text-start story-title fw-bold mb-2 clickable-title"
-                  @click="viewStory(story)"
-                >{{ story.storyTitle }}</h5>
-
-                <!-- Story Preview (truncated) -->
-                <p v-if="story.storyContentPreview" class="text-start story-preview text-muted mb-2">
-                  {{ stripHtml(story.storyContentPreview) }}
-                </p>
-
-                <!-- Story Image Preview -->
-                <div 
-                  v-if="story.storyPhotos && story.storyPhotos.length > 0" 
-                  class="story-image mb-2"
-                  @click="viewStory(story)"
-                >
-                  <img 
-                    :src="story.storyPhotos[0]" 
-                    :alt="story.storyTitle"
-                    class="img-fluid rounded"
-                    style="max-height: 300px; object-fit: cover; width: 100%;"
-                  />
-                </div>
-
-                <!-- Story Actions -->
-                <div class="story-actions d-flex align-items-center gap-3 mt-2">
-                  <span class="action-btn text-muted" @click.stop="likeStory(story)">
-                    <i class="bi me-1" :class="story.userLiked ? 'bi-heart-fill text-danger' : 'bi-heart'"></i>
-                    {{ story.likeCount || 0 }} Likes
-                  </span>
-                  <span class="action-btn text-muted" @click.stop="viewStory(story)">
-                    <i class="bi bi-chat-square me-1"></i>
-                    {{ story.commentCount || 0 }} Comments
-                  </span>
-                  <span class="action-btn text-muted" @click.stop="shareStory(story)">
-                    <i class="bi bi-share me-1"></i>
-                    Share
-                  </span>
+            <div v-if="stories.length > 0" class="stories-list">
+              <div 
+                v-for="story in stories" 
+                :key="story.id"
+                class="story-card card mb-3 shadow-sm"
+                :class="{ 
+                  'draft-story-card': isDraft(story),
+                  'scheduled-story-card': isScheduled(story)
+                }"
+                @click="viewStory(story)"
+                role="button"
+              >
+                <div class="card-body p-0">
+                  <div class="row g-0">
+                    <!-- Story Content (left side) -->
+                    <div class="col-8 col-md-9 p-3 d-flex flex-column">
+                      <!-- Story Title -->
+                      <h5 class="text-start story-title fw-bold mb-2 line-clamp-2">
+                        {{ story.storyTitle }}
+                      </h5>
+                      
+                      <!-- Story Preview (150 chars) -->
+                      <p class="text-start story-preview text-muted mb-2 flex-grow-1 line-clamp-3">
+                        {{ story.previewExcerpt || getExcerpt(story.storyContent, 150) }}
+                      </p>
+                      
+                      <!-- Story Meta (bottom) -->
+                      <div class="story-meta d-flex align-items-center flex-wrap gap-2 mt-auto">
+                        <!-- Author Username -->
+                        <small class="text-muted">
+                          {{ story.creatorDisplayName || story.creatorUsername }}
+                        </small>
+                        
+                        <!-- Draft Badge (in place of date) -->
+                        <span v-if="isOwner && isDraft(story)" class="badge bg-secondary">
+                          <i class="bi bi-file-earmark-text me-1"></i>Draft
+                        </span>
+                        
+                        <!-- Scheduled Badge (in place of date) -->
+                        <span v-else-if="isOwner && isScheduled(story)" class="badge bg-info text-dark">
+                          <i class="bi bi-clock me-1"></i>Scheduled for {{ formatScheduledDate(story.publicationDate) }}
+                        </span>
+                        
+                        <!-- Published Date (normal stories) -->
+                        <small class="text-muted" v-else-if="!isDraft(story) && !isScheduled(story)">
+                          · {{ formatDate(story.publicationDate) }}
+                        </small>
+                        
+                        <!-- Topic Badge (only show topic, not newsletter since we're on newsletter page) -->
+                        <span 
+                          v-if="story.topicName" 
+                          class="badge bg-primary-subtle text-primary"
+                        >
+                          <i class="bi bi-folder me-1"></i>{{ story.topicName }}
+                        </span>
+                        
+                        <!-- Reading Time -->
+                        <small v-if="story.readingTime" class="text-muted">
+                          · {{ story.readingTime }} min read
+                        </small>
+                        
+                        <!-- Like/Comment Counts (read-only) -->
+                        <small class="text-muted">
+                          <i class="bi bi-heart me-1"></i>{{ story.likeCount || 0 }}
+                        </small>
+                        <small class="text-muted">
+                          <i class="bi bi-chat-square me-1"></i>{{ story.commentCount || 0 }}
+                        </small>
+                      </div>
+                    </div>
+                    
+                    <!-- Feature Image (right side) -->
+                    <div class="col-4 col-md-3 d-flex align-items-center justify-content-center p-2">
+                      <div class="story-image-wrapper">
+                        <img 
+                          :src="getFeatureImage(story)" 
+                          :alt="story.storyTitle"
+                          class="story-feature-image rounded"
+                        />
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -428,6 +457,7 @@ export default {
       // Default images
       defaultProfilePhoto: "https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultProfilePhoto.png?v=1748434288",
       defaultBannerImage: "https://images.unsplash.com/photo-1551024709-8f23befc6f87?w=1200",
+      defaultFeatureImage: "https://cdn.shopify.com/s/files/1/0353/9510/9003/files/fred-moon-0yqa0rMCsYk-unsplash.jpg?v=1763054984",
     };
   },
 
@@ -529,11 +559,18 @@ export default {
 
     async loadStories() {
       this.loading = true;
+      this.currentOffset = 0;
       const newsletterId = this.$route.params.newsletterId;
       
       try {
+        // Build query params for viewer (owner sees drafts/scheduled) and sorting
+        let queryParams = `?sortBy=${this.sortBy}`;
+        if (this.userID !== 'defaultUser') {
+          queryParams += `&viewerID=${this.userID}&viewerType=${this.userType}`;
+        }
+        
         const response = await this.$axios.get(
-          `${process.env.VUE_APP_API_URL}/stories/getNewsletterStories/${newsletterId}/${this.currentOffset}`
+          `${process.env.VUE_APP_API_URL}/stories/getNewsletterStories/${newsletterId}/${this.currentOffset}${queryParams}`
         );
         
         if (response.data.code === 200) {
@@ -553,8 +590,14 @@ export default {
       const newsletterId = this.$route.params.newsletterId;
       
       try {
+        // Build query params for viewer (owner sees drafts/scheduled) and sorting
+        let queryParams = `?sortBy=${this.sortBy}`;
+        if (this.userID !== 'defaultUser') {
+          queryParams += `&viewerID=${this.userID}&viewerType=${this.userType}`;
+        }
+        
         const response = await this.$axios.get(
-          `${process.env.VUE_APP_API_URL}/stories/getNewsletterStories/${newsletterId}/${this.currentOffset}`
+          `${process.env.VUE_APP_API_URL}/stories/getNewsletterStories/${newsletterId}/${this.currentOffset}${queryParams}`
         );
         
         if (response.data.code === 200) {
@@ -566,6 +609,13 @@ export default {
         console.error("Error loading more stories:", error);
       } finally {
         this.loadingMore = false;
+      }
+    },
+
+    changeSortBy(newSort) {
+      if (this.sortBy !== newSort) {
+        this.sortBy = newSort;
+        this.loadStories();
       }
     },
 
@@ -634,27 +684,13 @@ export default {
     },
 
     openCreateStoryModal() {
-      // TODO: Navigate to user profile stories page with query params to pre-select this newsletter
-      // Example: /profile/{userType}/{userID}/{username}?tab=stories&createStory=true&newsletterID={id}
-      // For now, show a toast message
-      useToast().info("Story creation feature coming soon! Newsletter will be pre-selected.");
+      // Navigate to Create Story page with newsletter pre-selected
+      this.$router.push(`/stories/create?newsletterID=${this.newsletterInfo.id}`);
     },
 
     viewStory(story) {
       const slugTitle = this.slugify(story.storyTitle);
       this.$router.push(`/stories/${story.id}/${slugTitle}`);
-    },
-
-    // eslint-disable-next-line no-unused-vars
-    likeStory(_story) {
-      // TODO: Implement like/unlike story
-      useToast().info("Story liking coming soon!");
-    },
-
-    shareStory(story) {
-      const url = `${window.location.origin}/stories/${story.id}/${this.slugify(story.storyTitle)}`;
-      navigator.clipboard.writeText(url);
-      useToast().success("Link copied to clipboard!");
     },
 
     goBack() {
@@ -714,6 +750,55 @@ export default {
         .replace(/-+/g, '-')
         .trim();
     },
+
+    // ==========================================
+    // Story Card Helper Methods (matching UserStories.vue)
+    // ==========================================
+
+    isDraft(story) {
+      // Draft = publicationDate is null (or use isDraft flag from backend)
+      return story.isDraft || !story.publicationDate;
+    },
+
+    isScheduled(story) {
+      // Scheduled = publicationDate is in the future (or use isScheduled flag from backend)
+      if (story.isScheduled !== undefined) return story.isScheduled;
+      if (!story.publicationDate) return false;
+      return new Date(story.publicationDate) > new Date();
+    },
+
+    getFeatureImage(story) {
+      // Get feature image from featurePhoto or storyPhotos array (first image)
+      if (story.featurePhoto) {
+        return story.featurePhoto;
+      }
+      const photos = story.storyPhotos;
+      if (Array.isArray(photos) && photos.length > 0) {
+        return photos[0];
+      }
+      if (typeof photos === 'string' && photos) {
+        return photos;
+      }
+      return this.defaultFeatureImage;
+    },
+
+    getExcerpt(content, maxLength = 150) {
+      if (!content) return '';
+      // Strip HTML tags for preview
+      const stripped = content.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+      if (stripped.length <= maxLength) return stripped;
+      return stripped.substring(0, maxLength).trim() + '...';
+    },
+
+    // Format for scheduled date badge: "dd MMM yy"
+    formatScheduledDate(dateString) {
+      if (!dateString) return '';
+      const date = new Date(dateString);
+      const day = date.getDate();
+      const month = date.toLocaleDateString('en-US', { month: 'short' });
+      const year = date.getFullYear().toString().slice(-2);
+      return `${day} ${month} ${year}`;
+    },
   },
 };
 </script>
@@ -739,9 +824,13 @@ export default {
   max-width: 600px;
 }
 
-/* Story Card Styles */
+/* =====================================================================================
+   STORY CARD STYLES - Medium-style row layout (matching UserStories.vue)
+   ===================================================================================== */
 .story-card {
   transition: transform 0.2s, box-shadow 0.2s;
+  cursor: pointer;
+  border: 1px solid #e9ecef;
 }
 
 .story-card:hover {
@@ -749,27 +838,120 @@ export default {
   box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
 }
 
-.clickable-title {
-  cursor: pointer;
+/* Draft and scheduled stories - faded like past events */
+.draft-story-card,
+.scheduled-story-card {
+  opacity: 0.7;
 }
 
-.clickable-title:hover {
-  color: #0d6efd;
+.draft-story-card:hover,
+.scheduled-story-card:hover {
+  opacity: 0.85;
 }
 
-.action-btn {
-  cursor: pointer;
-  transition: color 0.2s;
+/* Story title */
+.story-title {
+  color: #222;
+  font-size: 2rem;
+  line-height: 1.3;
 }
 
-.action-btn:hover {
-  color: #0d6efd !important;
+/* Story preview text */
+.story-preview {
+  font-size: 0.9rem;
+  line-height: 1.5;
 }
 
-/* Mobile responsiveness */
+/* Line clamp utilities */
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.line-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Feature image styling */
+.story-image-wrapper {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.story-feature-image {
+  width: 100%;
+  max-width: 150px;
+  height: 100px;
+  object-fit: cover;
+}
+
+/* Badges - subtle background colors (Bootstrap 5.3 style) */
+.bg-primary-subtle {
+  background-color: rgba(13, 110, 253, 0.1) !important;
+}
+
+.bg-success-subtle {
+  background-color: rgba(25, 135, 84, 0.1) !important;
+}
+
+/* =====================================================================================
+   MOBILE RESPONSIVENESS
+   ===================================================================================== */
 @media (max-width: 768px) {
   .hero-title {
     font-size: 1.75rem;
+  }
+  
+  .story-title {
+    font-size: 2rem;
+  }
+  
+  .story-preview {
+    font-size: 0.85rem;
+  }
+  
+  .story-feature-image {
+    max-width: 100px;
+    height: 70px;
+  }
+  
+  .story-meta {
+    font-size: 0.75rem;
+  }
+  
+  .story-meta .badge {
+    font-size: 0.65rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .story-card .row {
+    flex-direction: column-reverse;
+  }
+  
+  .story-card .col-8,
+  .story-card .col-4 {
+    width: 100%;
+  }
+  
+  .story-image-wrapper {
+    margin-bottom: 0.5rem;
+  }
+  
+  .story-feature-image {
+    max-width: 100%;
+    width: 100%;
+    height: 150px;
   }
 }
 </style>
