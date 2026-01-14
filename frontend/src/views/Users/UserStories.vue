@@ -79,7 +79,7 @@
         <!-- Page Header and Actions -->
         <div class="d-flex justify-content-between align-items-center mb-4">
           <h5 class="fw-bold mobile-fs-6 mb-0">
-            <i class="bi bi-journal-richtext"></i> Stories
+            <i class="bi bi-journal-richtext"></i> Stories by @{{ displayUser.username }}
           </h5>
           
           <!-- Action Buttons (only for own profile) -->
@@ -665,11 +665,11 @@ export default {
     async loadDisplayUser() {
       try {
         const response = await fetch(
-          `${this.currentURL}/getPublicUserInfo/${this.displayUserID}`
+          `${this.currentURL}/getData/getUser/${this.displayUserID}`
         );
         const data = await response.json();
-        if (data.code === 200) {
-          this.displayUser = data.data;
+        if (data) {
+          this.displayUser = data;
         }
       } catch (error) {
         console.error("Error loading user info:", error);
