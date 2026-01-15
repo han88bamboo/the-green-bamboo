@@ -2107,7 +2107,12 @@ def create_story():
         publication_date = None
         if publication_date_str:
             try:
-                publication_date = datetime.fromisoformat(publication_date_str.replace('Z', '+00:00'))
+                parsed_date = datetime.fromisoformat(publication_date_str.replace('Z', '+00:00'))
+                # Convert to naive UTC datetime for consistent comparison with datetime.utcnow()
+                if parsed_date.tzinfo is not None:
+                    publication_date = parsed_date.replace(tzinfo=None)
+                else:
+                    publication_date = parsed_date
             except ValueError:
                 return jsonify({
                     'code': 400,
