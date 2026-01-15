@@ -166,13 +166,13 @@ def notify_story_subscribers(cursor, story_id, story_title, topic_id=None, newsl
         
         # Determine link destination
         # Priority: newsletter page if newsletter_id exists, else topic page
-        # URL format: /stories/newsletters/:ID/:name or /stories/topic/:ID/:name
+        # URL format: /stories/newsletters/:ID/:name or /stories/topics/:ID/:name
         if newsletter_id and newsletter_name:
             newsletter_slug = _slugify_for_url(newsletter_name)
             link = f"/stories/newsletters/{newsletter_id}/{newsletter_slug}"
         elif topic_id and topic_name:
             topic_slug = _slugify_for_url(topic_name)
-            link = f"/stories/topic/{topic_id}/{topic_slug}"
+            link = f"/stories/topics/{topic_id}/{topic_slug}"
         else:
             link = None
         
@@ -210,7 +210,7 @@ def notify_story_subscribers(cursor, story_id, story_title, topic_id=None, newsl
                 "notiTabs": "forYou",
                 "notiType": "topic_new_story",
                 "image": None,
-                "link": f"/stories/topic/{topic_id}/{topic_slug}",
+                "link": f"/stories/topics/{topic_id}/{topic_slug}",
                 "message": message,
                 "createdAt": current_time,
                 "read": False
