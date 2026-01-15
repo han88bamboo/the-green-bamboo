@@ -296,6 +296,9 @@
                   <li>
                     <router-link :to="'/stories/newsletters'" class="dropdown-item">All Newsletters</router-link>
                   </li>
+                  <li v-if="accType !== ''">
+                    <router-link :to="'/stories/create'" class="dropdown-item">Write Story</router-link>
+                  </li>
                   <li>
                     <span @click="externalURL('https://88bamboo.co/')" class="dropdown-item">Latest News</span>
                   </li>
@@ -443,7 +446,9 @@
                 <li v-show="showStories" class="text-start">
                   <router-link to="/stories/newsletters" style="text-decoration: none; font-weight: normal">All Newsletters</router-link>
                 </li>
-
+                <li v-if="accType !== ''" v-show="showStories" class="text-start">
+                  <router-link to="/stories/create" style="text-decoration: none; font-weight: normal">Write Story</router-link>
+                </li>
                 <li class="drawer-section-title pt-2 text-start">
                   <router-link to="/find-lists" style="text-decoration: none">
                     Lists
@@ -616,6 +621,10 @@
             <li class="list-group-item list-group-item-action text-start"
                 @click="navigateToNewsletters">
               All Newsletters
+            </li>
+             <li v-if="accType !== ''" class="list-group-item list-group-item-action text-start"
+                @click="navigateToCreateStory">
+              Write Story
             </li>
           </ul>
         </button>
@@ -1594,6 +1603,11 @@
         navigateToNewsletters() {
           this.storiesDropdownOpen = false;
           this.$router.push('/stories/newsletters');
+        },
+
+        navigateToCreateStory() {
+          this.storiesDropdownOpen = false;
+          this.$router.push('/stories/create');
         },
 
         // Timer methods for stories dropdown delay
