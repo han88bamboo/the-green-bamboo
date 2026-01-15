@@ -526,6 +526,17 @@ def create_routes():
 
 create_routes()
 
+# Initialize background scheduler for scheduled tasks (e.g., story notifications)
+# Only start scheduler in main process (not in reloader child process)
+import os as _os
+if _os.environ.get('WERKZEUG_RUN_MAIN') == 'true' or not app.debug:
+    try:
+        from scripts.scheduled_tasks import init_scheduler
+        init_scheduler(app)
+        logger.info("Background scheduler initialized for scheduled tasks.")
+    except Exception as scheduler_err:
+        logger.error(f"Failed to initialize scheduler: {scheduler_err}")
+
 # for debugging
 # Function to print all registered routes
 # def print_routes(app):

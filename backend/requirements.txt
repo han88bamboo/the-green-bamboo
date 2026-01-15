@@ -19,3 +19,4 @@ forex-python==1.8
 redis
 fuzzywuzzy==0.18.0
 pandas==2.3.3
+APScheduler==3.10.4

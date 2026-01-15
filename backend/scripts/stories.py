@@ -56,7 +56,7 @@ import os
 import re
 import logging
 from flask import Blueprint, request, jsonify
-from datetime import datetime
+from datetime import datetime, timezone
 from scripts import notifications
 
 # Import the database manager for connection pooling
@@ -1700,7 +1700,7 @@ def get_newsletter_stories(newsletterID, offset):
                 is_draft = story_dict['publicationDate'] is None
                 is_scheduled = (
                     story_dict['publicationDate'] and 
-                    story_dict['publicationDate'] > datetime.now()
+                    story_dict['publicationDate'] > datetime.utcnow()
                 )
                 
                 formatted_stories.append({
@@ -2158,25 +2158,31 @@ def create_story():
                 INSERT INTO "stories" 
                 ("topicID", "newsletterID", "storyTitle", "storyContent", "storyPhotos", 
                  "listingIDs", "creationDate", "publicationDate", "freeOrPaid", "hashtags",
-                 "creatorUserID", "creatorUserType")
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                 "creatorUserID", "creatorUserType", "notificationSent")
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                 RETURNING id
             ''', (
                 topic_id, newsletter_id, story_title, story_content, story_photos,
                 listing_ids if listing_ids else None, creation_date, publication_date,
                 free_or_paid, normalized_hashtags if normalized_hashtags else None,
-                creator_id, creator_type
+                creator_id, creator_type,
+                # Set notificationSent = TRUE if publishing now (to prevent cron job duplicates)
+                True if (publication_date and publication_date <= datetime.utcnow() and (topic_id or newsletter_id)) else False
             ))
             
             story_id = cursor.fetchone()['id']
             
-            # TODO: Add notification to topic subscribers (if topicID provided and published now)
-            # if topic_id and publication_date and publication_date <= datetime.now():
-            #     notifications.notify_topic_subscribers(cursor, topic_id, story_id, story_title)
-            
-            # TODO: Add notification to newsletter patrons (if newsletterID provided and published now)
-            # if newsletter_id and publication_date and publication_date <= datetime.now():
-            #     notifications.notify_newsletter_patrons(cursor, newsletter_id, story_id, story_title)
+            # Send notifications to topic/newsletter subscribers if story is published immediately
+            # (publication_date is set and is now or in the past = publish now)
+            if publication_date and publication_date <= datetime.utcnow():
+                if topic_id or newsletter_id:
+                    notifications.notify_story_subscribers(
+                        cursor=cursor,
+                        story_id=story_id,
+                        story_title=story_title,
+                        topic_id=topic_id,
+                        newsletter_id=newsletter_id
+                    )
         
         return jsonify({
             'code': 201,
@@ -2277,7 +2283,7 @@ def get_story(storyID):
             
             # Check if story is a draft or scheduled (only visible to author)
             is_draft = story_dict['publicationDate'] is None
-            is_scheduled = story_dict['publicationDate'] and story_dict['publicationDate'] > datetime.now()
+            is_scheduled = story_dict['publicationDate'] and story_dict['publicationDate'] > datetime.utcnow()
             is_owner = False
             
             if user_id and user_type:
@@ -2410,9 +2416,10 @@ def edit_story():
             }), 400
         
         with db_manager.get_cursor() as cursor:
-            # Get existing story
+            # Get existing story (including fields needed for notification logic)
             cursor.execute('''
-                SELECT id, "creatorUserID", "creatorUserType", "storyPhotos"
+                SELECT id, "creatorUserID", "creatorUserType", "storyPhotos",
+                       "publicationDate", "topicID", "newsletterID", "storyTitle"
                 FROM "stories"
                 WHERE id = %s
             ''', (story_id,))
@@ -2423,6 +2430,10 @@ def edit_story():
                     'code': 404,
                     'message': 'Story not found.'
                 }), 404
+            
+            # Store original publication state for notification check later
+            original_pub_date = story['publicationDate']
+            was_published = original_pub_date is not None and original_pub_date <= datetime.utcnow()
             
             # Check authorization
             if str(story['creatorUserID']) != str(user_id) or story['creatorUserType'] != user_type:
@@ -2564,6 +2575,43 @@ def edit_story():
             update_values.append(story_id)
             
             cursor.execute(update_query, tuple(update_values))
+            
+            # Check if story was just published (transitioned from unpublished to published now)
+            # and send notifications to subscribers
+            if 'publicationDate' in data:
+                pub_date = data['publicationDate']
+                if pub_date is not None:
+                    try:
+                        new_pub_date = datetime.fromisoformat(pub_date.replace('Z', '+00:00'))
+                        is_publishing_now = new_pub_date <= datetime.utcnow()
+                        
+                        # Only send notifications if:
+                        # 1. Story wasn't already published (was_published is False)
+                        # 2. New publication date is now or in the past (is_publishing_now)
+                        if not was_published and is_publishing_now:
+                            # Get story title (use updated title if provided, else original)
+                            final_title = data.get('title', story['storyTitle'])
+                            # Get topicID and newsletterID (use updated if provided, else original)
+                            final_topic_id = data.get('topicID', story['topicID']) if 'topicID' in data else story['topicID']
+                            final_newsletter_id = data.get('newsletterID', story['newsletterID']) if 'newsletterID' in data else story['newsletterID']
+                            
+                            if final_topic_id or final_newsletter_id:
+                                notifications.notify_story_subscribers(
+                                    cursor=cursor,
+                                    story_id=story_id,
+                                    story_title=final_title,
+                                    topic_id=final_topic_id,
+                                    newsletter_id=final_newsletter_id
+                                )
+                                
+                                # Mark as notified to prevent cron job from sending duplicates
+                                cursor.execute('''
+                                    UPDATE "stories"
+                                    SET "notificationSent" = TRUE
+                                    WHERE id = %s
+                                ''', (story_id,))
+                    except (ValueError, AttributeError):
+                        pass  # Date parsing error already handled above
         
         return jsonify({
             'code': 200,
@@ -2798,7 +2846,7 @@ def get_user_stories(userID, userType, offset):
                 is_draft = story_dict['publicationDate'] is None
                 is_scheduled = (
                     story_dict['publicationDate'] and 
-                    story_dict['publicationDate'] > datetime.now()
+                    story_dict['publicationDate'] > datetime.utcnow()
                 )
                 
                 formatted_stories.append({

@@ -2193,8 +2193,9 @@ CREATE TABLE "stories" (
     "freeOrPaid" VARCHAR(50) DEFAULT 'free' CHECK ("freeOrPaid" IN ('free', 'paid')), -- Must be 'free' or 'paid'
     "hashtags" VARCHAR(255)[], -- array of hashtags associated with the story
     "creatorUserID" INTEGER NOT NULL, -- user/producer/venue id (validated at app level)
-    "creatorUserType" VARCHAR(255) NOT NULL -- 'user', 'producer', or 'venue'
+    "creatorUserType" VARCHAR(255) NOT NULL, -- 'user', 'producer', or 'venue'
     -- TODO: Add "mentionedUserIDs" INTEGER[] for @mention support in post content
+    "notificationSent" BOOLEAN DEFAULT FALSE
 );
 
 -- ========= storyPatrons == table for patrons of individual stories who pay one-time to access that story =========
