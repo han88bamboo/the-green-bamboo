@@ -371,19 +371,17 @@ def create_topic():
                 base64_string = re.sub(r'^data:image\/[a-zA-Z]+;base64,', '', data['image64'])
                 banner_url = s3Images.uploadBase64ImageToS3(base64_string)
             
-            # Get current timestamp
-            date_created = datetime.now()
-            
             # Convert drink_types list to PostgreSQL array format (or None if empty)
             drink_types_array = drink_types if drink_types and len(drink_types) > 0 else None
             
             # Insert new topic - createdByType is 'admin' for admin-created topics
+            # Note: dateCreated has DEFAULT CURRENT_TIMESTAMP so we don't need to pass it
             cursor.execute('''
                 INSERT INTO "topics" 
-                ("topicName", "topicDesc", "drinkTypes", "topicBanner", "dateCreated", "createdByID", "createdByType")
-                VALUES (%s, %s, %s, %s, %s, NULL, 'admin')
+                ("topicName", "topicDesc", "drinkTypes", "topicBanner", "createdByID", "createdByType")
+                VALUES (%s, %s, %s, %s, %s, 'admin')
                 RETURNING id
-            ''', (topic_name, topic_desc, drink_types_array, banner_url, date_created))
+            ''', (topic_name, topic_desc, drink_types_array, banner_url, creator_id))
             
             topic_id = cursor.fetchone()['id']
         
@@ -1142,18 +1140,15 @@ def create_newsletter():
                 base64_string = re.sub(r'^data:image\/[a-zA-Z]+;base64,', '', data['displayImage64'])
                 display_photo_url = s3Images.uploadBase64ImageToS3(base64_string)
             
-            # Get current timestamp
-            date_created = datetime.now()
-            
-            # Insert new newsletter (isFree=true for MVP)
+            # Insert new newsletter (isFree=true for MVP, dateCreated uses DB default)
             cursor.execute('''
                 INSERT INTO "newsletters" 
                 ("newsletterName", "newsletterDesc", "newsletterBanner", "newsletterDisplayPhoto", 
-                 "dateCreated", "creatorUserID", "creatorUserType", "isFree")
-                VALUES (%s, %s, %s, %s, %s, %s, %s, true)
+                 "creatorUserID", "creatorUserType", "isFree")
+                VALUES (%s, %s, %s, %s, %s, %s, true)
                 RETURNING id
             ''', (newsletter_name, newsletter_desc, banner_url, display_photo_url, 
-                  date_created, creator_id, creator_type))
+                  creator_id, creator_type))
             
             newsletter_id = cursor.fetchone()['id']
         
