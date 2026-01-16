@@ -16,6 +16,12 @@ const routes = [
     name: "eventOrganiserDashboard",
     component: () => import(/* webpackChunkName: "event" */ "@/views/Users/EventOrganiserDashboard.vue"),
   },
+
+  {
+    path: "/events/organiser-dashboard/passcodes-management/:userType/:userID",
+    name: "ticketClassManagement",
+    component: () => import(/* webpackChunkName: "event" */ "@/views/Users/TicketClassManagement.vue"),
+  },
 ];
 
 export default routes;

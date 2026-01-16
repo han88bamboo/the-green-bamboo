@@ -143,7 +143,7 @@
                     </div>
 
                     <div class="modal-body text-start">
-                        <CreateEventPage @new-event="updateNewEvent"/>
+                        <CreateEventPage @new-event="updateNewEvent" :userID="targetUserID" :userType="userType"/>
                     </div>
 
                     <div class="modal-footer">
@@ -528,6 +528,7 @@ export default {
                     paidEvent: this.newEvent.paidEvent,
                     eventLocation: this.newEvent.eventLocation,
                     paymentLink: this.newEvent.paymentLink,
+                    selectedTicketClasses: this.newEvent.selectedTicketClasses,
                     eventOwnerID: this.userID,
                     eventOwnerType: this.userType
                 });

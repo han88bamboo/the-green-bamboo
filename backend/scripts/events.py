@@ -12,6 +12,10 @@
 #               /addAttendee (POST), 
 #               /removeAttendee (DELETE)
 #               /updateAttendeeStatus (PUT)
+#   [ticketClasses] /ticketClasses/create (POST), /ticketClasses/<ownerID>/<ownerType> (GET),
+#                   /ticketClasses/update (PUT), /ticketClasses/delete/<id> (DELETE),
+#                   /ticketClasses/getEventsConfig/<ownerID>/<ownerType> (GET),
+#                   /ticketClasses/updateEventConfig (PUT)
 # -----------------------------------------------------------------------------------------
 
 import os
@@ -905,28 +909,41 @@ def createEvent():
             else:
                 data['eventLimit'] = int(data['eventLimit'])
 
-            # Handle passcodes - convert array with limits to JSONB format
-            passcode_data = data.get('eventPasscodes', [])
-            passcode = None
+            # Handle selectedTicketClasses - convert to ticketClassConfig JSONB format
+            # Accepts either array of IDs (legacy) or array of {ticketClassId, eventLimit} objects (new)
+            # Note: eventLimit = null or 0 means unlimited
+            selected_ticket_classes = data.get('selectedTicketClasses', [])
+            ticket_class_config = None
             
-            if passcode_data and isinstance(passcode_data, list):
-                valid_passcodes = []
-                for item in passcode_data:
-                    # Handle new format (objects with code and limit)
-                    if isinstance(item, dict) and 'code' in item and 'limit' in item:
-                        code = item['code'].strip() if item['code'] else ''
-                        limit = item['limit']
-                        if code and isinstance(limit, int) and limit > 0:
-                            valid_passcodes.append({"code": code, "limit": limit})
+            if selected_ticket_classes and isinstance(selected_ticket_classes, list):
+                # Validate ticket class IDs belong to this owner
+                valid_configs = []
+                for tc_item in selected_ticket_classes[:5]:  # Limit to 5 ticket classes
+                    # Handle both formats: {ticketClassId, eventLimit} objects or plain IDs
+                    if isinstance(tc_item, dict):
+                        tc_id = tc_item.get('ticketClassId')
+                        # Treat null/None as 0 (unlimited) for storage
+                        event_limit = tc_item.get('eventLimit')
+                        event_limit = event_limit if event_limit is not None else 0
+                    else:
+                        tc_id = tc_item
+                        event_limit = 0
+                    
+                    cursor.execute('''
+                        SELECT id FROM "eventTicketClasses"
+                        WHERE id = %s AND "ownerID" = %s AND "ownerType" = %s AND "isActive" = TRUE
+                    ''', (tc_id, data['eventOwnerID'], data['eventOwnerType']))
+                    if cursor.fetchone():
+                        valid_configs.append({"ticketClassId": tc_id, "eventLimit": event_limit})
                 
-                # Convert to JSON string for JSONB storage
-                if valid_passcodes:
-                    passcode = json.dumps(valid_passcodes)
+                if valid_configs:
+                    ticket_class_config = json.dumps(valid_configs)
 
             # Get today's date as the createdDate
             created_date = datetime.now().date()
 
             # Step 5: Insert the event into the database
+            # Note: passcode column is no longer used - we use ticketClassConfig instead
             cursor.execute(
                 '''
                 INSERT INTO events
@@ -936,7 +953,7 @@ def createEvent():
                    "eventLimit", "eventBanners", ticketed,
                    "paidEvent", "eventLocation", "paymentLink",
                    "eventOwnerID", "eventOwnerType",
-                   "numAttendees", "createdDate", passcode)
+                   "numAttendees", "createdDate", "ticketClassConfig")
                 VALUES (
                   %s, %s, %s,
                   %s, %s,
@@ -955,7 +972,7 @@ def createEvent():
                     data['eventLimit'], event_banner_pg, data['ticketed'],
                     data.get('paidEvent'), data.get('eventLocation'), payment_link,
                     data['eventOwnerID'], data['eventOwnerType'],
-                    created_date, passcode
+                    created_date, ticket_class_config
                 )
             )
             new_event = cursor.fetchone()
@@ -1139,26 +1156,51 @@ def updateEvent():
                     update_values.append(event_banner_pg)
             
             # Handle passcode updates - convert array with limits to JSONB format
+            # NOTE: eventPasscodes is deprecated - use selectedTicketClasses instead
+            # This code is kept for backward compatibility but should not be triggered from frontend
             if 'eventPasscodes' in data:
-                passcode_data = data.get('eventPasscodes')
-                passcode = None
+                # Log deprecation warning
+                print("WARNING: eventPasscodes field is deprecated. Use selectedTicketClasses instead.")
+            
+            # Handle selectedTicketClasses updates - convert to ticketClassConfig JSONB format
+            # Accepts either array of IDs (legacy) or array of {ticketClassId, eventLimit} objects (new)
+            # Note: eventLimit = null or 0 means unlimited
+            if 'selectedTicketClasses' in data:
+                selected_ticket_classes = data.get('selectedTicketClasses', [])
+                ticket_class_config = None
                 
-                if passcode_data and isinstance(passcode_data, list):
-                    valid_passcodes = []
-                    for item in passcode_data:
-                        # Handle new format (objects with code and limit)
-                        if isinstance(item, dict) and 'code' in item and 'limit' in item:
-                            code = item['code'].strip() if item['code'] else ''
-                            limit = item['limit']
-                            if code and isinstance(limit, int) and limit > 0:
-                                valid_passcodes.append({"code": code, "limit": limit})
+                if selected_ticket_classes and isinstance(selected_ticket_classes, list):
+                    # Validate ticket class IDs belong to this owner
+                    valid_configs = []
+                    for tc_item in selected_ticket_classes[:5]:  # Limit to 5 ticket classes
+                        # Handle both formats: {ticketClassId, eventLimit} objects or plain IDs
+                        if isinstance(tc_item, dict):
+                            tc_id = tc_item.get('ticketClassId')
+                            # Treat null/None as 0 (unlimited) for storage
+                            event_limit = tc_item.get('eventLimit')
+                            event_limit = event_limit if event_limit is not None else 0
+                        else:
+                            # Legacy format: plain ID - preserve existing eventLimit if any
+                            tc_id = tc_item
+                            event_limit = 0
+                            if event.get('ticketClassConfig'):
+                                for existing_tc in event['ticketClassConfig']:
+                                    if existing_tc.get('ticketClassId') == tc_id:
+                                        event_limit = existing_tc.get('eventLimit', 0)
+                                        break
+                        
+                        cursor.execute('''
+                            SELECT id FROM "eventTicketClasses"
+                            WHERE id = %s AND "ownerID" = %s AND "ownerType" = %s AND "isActive" = TRUE
+                        ''', (tc_id, data['eventOwnerID'], data['eventOwnerType']))
+                        if cursor.fetchone():
+                            valid_configs.append({"ticketClassId": tc_id, "eventLimit": event_limit})
                     
-                    # Convert to JSON string for JSONB storage
-                    if valid_passcodes:
-                        passcode = json.dumps(valid_passcodes)
+                    if valid_configs:
+                        ticket_class_config = json.dumps(valid_configs)
                 
-                update_fields.append('"passcode" = %s')
-                update_values.append(passcode)
+                update_fields.append('"ticketClassConfig" = %s')
+                update_values.append(ticket_class_config)
 
             # Step 4: Update the event
             if update_fields:
@@ -1453,82 +1495,94 @@ def addAttendee():
             if not user_info:
                 return jsonify({'error': 'User not found'}), 400
 
-            # Step 3.5: Validate event passcode if required
-            # passcode is now JSONB format: [{"code": "Merlion65", "limit": 50}, {"code": "Changi66", "limit": 30}] or None
-            event_passcode = event.get('passcode')
-            matched_passcode_code = None  # Store the master code that was matched
-            
-            # Check if event requires passcode: JSONB array exists and has valid passcode objects
-            if event_passcode and isinstance(event_passcode, list) and len(event_passcode) > 0:
-                # Check if any passcode object has a valid code
-                has_valid_passcode = any(
-                    isinstance(p, dict) and p.get('code') and str(p.get('code')).strip() 
-                    for p in event_passcode
-                )
-                
-                if has_valid_passcode:
-                    # Get passcodes to try (array from frontend, or fallback to single passcode for backward compatibility)
-                    user_passcodes = data.get('passcodes', [])
-                    if not user_passcodes:
-                        # Fallback to single passcode for backward compatibility
-                        single_passcode = data.get('passcode', '')
-                        user_passcodes = [single_passcode] if single_passcode else []
-                    
-                    if not user_passcodes or not any(pc.strip() for pc in user_passcodes):
-                        return jsonify({'error': 'This event requires a passcode.'}), 400
-                    
-                    # Try each user passcode against each event passcode
-                    passcode_found = False
-                    matched_passcode_code = None
-                    found_valid_but_limit_reached = False  # Track if we found valid passcode but hit limit
-                    
-                    for user_passcode in user_passcodes:
-                        if not user_passcode.strip():
-                            continue
-                            
-                        # Normalize user input (remove spaces and convert to lowercase)
-                        normalized_user_passcode = ''.join(user_passcode.split()).lower()
-                        
-                        # Find matching passcode and check its usage limit
-                        for passcode_obj in event_passcode:
-                            if isinstance(passcode_obj, dict) and passcode_obj.get('code'):
-                                master_code = str(passcode_obj['code']).strip()
-                                passcode_limit = passcode_obj.get('limit', 0)
-                                
-                                # Normalize master code for comparison
-                                normalized_master_code = ''.join(master_code.split()).lower()
-                                
-                                if normalized_user_passcode == normalized_master_code:
-                                    # Check usage limit for this specific passcode
-                                    cursor.execute('''
-                                        SELECT COUNT(*) as usage_count
-                                        FROM "eventAttendees" 
-                                        WHERE "eventID" = %s AND "passcodeUsed" = %s
-                                    ''', (data['eventID'], master_code))
-                                    
-                                    usage_result = cursor.fetchone()
-                                    current_usage = usage_result['usage_count'] if usage_result else 0
-                                    
-                                    if current_usage >= passcode_limit:
-                                        found_valid_but_limit_reached = True  # Mark that we found a valid passcode but it's at limit
-                                        continue  # Try next passcode instead of failing immediately
-                                    
-                                    # Found valid passcode with available usage
-                                    passcode_found = True
-                                    matched_passcode_code = master_code  # Store the original master code
-                                    break
-                                    
-                        if passcode_found:
-                            break  # Exit outer loop if we found a valid passcode
-                    
-                    if not passcode_found:
-                        # Prioritize limit reached message over generic wrong passcode message
-                        if found_valid_but_limit_reached:
-                            return jsonify({'error': 'This event has been fully signed up by your ticket class.'}), 400
-                        else:
-                            return jsonify({'error': 'Event passcode wrong'}), 400
+            # Step 3.5: Check if event signups are locked
+            if event.get('signupOpen') == False:
+                return jsonify({'error': 'Event signups are currently closed.'}), 400
 
-            # Step 3.6: Check attendance limit for this event organizer on the same day
+            # Step 3.6: Validate passcode against ticket classes ONLY
+            # Note: Event-specific passcodes are no longer supported - only ticket class passcodes work
+            user_passcode = data.get('passcode', '').strip()
+            matched_ticket_class_id = None  # For ticket class passcode
+            
+            # Check if event has ticket class config
+            event_ticket_class_config = event.get('ticketClassConfig')
+            
+            # Determine if passcode is required
+            has_ticket_classes = event_ticket_class_config and isinstance(event_ticket_class_config, list) and len(event_ticket_class_config) > 0
+            
+            passcode_required = has_ticket_classes
+            
+            if passcode_required and not user_passcode:
+                return jsonify({'error': 'This event requires a passcode.'}), 400
+            
+            if passcode_required and user_passcode:
+                # Normalize user passcode for comparison (case-insensitive)
+                normalized_user_passcode = ''.join(user_passcode.split()).upper()
+                passcode_validated = False
+                error_message = 'Invalid passcode'
+                
+                # Check against ticket classes
+                if has_ticket_classes:
+                    for tc_config in event_ticket_class_config:
+                        tc_id = tc_config.get('ticketClassId')
+                        tc_event_limit = tc_config.get('eventLimit')  # Can be null/0 (unlimited)
+                        
+                        if not tc_id:
+                            continue
+                        
+                        # Get the ticket class
+                        cursor.execute('''
+                            SELECT id, "passcode", "totalUsageLimit", "isActive"
+                            FROM "eventTicketClasses"
+                            WHERE id = %s AND "ownerID" = %s AND "ownerType" = %s AND "isActive" = TRUE
+                        ''', (tc_id, event['eventOwnerID'], event['eventOwnerType']))
+                        
+                        ticket_class = cursor.fetchone()
+                        if not ticket_class:
+                            continue
+                        
+                        # Compare passcode (case-insensitive)
+                        tc_passcode = ticket_class['passcode'].upper()
+                        if normalized_user_passcode != tc_passcode:
+                            continue
+                        
+                        # Passcode matches! Now check limits
+                        
+                        # Check GLOBAL limit (totalUsageLimit across all events) - 0 means unlimited
+                        if ticket_class['totalUsageLimit'] > 0:
+                            cursor.execute('''
+                                SELECT COUNT(*) as global_usage
+                                FROM "eventAttendees"
+                                WHERE "ticketClassId" = %s
+                            ''', (tc_id,))
+                            global_usage = cursor.fetchone()['global_usage']
+                            
+                            if global_usage >= ticket_class['totalUsageLimit']:
+                                error_message = 'This ticket class has reached its total usage limit.'
+                                continue
+                        
+                        # Check EVENT limit (per-event allocation) - 0 or null means unlimited
+                        if tc_event_limit and tc_event_limit > 0:
+                            cursor.execute('''
+                                SELECT COUNT(*) as event_usage
+                                FROM "eventAttendees"
+                                WHERE "eventID" = %s AND "ticketClassId" = %s
+                            ''', (data['eventID'], tc_id))
+                            event_usage = cursor.fetchone()['event_usage']
+                            
+                            if event_usage >= tc_event_limit:
+                                error_message = 'This event has reached its limit for this ticket class.'
+                                continue
+                        
+                        # All checks passed! Use this ticket class
+                        matched_ticket_class_id = tc_id
+                        passcode_validated = True
+                        break
+                
+                if not passcode_validated:
+                    return jsonify({'error': error_message}), 400
+
+            # Step 3.7: Check attendance limit for this event organizer on the same day
             cursor.execute('''
                 SELECT COUNT(*) as attendance_count
                 FROM "eventAttendees" ea
@@ -1560,12 +1614,14 @@ def addAttendee():
                 return jsonify({'error': 'Event is full. No more registrations allowed.'}), 400
 
             # Step 5: Add the attendee to the event
+            # Note: passcodeUsed is kept as NULL since we only use ticket classes now
             cursor.execute('''
                 INSERT INTO "eventAttendees" 
-                ("eventID", "eventDate", "eventStartTime", "userID", "attendeeType", "attendeeStatus", "rsvpTimestamp", "firstName", "lastName", "phoneNumber", "email", "passcodeUsed") 
+                ("eventID", "eventDate", "eventStartTime", "userID", "attendeeType", "attendeeStatus", "rsvpTimestamp", "firstName", "lastName", "phoneNumber", "email", "ticketClassId") 
                 VALUES (%s, %s, %s, %s, %s, TRUE, CURRENT_TIMESTAMP, %s, %s, %s, %s, %s)
             ''', (data['eventID'], event['eventStartDate'], event['eventStartTime'], data['userID'], data['userType'], 
-                  attendee_info['firstName'], attendee_info['lastName'], attendee_info['phoneNumber'], attendee_info['email'], matched_passcode_code))
+                  attendee_info['firstName'], attendee_info['lastName'], attendee_info['phoneNumber'], attendee_info['email'], 
+                  matched_ticket_class_id))
 
             # Step 6: Update the number of attendees in the event
             cursor.execute('UPDATE events SET "numAttendees" = "numAttendees" + 1 WHERE id = %s', (data['eventID'],))
@@ -1997,4 +2053,658 @@ def getOrganizerEventsWithAttendees(user_id, user_type):
 
     except Exception as e:
         print(str(e))
+        return jsonify({'error': str(e)}), 500
+
+
+# -----------------------------------------------------------------------------------------
+# TICKET CLASSES CRUD ENDPOINTS
+# -----------------------------------------------------------------------------------------
+
+# -----------------------------------------------------------------------------------------
+# [POST] Create a new ticket class
+# Purpose: Create a reusable ticket class for an organizer
+# Input:
+#    1. ownerID - The ID of the owner (venue/producer/user)
+#    2. ownerType - The type of owner ('venue', 'producer', 'user')
+#    3. className - Name of the ticket class
+#    4. passcode - The passcode for this ticket class (alphanumeric, max 20 chars)
+#    5. totalUsageLimit - Total usage limit across all events
+#    6. description - Optional description
+# Output: Possible return codes [201 - Created, 400 - Validation error, 500 - Server error]
+@blueprint.route('/ticketClasses/create', methods=['POST'])
+def createTicketClass():
+    try:
+        data = request.json
+        
+        # Validate required fields
+        required_fields = ['ownerID', 'ownerType', 'className', 'passcode', 'totalUsageLimit']
+        for field in required_fields:
+            if field not in data or data[field] is None or data[field] == '':
+                return jsonify({'error': f'Missing required field: {field}'}), 400
+        
+        owner_id = int(data['ownerID'])
+        owner_type = data['ownerType']
+        class_name = str(data['className']).strip()
+        passcode = str(data['passcode']).strip()
+        total_usage_limit = int(data['totalUsageLimit'])
+        description = data.get('description', '').strip() if data.get('description') else None
+        
+        # Validate ownerType
+        if owner_type not in ['venue', 'producer', 'user']:
+            return jsonify({'error': 'ownerType must be venue, producer, or user'}), 400
+        
+        # Validate className
+        if not class_name:
+            return jsonify({'error': 'className cannot be empty'}), 400
+        if len(class_name) > 100:
+            return jsonify({'error': 'className must be 100 characters or less'}), 400
+        
+        # Validate passcode: alphanumeric only, max 20 chars, stored in UPPERCASE
+        if not passcode:
+            return jsonify({'error': 'passcode cannot be empty'}), 400
+        if len(passcode) > 20:
+            return jsonify({'error': 'passcode must be 20 characters or less'}), 400
+        if not passcode.replace(' ', '').isalnum():
+            return jsonify({'error': 'passcode must be alphanumeric only'}), 400
+        
+        # Normalize passcode to uppercase for storage
+        passcode = passcode.upper()
+        
+        # Validate totalUsageLimit (0 means unlimited)
+        if total_usage_limit < 0:
+            return jsonify({'error': 'totalUsageLimit cannot be negative'}), 400
+        
+        with db_manager.get_cursor() as cursor:
+            # Check if className already exists for this owner
+            cursor.execute('''
+                SELECT id FROM "eventTicketClasses" 
+                WHERE "ownerID" = %s AND "ownerType" = %s AND "className" = %s
+            ''', (owner_id, owner_type, class_name))
+            if cursor.fetchone():
+                return jsonify({'error': f'A ticket class with name "{class_name}" already exists'}), 400
+            
+            # Check if passcode already exists for this owner (case-insensitive)
+            cursor.execute('''
+                SELECT id FROM "eventTicketClasses" 
+                WHERE "ownerID" = %s AND "ownerType" = %s AND UPPER("passcode") = %s
+            ''', (owner_id, owner_type, passcode))
+            if cursor.fetchone():
+                return jsonify({'error': f'A ticket class with passcode "{passcode}" already exists'}), 400
+            
+            # Insert the new ticket class
+            cursor.execute('''
+                INSERT INTO "eventTicketClasses" 
+                ("ownerID", "ownerType", "className", "passcode", "totalUsageLimit", "isActive", "description")
+                VALUES (%s, %s, %s, %s, %s, TRUE, %s)
+                RETURNING id
+            ''', (owner_id, owner_type, class_name, passcode, total_usage_limit, description))
+            
+            new_id = cursor.fetchone()['id']
+            
+            return jsonify({
+                'message': 'Ticket class created successfully',
+                'ticketClassId': new_id
+            }), 201
+    
+    except Exception as e:
+        print(f"Error creating ticket class: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+
+
+# -----------------------------------------------------------------------------------------
+# [GET] Get all ticket classes for an owner with usage statistics
+# Purpose: Retrieve all ticket classes for the organizer with usage stats
+# Output: Possible return codes [200 - Success, 500 - Server error]
+@blueprint.route('/ticketClasses/<owner_id>/<owner_type>', methods=['GET'])
+def getTicketClasses(owner_id, owner_type):
+    try:
+        owner_id = int(owner_id)
+        
+        if owner_type not in ['venue', 'producer', 'user']:
+            return jsonify({'error': 'ownerType must be venue, producer, or user'}), 400
+        
+        with db_manager.get_cursor() as cursor:
+            # Get all ticket classes for this owner with usage statistics
+            cursor.execute('''
+                SELECT 
+                    tc.id,
+                    tc."className",
+                    tc."passcode",
+                    tc."totalUsageLimit",
+                    tc."isActive",
+                    tc."description",
+                    COALESCE(usage_stats.total_usage, 0) as "currentUsage",
+                    COALESCE(event_usage.events_using, '[]'::json) as "eventsUsing"
+                FROM "eventTicketClasses" tc
+                LEFT JOIN (
+                    SELECT "ticketClassId", COUNT(*) as total_usage
+                    FROM "eventAttendees"
+                    WHERE "ticketClassId" IS NOT NULL
+                    GROUP BY "ticketClassId"
+                ) usage_stats ON tc.id = usage_stats."ticketClassId"
+                LEFT JOIN (
+                    SELECT 
+                        tc_inner.id as ticket_class_id,
+                        json_agg(json_build_object(
+                            'eventId', e.id,
+                            'eventName', e."eventName",
+                            'eventLimit', (
+                                SELECT (config->>'eventLimit')::int
+                                FROM jsonb_array_elements(e."ticketClassConfig") config
+                                WHERE (config->>'ticketClassId')::int = tc_inner.id
+                            ),
+                            'usageCount', (
+                                SELECT COUNT(*)
+                                FROM "eventAttendees" ea
+                                WHERE ea."eventID" = e.id AND ea."ticketClassId" = tc_inner.id
+                            )
+                        )) as events_using
+                    FROM "eventTicketClasses" tc_inner
+                    JOIN events e ON e."ticketClassConfig" @> jsonb_build_array(jsonb_build_object('ticketClassId', tc_inner.id))
+                    WHERE tc_inner."ownerID" = %s AND tc_inner."ownerType" = %s
+                    GROUP BY tc_inner.id
+                ) event_usage ON tc.id = event_usage.ticket_class_id
+                WHERE tc."ownerID" = %s AND tc."ownerType" = %s
+                ORDER BY tc."isActive" DESC, tc."className" ASC
+            ''', (owner_id, owner_type, owner_id, owner_type))
+            
+            ticket_classes = cursor.fetchall()
+            
+            # Convert to list of dicts
+            result = []
+            for tc in ticket_classes:
+                result.append({
+                    'id': tc['id'],
+                    'className': tc['className'],
+                    'passcode': tc['passcode'],
+                    'totalUsageLimit': tc['totalUsageLimit'],
+                    'isActive': tc['isActive'],
+                    'description': tc['description'],
+                    'currentUsage': tc['currentUsage'],
+                    'eventsUsing': tc['eventsUsing'] if tc['eventsUsing'] else []
+                })
+            
+            return jsonify({
+                'ticketClasses': result,
+                'count': len(result)
+            }), 200
+    
+    except Exception as e:
+        print(f"Error getting ticket classes: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+
+
+# -----------------------------------------------------------------------------------------
+# [GET] Check if a passcode is unique for the owner (real-time validation)
+# Purpose: Check passcode uniqueness during creation/editing
+# Output: Possible return codes [200 - Success with isUnique flag]
+@blueprint.route('/ticketClasses/checkPasscode/<owner_id>/<owner_type>/<passcode>', methods=['GET'])
+def checkTicketClassPasscode(owner_id, owner_type, passcode):
+    try:
+        owner_id = int(owner_id)
+        exclude_id = request.args.get('excludeId')  # For editing, exclude current ticket class
+        
+        # Normalize passcode to uppercase
+        passcode = passcode.upper().strip()
+        
+        with db_manager.get_cursor() as cursor:
+            if exclude_id:
+                cursor.execute('''
+                    SELECT id FROM "eventTicketClasses" 
+                    WHERE "ownerID" = %s AND "ownerType" = %s AND UPPER("passcode") = %s AND id != %s
+                ''', (owner_id, owner_type, passcode, int(exclude_id)))
+            else:
+                cursor.execute('''
+                    SELECT id FROM "eventTicketClasses" 
+                    WHERE "ownerID" = %s AND "ownerType" = %s AND UPPER("passcode") = %s
+                ''', (owner_id, owner_type, passcode))
+            
+            existing = cursor.fetchone()
+            
+            return jsonify({
+                'isUnique': existing is None,
+                'passcode': passcode
+            }), 200
+    
+    except Exception as e:
+        print(f"Error checking passcode: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+
+
+# -----------------------------------------------------------------------------------------
+# [PUT] Update a ticket class
+# Purpose: Update ticket class properties
+# Input:
+#    1. id - The ID of the ticket class to update
+#    2. ownerID - For authorization
+#    3. ownerType - For authorization
+#    4. className (optional)
+#    5. passcode (optional)
+#    6. totalUsageLimit (optional)
+#    7. description (optional)
+#    8. isActive (optional)
+# Output: Possible return codes [200 - Updated, 400 - Validation error, 403 - Unauthorized, 404 - Not found, 500 - Server error]
+@blueprint.route('/ticketClasses/update', methods=['PUT'])
+def updateTicketClass():
+    try:
+        data = request.json
+        
+        required_fields = ['id', 'ownerID', 'ownerType']
+        for field in required_fields:
+            if field not in data or data[field] is None:
+                return jsonify({'error': f'Missing required field: {field}'}), 400
+        
+        ticket_class_id = int(data['id'])
+        owner_id = int(data['ownerID'])
+        owner_type = data['ownerType']
+        
+        with db_manager.get_cursor() as cursor:
+            # Check if ticket class exists and belongs to this owner
+            cursor.execute('''
+                SELECT * FROM "eventTicketClasses" 
+                WHERE id = %s AND "ownerID" = %s AND "ownerType" = %s
+            ''', (ticket_class_id, owner_id, owner_type))
+            
+            existing = cursor.fetchone()
+            if not existing:
+                return jsonify({'error': 'Ticket class not found or unauthorized'}), 404
+            
+            update_fields = []
+            update_values = []
+            
+            # Update className if provided
+            if 'className' in data and data['className']:
+                class_name = str(data['className']).strip()
+                if len(class_name) > 100:
+                    return jsonify({'error': 'className must be 100 characters or less'}), 400
+                
+                # Check uniqueness
+                cursor.execute('''
+                    SELECT id FROM "eventTicketClasses" 
+                    WHERE "ownerID" = %s AND "ownerType" = %s AND "className" = %s AND id != %s
+                ''', (owner_id, owner_type, class_name, ticket_class_id))
+                if cursor.fetchone():
+                    return jsonify({'error': f'A ticket class with name "{class_name}" already exists'}), 400
+                
+                update_fields.append('"className" = %s')
+                update_values.append(class_name)
+            
+            # Update passcode if provided
+            if 'passcode' in data and data['passcode']:
+                passcode = str(data['passcode']).strip().upper()
+                if len(passcode) > 20:
+                    return jsonify({'error': 'passcode must be 20 characters or less'}), 400
+                if not passcode.replace(' ', '').isalnum():
+                    return jsonify({'error': 'passcode must be alphanumeric only'}), 400
+                
+                # Check uniqueness
+                cursor.execute('''
+                    SELECT id FROM "eventTicketClasses" 
+                    WHERE "ownerID" = %s AND "ownerType" = %s AND UPPER("passcode") = %s AND id != %s
+                ''', (owner_id, owner_type, passcode, ticket_class_id))
+                if cursor.fetchone():
+                    return jsonify({'error': f'A ticket class with passcode "{passcode}" already exists'}), 400
+                
+                update_fields.append('"passcode" = %s')
+                update_values.append(passcode)
+            
+            # Update totalUsageLimit if provided (0 means unlimited)
+            if 'totalUsageLimit' in data and data['totalUsageLimit'] is not None:
+                new_limit = int(data['totalUsageLimit'])
+                if new_limit < 0:
+                    return jsonify({'error': 'totalUsageLimit cannot be negative'}), 400
+                
+                # Check current usage only if setting a non-zero limit
+                if new_limit > 0:
+                    cursor.execute('''
+                        SELECT COUNT(*) as usage_count FROM "eventAttendees" WHERE "ticketClassId" = %s
+                    ''', (ticket_class_id,))
+                    current_usage = cursor.fetchone()['usage_count']
+                    
+                    if new_limit < current_usage:
+                        return jsonify({
+                            'error': f'Cannot reduce totalUsageLimit below current usage ({current_usage})',
+                            'currentUsage': current_usage
+                        }), 400
+                
+                update_fields.append('"totalUsageLimit" = %s')
+                update_values.append(new_limit)
+            
+            # Update description if provided
+            if 'description' in data:
+                description = data['description'].strip() if data['description'] else None
+                update_fields.append('"description" = %s')
+                update_values.append(description)
+            
+            # Update isActive if provided
+            if 'isActive' in data and data['isActive'] is not None:
+                is_active = bool(data['isActive'])
+                update_fields.append('"isActive" = %s')
+                update_values.append(is_active)
+                
+                # If deactivating, remove from all events' ticketClassConfig
+                if not is_active:
+                    cursor.execute('''
+                        UPDATE events 
+                        SET "ticketClassConfig" = (
+                            SELECT jsonb_agg(elem)
+                            FROM jsonb_array_elements("ticketClassConfig") elem
+                            WHERE (elem->>'ticketClassId')::int != %s
+                        )
+                        WHERE "ticketClassConfig" @> jsonb_build_array(jsonb_build_object('ticketClassId', %s))
+                    ''', (ticket_class_id, ticket_class_id))
+            
+            if not update_fields:
+                return jsonify({'message': 'No fields to update'}), 200
+            
+            # Execute update
+            update_values.append(ticket_class_id)
+            cursor.execute(f'''
+                UPDATE "eventTicketClasses" 
+                SET {', '.join(update_fields)}
+                WHERE id = %s
+            ''', update_values)
+            
+            return jsonify({'message': 'Ticket class updated successfully'}), 200
+    
+    except Exception as e:
+        print(f"Error updating ticket class: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+
+
+# -----------------------------------------------------------------------------------------
+# [DELETE] Soft delete a ticket class (deactivate)
+# Purpose: Deactivate a ticket class (soft delete)
+# Output: Possible return codes [200 - Deactivated, 403 - Unauthorized, 404 - Not found, 500 - Server error]
+@blueprint.route('/ticketClasses/delete/<ticket_class_id>', methods=['DELETE'])
+def deleteTicketClass(ticket_class_id):
+    try:
+        data = request.json or {}
+        owner_id = data.get('ownerID')
+        owner_type = data.get('ownerType')
+        
+        if not owner_id or not owner_type:
+            return jsonify({'error': 'ownerID and ownerType are required'}), 400
+        
+        ticket_class_id = int(ticket_class_id)
+        owner_id = int(owner_id)
+        
+        with db_manager.get_cursor() as cursor:
+            # Check if ticket class exists and belongs to this owner
+            cursor.execute('''
+                SELECT id FROM "eventTicketClasses" 
+                WHERE id = %s AND "ownerID" = %s AND "ownerType" = %s
+            ''', (ticket_class_id, owner_id, owner_type))
+            
+            if not cursor.fetchone():
+                return jsonify({'error': 'Ticket class not found or unauthorized'}), 404
+            
+            # Soft delete: set isActive to FALSE
+            cursor.execute('''
+                UPDATE "eventTicketClasses" SET "isActive" = FALSE WHERE id = %s
+            ''', (ticket_class_id,))
+            
+            # Remove from all events' ticketClassConfig
+            cursor.execute('''
+                UPDATE events 
+                SET "ticketClassConfig" = (
+                    SELECT jsonb_agg(elem)
+                    FROM jsonb_array_elements("ticketClassConfig") elem
+                    WHERE (elem->>'ticketClassId')::int != %s
+                )
+                WHERE "ticketClassConfig" @> jsonb_build_array(jsonb_build_object('ticketClassId', %s))
+            ''', (ticket_class_id, ticket_class_id))
+            
+            return jsonify({'message': 'Ticket class deactivated successfully'}), 200
+    
+    except Exception as e:
+        print(f"Error deleting ticket class: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+
+
+# -----------------------------------------------------------------------------------------
+# [GET] Get all events for an owner with ticket class configuration
+# Purpose: Get events with their ticket class settings for the management dashboard
+# Output: Possible return codes [200 - Success, 500 - Server error]
+@blueprint.route('/ticketClasses/getEventsConfig/<owner_id>/<owner_type>', methods=['GET'])
+def getEventsWithTicketClassConfig(owner_id, owner_type):
+    try:
+        owner_id = int(owner_id)
+        
+        if owner_type not in ['venue', 'producer', 'user']:
+            return jsonify({'error': 'ownerType must be venue, producer, or user'}), 400
+        
+        with db_manager.get_cursor() as cursor:
+            # Get all events for this owner with ticket class config and usage
+            cursor.execute('''
+                SELECT 
+                    e.id,
+                    e."eventName",
+                    e."eventStartDate",
+                    e."eventEndDate",
+                    e."eventStartTime",
+                    e."eventEndTime",
+                    e."ticketClassConfig",
+                    e."passcode" as "eventPasscodes",
+                    e."numAttendees",
+                    e."eventLimit"
+                FROM events e
+                WHERE e."eventOwnerID" = %s AND e."eventOwnerType" = %s
+                ORDER BY e."eventStartDate" DESC, e."eventStartTime" DESC
+            ''', (owner_id, owner_type))
+            
+            events = cursor.fetchall()
+            
+            # Get all ticket classes for this owner
+            cursor.execute('''
+                SELECT id, "className" FROM "eventTicketClasses"
+                WHERE "ownerID" = %s AND "ownerType" = %s AND "isActive" = TRUE
+            ''', (owner_id, owner_type))
+            ticket_classes = {tc['id']: tc['className'] for tc in cursor.fetchall()}
+            
+            result = []
+            for event in events:
+                event_data = {
+                    'id': event['id'],
+                    'eventName': event['eventName'],
+                    'eventStartDate': event['eventStartDate'].strftime('%Y-%m-%d') if event['eventStartDate'] else None,
+                    'eventEndDate': event['eventEndDate'].strftime('%Y-%m-%d') if event['eventEndDate'] else None,
+                    'eventStartTime': event['eventStartTime'].strftime('%H:%M') if event['eventStartTime'] else None,
+                    'eventEndTime': event['eventEndTime'].strftime('%H:%M') if event['eventEndTime'] else None,
+                    'numAttendees': event['numAttendees'],
+                    'eventLimit': event['eventLimit'],
+                    'passcodes': event['eventPasscodes'],  # Event-specific passcodes
+                    'ticketClassConfig': {}  # Object keyed by ticketClassId
+                }
+                
+                # Process ticket class config if exists
+                if event['ticketClassConfig']:
+                    for config in event['ticketClassConfig']:
+                        tc_id = config.get('ticketClassId')
+                        if tc_id:
+                            # Get usage count for this event + ticket class combination
+                            cursor.execute('''
+                                SELECT COUNT(*) as count FROM "eventAttendees"
+                                WHERE "eventID" = %s AND "ticketClassId" = %s
+                            ''', (event['id'], tc_id))
+                            usage_count = cursor.fetchone()['count']
+                            
+                            event_data['ticketClassConfig'][tc_id] = {
+                                'enabled': True,
+                                'perEventLimit': config.get('eventLimit', 0),
+                                'currentUsage': usage_count
+                            }
+                
+                result.append(event_data)
+            
+            return jsonify({
+                'events': result,
+                'count': len(result)
+            }), 200
+    
+    except Exception as e:
+        print(f"Error getting events config: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+
+
+# -----------------------------------------------------------------------------------------
+# [PUT] Update event ticket class configuration
+# Purpose: Update which ticket classes are enabled for an event and their limits
+# Input:
+#    1. eventID
+#    2. ownerID - For authorization
+#    3. ownerType - For authorization
+#    4. ticketClassConfig - Array of {ticketClassId, eventLimit} or null
+# Output: Possible return codes [200 - Updated, 400 - Validation error, 403 - Unauthorized, 500 - Server error]
+@blueprint.route('/ticketClasses/updateEventConfig', methods=['PUT'])
+def updateEventTicketClassConfig():
+    try:
+        data = request.json
+        
+        required_fields = ['eventID', 'ownerID', 'ownerType']
+        for field in required_fields:
+            if field not in data or data[field] is None:
+                return jsonify({'error': f'Missing required field: {field}'}), 400
+        
+        event_id = int(data['eventID'])
+        owner_id = int(data['ownerID'])
+        owner_type = data['ownerType']
+        ticket_class_config = data.get('ticketClassConfig')  # Can be null or array
+        
+        with db_manager.get_cursor() as cursor:
+            # Verify event belongs to this owner
+            cursor.execute('''
+                SELECT id FROM events 
+                WHERE id = %s AND "eventOwnerID" = %s AND "eventOwnerType" = %s
+            ''', (event_id, owner_id, owner_type))
+            
+            if not cursor.fetchone():
+                return jsonify({'error': 'Event not found or unauthorized'}), 403
+            
+            # Validate ticket class config if provided
+            if ticket_class_config:
+                # Verify all ticket classes belong to this owner and are active
+                for config in ticket_class_config:
+                    tc_id = config.get('ticketClassId')
+                    event_limit = config.get('eventLimit')
+                    
+                    if not tc_id:
+                        return jsonify({'error': 'ticketClassId is required for each config item'}), 400
+                    
+                    cursor.execute('''
+                        SELECT id FROM "eventTicketClasses"
+                        WHERE id = %s AND "ownerID" = %s AND "ownerType" = %s AND "isActive" = TRUE
+                    ''', (tc_id, owner_id, owner_type))
+                    
+                    if not cursor.fetchone():
+                        return jsonify({'error': f'Ticket class {tc_id} not found, inactive, or unauthorized'}), 400
+                    
+                    if event_limit is not None and event_limit < 1:
+                        return jsonify({'error': 'eventLimit must be at least 1 or null (unlimited)'}), 400
+                
+                # Convert to JSONB
+                config_json = json.dumps(ticket_class_config)
+            else:
+                config_json = None
+            
+            # Update event
+            cursor.execute('''
+                UPDATE events SET "ticketClassConfig" = %s WHERE id = %s
+            ''', (config_json, event_id))
+            
+            return jsonify({'message': 'Event ticket class configuration updated successfully'}), 200
+    
+    except Exception as e:
+        print(f"Error updating event config: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+
+
+# -----------------------------------------------------------------------------------------
+# [PUT] Bulk update event ticket class configurations
+# Purpose: Update ticket class configs for multiple events at once (from dashboard)
+# Input:
+#    1. ownerID
+#    2. ownerType  
+#    3. eventConfigs - Array of {eventID, ticketClassConfig}
+# Output: Possible return codes [200 - Updated, 400 - Validation error, 500 - Server error]
+@blueprint.route('/ticketClasses/bulkUpdateEventConfigs', methods=['PUT'])
+def bulkUpdateEventTicketClassConfigs():
+    try:
+        data = request.json
+        
+        required_fields = ['ownerID', 'ownerType', 'eventConfigs']
+        for field in required_fields:
+            if field not in data or data[field] is None:
+                return jsonify({'error': f'Missing required field: {field}'}), 400
+        
+        owner_id = int(data['ownerID'])
+        owner_type = data['ownerType']
+        event_configs = data['eventConfigs']
+        
+        if not isinstance(event_configs, list):
+            return jsonify({'error': 'eventConfigs must be an array'}), 400
+        
+        with db_manager.get_cursor() as cursor:
+            # Get all active ticket classes for this owner for validation
+            cursor.execute('''
+                SELECT id FROM "eventTicketClasses"
+                WHERE "ownerID" = %s AND "ownerType" = %s AND "isActive" = TRUE
+            ''', (owner_id, owner_type))
+            valid_tc_ids = set(tc['id'] for tc in cursor.fetchall())
+            
+            # Get all events for this owner for validation
+            cursor.execute('''
+                SELECT id FROM events
+                WHERE "eventOwnerID" = %s AND "eventOwnerType" = %s
+            ''', (owner_id, owner_type))
+            valid_event_ids = set(e['id'] for e in cursor.fetchall())
+            
+            updated_count = 0
+            errors = []
+            
+            for event_config in event_configs:
+                event_id = event_config.get('eventID')
+                ticket_class_config = event_config.get('ticketClassConfig')
+                
+                if not event_id:
+                    errors.append({'error': 'eventID is required', 'config': event_config})
+                    continue
+                
+                event_id = int(event_id)
+                
+                if event_id not in valid_event_ids:
+                    errors.append({'error': f'Event {event_id} not found or unauthorized', 'eventID': event_id})
+                    continue
+                
+                # Validate ticket class config
+                if ticket_class_config:
+                    config_valid = True
+                    for config in ticket_class_config:
+                        tc_id = config.get('ticketClassId')
+                        if tc_id and tc_id not in valid_tc_ids:
+                            errors.append({'error': f'Ticket class {tc_id} not valid', 'eventID': event_id})
+                            config_valid = False
+                            break
+                    
+                    if not config_valid:
+                        continue
+                    
+                    config_json = json.dumps(ticket_class_config)
+                else:
+                    config_json = None
+                
+                # Update this event
+                cursor.execute('''
+                    UPDATE events SET "ticketClassConfig" = %s WHERE id = %s
+                ''', (config_json, event_id))
+                updated_count += 1
+            
+            return jsonify({
+                'message': f'Updated {updated_count} events',
+                'updatedCount': updated_count,
+                'errors': errors if errors else None
+            }), 200
+    
+    except Exception as e:
+        print(f"Error bulk updating event configs: {str(e)}")
         return jsonify({'error': str(e)}), 500

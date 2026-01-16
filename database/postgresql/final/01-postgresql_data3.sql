@@ -1095,6 +1095,36 @@ CREATE TABLE "userWallPostComments" (
     "commenterID" INTEGER REFERENCES "users"("id") ON DELETE SET NULL -- [!] References users FK
 );
 
+-- ========= "eventTicketClasses" =========
+-- Stores ticket class definitions per organizer (venue/producer/user)
+-- Each ticket class has a single shared usage pool across ALL events
+CREATE TABLE "eventTicketClasses" (
+    "id" SERIAL PRIMARY KEY,
+    
+    -- Owner identification (polymorphic relationship)
+    "ownerID" INTEGER NOT NULL,
+    "ownerType" VARCHAR(20) NOT NULL CHECK ("ownerType" IN ('venue', 'producer', 'user')),
+    
+    -- Ticket class properties
+    "className" VARCHAR(100) NOT NULL,           -- e.g., "VIP Access", "First Class"
+    "passcode" VARCHAR(100) NOT NULL,            -- The passcode users enter to use this class
+    "totalUsageLimit" INTEGER NOT NULL,          -- Shared pool across ALL events
+    
+    -- Status and metadata
+    "isActive" BOOLEAN NOT NULL DEFAULT TRUE,    -- Can be deactivated without deletion
+    "description" TEXT,                          -- Optional description for organizer reference
+    
+    -- Constraints: className and passcode must be unique within the same owner
+    CONSTRAINT "uq_ticket_class_name_per_owner" UNIQUE ("ownerID", "ownerType", "className"),
+    CONSTRAINT "uq_ticket_class_passcode_per_owner" UNIQUE ("ownerID", "ownerType", "passcode")
+);
+
+-- Index for fast lookup by owner
+CREATE INDEX "idx_ticket_classes_owner" ON "eventTicketClasses" ("ownerID", "ownerType");
+
+-- Index for passcode lookup during RSVP validation
+CREATE INDEX "idx_ticket_classes_passcode" ON "eventTicketClasses" ("passcode");
+
 -- ========= "events" =========
 CREATE TABLE "events" (
     "id" SERIAL PRIMARY KEY,
@@ -1116,7 +1146,8 @@ CREATE TABLE "events" (
     "numAttendees" INTEGER,
     "createdDate" TIMESTAMP,
     "passcode" JSONB DEFAULT NULL, -- Optional passcode for event access with usage limits [{"code": "Merlion65", "limit": 50}, {"code": "Changi66", "limit": 30}]
-    "signupOpen" BOOLEAN DEFAULT TRUE -- Indicates if event signup is open - NOT USED AT THE MOMENT
+    "signupOpen" BOOLEAN DEFAULT TRUE, -- Indicates if event signup is open - NOT USED AT THE MOMENT
+    "ticketClassConfig" JSONB DEFAULT NULL -- Enabled ticket classes with per-event limits: [{"ticketClassId": 1, "eventLimit": 20}]
 );
 
 -- ========= "eventAttendees" =========
@@ -1135,8 +1166,12 @@ CREATE TABLE "eventAttendees" (
     "lastName" VARCHAR(50), -- contact info for RSVP event access
     "phoneNumber" VARCHAR(50), -- contact info for RSVP event access
     "email" VARCHAR(50), -- contact info for RSVP event access
-    "passcodeUsed" VARCHAR(100) -- tracks which specific passcode each attendee used
+    "passcodeUsed" VARCHAR(100), -- tracks which specific EVENT-SPECIFIC passcode was used (NULL if ticket class passcode)
+    "ticketClassId" INTEGER REFERENCES "eventTicketClasses"("id") ON DELETE SET NULL -- References ticket class used (NULL if event-specific passcode)
 );
+
+-- Index for querying attendees by ticket class
+CREATE INDEX "idx_attendees_ticket_class" ON "eventAttendees" ("ticketClassId");
 
 -- ========= "associations" =========
 CREATE TABLE "associations" (

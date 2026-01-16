@@ -41,6 +41,12 @@
                                 <router-link to="/events/view" class="btn btn-outline-secondary">
                                     <i class="bi bi-arrow-left me-2"></i>Back to Events
                                 </router-link>
+                                <router-link 
+                                    :to="`/events/organiser-dashboard/passcodes-management/${$route.params.userType}/${$route.params.userID}`"
+                                    class="btn btn-primary"
+                                >
+                                    <i class="bi bi-ticket-perforated me-2"></i>Manage Passcodes
+                                </router-link>
                                 <!-- TODO: Add Create New Event button -->
                                 <!-- <button class="btn primary-btn" @click="createNewEvent">
                                     <i class="bi bi-plus-circle me-2"></i>Create New Event

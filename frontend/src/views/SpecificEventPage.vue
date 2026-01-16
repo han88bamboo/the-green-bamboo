@@ -128,7 +128,10 @@
                                                 class="btn primary-btn-less-round-blue fw-bold"
                                                 @click="showAttendeeInfoModal"
                                                 :disabled="rsvpButtonStatus">
-                                            I'm interested
+                                            I'm interested 
+                            <small v-if="hasTicketClasses" >
+                                (Passcode Required)
+                            </small>
                                         </button>
                                     </div>
                                     <div v-else>
@@ -620,7 +623,7 @@
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
-                        <p class="fw-bold">Registration success! You can view all of the masterclasses you've signed up for on the <router-link to="/events/view" class="text-decoration-underline" style="color:#027562" @click="closeModalAndNavigate">Find Events page</router-link>.</p>
+                        <p class="fw-bold">Registration success! You can view all of the events you've signed up for on the <router-link to="/events/view" class="text-decoration-underline" style="color:#027562" @click="closeModalAndNavigate">Find Events page</router-link>.</p>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">OK</button>
@@ -862,7 +865,7 @@
 
                         <!-- Event limit -->
                         <div class="mb-3">
-                            <label for="eventLimit" class="form-label fw-bold">Event Limit</label>
+                            <label for="eventLimit" class="form-label fw-bold">Attendance Limit</label>
                             <input type="number" class="form-control" min="1" id="eventLimit" required v-model="eventCopy.eventLimit">
                         </div>
 
@@ -910,71 +913,109 @@
                             <input type="text" class="form-control" id="eventLocation" v-model="eventCopy.eventLocation">
                         </div>
 
-                        <!-- Event passcodes -->
+                        <!-- Ticket Classes Selection -->
                         <div class="mb-3">
-                            <label class="form-label fw-bold">Event Passcodes <span class="text-muted">Optional</span></label>
-                            <small class="text-muted d-block mb-2">Set passcodes with usage limits to control access to your event</small>
+                            <label class="form-label fw-bold">Passcode Requirement <span class="text-muted">(Optional)</span></label>
+                            <small class="text-muted d-block mb-2">To apply a passcode, create and select a ticket class to associate with this event (up to 5)</small>
                             
-                            <!-- Passcode input fields -->
-                            <div v-for="(passcode, index) in eventCopy.eventPasscodes" :key="index" class="mb-3 p-3 border rounded">
-                                <div class="row align-items-end">
-                                    <!-- Passcode input -->
-                                    <div class="col-md-5">
-                                        <label :for="'edit-passcode-' + index" class="form-label small">Passcode {{ index + 1 }}</label>
-                                        <input 
-                                            type="text" 
-                                            class="form-control" 
-                                            :id="'edit-passcode-' + index"
-                                            v-model="passcode.code" 
-                                            :placeholder="'Enter passcode ' + (index + 1)"
-                                        >
-                                    </div>
-                                    
-                                    <!-- Limit input -->
-                                    <div class="col-md-2">
-                                        <label :for="'edit-limit-' + index" class="form-label small">Limit</label>
-                                        <input 
-                                            type="number" 
-                                            class="form-control" 
-                                            :id="'edit-limit-' + index"
-                                            v-model.number="passcode.limit" 
-                                            min="1" 
-                                            max="10000"
-                                            placeholder="50"
-                                        >
-                                    </div>
-                                    
-                                    <!-- Usage display -->
-                                    <div class="col-md-3">
-                                        <label class="form-label small">Usage Limit</label>
-                                        <div class="form-control-plaintext small">
-                                            <span class="badge bg-secondary">Max: {{ passcode.limit }}</span>
-                                            <div class="text-muted">Usage tracked via attendees</div>
-                                        </div>
-                                    </div>
-                                    
-                                    <!-- Remove button -->
-                                    <div class="col-md-2">
-                                        <button 
-                                            type="button" 
-                                            class="btn btn-outline-danger btn-sm w-100"
-                                            @click="removePasscodeEdit(index)"
-                                            :disabled="eventCopy.eventPasscodes.length <= 1"
-                                        >
-                                            Remove
-                                        </button>
-                                    </div>
-                                </div>
+                            <!-- Loading state -->
+                            <div v-if="loadingTicketClasses" class="text-muted">
+                                <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                                Loading ticket classes...
                             </div>
                             
-                            <!-- Add passcode button -->
-                            <button 
-                                type="button" 
-                                class="btn btn-outline-primary btn-sm" 
-                                @click="addPasscodeEdit"
-                            >
-                                Add Passcode
-                            </button>
+                            <!-- Ticket class selection -->
+                            <div v-else-if="availableTicketClasses.length > 0">
+                                <!-- Selected ticket classes display -->
+                                <div v-if="eventCopy.selectedTicketClasses && eventCopy.selectedTicketClasses.length > 0" class="mb-3">
+                                    <div v-for="(tcConfig, index) in eventCopy.selectedTicketClasses" :key="tcConfig.ticketClassId" class="p-2 border rounded mb-2 bg-light">
+                                        <div class="d-flex align-items-center justify-content-between mb-2">
+                                            <div>
+                                                <span class="fw-bold">{{ getTicketClassName(tcConfig.ticketClassId) }}</span>
+                                                <span class="badge bg-secondary ms-2 font-monospace">{{ getTicketClassPasscode(tcConfig.ticketClassId) }}</span>
+                                                <small class="text-muted ms-2">
+                                                    (Global Usage Limit: {{ getTicketClassLimit(tcConfig.ticketClassId) === 0 ? 'Unlimited' : getTicketClassLimit(tcConfig.ticketClassId) }})
+                                                </small>
+                                            </div>
+                                            <button 
+                                                type="button" 
+                                                class="btn btn-outline-danger btn-sm"
+                                                @click="removeTicketClassEdit(index)"
+                                            >
+                                                <i class="bi bi-x"></i> Remove
+                                            </button>
+                                        </div>
+                                        <!-- Event-specific limit input -->
+                                        <div class="d-flex align-items-center gap-2 mt-2">
+                                            <label :for="'editEventLimit-' + tcConfig.ticketClassId" class="form-label small mb-0 text-nowrap">
+                                                Event Limit:
+                                            </label>
+                                            <input 
+                                                type="number" 
+                                                :id="'editEventLimit-' + tcConfig.ticketClassId"
+                                                class="form-control form-control-sm" 
+                                                style="width: 100px;"
+                                                min="1"
+                                                placeholder=""
+                                                :value="tcConfig.eventLimit || ''"
+                                                @input="tcConfig.eventLimit = $event.target.value === '' ? null : Number($event.target.value)"
+                                            >
+                                            <small class="text-muted">(leave empty for unlimited)</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Dropdown to add more ticket classes -->
+                                <div v-if="!eventCopy.selectedTicketClasses || eventCopy.selectedTicketClasses.length < 5" class="d-flex gap-2 align-items-end">
+                                    <div class="flex-grow-1">
+                                        <!-- <label for="editTicketClassSelect" class="form-label small">Add Ticket Class</label> -->
+                                        <select 
+                                            id="editTicketClassSelect" 
+                                            class="form-select" 
+                                            v-model="selectedTicketClassToAdd"
+                                        >
+                                            <option value="">-- Select a ticket class --</option>
+                                            <option 
+                                                v-for="tc in unselectedTicketClassesEdit" 
+                                                :key="tc.id" 
+                                                :value="tc.id"
+                                            >
+                                                {{ tc.className }} ({{ tc.passcode }}) - Global Usage Limit: {{ tc.totalUsageLimit === 0 ? 'Unlimited' : tc.totalUsageLimit }}
+                                            </option>
+                                        </select>
+                                    </div>
+                                    <button 
+                                        type="button" 
+                                        class="btn btn-outline-primary"
+                                        @click="addTicketClassEdit"
+                                        :disabled="!selectedTicketClassToAdd"
+                                    >
+                                        Add
+                                    </button>
+                                </div>
+                                <small v-else class="text-muted">Maximum of 5 ticket classes reached</small>
+                            </div>
+                            
+                            <!-- No ticket classes available -->
+                            <div v-else class="text-muted small">
+                                No ticket classes available. Create them in the Passcodes Management page.
+                            </div>
+                            
+                            <!-- Info card linking to Ticket Class Management -->
+                            <div class="alert alert-info mt-3 d-flex align-items-center" role="alert">
+                                <i class="bi bi-info-circle me-2"></i>
+                                <div>
+                                    Want to create or manage passcodes? 
+                                    <a 
+                                        :href="ticketClassManagementUrl" 
+                                        target="_blank" 
+                                        rel="noopener noreferrer"
+                                        class="alert-link"
+                                    >
+                                        Go to Passcodes Management <i class="bi bi-box-arrow-up-right"></i>
+                                    </a>
+                                </div>
+                            </div>
                         </div>
                         
                     </div>
@@ -1239,11 +1280,29 @@ export default {
                 passcode: ''
             },
             attendeeInfoErrors: {},
+
+            // Ticket classes data for edit modal
+            availableTicketClasses: [],
+            loadingTicketClasses: false,
+            selectedTicketClassToAdd: '',
         }
     },
     computed: {
         isUserLoggedIn() {
             return this.userType && this.userType !== 'defaultUser' && this.userID;
+        },
+        // Filter out already selected ticket classes from dropdown
+        unselectedTicketClassesEdit() {
+            const selected = this.eventCopy.selectedTicketClasses || [];
+            const selectedIds = selected.map(tc => tc.ticketClassId);
+            return this.availableTicketClasses.filter(tc => !selectedIds.includes(tc.id));
+        },
+        // URL for Ticket Class Management page
+        ticketClassManagementUrl() {
+            if (this.userID && this.userType && this.selfView) {
+                return `/events/organiser-dashboard/passcodes-management/${this.userType}/${this.userID}`;
+            }
+            return '#';
         },
         isEventEnded() {
             if (!this.event.eventStartDate) return false;
@@ -1267,6 +1326,11 @@ export default {
         },
         isSignupOpen() {
             return this.event.signupOpen === true || this.event.signupOpen === 'true';
+        },
+        hasTicketClasses() {
+            return this.event.ticketClassConfig && 
+                   Array.isArray(this.event.ticketClassConfig) && 
+                   this.event.ticketClassConfig.length > 0;
         }
     },
     methods: {
@@ -1293,8 +1357,13 @@ export default {
                 // Create a deep copy of the event details for editing
                 this.eventCopy = JSON.parse(JSON.stringify(this.event));
                 
-                // Initialize passcodes for editing (convert single passcode field to eventPasscodes array)
-                this.initializeEventPasscodes();
+                // Initialize selected ticket classes for editing
+                this.initializeSelectedTicketClasses();
+                
+                // Load ticket classes if owner is viewing their own event
+                if (this.userID == this.event.ownerInfo.id && this.userType == this.event.eventOwnerType) {
+                    this.loadTicketClasses();
+                }
                 
                 // Sync Quill editor with the event description
                 this.syncQuillEditor();
@@ -1516,8 +1585,8 @@ export default {
         // Function to cancel editing event details
         cancelEdit() {
             this.eventCopy = JSON.parse(JSON.stringify(this.event));
-            // Ensure eventPasscodes is always an array for editing
-            this.initializeEventPasscodes();
+            // Initialize selected ticket classes from ticketClassConfig
+            this.initializeSelectedTicketClasses();
             // Sync Quill editor with the reset eventCopy
             this.syncQuillEditor();
         },
@@ -1537,28 +1606,78 @@ export default {
             }
         },
 
-        // Function to add a new passcode field in edit mode
-        addPasscodeEdit() {
-            this.eventCopy.eventPasscodes.push({ code: '', limit: 50 });
-        },
-
-        // Function to remove a passcode field in edit mode
-        removePasscodeEdit(index) {
-            if (this.eventCopy.eventPasscodes.length > 1) {
-                this.eventCopy.eventPasscodes.splice(index, 1);
+        // Function to load ticket classes for the event owner
+        async loadTicketClasses() {
+            if (!this.event.eventOwnerID || !this.event.eventOwnerType) {
+                return;
+            }
+            
+            this.loadingTicketClasses = true;
+            try {
+                const response = await this.$axios.get(
+                    `${process.env.VUE_APP_API_URL}/events/ticketClasses/${this.event.eventOwnerID}/${this.event.eventOwnerType}`
+                );
+                // Only show active ticket classes
+                this.availableTicketClasses = (response.data.ticketClasses || []).filter(tc => tc.isActive);
+            } catch (error) {
+                console.error('Error loading ticket classes:', error);
+                this.availableTicketClasses = [];
+            } finally {
+                this.loadingTicketClasses = false;
             }
         },
 
-        // Function to initialize eventPasscodes array for editing
-        initializeEventPasscodes() {
-            if (this.event.passcode && Array.isArray(this.event.passcode)) {
-                // Handle JSONB format: array of objects with code and limit
-                this.eventCopy.eventPasscodes = this.event.passcode.map(p => ({
-                    code: p.code || '',
-                    limit: p.limit || 50
-                }));
+        // Get ticket class name by ID
+        getTicketClassName(tcId) {
+            const tc = this.availableTicketClasses.find(t => t.id === tcId);
+            return tc ? tc.className : 'Unknown';
+        },
+
+        // Get ticket class passcode by ID
+        getTicketClassPasscode(tcId) {
+            const tc = this.availableTicketClasses.find(t => t.id === tcId);
+            return tc ? tc.passcode : '';
+        },
+
+        // Get ticket class limit by ID
+        getTicketClassLimit(tcId) {
+            const tc = this.availableTicketClasses.find(t => t.id === tcId);
+            return tc ? tc.totalUsageLimit : 0;
+        },
+
+        // Add a ticket class to selection in edit mode
+        addTicketClassEdit() {
+            if (!this.eventCopy.selectedTicketClasses) {
+                this.eventCopy.selectedTicketClasses = [];
+            }
+            if (this.selectedTicketClassToAdd && this.eventCopy.selectedTicketClasses.length < 5) {
+                this.eventCopy.selectedTicketClasses.push({
+                    ticketClassId: this.selectedTicketClassToAdd,
+                    eventLimit: null  // Default: unlimited for this event (null = no limit)
+                });
+                this.selectedTicketClassToAdd = '';
+            }
+        },
+
+        // Remove a ticket class from selection in edit mode
+        removeTicketClassEdit(index) {
+            if (this.eventCopy.selectedTicketClasses) {
+                this.eventCopy.selectedTicketClasses.splice(index, 1);
+            }
+        },
+
+        // Initialize selected ticket classes from ticketClassConfig
+        initializeSelectedTicketClasses() {
+            if (this.event.ticketClassConfig && Array.isArray(this.event.ticketClassConfig)) {
+                // Keep the full config objects with ticketClassId and eventLimit
+                this.eventCopy.selectedTicketClasses = this.event.ticketClassConfig
+                    .filter(tc => tc.ticketClassId)
+                    .map(tc => ({
+                        ticketClassId: tc.ticketClassId,
+                        eventLimit: tc.eventLimit || 0
+                    }));
             } else {
-                this.eventCopy.eventPasscodes = [{ code: '', limit: 50 }];
+                this.eventCopy.selectedTicketClasses = [];
             }
         },
 
@@ -1613,45 +1732,12 @@ export default {
                 }
 
 
-                // Process eventPasscodes before comparison
-                if (this.eventCopy.eventPasscodes) {
-                    // Filter out empty passcodes and prepare for comparison
-                    const validPasscodes = this.eventCopy.eventPasscodes.filter(p => p && p.code && p.code.trim());
-                    this.eventCopy.eventPasscodes = validPasscodes.length > 0 ? validPasscodes : null;
-                }
-
                 // Check which fields have been changed
                 let changedFields = {};
                 for (const [key, value] of Object.entries(this.eventCopy)) {
                     
-                    // Skip ownerInfo
-                    if (key == 'ownerInfo') {
-                        continue;
-                    }
-
-                    // Special handling for array fields
-                    if (key === 'eventPasscodes' || key === 'passcode') {
-                        // Compare arrays properly
-                        const originalPasscodes = this.event.passcode || [];
-                        const newPasscodes = value || [];
-                        
-                        // Deep array comparison for objects
-                        const arraysEqual = originalPasscodes.length === newPasscodes.length && 
-                                          originalPasscodes.every((val, index) => {
-                                              const newVal = newPasscodes[index];
-                                              // Handle both string and object formats for backward compatibility
-                                              if (typeof val === 'string' && typeof newVal === 'object') {
-                                                  return val === newVal.code;
-                                              } else if (typeof val === 'object' && typeof newVal === 'object') {
-                                                  return val.code === newVal.code && val.limit === newVal.limit;
-                                              } else {
-                                                  return val === newVal;
-                                              }
-                                          });
-                        
-                        if (!arraysEqual) {
-                            changedFields['eventPasscodes'] = value; // Use 'eventPasscodes' as the field name for backend
-                        }
+                    // Skip ownerInfo and internal fields
+                    if (key == 'ownerInfo' || key === 'selectedTicketClasses') {
                         continue;
                     }
 
@@ -1665,6 +1751,27 @@ export default {
                         changedFields[key] = value;
                     }
                 }
+
+                // Handle selectedTicketClasses separately - compare with existing ticketClassConfig
+                const currentConfig = (this.event.ticketClassConfig || []).filter(tc => tc.ticketClassId);
+                const newConfig = this.eventCopy.selectedTicketClasses || [];
+                
+                // Check if ticket classes have changed (IDs or eventLimits)
+                const ticketClassesChanged = () => {
+                    if (currentConfig.length !== newConfig.length) return true;
+                    
+                    for (const newTc of newConfig) {
+                        const existing = currentConfig.find(tc => tc.ticketClassId === newTc.ticketClassId);
+                        if (!existing) return true;
+                        if ((existing.eventLimit || 0) !== (newTc.eventLimit || 0)) return true;
+                    }
+                    return false;
+                };
+                
+                if (ticketClassesChanged()) {
+                    changedFields['selectedTicketClasses'] = newConfig;
+                }
+
                 // Check if there are any changes
                 if (Object.keys(changedFields).length == 0) {
                     toast.dismiss(toastId);
@@ -2087,34 +2194,6 @@ export default {
             return isValid;
         },
 
-        // Translate hardcoded passcodes to actual backend passcodes
-        translatePasscode(userPasscode) {
-            // Define the passcode translation mapping
-            const passcodeMap = {
-                'MERLION65': ['WLS2025SATVIP', 'WLS2025SUNVIP'], // Array for multiple codes
-                'RAFFLES18': 'WLS2025SATVIP',                    // String for single code
-                'CHANGI88': ['WLS2025SATCON', 'WLS2025SUNCON'],
-                'MACRITCHIE93': 'WLS2025SATCON',
-                'MACRITICHIE93': 'WLS2025SATCON',
-                'ESPLANADE12': 'WLS2025SUNVIP',
-                'PADANG90': 'WLS2025SUNCON'
-                // Add more hardcoded passcode mappings here as needed
-                // 'USER_FRIENDLY_CODE': 'ACTUAL_BACKEND_CODE'
-            };
-            
-            // Normalize the user passcode (uppercase, remove spaces)
-            const normalizedUserPasscode = userPasscode.toUpperCase().replace(/\s+/g, '');
-            
-            // Get the mapped value
-            const mapped = passcodeMap[normalizedUserPasscode];
-            
-            // Return array if mapped, otherwise return single-item array with original
-            if (mapped) {
-                return Array.isArray(mapped) ? mapped : [mapped];
-            }
-            return [userPasscode];
-        },
-
         // Submit attendee information and proceed with RSVP
         async submitAttendeeInfo() {
             if (!this.validateAttendeeInfo()) {
@@ -2128,8 +2207,8 @@ export default {
         // Updated RSVP function that includes attendee information
         rsvpEventWithInfo() {
             try {
-                // Translate hardcoded passcodes (returns array)
-                const translatedPasscodes = this.translatePasscode(this.attendeeInfo.passcode.trim());
+                // Send passcode directly - backend handles ticket class and event-specific passcode validation
+                const passcode = this.attendeeInfo.passcode ? this.attendeeInfo.passcode.trim() : '';
                 
                 const payload = {
                     eventID: this.event.id,
@@ -2139,7 +2218,7 @@ export default {
                     lastName: this.attendeeInfo.lastName.trim(),
                     phoneNumber: this.attendeeInfo.phoneNumber.trim(),
                     email: this.attendeeInfo.email.trim(),
-                    passcodes: translatedPasscodes  // Send array instead of single passcode
+                    passcode: passcode  // Send single passcode - backend handles validation
                 };
 
                 this.$axios.post(`${process.env.VUE_APP_API_URL}/events/addAttendee`, payload)
