@@ -340,11 +340,22 @@
                 <!--<div v-if="editMenuMode" class="col-2 d-grid px-1">
                 <button type="button" class="btn btn-warning rounded-0 reverse-clickable-text px-0"  @click="resetEditMenu"> Reset </button>
             </div-->
-                <div v-if="editMenuMode" class="col-3 d-grid px-1">
+                <div v-if="editMenuMode" class="col-2 d-grid px-1">
+                    <button type="button" class="btn btn-outline-info rounded-0 reverse-clickable-text px-0"
+                        data-bs-toggle="modal" data-bs-target="#menuHistoryModal" title="Menu History">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" 
+                             class="bi bi-clock-history" viewBox="0 0 16 16">
+                            <path d="M8.515 1.019A7 7 0 0 0 8 1V0a8 8 0 0 1 .589.022l-.074.997zm2.004.45a7.003 7.003 0 0 0-.985-.299l.219-.976c.383.086.76.2 1.126.342l-.36.933zm1.37.71a7.01 7.01 0 0 0-.439-.27l.493-.87a8.025 8.025 0 0 1 .979.654l-.615.789a6.996 6.996 0 0 0-.418-.302zm1.834 1.79a6.99 6.99 0 0 0-.653-.796l.724-.69c.27.285.52.59.747.91l-.818.576zm.744 1.352a7.08 7.08 0 0 0-.214-.468l.893-.45a7.976 7.976 0 0 1 .45 1.088l-.95.313a7.023 7.023 0 0 0-.179-.483zm.53 2.507a6.991 6.991 0 0 0-.1-1.025l.985-.17c.067.386.106.778.116 1.17l-1 .025zm-.131 1.538c.033-.17.06-.339.081-.51l.993.123a7.957 7.957 0 0 1-.23 1.155l-.964-.267c.046-.165.086-.332.12-.501zm-.952 2.379c.184-.29.346-.594.486-.908l.914.405c-.16.36-.345.706-.555 1.038l-.845-.535zm-.964 1.205c.122-.122.239-.248.35-.378l.758.653a8.073 8.073 0 0 1-.401.432l-.707-.707z"/>
+                            <path d="M8 1a7 7 0 1 0 4.95 11.95l.707.707A8.001 8.001 0 1 1 8 0v1z"/>
+                            <path d="M7.5 3a.5.5 0 0 1 .5.5v5.21l3.248 1.856a.5.5 0 0 1-.496.868l-3.5-2A.5.5 0 0 1 7 9V3.5a.5.5 0 0 1 .5-.5z"/>
+                        </svg>
+                    </button>
+                </div>
+                <div v-if="editMenuMode" class="col-2 d-grid px-1">
                     <button type="button" class="btn btn-success rounded-0 reverse-clickable-text px-0"
                         @click="updateMenu"> Save </button>
                 </div>
-                <div v-if="editMenuMode" class="col-3 d-grid px-1">
+                <div v-if="editMenuMode" class="col-2 d-grid px-1">
                     <button type="button" class="btn btn-danger rounded-0 reverse-clickable-text px-0"
                         @click="exitEditMode"> Exit </button>
                 </div>
@@ -392,16 +403,31 @@
                         class="btn primary-btn-outline-thick rounded-0 reverse-clickable-text px-0"
                         @click="addMenuSection"> Add Section </button>
                 </div>
-       
+
+                <!-- Menu History Button -->
                 <div v-if="editMenuMode" class="col-2 d-grid px-1">
+                    <button type="button"
+                        class="btn btn-info rounded-0 px-0"
+                        data-bs-toggle="modal" data-bs-target="#menuHistoryModal">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" 
+                             class="bi bi-clock-history me-1" viewBox="0 0 16 16">
+                            <path d="M8.515 1.019A7 7 0 0 0 8 1V0a8 8 0 0 1 .589.022l-.074.997zm2.004.45a7.003 7.003 0 0 0-.985-.299l.219-.976c.383.086.76.2 1.126.342l-.36.933zm1.37.71a7.01 7.01 0 0 0-.439-.27l.493-.87a8.025 8.025 0 0 1 .979.654l-.615.789a6.996 6.996 0 0 0-.418-.302zm1.834 1.79a6.99 6.99 0 0 0-.653-.796l.724-.69c.27.285.52.59.747.91l-.818.576zm.744 1.352a7.08 7.08 0 0 0-.214-.468l.893-.45a7.976 7.976 0 0 1 .45 1.088l-.95.313a7.023 7.023 0 0 0-.179-.483zm.53 2.507a6.991 6.991 0 0 0-.1-1.025l.985-.17c.067.386.106.778.116 1.17l-1 .025zm-.131 1.538c.033-.17.06-.339.081-.51l.993.123a7.957 7.957 0 0 1-.23 1.155l-.964-.267c.046-.165.086-.332.12-.501zm-.952 2.379c.184-.29.346-.594.486-.908l.914.405c-.16.36-.345.706-.555 1.038l-.845-.535zm-.964 1.205c.122-.122.239-.248.35-.378l.758.653a8.073 8.073 0 0 1-.401.432l-.707-.707z"/>
+                            <path d="M8 1a7 7 0 1 0 4.95 11.95l.707.707A8.001 8.001 0 1 1 8 0v1z"/>
+                            <path d="M7.5 3a.5.5 0 0 1 .5.5v5.21l3.248 1.856a.5.5 0 0 1-.496.868l-3.5-2A.5.5 0 0 1 7 9V3.5a.5.5 0 0 1 .5-.5z"/>
+                        </svg>
+                        History
+                    </button>
+                </div>
+       
+                <div v-if="editMenuMode" class="col-1 d-grid px-1">
                     <button type="button" class="btn btn-warning rounded-0 reverse-clickable-text px-0"
                         @click="resetEditMenu"> Reset </button>
                 </div>
-                <div v-if="editMenuMode" class="col-2 d-grid px-1">
+                <div v-if="editMenuMode" class="col-1 d-grid px-1">
                     <button type="button" class="btn btn-success rounded-0 reverse-clickable-text px-0"
                         @click="updateMenu"> Save </button>
                 </div>
-                <div v-if="editMenuMode" class="col-2 d-grid px-1">
+                <div v-if="editMenuMode" class="col-1 d-grid px-1">
                     <button type="button" class="btn btn-danger rounded-0 reverse-clickable-text px-0"
                         @click="exitEditMode"> Exit </button>
                 </div>
@@ -4227,6 +4253,15 @@
             </div>
         </div>
 
+    <!-- Menu History Modal -->
+    <MenuHistoryModal 
+        v-if="targetVenue?.id"
+        :venue-id="targetVenue.id"
+        :current-menu-sections="mainSections"
+        @restored="handleMenuHistoryRestore"
+        @restore-to-staged="handleRestoreToStaged"
+    />
+
 </template>
 
 <script>
@@ -4234,6 +4269,7 @@
 import { useToast } from 'vue-toastification';
 import draggable from 'vuedraggable';
 import { parseActionTag, getTagDisplayText, getTagColor } from '@/utils/tagUtils';
+import MenuHistoryModal from './venue_profile/MenuHistoryModal.vue';
 import { 
   PhBell,
   PhBellRinging
@@ -4244,7 +4280,8 @@ export default {
     components: {
         draggable,
         PhBell,
-        PhBellRinging
+        PhBellRinging,
+        MenuHistoryModal
     },
     props: {
         // Props passed from parent component
@@ -5225,10 +5262,10 @@ export default {
             this.currentTime = Date.now();
         }, 50); // Update every 50ms for smooth timing
 
-        // Enable edit button after 10 seconds
+        // Enable edit button after 1.5 seconds
         setTimeout(() => {
             this.editButtonDisabled = false;
-        }, 10000);
+        }, 1500);
 
         // Initialize auto-resize functionality for textareas
         this.$nextTick(() => {
@@ -5283,6 +5320,128 @@ export default {
     },
     methods: {
         
+        // Handle menu history restore event - refresh menu data
+        async handleMenuHistoryRestore() {
+            const toast = useToast();
+            toast.info('Menu restored! Refreshing menu data...');
+            
+            // Emit event to parent to reload menu data
+            this.$emit('refresh-menu');
+            
+            // Also close edit mode since menu structure may have changed
+            this.$emit('edit-menu-mode-changed', false);
+        },
+
+        // Handle restore-to-staged event from MenuHistoryModal
+        // This adds restored sections/items to the staged editableMainSections without saving to backend
+        handleRestoreToStaged(payload) {
+            console.log('🍽️ handleRestoreToStaged received:', payload);
+            
+            if (payload.type === 'sections') {
+                // Add restored sections to the end of editableMainSections
+                for (const section of payload.sections) {
+                    // Assign section order
+                    section.sectionOrder = this.editableMainSections.length;
+                    
+                    // Assign item orders within the section
+                    if (section.sectionMenu) {
+                        section.sectionMenu.forEach((item, index) => {
+                            item.itemOrder = index;
+                        });
+                    }
+                    
+                    // Assign subsection orders and item orders within subsections
+                    if (section.subsections) {
+                        section.subsections.forEach((sub, subIndex) => {
+                            sub.sectionOrder = subIndex;
+                            sub.parentSectionId = null; // Will be linked when saved
+                            if (sub.sectionMenu) {
+                                sub.sectionMenu.forEach((item, itemIndex) => {
+                                    item.itemOrder = itemIndex;
+                                });
+                            }
+                        });
+                    }
+                    
+                    this.editableMainSections.push(section);
+                    console.log('🍽️ Added restored section:', section.sectionName);
+                }
+            } else if (payload.type === 'items') {
+                // Add items to target section
+                const targetSection = this.findSectionById(payload.targetSectionId);
+                if (targetSection) {
+                    if (!targetSection.sectionMenu) {
+                        targetSection.sectionMenu = [];
+                    }
+                    
+                    for (const item of payload.items) {
+                        // Check for duplicates before adding
+                        const isDuplicate = targetSection.sectionMenu.some(existingItem => {
+                            const sameListingId = existingItem.itemID === item.itemID;
+                            const existingVintage = existingItem.itemVintage ?? existingItem.variant ?? -1;
+                            const newVintage = item.itemVintage ?? item.variant ?? -1;
+                            return sameListingId && existingVintage === newVintage;
+                        });
+                        
+                        if (!isDuplicate) {
+                            item.itemOrder = targetSection.sectionMenu.length;
+                            targetSection.sectionMenu.push(item);
+                            console.log('🍽️ Added restored item to section:', item.itemDetails?.itemName);
+                        } else {
+                            console.log('🍽️ Skipped duplicate item:', item.itemDetails?.itemName);
+                        }
+                    }
+                } else {
+                    console.warn('🍽️ Target section not found for item restore:', payload.targetSectionId);
+                }
+            } else if (payload.type === 'subsections') { 
+                // Add subsections to target parent section
+                const targetParent = this.findSectionById(payload.targetParentSectionId);
+                if (targetParent) {
+                    if (!targetParent.subsections) {
+                        targetParent.subsections = [];
+                    }
+                    
+                    for (const subsection of payload.subsections) {
+                        // Assign subsection order within parent
+                        subsection.sectionOrder = targetParent.subsections.length;
+                        subsection.parentSectionId = targetParent.id || targetParent.sectionOrder;
+                        subsection.isSubSection = true;
+                        
+                        // Ensure item orders are set
+                        if (subsection.sectionMenu) {
+                            subsection.sectionMenu.forEach((item, index) => {
+                                item.itemOrder = index;
+                            });
+                        }
+                        
+                        targetParent.subsections.push(subsection);
+                        console.log('🍽️ Added restored subsection to parent:', subsection.sectionName, '→', targetParent.sectionName);
+                    }
+                } else {
+                    console.warn('🍽️ Target parent section not found for subsection restore:', payload.targetParentSectionId);
+                }
+            }
+        },
+        
+        // Helper to find a section by ID (including subsections)
+        findSectionById(sectionId) {
+            for (const section of this.editableMainSections) {
+                if (section.id === sectionId) {
+                    return section;
+                }
+                // Check subsections
+                if (section.subsections) {
+                    for (const sub of section.subsections) {
+                        if (sub.id === sectionId) {
+                            return sub;
+                        }
+                    }
+                }
+            }
+            return null;
+        },
+
         // Calculate total item count for main sections (direct items + subsection items)
         getSectionItemCount(menuSection) {
             let count = 0;

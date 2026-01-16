@@ -441,7 +441,7 @@
                                 <div v-if="venues.length > 0">
                                   <div v-for="venue in venues" v-bind:key="venue.id">
                                     <router-link :to="{ path: '/profile/venue/' + venue.id + '/' + this.slugify(venue.venueName) }"
-                                      class="fw-bold pb-2 reverse-clickable-text text-color-black">
+                                      class="fw-bold pb-2 reverse-clickable-text xtext-color-black">
                                       <span class="location-icon">📍 </span>{{ venue.venueName }}
                                     </router-link>
                                     <div class="vintages-container">
@@ -3624,7 +3624,7 @@
                                 <div v-if="venues.length > 0">
                                   <div v-for="venue in venues" v-bind:key="venue.id">
                                     <router-link :to="{ path: '/profile/venue/' + venue.id + '/' + this.slugify(venue.venueName) }"
-                                      class="fw-bold pb-2 reverse-clickable-text text-color-black">
+                                      class="fw-bold pb-2 reverse-clickable-text xtext-color-black">
                                       <span class="location-icon">📍 </span>{{ venue.venueName }}
                                     </router-link>
                                     <div class="vintages-container">
