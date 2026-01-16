@@ -808,6 +808,7 @@ CREATE TABLE "menuItems" (
     "new" BOOLEAN,
     "staffPick" BOOLEAN,
     "itemPriceCurrency" VARCHAR(10) DEFAULT 'Tokens', -- newly added to support currency drop-down list
+    "houseNote" TEXT DEFAULT NULL, -- Optional venue-specific note about this item (e.g., "Exclusive barrel selection" or "Pairs well with...")
     "createdAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -2008,6 +2009,7 @@ CREATE TABLE "venueMenuItemSnapshots" (
     "new" BOOLEAN DEFAULT FALSE,
     "staffPick" BOOLEAN DEFAULT FALSE,
     "itemPriceCurrency" VARCHAR(10) DEFAULT 'Tokens',
+    "houseNote" TEXT DEFAULT NULL,  -- Venue-specific note (mirrors menuItems.houseNote)
     "createdAt" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 

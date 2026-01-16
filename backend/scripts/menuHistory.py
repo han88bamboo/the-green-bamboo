@@ -209,7 +209,8 @@ def create_or_update_menu_snapshot(cursor, venue_id: int) -> dict:
                 mi."itemServingType",
                 mi."variant",
                 mi."new",
-                mi."staffPick"
+                mi."staffPick",
+                mi."houseNote"
             FROM "menuItems" mi
             WHERE mi."sectionId" IN (
                 SELECT "id" FROM "venuesMenu" WHERE "venueId" = %s
@@ -233,8 +234,8 @@ def create_or_update_menu_snapshot(cursor, venue_id: int) -> dict:
                 INSERT INTO "venueMenuItemSnapshots"
                 ("versionSnapshotId", "sectionSnapshotId", "originalItemId", "originalSectionId",
                  "itemOrder", "itemPrice", "itemAvailability", "itemID", "itemServingType",
-                 "variant", "new", "staffPick", "itemPriceCurrency")
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                 "variant", "new", "staffPick", "itemPriceCurrency", "houseNote")
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                 ''',
                 (
                     version_id,
@@ -249,7 +250,8 @@ def create_or_update_menu_snapshot(cursor, venue_id: int) -> dict:
                     item['variant'],
                     item['new'],
                     item['staffPick'],
-                    item['itemPriceCurrency']
+                    item['itemPriceCurrency'],
+                    item['houseNote']
                 )
             )
             items_count += 1
@@ -499,7 +501,8 @@ def getSnapshotDetails():
                             'itemServingType': item['itemServingType'],  # Original integer ID (for restore)
                             'itemServingTypeName': item['itemServingTypeName'],  # Display name from JOIN (for UI)
                             'new': item['new'],
-                            'staffPick': item['staffPick']
+                            'staffPick': item['staffPick'],
+                            'houseNote': item['houseNote']  # Venue-specific note
                         })
             
             return jsonify({

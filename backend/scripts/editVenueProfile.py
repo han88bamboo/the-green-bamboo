@@ -1500,6 +1500,7 @@ def editMenuHierarchical():
                     item_new = item.get('new')
                     item_staff_pick = item.get('staffPick')
                     item_currency = item.get('itemPriceCurrency')
+                    item_house_note = item.get('houseNote')  # Optional venue-specific note
                     
                     # Handle vintage
                     item_vintage = item.get('itemVintage')
@@ -1536,11 +1537,12 @@ def editMenuHierarchical():
                                 "new" = %s,
                                 "staffPick" = %s,
                                 "itemPriceCurrency" = %s,
+                                "houseNote" = %s,
                                 "updatedAt" = CURRENT_TIMESTAMP
                             WHERE "id" = %s
                             ''',
                             (item_order, item_price, item_availability, item_serving_type, 
-                             item_vintage, item_new, item_staff_pick, item_currency, menu_item_id)
+                             item_vintage, item_new, item_staff_pick, item_currency, item_house_note, menu_item_id)
                         )
                     else:
                         # INSERT new item
@@ -1549,13 +1551,13 @@ def editMenuHierarchical():
                             INSERT INTO "menuItems" 
                             ("itemOrder", "itemPrice", "itemAvailability", "itemID", 
                              "itemServingType", "sectionId", "variant", "new", 
-                             "staffPick", "itemPriceCurrency")
-                            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                             "staffPick", "itemPriceCurrency", "houseNote")
+                            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                             RETURNING "id"
                             ''',
                             (item_order, item_price, item_availability, item_id, 
                              item_serving_type, section_db_id, item_vintage, item_new, 
-                             item_staff_pick, item_currency)
+                             item_staff_pick, item_currency, item_house_note)
                         )
                         menu_item_id = cursor.fetchone()['id']
                         

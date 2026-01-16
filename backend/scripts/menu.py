@@ -371,7 +371,7 @@ def getMenuItems(section_id):
                 lst."officialDesc", lst."originCountry", lst."typeCategory", lst."producerID",
                 p."producerName",
                 mi."itemPrice", mi."itemPriceCurrency", mi."itemAvailability", mi."new", mi."staffPick", mi."itemServingType", 
-                srvTyp."servingType", mi."variant",
+                srvTyp."servingType", mi."variant", mi."houseNote",
                 mi."createdAt", mi."updatedAt",
                 (SELECT AVG(r."rating") 
                 FROM "reviews" r 
@@ -428,6 +428,7 @@ def getMenuItems(section_id):
                         "servingTypeText": row['servingType'],
                         "itemPrice": float(row['itemPrice']) if row['itemPrice'] is not None else None,
                         "itemPriceCurrency": row['itemPriceCurrency'],
+                        "houseNote": row['houseNote'],
                         "topFlavorTags": row['topFlavorTags'],
                         "createdAt": row['createdAt'].isoformat() if row['createdAt'] else None,
                         "updatedAt": row['updatedAt'].isoformat() if row['updatedAt'] else None

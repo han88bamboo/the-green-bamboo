@@ -456,6 +456,15 @@
                                                 </div>
                                             </div>
                                             
+                                            <!-- House Note Info Icon (top-right) -->
+                                            <div v-if="sectionItem.houseNote" 
+                                                class="house-note-icon"
+                                                @click.stop="showHouseNote(sectionItem)">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="#0066cc" class="bi bi-info-circle-fill" viewBox="0 0 16 16">
+                                                    <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16m.93-9.412-1 4.705c-.07.34.029.533.304.533.194 0 .487-.07.686-.246l-.088.416c-.287.346-.92.598-1.465.598-.703 0-1.002-.422-.808-1.319l.738-3.468c.064-.293.006-.399-.287-.47l-.451-.081.082-.381 2.29-.287zM8 5.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2"/>
+                                                </svg>
+                                            </div>
+                                            
                                             <img 
                                                 :src="(sectionItem.itemDetails['itemPhoto'] || defaultPhoto)" 
                                                 :alt="sectionItem.itemDetails['itemName']"
@@ -559,6 +568,15 @@
                                                     <span class="notch-icon">♛</span>
                                                     <span class="notch-text">Staff Pick!</span>
                                                 </div>
+                                            </div>
+                                            
+                                            <!-- House Note Info Icon (top-right) -->
+                                            <div v-if="sectionItem.houseNote" 
+                                                class="house-note-icon"
+                                                @click.stop="showHouseNote(sectionItem)">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="#0066cc" class="bi bi-info-circle-fill" viewBox="0 0 16 16">
+                                                    <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16m.93-9.412-1 4.705c-.07.34.029.533.304.533.194 0 .487-.07.686-.246l-.088.416c-.287.346-.92.598-1.465.598-.703 0-1.002-.422-.808-1.319l.738-3.468c.064-.293.006-.399-.287-.47l-.451-.081.082-.381 2.29-.287zM8 5.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2"/>
+                                                </svg>
                                             </div>
                                             
                                             <img 
@@ -708,6 +726,15 @@
                                                         </div>
                                                     </div>
                                                     
+                                                    <!-- House Note Info Icon (top-right) -->
+                                                    <div v-if="subsectionItem.houseNote" 
+                                                        class="house-note-icon"
+                                                        @click.stop="showHouseNote(subsectionItem)">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="#0066cc" class="bi bi-info-circle-fill" viewBox="0 0 16 16">
+                                                            <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16m.93-9.412-1 4.705c-.07.34.029.533.304.533.194 0 .487-.07.686-.246l-.088.416c-.287.346-.92.598-1.465.598-.703 0-1.002-.422-.808-1.319l.738-3.468c.064-.293.006-.399-.287-.47l-.451-.081.082-.381 2.29-.287zM8 5.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2"/>
+                                                        </svg>
+                                                    </div>
+                                                    
                                                     <img 
                                                         :src="(subsectionItem.itemDetails['itemPhoto'] || defaultPhoto)" 
                                                         :alt="subsectionItem.itemDetails['itemName']"
@@ -804,6 +831,15 @@
                                                             <span class="notch-icon">♛</span>
                                                             <span class="notch-text">Staff Pick!</span>
                                                         </div>
+                                                    </div>
+                                                    
+                                                    <!-- House Note Info Icon (top-right) -->
+                                                    <div v-if="subsectionItem.houseNote" 
+                                                        class="house-note-icon"
+                                                        @click.stop="showHouseNote(subsectionItem)">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="#0066cc" class="bi bi-info-circle-fill" viewBox="0 0 16 16">
+                                                            <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16m.93-9.412-1 4.705c-.07.34.029.533.304.533.194 0 .487-.07.686-.246l-.088.416c-.287.346-.92.598-1.465.598-.703 0-1.002-.422-.808-1.319l.738-3.468c.064-.293.006-.399-.287-.47l-.451-.081.082-.381 2.29-.287zM8 5.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2"/>
+                                                        </svg>
                                                     </div>
                                                     
                                                     <img 
@@ -1275,6 +1311,23 @@
                                                     </div>
                                                 </div>
                                             </div>
+                                            <!-- House Note for mobile direct items -->
+                                            <div class="row mobile-view-show mt-2">
+                                                <div class="col-12 ps-0">
+                                                    <div class="input-group">
+                                                        <span class="input-group-text p-1">
+                                                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="bi bi-journal-text" viewBox="0 0 16 16">
+                                                                <path d="M5 10.5a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5m0-2a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5m0-2a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5m0-2a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5"/>
+                                                                <path d="M3 0h10a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2v-1h1v1a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H3a1 1 0 0 0-1 1v1H1V2a2 2 0 0 1 2-2"/>
+                                                                <path d="M1 5v-.5a.5.5 0 0 1 1 0V5h.5a.5.5 0 0 1 0 1h-2a.5.5 0 0 1 0-1zm0 3v-.5a.5.5 0 0 1 1 0V8h.5a.5.5 0 0 1 0 1h-2a.5.5 0 0 1 0-1zm0 3v-.5a.5.5 0 0 1 1 0v.5h.5a.5.5 0 0 1 0 1h-2a.5.5 0 0 1 0-1z"/>
+                                                            </svg>
+                                                        </span>
+                                                        <textarea class="form-control p-1" rows="2" style="font-size: 0.85rem;"
+                                                            v-model="menuItem.houseNote"
+                                                            placeholder="Add a house note on what makes this item special (optional)"></textarea>
+                                                    </div>
+                                                </div>
+                                            </div>
                                             
                                             <!-- Desktop view for direct items -->
                                             <div class="row mobile-view-hide">
@@ -1358,19 +1411,39 @@
 
 
                                                         </div>
-                                                        <div class="col-3">
-                                                            <div class="input-group">
-                                                                <span class="input-group-text fw-bold">$</span>
-                                                                <input type="number" class="form-control" v-model="menuItem.itemPrice" placeholder="-" min="0" step="0.01">
+                                                        <div class="col-8">
+                                                            <div class="row">   
+                                                                <div class="col-3">
+                                                                    <div class="input-group">
+                                                                        <span class="input-group-text fw-bold">$</span>
+                                                                        <input type="number" class="form-control" v-model="menuItem.itemPrice" placeholder="-" min="0" step="0.01">
+                                                                    </div>
+                                                                </div>
+                                                                <div class="col-5">
+                                                                    <div class="input-group">
+                                                                        <span class="input-group-text fw-bold">/</span>
+                                                                        <select class="form-select" v-model="menuItem.itemServingType">
+                                                                            <option v-for="servingType in servingTypes" :key="servingType.id" :value="servingType.id">{{ servingType.servingType }}</option>
+                                                                        </select>
+                                                                    </div>
+                                                                </div>
                                                             </div>
-                                                        </div>
-                                                        <div class="col-5">
-                                                            <div class="input-group">
-                                                                <span class="input-group-text fw-bold">/</span>
-                                                                <select class="form-select" v-model="menuItem.itemServingType">
-                                                                    <option v-for="servingType in servingTypes" :key="servingType.id" :value="servingType.id">{{ servingType.servingType }}</option>
-                                                                </select>
-                                                            </div>
+                                                            <div class="row mt-2">
+                                                                <div class="col-8">
+                                                                    <div class="input-group">
+                                                                        <span class="input-group-text">
+                                                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-journal-text" viewBox="0 0 16 16">
+                                                                                <path d="M5 10.5a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5m0-2a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5m0-2a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5m0-2a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5"/>
+                                                                                <path d="M3 0h10a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2v-1h1v1a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H3a1 1 0 0 0-1 1v1H1V2a2 2 0 0 1 2-2"/>
+                                                                                <path d="M1 5v-.5a.5.5 0 0 1 1 0V5h.5a.5.5 0 0 1 0 1h-2a.5.5 0 0 1 0-1zm0 3v-.5a.5.5 0 0 1 1 0V8h.5a.5.5 0 0 1 0 1h-2a.5.5 0 0 1 0-1zm0 3v-.5a.5.5 0 0 1 1 0v.5h.5a.5.5 0 0 1 0 1h-2a.5.5 0 0 1 0-1z"/>
+                                                                            </svg>
+                                                                        </span>
+                                                                        <textarea class="form-control" rows="2"
+                                                                            v-model="menuItem.houseNote"
+                                                                            placeholder="Add a house note on what makes this item special (optional)"></textarea>
+                                                                    </div>
+                                                                </div>    
+                                                            </div>    
                                                         </div>
                                                     </div>
                                                     
@@ -1717,6 +1790,23 @@
                                                         </div>
                                                     </div>
                                                 </div>
+                                                <!-- House Note for mobile subsection items -->
+                                                <div class="row mobile-view-show mt-2">
+                                                    <div class="col-12 ps-0">
+                                                        <div class="input-group">
+                                                            <span class="input-group-text p-1">
+                                                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="bi bi-journal-text" viewBox="0 0 16 16">
+                                                                    <path d="M5 10.5a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5m0-2a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5m0-2a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5m0-2a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5"/>
+                                                                    <path d="M3 0h10a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2v-1h1v1a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H3a1 1 0 0 0-1 1v1H1V2a2 2 0 0 1 2-2"/>
+                                                                    <path d="M1 5v-.5a.5.5 0 0 1 1 0V5h.5a.5.5 0 0 1 0 1h-2a.5.5 0 0 1 0-1zm0 3v-.5a.5.5 0 0 1 1 0V8h.5a.5.5 0 0 1 0 1h-2a.5.5 0 0 1 0-1zm0 3v-.5a.5.5 0 0 1 1 0v.5h.5a.5.5 0 0 1 0 1h-2a.5.5 0 0 1 0-1z"/>
+                                                                </svg>
+                                                            </span>
+                                                            <textarea class="form-control p-1" rows="2" style="font-size: 0.85rem;"
+                                                                v-model="menuItem.houseNote"
+                                                                placeholder="Add a house note on what makes this item special (optional)"></textarea>
+                                                        </div>
+                                                    </div>
+                                                </div>
                                                 
                                                 <div class="row mobile-view-hide">
 
@@ -1872,36 +1962,56 @@
                                                                     </label>
                                                                 </div>
                                                             </div>
+                                                            <div class="col-8">
+                                                                <div class="row">
+                                                                <!-- Edit Item Price -->
+                                                                <div class="col-3">
+                                                                    <div class="input-group">
+                                                                        <span
+                                                                            class="input-group-text fw-bold">$</span>
+                                                                        <input type="number" class="form-control"
+                                                                            v-model="menuItem.itemPrice"
+                                                                            placeholder="-" min="0" step="0.01">
+                                                                    </div>
+                                                                </div>
 
-                                                            <!-- Edit Item Price -->
-                                                            <div class="col-3">
-                                                                <div class="input-group">
-                                                                    <span
-                                                                        class="input-group-text fw-bold">$</span>
-                                                                    <input type="number" class="form-control"
-                                                                        v-model="menuItem.itemPrice"
-                                                                        placeholder="-" min="0" step="0.01">
+                                                                <!-- Edit Item Serving Type -->
+                                                                <div class="col-5">
+                                                                    <div class="input-group">
+                                                                        <span
+                                                                            class="input-group-text fw-bold">/</span>
+                                                                        <select class="form-select"
+                                                                            v-model="menuItem.itemServingType">
+                                                                            <option
+                                                                                v-for="servingType in servingTypes"
+                                                                                :key="servingType.id"
+                                                                                :value="servingType.id">{{
+                                                                                servingType.servingType }}</option>
+                                                                        </select>
+                                                                    </div>
+                                                                </div>
+                                                                </div>
+                                                                <div class="row">
+                                                                    <!-- House Note for desktop subsection items -->
+                                                                    <div class="col-8">
+                                                                        <div class="input-group ">
+                                                                            <span class="input-group-text">
+                                                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-journal-text" viewBox="0 0 16 16">
+                                                                                    <path d="M5 10.5a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5m0-2a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5m0-2a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5m0-2a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5"/>
+                                                                                    <path d="M3 0h10a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2v-1h1v1a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H3a1 1 0 0 0-1 1v1H1V2a2 2 0 0 1 2-2"/>
+                                                                                    <path d="M1 5v-.5a.5.5 0 0 1 1 0V5h.5a.5.5 0 0 1 0 1h-2a.5.5 0 0 1 0-1zm0 3v-.5a.5.5 0 0 1 1 0V8h.5a.5.5 0 0 1 0 1h-2a.5.5 0 0 1 0-1zm0 3v-.5a.5.5 0 0 1 1 0v.5h.5a.5.5 0 0 1 0 1h-2a.5.5 0 0 1 0-1z"/>
+                                                                                </svg>
+                                                                            </span>
+                                                                            <textarea class="form-control" rows="2"
+                                                                                v-model="menuItem.houseNote"
+                                                                                placeholder="Add a house note on what makes this item special (optional)"></textarea>
+                                                                        </div>
+                                                                    </div>
                                                                 </div>
                                                             </div>
-
-                                                            <!-- Edit Item Serving Type -->
-                                                            <div class="col-5">
-                                                                <div class="input-group">
-                                                                    <span
-                                                                        class="input-group-text fw-bold">/</span>
-                                                                    <select class="form-select"
-                                                                        v-model="menuItem.itemServingType">
-                                                                        <option
-                                                                            v-for="servingType in servingTypes"
-                                                                            :key="servingType.id"
-                                                                            :value="servingType.id">{{
-                                                                            servingType.servingType }}</option>
-                                                                    </select>
-                                                                </div>
-                                                            </div>
-
                                                         
                                                         </div>
+
 
                                                         <!-- ------- END Item Menu Details ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
 
@@ -2533,6 +2643,60 @@
 
         <!-- ------- END Jump to Section Feature ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
         
+        <!-- ------- START House Note Feature ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
+        
+        <!-- House Note Floating Pill Button (Always visible when menu has items with houseNotes) -->
+        <div 
+            v-if="hasAnyHouseNotes && !editMenuMode"
+            class="house-note-floating-pill"
+            :class="{ 'expanded': selectedHouseNote }">
+            <div class="pill-content">
+               
+                <span v-if="!selectedHouseNote" class="pill-text-default">
+                    Hit the <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="bi bi-info-circle-fill pill-icon" viewBox="0 0 16 16">
+                    <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16m.93-9.412-1 4.705c-.07.34.029.533.304.533.194 0 .487-.07.686-.246l-.088.416c-.287.346-.92.598-1.465.598-.703 0-1.002-.422-.808-1.319l.738-3.468c.064-.293.006-.399-.287-.47l-.451-.081.082-.381 2.29-.287zM8 5.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2"/>
+                </svg> icon to see an item's house note
+                </span>
+                <span v-else class="pill-text-expanded">
+                    <strong>{{ selectedHouseNote.itemName }}</strong>
+                    <span class="pill-note"><strong>House Notes:</strong> {{ selectedHouseNote.houseNote }}</span>
+                </span>
+                <button v-if="selectedHouseNote" @click="clearHouseNote" class="pill-close" aria-label="Close">×</button>
+            </div>
+        </div>
+
+        <!-- House Note Mobile Bottom Sheet Backdrop -->
+        <div 
+            v-if="showMobileHouseNoteSheet"
+            class="house-note-backdrop mobile-view-show"
+            @click="closeMobileHouseNoteSheet"></div>
+
+        <!-- House Note Mobile Bottom Sheet -->
+        <div 
+            class="house-note-sheet mobile-view-show"
+            :class="{ 'open': showMobileHouseNoteSheet }">
+            
+            <!-- Sheet Handle Bar -->
+            <div class="house-note-sheet-handle" @click="closeMobileHouseNoteSheet">
+                <div class="handle-bar"></div>
+            </div>
+            
+            <!-- Sheet Content -->
+            <div class="house-note-sheet-content" v-if="selectedHouseNote">
+                <div class="house-note-sheet-header">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#0066cc" class="bi bi-info-circle-fill" viewBox="0 0 16 16">
+                        <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16m.93-9.412-1 4.705c-.07.34.029.533.304.533.194 0 .487-.07.686-.246l-.088.416c-.287.346-.92.598-1.465.598-.703 0-1.002-.422-.808-1.319l.738-3.468c.064-.293.006-.399-.287-.47l-.451-.081.082-.381 2.29-.287zM8 5.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2"/>
+                    </svg>
+                    <h5 class="house-note-item-name">{{ selectedHouseNote.itemName }}</h5>
+                    <button @click="closeMobileHouseNoteSheet" class="house-note-sheet-close" aria-label="Close">×</button>
+                </div>
+                <div class="house-note-sheet-body">
+                    <p class="house-note-text"><strong>House Notes:</strong> {{ selectedHouseNote.houseNote }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- ------- END House Note Feature ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
 
     </div>
 
@@ -2654,6 +2818,24 @@ export default {
             };
             countItems(this.editableMainSections);
             return count;
+        },
+
+        // Check if any menu item has a houseNote (for showing floating pill)
+        hasAnyHouseNotes() {
+            const checkForHouseNotes = (sections) => {
+                for (const section of sections) {
+                    if (section.sectionMenu) {
+                        for (const item of section.sectionMenu) {
+                            if (item.houseNote) return true;
+                        }
+                    }
+                    if (section.subsections && checkForHouseNotes(section.subsections)) {
+                        return true;
+                    }
+                }
+                return false;
+            };
+            return checkForHouseNotes(this.searchMenuResults || []);
         },
 
         // Get the appropriate menu items count to display
@@ -3023,6 +3205,10 @@ export default {
             newItemsFromAPI: [], // New items loaded from /getVenueNewItems endpoint
             loadingNewItems: false, // Track loading state for new items
 
+            // House Note Feature
+            selectedHouseNote: null, // { itemName: '', houseNote: '', itemID: null }
+            showMobileHouseNoteSheet: false, // Controls mobile bottom sheet visibility
+
         }
     },
     watch: {
@@ -3385,6 +3571,42 @@ export default {
             console.log('🔵 Jump to Sheet: Closing sheet');
             this.showJumpToSheet = false;
             // Restore background scroll
+            document.body.style.overflow = '';
+        },
+
+        // ------- House Note Feature Methods -------
+        
+        // Show house note when (i) icon is clicked
+        showHouseNote(item) {
+            const itemName = item.itemDetails?.itemName || item.itemName || 'Unknown Item';
+            const houseNote = item.houseNote;
+            const itemID = item.itemID;
+            
+            // Set the selected house note
+            this.selectedHouseNote = {
+                itemName: itemName,
+                houseNote: houseNote,
+                itemID: itemID
+            };
+            
+            // Check if mobile (< 992px)
+            if (window.innerWidth < 992) {
+                // Mobile: show bottom sheet
+                this.showMobileHouseNoteSheet = true;
+                document.body.style.overflow = 'hidden';
+            }
+            // Desktop: pill auto-expands via CSS/reactive binding
+        },
+        
+        // Clear the selected house note (desktop pill close button)
+        clearHouseNote() {
+            this.selectedHouseNote = null;
+        },
+        
+        // Close mobile house note bottom sheet
+        closeMobileHouseNoteSheet() {
+            this.showMobileHouseNoteSheet = false;
+            this.selectedHouseNote = null;
             document.body.style.overflow = '';
         },
 
@@ -6049,7 +6271,8 @@ export default {
                             itemAvailability: item.itemAvailability !== undefined ? item.itemAvailability : true,
                             new: item.new !== undefined ? item.new : false,
                             staffPick: item.staffPick !== undefined ? item.staffPick : false,
-                            itemServingType: item.itemServingType || item.servingTypeID || null
+                            itemServingType: item.itemServingType || item.servingTypeID || null,
+                            houseNote: item.houseNote || null  // Include house note
                         };
                         
                         // Remove UI-specific properties if they exist
@@ -9132,7 +9355,7 @@ button[aria-expanded="true"] .collapse-indicator {
 /* Mobile responsiveness adjustments */
 @media (max-width: 767px) {
   .jump-to-floating-btn {
-    bottom: 15px;
+    bottom: 80px;
     right: 15px;
     padding: 10px 16px;
     font-size: 13px;
@@ -9321,5 +9544,233 @@ button[aria-expanded="true"] .collapse-indicator {
 }
 
 /* ------- END New Items Card Styling ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ */
+
+/* ------- START House Note Feature Styles ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ */
+
+/* House Note Info Icon - positioned top-right of image */
+.house-note-icon {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  z-index: 10;
+  cursor: pointer;
+  background: white;
+  border-radius: 50%;
+  padding: 3px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.house-note-icon:hover {
+  transform: scale(1.1);
+  box-shadow: 0 3px 10px rgba(0, 102, 204, 0.4);
+}
+
+/* Floating Pill Button - Desktop and Mobile */
+.house-note-floating-pill {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 998;
+  background: linear-gradient(135deg, #007bff, #0056b3);
+  color: white;
+  border-radius: 25px;
+  padding: 12px 20px;
+  box-shadow: 0 4px 15px rgba(0, 102, 204, 0.4);
+  transition: all 0.3s ease;
+  max-width: 350px;
+}
+
+.house-note-floating-pill.expanded {
+  max-width: 400px;
+  border-radius: 16px;
+}
+
+.pill-content {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.pill-icon {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.pill-text-default {
+  /* font-size: 14px; */
+  white-space: nowrap;
+}
+
+.pill-icon-hint {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  font-size: 12px;
+  font-weight: bold;
+  margin: 0 2px;
+}
+
+.pill-text-expanded {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  /* font-size: 14px; */
+  line-height: 1.4;
+}
+
+.pill-text-expanded strong {
+  font-size: 15px;
+}
+
+.pill-note {
+  opacity: 0.95;
+  /* font-size: 13px; */
+}
+
+.pill-close {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0 0 0 8px;
+  opacity: 0.8;
+  transition: opacity 0.2s;
+  flex-shrink: 0;
+}
+
+.pill-close:hover {
+  opacity: 1;
+}
+
+/* Mobile adjustments for floating pill */
+@media (max-width: 991px) {
+  .house-note-floating-pill {
+    bottom: 25px; /* Position above the jump-to-section button */
+    right: 15px;
+    padding: 10px 16px;
+    max-width: 350px;
+    /* Hide pill on mobile - use bottom sheet instead */
+  }
+}
+
+/* House Note Mobile Bottom Sheet */
+.house-note-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1040;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+}
+
+.house-note-backdrop.mobile-view-show {
+  opacity: 1;
+  visibility: visible;
+}
+
+.house-note-sheet {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 1050;
+  background: white;
+  border-radius: 20px 20px 0 0;
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.2);
+  transform: translateY(100%);
+  transition: transform 0.3s ease;
+  max-height: 50vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.house-note-sheet.open {
+  transform: translateY(0);
+}
+
+.house-note-sheet-handle {
+  padding: 12px 0;
+  text-align: center;
+  cursor: pointer;
+}
+
+.house-note-sheet-handle .handle-bar {
+  width: 40px;
+  height: 4px;
+  background: #ccc;
+  border-radius: 2px;
+  margin: 0 auto;
+}
+
+.house-note-sheet-content {
+  padding: 0 20px 24px;
+  overflow-y: auto;
+}
+
+.house-note-sheet-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #eee;
+  margin-bottom: 16px;
+}
+
+.house-note-item-name {
+  flex: 1;
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+.house-note-sheet-close {
+  background: none;
+  border: none;
+  font-size: 28px;
+  line-height: 1;
+  color: #999;
+  cursor: pointer;
+  padding: 0;
+}
+
+.house-note-sheet-close:hover {
+  color: #666;
+}
+
+.house-note-sheet-body {
+  padding: 0;
+}
+
+.house-note-text {
+  font-size: 16px;
+  line-height: 1.6;
+  color: #444;
+  margin: 0;
+}
+
+/* Hide mobile bottom sheet elements on desktop */
+@media (min-width: 992px) {
+  .house-note-backdrop,
+  .house-note-sheet {
+    display: none !important;
+  }
+}
+
+/* ------- END House Note Feature Styles ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ */
 
 </style>
