@@ -1005,7 +1005,8 @@
                     @click="showMobileBlueBox = false; isLoggedIn ? (supportsSpecialVariants ? prepareNewReview() : null, handleReviewClick()) : $router.push('/login')" 
                     class="redbox-link pt-2 pb-0"
                   >
-                    {{ rateButtonText }}
+                    <span v-if="hoverRating">Rate {{ hoverRating }}/10</span>
+                    <span v-else>{{ rateButtonText }}</span>
                   </button>
                   <button v-else class="redbox-link pt-2 pb-0">
                     You Rated
