@@ -73,7 +73,7 @@
 
   <!-- Main Content -->
   <div v-if="dataLoaded" class="userprofile">
-    <div class="row col-11 mobile-spacer my-4 mobile-my-2">
+    <div class="container text-start mt-4">
       <div class="col-12 col-md-10 mx-auto px-2">
         <div class="row">
           <!-- Stories Column (left) -->
