@@ -424,7 +424,7 @@
                 <div class="col-5 mobile-view-hide">
                   <!-- [if] user type is producer / admin -->
                   <span v-if="correctProducer || isAdmin" class="row">
-                    <!-- add listing-->
+                    <!-- add listing
                     <div
                       v-if="correctProducer && editing == false"
                       class="col d-grid no-padding"
@@ -436,7 +436,7 @@
                       >
                         Add Listing
                       </button>
-                    </div>
+                    </div>-->
                     <!-- edit profile -->
                     <div class="col d-grid">
                       <!-- [if] not editing -->
@@ -734,51 +734,56 @@
 
           <!-- Buttons (5 columns desktop, full width mobile) -->
           <div class="col-12 col-lg-5 d-flex flex-row gap-2 align-items-center">
+            <div class="row">
+              <!-- Follow Button -->
+              <div class="col-5 pe-0">
+              <button
+                v-if="!following"
+                class="btn btn-lg primary-btn-less-round-blue text-nowrap mobile-rating-smaller-text-2"
+                @click="editFollow('follow')"
+                style="font-weight: bold; height: fit-content;"
+              >
+                Follow
+              </button>
+              <button
+                v-else
+                class="btn btn-lg primary-btn-less-round-blue text-nowrap mobile-rating-smaller-text-2"
+                @click="editFollow('unfollow')"
+                style="font-weight: bold; background-color: rgb(249, 115, 106); height: fit-content;"
+              >
+                Following
+              </button>
+              </div>
+              <!-- Review Button -->
+               <div class="col-7">
+              <button
+                v-if="userType === 'user' && user_id !== 'defaultUser' && !inEdit"
+                class="btn btn-lg primary-btn-less-round-blue text-nowrap mobile-rating-smaller-text-2"
+                data-bs-toggle="modal"
+                data-bs-target="#reviewModal"
+                style="font-weight: bold; height: fit-content;"
+              >
+                Review Producer
+              </button>
 
-            <!-- Follow Button -->
-            <button
-              v-if="!following"
-              class="btn btn-lg primary-btn-less-round-blue text-nowrap mobile-rating-smaller-text-2"
-              @click="editFollow('follow')"
-              style="font-weight: bold; height: fit-content;"
-            >
-              + Follow
-            </button>
-            <button
-              v-else
-              class="btn btn-lg primary-btn-less-round-blue text-nowrap mobile-rating-smaller-text-2"
-              @click="editFollow('unfollow')"
-              style="font-weight: bold; background-color: rgb(249, 115, 106); height: fit-content;"
-            >
-              Following
-            </button>
+              <button
+                v-else-if="inEdit"
+                class="btn btn-lg primary-btn-less-round-blue text-nowrap mobile-rating-smaller-text-2"
+                style="font-weight: bold; background-color: rgb(249, 115, 106); height: fit-content;"
+              >
+                Reviewed!
+              </button>
+              <button
+                v-else
+                class="btn btn-lg primary-btn-less-round-blue text-nowrap mobile-rating-smaller-text-2"
+                style="font-weight: bold; height: fit-content;"
+                @click="$router.push('/login')"
+              >
+                Review Producer
+              </button>
+              </div>
+            </div>
 
-            <!-- Review Button -->
-            <button
-              v-if="userType === 'user' && user_id !== 'defaultUser' && !inEdit"
-              class="btn btn-lg primary-btn-less-round-blue text-nowrap mobile-rating-smaller-text-2"
-              data-bs-toggle="modal"
-              data-bs-target="#reviewModal"
-              style="font-weight: bold; height: fit-content;"
-            >
-              Review Producer
-            </button>
-
-            <button
-              v-else-if="inEdit"
-              class="btn btn-lg primary-btn-less-round-blue text-nowrap mobile-rating-smaller-text-2"
-              style="font-weight: bold; background-color: rgb(249, 115, 106); height: fit-content;"
-            >
-              Reviewed!
-            </button>
-            <button
-              v-else
-              class="btn btn-lg primary-btn-less-round-blue text-nowrap mobile-rating-smaller-text-2"
-              style="font-weight: bold; height: fit-content;"
-              @click="$router.push('/login')"
-            >
-              Review Producer
-            </button>
           </div>
         </div>
 
@@ -2463,7 +2468,7 @@
                           </router-link>
                         </button>
                       </div>
-                      <!-- delete listing -->
+                      <!-- delete listing 
                       <div class="col-1">
                         <button
                           v-if="deletingListing"
@@ -2495,7 +2500,7 @@
                             </svg>
                           </a>
                         </button>
-                      </div>
+                      </div>-->
                     </div>
                   </div>
                   <!-- details -->
