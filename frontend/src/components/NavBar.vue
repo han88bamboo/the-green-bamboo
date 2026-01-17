@@ -288,7 +288,7 @@
                     <router-link :to="'/best-of'" class="dropdown-item">Best Of</router-link>
                   </li>
                   <li>
-                    <router-link :to="'/assemblies'" class="dropdown-item">Assemblies</router-link>
+                    <router-link :to="'/assemblies'" class="dropdown-item">Assembly</router-link>
                   </li>
                   <li>
                     <router-link :to="'/stories/topics'" class="dropdown-item">All Topics</router-link>
@@ -397,7 +397,7 @@
                 <li v-show="showExplore" class="text-start"><router-link to="/best-of"
                     style="text-decoration: none; font-weight:normal">Best Of</router-link></li>
                 <li v-show="showExplore" class="text-start"><router-link to="/assemblies"
-                    style="text-decoration: none; font-weight:normal">Assemblies</router-link></li>
+                    style="text-decoration: none; font-weight:normal">Assembly</router-link></li>
                 <li v-show="showExplore" class="text-start"><router-link to="/latest-news"
                     style="text-decoration: none; font-weight:normal">Latest News</router-link></li>
                 
@@ -594,7 +594,7 @@
         </router-link>
         <router-link :to="'/assemblies'">
           <button class="btn primary-btn border-0 fw-bold" type="button">
-            Assemblies
+            Assembly
           </button>
         </router-link>
 
