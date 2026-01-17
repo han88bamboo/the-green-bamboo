@@ -300,7 +300,8 @@
                                 <input type="text" class="form-control" 
                                        v-model="form['tags']" 
                                        id="tags" 
-                                       placeholder="#whiskyliveparis, #sakefestivalosaka">
+                                       placeholder="#whiskyliveparis, #sakefestivalosaka"
+                                       @keydown.enter.prevent>
                             </div>
                             
                             <!-- Input: Order -->
@@ -375,7 +376,8 @@
                                        autocomplete="off" 
                                        placeholder="Enter Producer Name" 
                                        @input="handleProducerInput"
-                                       @blur="hideProducerDropdown">
+                                       @blur="hideProducerDropdown"
+                                       @keydown.enter.prevent>
 
                                 <!-- Producer ID Search Input -->
                                 <input v-if="searchByProducerId"
@@ -384,7 +386,8 @@
                                        autocomplete="off" 
                                        placeholder="Enter Producer ID number" 
                                        @input="handleProducerIdInput"
-                                       @blur="hideProducerIdDropdown">
+                                       @blur="hideProducerIdDropdown"
+                                       @keydown.enter.prevent>
 
                                 <!-- Toggle Button -->
                                 <button type="button" 
@@ -485,7 +488,8 @@
                                    autocomplete="off" 
                                    placeholder="Enter Bottler Name" 
                                    @input="handleBottlerInput"
-                                   @blur="hideBottlerDropdown">
+                                   @blur="hideBottlerDropdown"
+                                   @keydown.enter.prevent>
 
                             <!-- Dropdown list with drawer styling -->
                             <ul class="list-group"
@@ -516,7 +520,7 @@
                         <!-- Input: Bottle Name -->
                         <div class="form-group mb-3">
                             <p class="text-start mb-1 "><span class="fw-bold">Drink Name / Name of Bottle, Cocktail or Item </span><span class="text-danger fw-bold">*</span> <span class="text-muted" style="font-size: 14px;">(Include any identification numbers eg. cask, batch, serial, barrel, edition numbers; do NOT include vintage year for wines.)</span></p>
-                            <input type="text" v-model="form['listingName']" class="form-control" id="bottleName" placeholder="Enter Drink/Bottle Name">
+                            <input type="text" v-model="form['listingName']" class="form-control" id="bottleName" placeholder="Enter Drink/Bottle Name" @keydown.enter.prevent>
                         </div>
 
                         <!-- Input: drinkType (eg. Whiskey) + typeCategory (eg. Single Malt) -->
@@ -585,8 +589,8 @@
                                     type="text" 
                                     class="form-control" 
                                     v-model="varietyTagInput"
-                                    @keyup.enter="addVarietyTag"
-                                    placeholder="Type a variety tag and click +"
+                                    @keydown.enter.prevent="addVarietyTag"
+                                    placeholder="Type a variety tag and click + or hit 'Enter'"
                                     maxlength="20"
                                 >
                                 <button 
@@ -691,13 +695,13 @@
                         <!-- Input: Link to website or source (optional for actual listing, mandatory for request) -->
                         <div v-if="formType == 'power'"  class="form-group mb-3">
                             <p class="text-start mb-1">Link to website or source </p> <!--<span class="text-danger" v-if="formType == 'req'">*</span>-->
-                            <input type="text" class="form-control" v-model="form['sourceLink']" id="sourceLink" placeholder="Enter source link">
+                            <input type="text" class="form-control" v-model="form['sourceLink']" id="sourceLink" placeholder="Enter source link" @keydown.enter.prevent>
                         </div>
 
                         <!-- Input: Link to 88 Bamboo review -->
                         <div v-if="formType == 'power'"  class="form-group mb-3">
                             <p class="text-start mb-1">Link to 88 Bamboo review</p>
-                            <input type="text" class="form-control" v-model="form['reviewLink']" id="reviewLink" placeholder="Enter review link">
+                            <input type="text" class="form-control" v-model="form['reviewLink']" id="reviewLink" placeholder="Enter review link" @keydown.enter.prevent>
                         </div>
 
                         <!-- Input: Photo file -->

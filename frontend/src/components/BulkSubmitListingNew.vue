@@ -304,7 +304,8 @@
                                 <input type="text" class="form-control" 
                                        v-model="form['tags']" 
                                        id="tags" 
-                                       placeholder="#whiskyliveparis, #sakefestivalosaka">
+                                       placeholder="#whiskyliveparis, #sakefestivalosaka"
+                                       @keydown.enter.prevent>
                             </div>
                             
                             <!-- Input: Order -->
@@ -390,7 +391,8 @@
                                        @input="handleProducerInput(null)"
                                        @blur="hideProducerDropdown(null)"
                                        :disabled="duplicateDetection.isConfirmed"
-                                       :class="{ 'duplicate-confirmed-field': duplicateDetection.isConfirmed }">
+                                       :class="{ 'duplicate-confirmed-field': duplicateDetection.isConfirmed }"
+                                       @keydown.enter.prevent>
 
                                 <!-- Producer ID Search Input -->
                                 <input v-if="searchByProducerId"
@@ -401,7 +403,8 @@
                                        @input="handleProducerIdInput(null)"
                                        @blur="hideProducerIdDropdown(null)"
                                        :disabled="duplicateDetection.isConfirmed"
-                                       :class="{ 'duplicate-confirmed-field': duplicateDetection.isConfirmed }">
+                                       :class="{ 'duplicate-confirmed-field': duplicateDetection.isConfirmed }"
+                                       @keydown.enter.prevent>
 
                                 <!-- Toggle Button -->
                                 <button type="button" 
@@ -507,7 +510,8 @@
                                    placeholder="Enter Bottler Name" 
                                    @input="handleBottlerInput"
                                    @blur="hideBottlerDropdown"
-                                   :class="{ 'duplicate-confirmed-field': duplicateDetection.isConfirmed }">
+                                   :class="{ 'duplicate-confirmed-field': duplicateDetection.isConfirmed }"
+                                   @keydown.enter.prevent>
 
                             <!-- Dropdown list with drawer styling -->
                             <ul class="list-group"
@@ -625,7 +629,8 @@
                             <input type="text" v-model="form['listingName']" class="form-control" id="bottleName" placeholder="Enter Drink/Bottle Name"
                                    :disabled="duplicateDetection.isConfirmed"
                                    :class="{ 'duplicate-confirmed-field': duplicateDetection.isConfirmed }"
-                                   @input="triggerDuplicateCheck">
+                                   @input="triggerDuplicateCheck"
+                                   @keydown.enter.prevent>
                         </div>
 
                         <!-- Input: drinkType (eg. Whiskey) + typeCategory (eg. Single Malt) -->
@@ -796,8 +801,8 @@
                                     type="text" 
                                     class="form-control" 
                                     v-model="varietyTagInput"
-                                    @keyup.enter="addVarietyTag"
-                                    placeholder="Type a variety tag and click +"
+                                    @keydown.enter.prevent="addVarietyTag"
+                                    placeholder="Type a variety tag and click + or hit 'Enter'"
                                     maxlength="20"
                                     :disabled="duplicateDetection.isConfirmed"
                                 >
@@ -915,13 +920,13 @@
                         <!-- Input: Link to website or source (optional for actual listing, mandatory for request) -->
                         <div v-if="formType == 'power'"  class="form-group mb-3">
                             <p class="text-start mb-1">Link to website or source </p> <!--<span class="text-danger" v-if="formType == 'req'">*</span>-->
-                            <input type="text" class="form-control" v-model="form['sourceLink']" id="sourceLink" placeholder="Enter source link">
+                            <input type="text" class="form-control" v-model="form['sourceLink']" id="sourceLink" placeholder="Enter source link" @keydown.enter.prevent>
                         </div>
 
                         <!-- Input: Link to 88 Bamboo review -->
                         <div v-if="formType == 'power'"  class="form-group mb-3">
                             <p class="text-start mb-1">Link to 88 Bamboo review</p>
-                            <input type="text" class="form-control" v-model="form['reviewLink']" id="reviewLink" placeholder="Enter review link">
+                            <input type="text" class="form-control" v-model="form['reviewLink']" id="reviewLink" placeholder="Enter review link" @keydown.enter.prevent>
                         </div>
 
                         <div class="mt-4 pt-3 border-top">
@@ -970,7 +975,8 @@
                                         <input type="text" class="form-control"
                                                v-model="item.tags"
                                                :id="'tags-additional-' + idx"
-                                               placeholder="#whiskyliveparis, #sakefestivalosaka">
+                                               placeholder="#whiskyliveparis, #sakefestivalosaka"
+                                               @keydown.enter.prevent>
                                     </div>
                                     <div class="col-md-5 mb-3">
                                         <p class="text-start mb-1">Order <span class="text-muted" style="font-size: 14px;">(Integer from -1 onwards)</span></p>
@@ -996,7 +1002,8 @@
                                                autocomplete="off"
                                                placeholder="Enter Producer Name"
                                                @input="handleProducerInput(idx)"
-                                               @blur="hideProducerDropdown(idx)">
+                                               @blur="hideProducerDropdown(idx)"
+                                               @keydown.enter.prevent>
 
                                         <!-- Producer ID Search Input -->
                                         <input v-if="item.searchByProducerId"
@@ -1006,7 +1013,8 @@
                                                autocomplete="off"
                                                placeholder="Enter Producer ID number"
                                                @input="handleProducerIdInput(idx)"
-                                               @blur="hideProducerIdDropdown(idx)">
+                                               @blur="hideProducerIdDropdown(idx)"
+                                               @keydown.enter.prevent>
 
                                         <!-- Toggle Button -->
                                         <button type="button"
@@ -1082,7 +1090,8 @@
                                            autocomplete="off"
                                            placeholder="Enter Bottler Name"
                                            @input="handleBottlerInputForItem(idx)"
-                                           @blur="hideBottlerDropdownForItem(idx)">
+                                           @blur="hideBottlerDropdownForItem(idx)"
+                                           @keydown.enter.prevent>
 
                                     <!-- Dropdown list for bottler suggestions -->
                                     <ul class="list-group"
@@ -1130,7 +1139,8 @@
                                     <input type="text" v-model="item.listingName" class="form-control" :id="'bottleName-additional-' + idx" placeholder="Enter Drink/Bottle Name"
                                            :disabled="item.duplicateDetection && item.duplicateDetection.isConfirmed"
                                            :class="{ 'duplicate-confirmed-field': item.duplicateDetection && item.duplicateDetection.isConfirmed }"
-                                           @input="triggerDuplicateCheckForItem(idx)">
+                                           @input="triggerDuplicateCheckForItem(idx)"
+                                           @keydown.enter.prevent>
                                 </div>
 
                                 <div class="row">
@@ -1407,12 +1417,12 @@
 
                                 <div v-if="formType == 'power'" class="form-group mb-3">
                                     <p class="text-start mb-1">Link to website or source </p>
-                                    <input type="text" class="form-control" v-model="item.sourceLink" :id="'sourceLink-additional-' + idx" placeholder="Enter source link">
+                                    <input type="text" class="form-control" v-model="item.sourceLink" :id="'sourceLink-additional-' + idx" placeholder="Enter source link" @keydown.enter.prevent>
                                 </div>
 
                                 <div v-if="formType == 'power'" class="form-group mb-3">
                                     <p class="text-start mb-1">Link to 88 Bamboo review</p>
-                                    <input type="text" class="form-control" v-model="item.reviewLink" :id="'reviewLink-additional-' + idx" placeholder="Enter review link">
+                                    <input type="text" class="form-control" v-model="item.reviewLink" :id="'reviewLink-additional-' + idx" placeholder="Enter review link" @keydown.enter.prevent>
                                 </div>
 
                                 <!-- Button row after this additional item -->
