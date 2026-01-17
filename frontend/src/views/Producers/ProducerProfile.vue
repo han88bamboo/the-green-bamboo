@@ -733,10 +733,9 @@
           </div>
 
           <!-- Buttons (5 columns desktop, full width mobile) -->
-          <div class="col-12 col-lg-5 d-flex flex-row gap-2 align-items-center">
-            <div class="row">
+          <div class="col-12 col-lg-5 d-flex flex-column align-items-start">
+            <div class="d-flex flex-row gap-2 align-items-center">
               <!-- Follow Button -->
-              <div class="col-5 pe-0">
               <button
                 v-if="!following"
                 class="btn btn-lg primary-btn-less-round-blue text-nowrap mobile-rating-smaller-text-2"
@@ -753,15 +752,25 @@
               >
                 Following
               </button>
-              </div>
+
+
+              <button
+                class="btn btn-lg primary-btn-less-round-blue text-nowrap mobile-rating-smaller-text-2 "
+                style="font-weight: bold; height: fit-content;"
+                @click="$router.push('/listing/create-bulk')"
+              >
+                + Add Drink
+              </button>
+
+            <!-- Mobile Review Button -->
+            <div class=" mobile-view-show">
               <!-- Review Button -->
-               <div class="col-7">
               <button
                 v-if="userType === 'user' && user_id !== 'defaultUser' && !inEdit"
                 class="btn btn-lg primary-btn-less-round-blue text-nowrap mobile-rating-smaller-text-2"
                 data-bs-toggle="modal"
                 data-bs-target="#reviewModal"
-                style="font-weight: bold; height: fit-content;"
+                style="font-weight: bold; height: fit-content; "
               >
                 Review Producer
               </button>
@@ -781,7 +790,37 @@
               >
                 Review Producer
               </button>
-              </div>
+            </div>
+            </div>
+
+            <!-- Desktop Review Button -->
+            <div class="mt-2  mobile-view-hide" style="min-width:251.62px;">
+              <!-- Review Button -->
+              <button
+                v-if="userType === 'user' && user_id !== 'defaultUser' && !inEdit"
+                class="w-100 btn btn-lg primary-btn-less-round-blue text-nowrap mobile-rating-smaller-text-2"
+                data-bs-toggle="modal"
+                data-bs-target="#reviewModal"
+                style="font-weight: bold; height: fit-content;"
+              >
+                Review Producer
+              </button>
+
+              <button
+                v-else-if="inEdit"
+                class="w-100 btn btn-lg primary-btn-less-round-blue text-nowrap mobile-rating-smaller-text-2"
+                style="font-weight: bold; background-color: rgb(249, 115, 106); height: fit-content;"
+              >
+                Reviewed!
+              </button>
+              <button
+                v-else
+                class="w-100 btn btn-lg primary-btn-less-round-blue text-nowrap mobile-rating-smaller-text-2"
+                style="font-weight: bold; height: fit-content;"
+                @click="$router.push('/login')"
+              >
+                Review Producer
+              </button>
             </div>
 
           </div>
