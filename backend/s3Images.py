@@ -107,42 +107,45 @@ def deleteImageFromS3(url):
             'aws_secret_access_key': os.getenv('AWS_SECRET_ACCESS_KEY')
         }
 
-    # Get the key from the url by stripping https://testbucketdrinkx.s3.amazonaws.com/xxxx
-    # object_key = url[48:]
-    
-    # if('https://drinkximages.s3.us-east-1.amazonaws.com/' in url):
-    #     object_key =  url.replace('https://drinkximages.s3.us-east-1.amazonaws.com/','')
-    # else:
-    #     object_key = 'None'
-
-    if('https://tf-drinkx-prod-fe-images.s3.ap-southeast-1.amazonaws.com/' in url):
-        object_key =  url.replace('https://tf-drinkx-prod-fe-images.s3.ap-southeast-1.amazonaws.com/','')
+    # Check if URL is from our S3 buckets and determine the correct bucket/region
+    if 'https://tf-drinkx-prod-fe-images.s3.ap-southeast-1.amazonaws.com/' in url:
+        object_key = url.replace('https://tf-drinkx-prod-fe-images.s3.ap-southeast-1.amazonaws.com/','')
+        target_bucket = 'tf-drinkx-prod-fe-images'
+        target_region = 'ap-southeast-1'
+        is_production_image = True
+    elif 'https://drinkximages.s3.us-east-1.amazonaws.com/' in url:
+        object_key = url.replace('https://drinkximages.s3.us-east-1.amazonaws.com/','')
+        target_bucket = 'drinkximages'
+        target_region = 'us-east-1'
+        is_production_image = False
     else:
-        object_key = 'None'
+        # URL is not from our S3 buckets (e.g., Shopify CDN, external URL) - skip deletion
+        print(f"Skipping S3 deletion for non-S3 URL: {url}")
+        return None
 
-    # Initialize a session using Amazon S3
+    # Prevent cross-environment deletion: dev can only delete dev images, prod can only delete prod images
+    if purpose == 'development' and is_production_image:
+        print(f"SAFETY: Skipping production image deletion in dev environment: {url}")
+        return None
+    elif purpose == 'production' and not is_production_image:
+        print(f"SAFETY: Skipping dev image deletion in production environment: {url}")
+        return None
 
-    # For local development (comment out before deployment)
+    # Initialize a session using Amazon S3 with the correct region for the target bucket
     if purpose == 'development':
-        s3 = boto3.client('s3', region_name=region, **credentials) if credentials else boto3.client('s3', region_name=region)
+        s3 = boto3.client('s3', region_name=target_region, **credentials) if credentials else boto3.client('s3', region_name=target_region)
     else:
-        s3 = boto3.client('s3')
+        s3 = boto3.client('s3', region_name=target_region)
 
     try:
-        # Upload the image to S3
-        if s3.head_object(Bucket=bucket_name, Key=object_key):
-            return s3.delete_object(Bucket=bucket_name, Key=object_key)
+        # Delete the image from S3
+        return s3.delete_object(Bucket=target_bucket, Key=object_key)
     except ClientError as e:
-        if e.response["Error"]["Code"] == "404":
-            print(f"Key: '{object_key}' does not exist!")
-        else:
-            print("Something else went wrong")
-            raise
+        print(f"S3 deletion error for key '{object_key}': {e}")
         return None
     except NoCredentialsError:
         print("Credentials not available")
         return None
-    return None
 
 # Example usage
 # This is an example base64 string for an image (you should use your actual base64 string)

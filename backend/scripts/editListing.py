@@ -197,9 +197,13 @@ def deleteListing(id):
             ), 400
         
         try:
-            # Delete image from S3 bucket only if it exists
+            # Try to delete image from S3 bucket - non-blocking (continue even if it fails)
             if existingListing['photo'] is not None and existingListing['photo'] != '':
-                s3Images.deleteImageFromS3(existingListing['photo'])
+                try:
+                    s3Images.deleteImageFromS3(existingListing['photo'])
+                except Exception as s3_error:
+                    # Log but don't fail - orphaned S3 images can be cleaned up later
+                    print(f"Warning: Failed to delete S3 image for listing {id}: {str(s3_error)}")
 
             # Find and delete associated reviews and votes
             cursor.execute('SELECT "id" FROM reviews WHERE "reviewTarget" = %s', (id,))
@@ -227,13 +231,16 @@ def deleteListing(id):
             ), 201
         
         except Exception as e:
-            print(str(e))
+            import traceback
+            print(f"Error deleting listing {id}: {str(e)}")
+            print(f"Traceback: {traceback.format_exc()}")
             cursor.connection.rollback()
             return jsonify(
                 {
                     "code": 500,
                     "data": {
-                        "id": id
+                        "id": id,
+                        "error": str(e)
                     },
                     "message": "An error occurred deleting listing!"
                 }
