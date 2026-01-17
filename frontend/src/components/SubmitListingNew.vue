@@ -982,6 +982,9 @@
 
                 earnedBadges: [],
                 showBadgePopup: false,
+                
+                // Pre-populated producer from query params
+                prePopulatedProducer: null,
             };
         },
         async mounted() {
@@ -1037,6 +1040,14 @@
             if (this.$route.params.requestID != "" && this.$route.params.requestID != undefined) {
                 this.prevListing = true;
                 console.log('this.prevListing set to', this.prevListing, 'in mounted()');
+            }
+
+            // Check for pre-populated producer from query params
+            if (this.$route.query.producerId && this.$route.query.producerName) {
+                this.prePopulatedProducer = {
+                    id: this.$route.query.producerId,
+                    name: this.$route.query.producerName
+                };
             }
 
             // Power user check
@@ -1310,6 +1321,26 @@
                 if (hasCache && !(this.formMode === "edit" || this.formMode === "dup") && !this.prevListing) 
                 {
                     console.log("Returning early due to cached form data");
+                    
+                    // Apply pre-populated producer from query params (overrides any existing selection)
+                    if (this.prePopulatedProducer) {
+                        try {
+                            const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getUniqueProducersNamesID/dummy/${this.prePopulatedProducer.id}`);
+                            if (response.data && response.data.id) {
+                                this.selectedProducer = {
+                                    id: response.data.id,
+                                    producerName: response.data.producerName
+                                };
+                                this.form['producerNew'] = response.data.producerName;
+                                this.form['producerIdSearch'] = response.data.id;
+                                this.form['producerID'] = response.data.id;
+                                console.log('Pre-populated producer from query params (with cache):', this.selectedProducer);
+                            }
+                        } catch (error) {
+                            console.error('Error pre-populating producer:', error);
+                        }
+                    }
+                    
                     // Already restored in mounted()
                     this.fillForm = true; // Ensure form is visible after restoring cache
                     this.dataLoaded = true;
@@ -1481,6 +1512,27 @@
                         catch (error) {
                             console.error(error);
                         }
+                    }
+                }
+
+                // Pre-populate producer from query params (overrides any existing selection including from getProducerName)
+                if (this.prePopulatedProducer) {
+                    try {
+                        // Fetch producer details to ensure it exists and get full data
+                        const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getUniqueProducersNamesID/dummy/${this.prePopulatedProducer.id}`);
+                        if (response.data && response.data.id) {
+                            // Set the producer data as if user selected it
+                            this.selectedProducer = {
+                                id: response.data.id,
+                                producerName: response.data.producerName
+                            };
+                            this.form['producerNew'] = response.data.producerName;
+                            this.form['producerIdSearch'] = response.data.id;
+                            this.form['producerID'] = response.data.id;
+                            console.log('Pre-populated producer from query params:', this.selectedProducer);
+                        }
+                    } catch (error) {
+                        console.error('Error pre-populating producer:', error);
                     }
                 }
 

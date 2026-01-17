@@ -757,7 +757,7 @@
               <button
                 class="btn btn-lg primary-btn-less-round-blue text-nowrap mobile-rating-smaller-text-2 "
                 style="font-weight: bold; height: fit-content;"
-                @click="$router.push('/listing/create-bulk')"
+                @click="navigateToAddDrink()"
               >
                 + Add Drink
               </button>
@@ -6386,6 +6386,19 @@ export default {
         console.error(error);
       }
     },
+
+    navigateToAddDrink() {
+      const queryParams = {
+        producerId: this.producer_id,
+        producerName: this.specified_producer.producerName
+      };
+      if (this.isAdmin || this.userType === 'producer') {
+        this.$router.push({ path: '/listing/create', query: queryParams });
+      } else {
+        this.$router.push({ path: '/request/new', query: queryParams });
+      }
+    },
+
     claimProducerAccount() {
       let accountDetails = {
         userID: this.producer_id,
