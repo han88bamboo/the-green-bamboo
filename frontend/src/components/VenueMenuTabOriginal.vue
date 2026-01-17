@@ -2459,8 +2459,8 @@
                             <input id="renameMenuSectionInput" type="text" class="form-control"
                                 v-model="renameMenuSectionModalNew" placeholder="New Section Name">
                             
-                            <!-- Color Picker Section -->
-                            <div class="form-group mt-3">
+                            <!-- Color Picker Section (Only for main sections, not subsections) -->
+                            <div v-if="renameSectionType === 'section'" class="form-group mt-3">
                                 <label class="form-label ">Section Color (Optional)</label>
                                 
                                 <!-- Clickable Container to Toggle Drawer -->
@@ -2858,7 +2858,7 @@ export default {
             this.mainSections.forEach(section => {
                 options.push({
                     id: section.id || section.sectionOrder,
-                    name: section.sectionName,
+                    name: this.getCleanSectionName(section.sectionName),
                     type: 'section',
                     level: 0,
                     section: section
@@ -2869,7 +2869,7 @@ export default {
                 subsections.forEach(subsection => {
                     options.push({
                         id: subsection.id || `${section.sectionOrder}-${subsection.sectionOrder}`,
-                        name: `  └─ ${subsection.sectionName}`,
+                        name: `  └─ ${this.getCleanSectionName(subsection.sectionName)}`,
                         type: 'subsection',
                         level: 1,
                         section: subsection,
@@ -2960,7 +2960,9 @@ export default {
             const grouped = {};
             
             items.forEach(item => {                
-                const key = item.sectionName; // Backend already formats subsection names as "Parent > Sub"
+                // Clean hexcode from section name before using as key
+                const rawKey = item.sectionName; // Backend already formats subsection names as "Parent > Sub"
+                const key = this.getCleanSectionName(rawKey);
 
                 if (!grouped[key]) {
                     grouped[key] = [];

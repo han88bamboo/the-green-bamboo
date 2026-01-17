@@ -224,7 +224,7 @@
                                             <select class="form-select form-select-sm" v-model="targetSectionId">
                                                 <option value="">-- Select target section --</option>
                                                 <option v-for="section in currentMenuSections" :key="section.id" :value="section.id">
-                                                    {{ section.sectionName }}
+                                                    {{ getCleanSectionName(section.sectionName) }}
                                                 </option>
                                             </select>
                                         </div>
@@ -245,7 +245,7 @@
                                             <select class="form-select form-select-sm" v-model="targetParentSectionId">
                                                 <option value="">-- Select parent section --</option>
                                                 <option v-for="section in currentMainSections" :key="section.id" :value="section.id">
-                                                    {{ section.sectionName }}
+                                                    {{ getCleanSectionName(section.sectionName) }}
                                                 </option>
                                             </select>
                                         </div>
@@ -287,7 +287,7 @@
                                                        @click.stop
                                                        @change="toggleSectionSelection(section.originalSectionId)">
                                                 
-                                                <strong class="xme-auto">{{ section.sectionName }}</strong>
+                                                <strong class="xme-auto">{{ getCleanSectionName(section.sectionName) }}</strong>
                                                 <span v-if="!section.isVisible" class="badge bg-warning text-dark ms-2" title="This section was hidden at snapshot time">
                                                     <i class="bi bi-eye-slash"></i> Hidden
                                                 </span>
@@ -392,7 +392,7 @@
                                                                            :checked="selectedSubsectionIds.includes(subsection.originalSectionId)"
                                                                            @click.stop
                                                                            @change="toggleSubsectionSelection(subsection.originalSectionId)">
-                                                                    <span class="xme-auto">{{ subsection.sectionName }}</span>
+                                                                    <span class="xme-auto">{{ getCleanSectionName(subsection.sectionName) }}</span>
                                                                     <span v-if="!subsection.isVisible" class="badge bg-warning text-dark ms-2" title="This subsection was hidden at snapshot time">
                                                                         <i class="bi bi-eye-slash"></i> Hidden
                                                                     </span>
@@ -477,7 +477,7 @@
                                 <div v-if="restoreResult.restoredSections?.length">
                                     <strong>Restored Sections:</strong>
                                     <ul class="mb-0">
-                                        <li v-for="name in restoreResult.restoredSections" :key="name">{{ name }}</li>
+                                        <li v-for="name in restoreResult.restoredSections" :key="name">{{ getCleanSectionName(name) }}</li>
                                     </ul>
                                 </div>
                                 <div v-if="restoreResult.restoredItems?.length" class="mt-2">
@@ -543,6 +543,7 @@ export default {
         }
     },
     emits: ['restored', 'restore-to-staged'],
+    
     data() {
         return {
             // State
@@ -623,7 +624,7 @@ export default {
                             itemPrice: item.itemPrice,
                             itemPriceCurrency: item.itemPriceCurrency || '$',
                             variant: item.itemVintage ?? item.variant ?? null,
-                            sectionName: section.sectionName
+                            sectionName: this.getCleanSectionName(section.sectionName)
                         });
                     }
                 }
@@ -643,7 +644,7 @@ export default {
                                 itemPrice: item.itemPrice,
                                 itemPriceCurrency: item.itemPriceCurrency || '$',
                                 variant: item.itemVintage ?? item.variant ?? null,
-                                sectionName: `${section.sectionName} > ${subsection.sectionName}`
+                                sectionName: `${this.getCleanSectionName(section.sectionName)} > ${this.getCleanSectionName(subsection.sectionName)}`
                             });
                         }
                     }
@@ -654,6 +655,14 @@ export default {
         }
     },
     methods: {
+        // Helper method to clean hexcode from section names (same as VenueMenuTab components)
+        // Extract hex color and clean section name - removes hex suffix like #ff0000
+        getCleanSectionName(sectionName) {
+            if (!sectionName) return '';
+            // Remove 6-digit hex codes at the end (e.g., "Wine Section#ff0000" -> "Wine Section")
+            return sectionName.replace(/#[0-9a-fA-F]{6}$/, '');
+        },
+        
         async loadHistory() {
             this.isLoading = true;
             this.errorMessage = '';

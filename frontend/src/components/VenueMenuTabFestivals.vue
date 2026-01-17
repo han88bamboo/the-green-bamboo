@@ -3182,8 +3182,8 @@
                                     v-model="renameMenuSectionModalNew" 
                                     :placeholder="'Enter new' + (renameSectionType === 'section' ? 'section' : 'subsection') + ' name...'">
                                                             
-                            <!-- Color Picker Section -->
-                            <div class="form-group mt-3">
+                            <!-- Color Picker Section (Only for main sections, not subsections) -->
+                            <div v-if="renameSectionType === 'section'" class="form-group mt-3">
                                 <label class="form-label ">Section Color (Optional)</label>
                                 
                                 <!-- Clickable Container to Toggle Drawer -->
@@ -3632,15 +3632,24 @@
                   <div class="col-3 mobile-col-4">
                     <input class="form-control mb-2" @change="onFileChange" type="file" id="reviewPhoto"
                       style="display: none" />
-                    <label for="reviewPhoto" class="upload-label d-block w-100">
-                      <div v-if="!selectedImage && !image64" class="mobile-review-svg-button photo-dropzone">
+                    <label for="reviewPhoto" class="upload-label d-block w-100"
+                           @dragover="handleDragOver"
+                           @dragleave="handleDragLeave"
+                           @drop="handleDrop">
+                      <div v-if="!selectedImage && !image64" 
+                           class="mobile-review-svg-button photo-dropzone"
+                           :class="{ 'dragging': isDragging }">
                         <div>
                           <h2>📷</h2>
-                          <div>Upload</div>
+                          <div v-if="!isDragging">Click or drag image here</div>
+                          <div v-else class="fw-bold text-primary">Drop image here</div>
                         </div>
                       </div>
 
-                      <div v-else class="mobile-review-svg-button">
+                      <div v-else class="mobile-review-svg-button"
+                           @dragover="handleDragOver"
+                           @dragleave="handleDragLeave"
+                           @drop="handleDrop">
                         <img :src="selectedImage || image64" alt="" id="output"
                             class="review-preview-photo" loading="lazy" />
                       </div>
@@ -4554,7 +4563,7 @@ export default {
             this.mainSections.forEach(section => {
                 options.push({
                     id: section.id || section.sectionOrder,
-                    name: section.sectionName,
+                    name: this.getCleanSectionName(section.sectionName),
                     type: 'section',
                     level: 0,
                     section: section
@@ -4565,7 +4574,7 @@ export default {
                 subsections.forEach(subsection => {
                     options.push({
                         id: subsection.id || `${section.sectionOrder}-${subsection.sectionOrder}`,
-                        name: `  └─ ${subsection.sectionName}`,
+                        name: `  └─ ${this.getCleanSectionName(subsection.sectionName)}`,
                         type: 'subsection',
                         level: 1,
                         section: subsection,
@@ -4812,7 +4821,9 @@ export default {
             const grouped = {};
             
             items.forEach(item => {
-                const key = item.sectionName; // Backend already formats subsection names as "Parent > Sub"
+                // Clean hexcode from section name before using as key
+                const rawKey = item.sectionName; // Backend already formats subsection names as "Parent > Sub"
+                const key = this.getCleanSectionName(rawKey);
                 
                 if (!grouped[key]) {
                     grouped[key] = [];
@@ -5102,6 +5113,7 @@ export default {
             selectedColour: "",
             image64: null,
             selectedImage: "",
+            isDragging: false,
             photo: null,
             observationTags: [],
             selectedObservations: [],
@@ -11689,6 +11701,53 @@ export default {
       }
     },
 
+    // Drag and drop handlers for review photo
+    handleDragOver(event) {
+        event.preventDefault();
+        event.stopPropagation();
+        this.isDragging = true;
+    },
+
+    handleDragLeave(event) {
+        event.preventDefault();
+        event.stopPropagation();
+        this.isDragging = false;
+    },
+
+    async handleDrop(event) {
+        event.preventDefault();
+        event.stopPropagation();
+        this.isDragging = false;
+
+        const files = event.dataTransfer.files;
+        if (files && files.length > 0) {
+            const file = files[0];
+            // Check if it's an image
+            if (file.type.startsWith('image/')) {
+                // Validate file size (max 10MB)
+                if (file.size > 10 * 1024 * 1024) {
+                    alert('Image file too large. Please select an image under 10MB.');
+                    return;
+                }
+
+                this.imageProcessing = true;
+                
+                try {
+                    const result = await this.processImageWithScaling(file);
+                    this.selectedImage = result.dataUrl;
+                    this.image64 = result.base64;
+                } catch (error) {
+                    console.error('Charsiucharlie_photo_submission: Image processing failed:', error);
+                    await this.fallbackImageProcessing(file);
+                } finally {
+                    this.imageProcessing = false;
+                }
+            } else {
+                alert('Please drop an image file.');
+            }
+        }
+    },
+
     // Process image with Canvas scaling and compression
     async processImageWithScaling(file) {
       return new Promise((resolve, reject) => {
@@ -14141,6 +14200,19 @@ button[aria-expanded="true"] .collapse-indicator {
   border: 2px dashed #cfcfcf; 
   background: #fafafa; 
   cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.photo-dropzone:hover {
+  border-color: #007bff;
+  background: #f0f8ff;
+}
+
+.photo-dropzone.dragging {
+  border-color: #007bff;
+  background: #e3f2fd;
+  border-width: 3px;
+  transform: scale(1.02);
 }
 
 .review-preview-photo {
