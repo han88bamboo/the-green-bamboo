@@ -322,15 +322,24 @@
                             <div class="row">
                                 <div class="col-4">
                                     <input class="form-control" @change="handleFileSelect" type="file" id="formFile" style="display: none" accept="image/*" />
-                                    <label for="formFile" class="upload-label d-block w-100">
-                                        <div v-if="!selectedImage && !form['photo']" class="mobile-review-svg-button photo-dropzone">
+                                    <label for="formFile" class="upload-label d-block w-100"
+                                           @dragover="handleDragOver"
+                                           @dragleave="handleDragLeave"
+                                           @drop="handleDrop">
+                                        <div v-if="!selectedImage && !form['photo']" 
+                                             class="mobile-review-svg-button photo-dropzone"
+                                             :class="{ 'dragging': isDragging }">
                                             <div class="text-center">
                                                 <h2>📷</h2>
-                                                <div>Upload Photo</div>
+                                                <div v-if="!isDragging">Click or drag image here</div>
+                                                <div v-else class="fw-bold text-primary">Drop image here</div>
                                             </div>
                                         </div>
 
-                                        <div v-else class="mobile-review-svg-button">
+                                        <div v-else class="mobile-review-svg-button"
+                                             @dragover="handleDragOver"
+                                             @dragleave="handleDragLeave"
+                                             @drop="handleDrop">
                                             <img :src="selectedImage || form['photo'] || defaultPhoto" alt="Drink photo" 
                                                  class="review-preview-photo" loading="lazy" />
                                         </div>
@@ -710,15 +719,24 @@
                             <div class="row">
                                 <div class="col-4">
                                     <input class="form-control" @change="handleFileSelect" type="file" id="formFile" style="display: none" accept="image/*" />
-                                    <label for="formFile" class="upload-label d-block w-100">
-                                        <div v-if="!selectedImage && !form['photo']" class="mobile-review-svg-button photo-dropzone">
+                                    <label for="formFile" class="upload-label d-block w-100"
+                                           @dragover="handleDragOver"
+                                           @dragleave="handleDragLeave"
+                                           @drop="handleDrop">
+                                        <div v-if="!selectedImage && !form['photo']" 
+                                             class="mobile-review-svg-button photo-dropzone"
+                                             :class="{ 'dragging': isDragging }">
                                             <div class="text-center">
                                                 <h2>📷</h2>
-                                                <div>Upload Photo</div>
+                                                <div v-if="!isDragging">Click or drag image here</div>
+                                                <div v-else class="fw-bold text-primary">Drop image here</div>
                                             </div>
                                         </div>
 
-                                        <div v-else class="mobile-review-svg-button">
+                                        <div v-else class="mobile-review-svg-button"
+                                             @dragover="handleDragOver"
+                                             @dragleave="handleDragLeave"
+                                             @drop="handleDrop">
                                             <img :src="selectedImage || form['photo'] || defaultPhoto" alt="Drink photo" 
                                                  class="review-preview-photo" loading="lazy" />
                                         </div>
@@ -877,6 +895,7 @@
                 fillForm: false,
                 requestRemoval: false,
                 showCreateProducerModal: false,
+                isDragging: false,
 
                 // Error-specific flags
                 errorMessage: false,
@@ -1761,6 +1780,41 @@
                 reader.readAsDataURL(file);
             },
 
+            // Drag and drop handlers
+            handleDragOver(event) {
+                event.preventDefault();
+                event.stopPropagation();
+                this.isDragging = true;
+            },
+
+            handleDragLeave(event) {
+                event.preventDefault();
+                event.stopPropagation();
+                this.isDragging = false;
+            },
+
+            handleDrop(event) {
+                event.preventDefault();
+                event.stopPropagation();
+                this.isDragging = false;
+
+                const files = event.dataTransfer.files;
+                if (files && files.length > 0) {
+                    const file = files[0];
+                    // Check if it's an image
+                    if (file.type.startsWith('image/')) {
+                        const reader = new FileReader();
+                        reader.onload = () => {
+                            this.selectedImage = reader.result;
+                            this.form['photo'] = reader.result;
+                        };
+                        reader.readAsDataURL(file);
+                    } else {
+                        alert('Please drop an image file.');
+                    }
+                }
+            },
+
             // Helper function to get producerID from tempProducer
             getProducerID() {
                 // Ensure producerList is an array and input is valid
@@ -2608,6 +2662,13 @@
 .photo-dropzone:hover {
     border-color: #007bff;
     background: #f0f8ff;
+}
+
+.photo-dropzone.dragging {
+    border-color: #007bff;
+    background: #e3f2fd;
+    border-width: 3px;
+    transform: scale(1.02);
 }
 
 .review-preview-photo {

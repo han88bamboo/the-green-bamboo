@@ -2117,15 +2117,24 @@
                   <div class="col-3 mobile-col-4">
                     <input class="form-control mb-2" @change="onFileChange" type="file" id="reviewPhoto"
                       style="display: none" />
-                    <label for="reviewPhoto" class="upload-label d-block w-100">
-                      <div v-if="!selectedImage && !image64" class="mobile-review-svg-button photo-dropzone">
+                    <label for="reviewPhoto" class="upload-label d-block w-100"
+                           @dragover="handleDragOver"
+                           @dragleave="handleDragLeave"
+                           @drop="handleDrop">
+                      <div v-if="!selectedImage && !image64" 
+                           class="mobile-review-svg-button photo-dropzone"
+                           :class="{ 'dragging': isDragging }">
                         <div>
                           <h2>📷</h2>
-                          <div>Upload</div>
+                          <div v-if="!isDragging">Click or drag image here</div>
+                          <div v-else class="fw-bold text-primary">Drop image here</div>
                         </div>
                       </div>
 
-                      <div v-else class="mobile-review-svg-button">
+                      <div v-else class="mobile-review-svg-button"
+                           @dragover="handleDragOver"
+                           @dragleave="handleDragLeave"
+                           @drop="handleDrop">
                         <img :src="selectedImage || image64" alt="" id="output"
                             class="review-preview-photo" loading="lazy" />
                       </div>
@@ -4512,6 +4521,7 @@ export default {
       selectedColour: "",
       image64: null,
       selectedImage: "",
+      isDragging: false,
       photo: null,
       observationTags: [],
       selectedObservations: [],
@@ -6561,6 +6571,44 @@ export default {
         this.image64 = base64String;
       };
       reader.readAsDataURL(file);
+    },
+
+    // Drag and drop handlers for review photo
+    handleDragOver(event) {
+        event.preventDefault();
+        event.stopPropagation();
+        this.isDragging = true;
+    },
+
+    handleDragLeave(event) {
+        event.preventDefault();
+        event.stopPropagation();
+        this.isDragging = false;
+    },
+
+    handleDrop(event) {
+        event.preventDefault();
+        event.stopPropagation();
+        this.isDragging = false;
+
+        const files = event.dataTransfer.files;
+        if (files && files.length > 0) {
+            const file = files[0];
+            // Check if it's an image
+            if (file.type.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.onloadend = () => {
+                    this.selectedImage = reader.result;
+                    const base64String = reader.result
+                        .replace("data:", "")
+                        .replace(/^.+,/, "");
+                    this.image64 = base64String;
+                };
+                reader.readAsDataURL(file);
+            } else {
+                alert('Please drop an image file.');
+            }
+        }
     },
 
     // Function to add review
@@ -9786,6 +9834,19 @@ export default {
   display:flex; align-items:center; justify-content:center;
   height:100%;
   border:2px dashed #cfcfcf; background:#fafafa; cursor:pointer;
+  transition: all 0.2s ease;
+}
+
+.photo-dropzone:hover {
+  border-color: #007bff;
+  background: #f0f8ff;
+}
+
+.photo-dropzone.dragging {
+  border-color: #007bff;
+  background: #e3f2fd;
+  border-width: 3px;
+  transform: scale(1.02);
 }
 
 /* Preview image fills the same frame */
