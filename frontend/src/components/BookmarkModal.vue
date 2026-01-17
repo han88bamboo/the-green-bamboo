@@ -80,6 +80,10 @@ export default {
     if (this.user && Object.keys(this.user).length > 0) {
       this.userID = this.user.id;
       this.userBookmarks = this.user.drinkLists;
+      // Call populateBookmarkModal after userBookmarks is set
+      if (this.validListingId) {
+        this.populateBookmarkModal(this.validListingId);
+      }
     }
   },
   watch: {
@@ -89,7 +93,10 @@ export default {
 
         if (typeof newVal === 'number') {
           this.validListingId = newVal;
-          this.populateBookmarkModal(newVal);
+          // Only call populateBookmarkModal if userBookmarks is already populated
+          if (Object.keys(this.userBookmarks).length > 0) {
+            this.populateBookmarkModal(newVal);
+          }
         } else {
           console.error("Invalid listingID (should be a number):", newVal);
         }
@@ -101,6 +108,10 @@ export default {
         if (this.user && Object.keys(this.user).length > 0) {
           this.userID = this.user.id;
           this.userBookmarks = this.user.drinkLists;
+          // Re-populate bookmark modal when user data changes
+          if (this.validListingId) {
+            this.populateBookmarkModal(this.validListingId);
+          }
         }
       }
     }
