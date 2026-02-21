@@ -882,12 +882,12 @@ INSERT INTO "venueSubTypes" ("venueSubType") VALUES
 -- Real users (admin, developers, testers)
 INSERT INTO "users" ("username","displayName","choiceDrinks","modType","photo","hashedPassword","joinDate","firstName","lastName","email","isAdmin","birthday","pin", "choiceFlavours", "preferences","categoryExpert") VALUES
 	 ('admin','admin','{}','{}','','-1522920846','2024-10-28 18:45:31.403','admin','admin','admin@drink-x.com',false,'2000-01-01 00:00:00','175029,2024-10-28 18:46:29', '{}', '{}',NULL),
-	 ('Lotusroot518','Lotusroot518','{}','{}','','-289780632','2024-10-29 01:31:56.379','Lotusroot518','Lotusroot518','Kailinchoo@gmail.com',false,'1995-08-11 00:00:00',NULL, '{}', '{}',NULL),
-	 ('DumplingBoy','DumplingBoy','{}','{}','','2108394495','2024-11-03 09:49:51.179','DumplingBoy','DumplingBoy','jwleong.199@gmail.com',false,'1999-10-21 00:00:00',NULL, '{}', '{}',NULL);
+	 ('lotusroot518','lotusroot518','{}','{}','','193487916','2024-10-29 01:31:56.379','Lotusroot518','Lotusroot518','Kailinchoo@gmail.com',false,'1995-08-11 00:00:00',NULL, '{}', '{}',NULL),
+	 ('dumplingBoy','DumplingBoy','{}','{}','','-1671110987','2024-11-03 09:49:51.179','DumplingBoy','DumplingBoy','jwleong.199@gmail.com',false,'1999-10-21 00:00:00',NULL, '{}', '{}',NULL);
 
 -- Developer accounts
 INSERT INTO "users" ("username","displayName","choiceDrinks","modType","photo","hashedPassword","joinDate","firstName","lastName","email","isAdmin","birthday","pin", "choiceFlavours", "preferences","categoryExpert","country") VALUES
-	 ('charsiucharlie','charsiucharlie','{}','{beer}','','-65180891','2024-10-30 13:48:46.277','charsiucharlie','charsiucharlie','tzhehan@gmail.com',true,'1993-06-29 00:00:00',NULL, '{}', '{}',NULL,'France'),
+	 ('charsiucharlie','charsiucharlie','{}','{beer}','','-334161842','2024-10-30 13:48:46.277','charsiucharlie','charsiucharlie','tzhehan@gmail.com',true,'1993-06-29 00:00:00',NULL, '{}', '{}',NULL,'France'),
      ('cp', 'cp', '{}', '{}', '', '-301000982', '2024-11-03 09:49:51.179', 'cheng', 'pong', 'cpdeveloper101@gmail.com', false, '1999-10-21 00:00:00', NULL, '{}', '{}',NULL,'Singapore');
 
 -- Test users
@@ -3013,7 +3013,7 @@ INSERT INTO "venues" (
     'Bar',
     'Singapore',
     'A popular test venue for unit testing and staging purposes.',
-    '1033881401', -- hashed password
+    '-1672044681', -- hashed password
     'https://tf-drinkx-prod-fe-images.s3.ap-southeast-1.amazonaws.com/cd89b487-172d-4db8-8202-049b5cddc256.jpg', 
     true, 
     NULL, 
@@ -3034,7 +3034,7 @@ INSERT INTO "venues" (
     'Bar',
     'Singapore',
     'One of the first craft beer taprooms in Singapore, famous for rotating taps and rare imports.',
-    '-1480099335', -- hashed password
+    '-143053887', -- hashed password
     'https://lh3.googleusercontent.com/p/AF1QipOkmPzzgvObRr4u33kneFeT00b3sQkRBVkqhVut=s1360-w1360-h1020-rw',
     true,
     NULL,
@@ -3152,7 +3152,7 @@ VALUES
     'Event Space',
     'France',
     'Le plus grand festival de whisky en France. Découvrez des centaines de whiskies du monde entier!',
-    '-167833487',
+    '-585430047',
     'https://exhibitionsforyou.com/wp-content/uploads/2025/10/Whisky-Live-Paris-2026.png',
     true,
     NULL,
