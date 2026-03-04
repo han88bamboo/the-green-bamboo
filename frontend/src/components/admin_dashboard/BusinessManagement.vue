@@ -183,7 +183,7 @@ export default {
       // DON'T close the modal here - let the child component handle it
       // this.closeModal();
 
-      this.$emit('update-data');
+      this.$emit('update-businesses');
     },
 
     openDocument(docData) {
@@ -307,7 +307,7 @@ Drink-X`
                 });
                 console.log(response.data)
                 if (response.data.code == 201) {
-                  this.$emit('update-data');
+                  this.$emit('update-businesses');
                 }
               } catch (error) {
                 console.log(error)
@@ -318,16 +318,75 @@ Drink-X`
             this.emailLink(request, link);
           }
           else {
-            this.businessToCreate = {
-              businessType: request.businessType,
-              businessName: request.businessName,
-              businessDesc: request.businessDesc,
-              country: request.country,
-              isIndependentBottler: request.isIndependentBottler,
-              claimStatus: false,
-              requestId: request.id
+            // No existing business — silently create one, then generate token & send email
+            const tempPassword = "admin1234";
+            const hashedPassword = this.hashPassword(request.businessName, tempPassword);
+            let apiURL = '';
+            let newBusinessData = {};
+
+            if (request.businessType === 'producer') {
+              apiURL = `${this.API_URL}/createAccount/createProducerAccount`;
+              newBusinessData = {
+                producerName: request.businessName,
+                producerDesc: request.businessDesc,
+                originCountry: request.country,
+                isIndependentBottler: request.isIndependentBottler === "true" || request.isIndependentBottler === true,
+                statusOB: '',
+                mainDrinks: [],
+                photo: '',
+                hashedPassword: hashedPassword,
+                questionsAnswers: [],
+                updates: [],
+                producerLink: '',
+                claimStatus: false,
+              };
+            } else if (request.businessType === 'venue') {
+              apiURL = `${this.API_URL}/createAccount/createVenueAccount`;
+              newBusinessData = {
+                venueName: request.businessName,
+                venueDesc: request.businessDesc,
+                originLocation: request.country,
+                address: '',
+                venueType: '',
+                menu: [],
+                photo: '',
+                hashedPassword: hashedPassword,
+                questionsAnswers: [],
+                updates: [],
+                claimStatus: false,
+                openingHours: { Monday: ['', ''], Tuesday: ['', ''], Wednesday: ['', ''], Thursday: ['', ''], Friday: ['', ''], Saturday: ['', ''], Sunday: ['', ''] },
+                publicHolidays: '',
+                reservationDetails: '',
+              };
             }
-            this.openModal();
+
+            if (apiURL) {
+              try {
+                const createResp = await axios.post(apiURL, { newBusinessData }, {
+                  headers: { 'Content-Type': 'application/json' }
+                });
+
+                if (createResp.data.code === 201) {
+                  const newBusinessId = createResp.data.data.producerId || createResp.data.data.venueId;
+
+                  // Link the new business ID back to the account request
+                  await axios.post(`${this.API_URL}/createAccount/updateAccountRequestBusinessID`, {
+                    businessID: newBusinessId,
+                    requestID: request.id,
+                  });
+
+                  // Generate token and send email
+                  const link = await this.generateToken(newBusinessId, request);
+                  this.emailLink(request, link);
+                } else {
+                  console.error('Failed to create business:', createResp.data.message);
+                  alert('Failed to create the business account. Please try again.');
+                }
+              } catch (error) {
+                console.error('Error creating business:', error);
+                alert('An error occurred while creating the business account.');
+              }
+            }
           }
           await axios.post(`${this.API_URL}/createAccount/updateAccountRequest`, {
             requestID: request.id,
@@ -341,10 +400,10 @@ Drink-X`
             isApproved: false,
           });
         } else if (action === 'resend') {
-          const link = await this.generateToken(request.businessID, request)
+          const link = await this.generateToken(request.businessId, request)
           this.emailLink(request, link);
         }
-        this.$emit('update-data');
+        this.$emit('update-businesses');
       } catch (error) {
         console.error(`Failed to ${action} request`, error);
         alert(`An error occurred while trying to ${action} the request.`);
