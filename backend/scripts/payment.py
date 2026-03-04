@@ -60,7 +60,6 @@ def check_env():
 
 @blueprint.route('/create-customer', methods=['POST'])
 def create_customer():
-    db = g.db
     data = request.get_json()
     customer_email = data['customerEmail']
     customer_name = data['customerName']
@@ -94,7 +93,6 @@ def create_customer():
 
 @blueprint.route('/create-full-discount-subscription', methods=['POST'])
 def create_full_discount_subscription():
-    db = g.db
     data = json.loads(request.data)
     customer_id = data['customerId']
     price_id = data['priceId']
@@ -137,7 +135,6 @@ def create_full_discount_subscription():
 
 @blueprint.route('/create-subscription', methods=['POST'])
 def create_subscription():
-    db = g.db
     data = json.loads(request.data)
     customer_id = data['customerId']
     price_id = data['priceId']
@@ -416,7 +413,6 @@ def create_subscription():
 
 @blueprint.route('/retrieve-latest-subscription', methods=['POST'])
 def retrieve_latest_subscription():
-    db = g.db
     data = json.loads(request.data)
     try:
         customer_id = data['customerId']
@@ -440,7 +436,6 @@ def retrieve_latest_subscription():
 
 @blueprint.route('/retrieve-payment-method', methods=['POST'])
 def retrieve_payment_method():
-    db = g.db
     data = json.loads(request.data)
     try:
         subscription = data['subscription']
@@ -469,7 +464,6 @@ def retrieve_payment_method():
 
 @blueprint.route('/retrieve-subscription-details', methods=['POST'])
 def retrieve_subscription_details():
-    db = g.db
     data = json.loads(request.data)
     try:
         subscription = data['subscription']
@@ -507,7 +501,6 @@ def retrieve_subscription_details():
 
 @blueprint.route('/change-subscription-plan', methods=['POST'])
 def change_subscription_plan():
-    db = g.db
     data = json.loads(request.data)
     try:
         subscription = data['subscription']
@@ -535,7 +528,6 @@ def change_subscription_plan():
 
 @blueprint.route('/cancel-subscription', methods=['POST'])
 def cancel_subscription():
-    db = g.db
     data = json.loads(request.data)
     try:
         subscription_id = data['subscription_id']
@@ -581,7 +573,6 @@ def cancel_subscription():
 # Take note to keep up to date with the api version
 @blueprint.route('/retrieve-upcoming-invoice', methods=['POST'])
 def retrieve_upcoming_invoice():
-    db = g.db
     data = json.loads(request.data)
     try:
         subscription_id = data['subscription_id']
@@ -606,7 +597,6 @@ def retrieve_upcoming_invoice():
 
 @blueprint.route('/resume-subscription', methods=['POST'])
 def resume_subscription():
-    db = g.db
     data = json.loads(request.data)
     subscription_id = data['subscription_id']
     subscription = data['subscription']
