@@ -1113,7 +1113,7 @@
                     <em>{{ formatEventDates(event.eventStartDate, event.eventEndDate) }}</em>
                     <span v-if="event.originLocation"> • {{ event.originLocation }}</span>
                   </p>
-                  <p v-if="event.eventDesc" class="dx-event__desc">{{ event.eventDesc.length > 95 ? event.eventDesc.substring(0, 95) + '...' : event.eventDesc }}</p>
+                  <p v-if="event.eventDesc" class="dx-event__desc">{{ stripHtml(event.eventDesc).length > 95 ? stripHtml(event.eventDesc).substring(0, 95) + '...' : stripHtml(event.eventDesc) }}</p>
                 </div>
               </article>
             </div>
@@ -2567,6 +2567,10 @@ export default {
     },
 
     // Helper methods for upcoming events
+    stripHtml(html) {
+      if (!html) return '';
+      return html.replace(/<[^>]*>/g, '');
+    },
     formatEventDates(startDate, endDate) {
       if (!startDate) return '';
       
