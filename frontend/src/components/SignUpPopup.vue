@@ -89,7 +89,7 @@ export default {
         },
         welcomeMessage() {
             if (this.venueId === 109) {
-                return 'Welcome to Sake Matsuri 2025 🍶!';
+                return 'Welcome to Sake Matsuri 2026 🍶!';
             }
             if (this.venueId === 99) {
                 return 'Welcome to Whisky Live Singapore 2025!';
