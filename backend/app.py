@@ -175,7 +175,14 @@ class DatabaseManager:
             database=config['POSTGRES_DB'],
             user=config['POSTGRES_USER'],
             password=config['POSTGRES_PASSWORD'],
-            cursor_factory=RealDictCursor  # Makes query results return as dicts instead of tuples
+            cursor_factory=RealDictCursor,  # Makes query results return as dicts instead of tuples
+            # TCP keepalives: prevent AWS NAT gateway (350s timeout) and Aurora from
+            # silently killing idle connections in the pool.
+            # Every 60s of idle, send a probe. Retry every 10s, up to 5 times.
+            keepalives=1,
+            keepalives_idle=60,
+            keepalives_interval=10,
+            keepalives_count=5,
         )
         
         # Log successful pool initialization
