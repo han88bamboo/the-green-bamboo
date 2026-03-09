@@ -10,6 +10,42 @@
             :isOwnProfile="ownProfile"
             :isFollowing="following"
           />
+          <!--EVENTS NEARBY--> 
+          <section v-if="ownProfile && user && upcomingEvents.length > 0" class="dx-events card mt-2 mb-3">
+            <header class="dx-events__header w-100">
+              <h3 class="dx-events__title">📍 Check Out Events Near You</h3>
+            </header>
+
+            <div class="dx-events__body w-100">
+              <article v-for="event in upcomingEvents" :key="event.eventId" class="dx-event">
+                <a 
+                  class="dx-event__media" 
+                  :href="getVenueProfileUrl(event.venueId, event.venueName)" 
+                  :aria-label="event.eventName"
+                >
+                  <img
+                    class="dx-event__img"
+                    :src="event.venuePhoto || defaultVenueImage"
+                    :alt="event.eventName + ' poster'"
+                    loading="lazy"
+                  />
+                </a>
+
+                <div class="dx-event__content">
+                  <h3 class="dx-event__name">
+                    <a :href="getVenueProfileUrl(event.venueId, event.venueName)">
+                      {{ event.eventName }}
+                    </a>
+                  </h3>
+                  <p class="dx-event__meta">
+                    <em>{{ formatEventDates(event.eventStartDate, event.eventEndDate) }}</em>
+                    <span v-if="event.originLocation"> • {{ event.originLocation }}</span>
+                  </p>
+                  <p v-if="event.eventDesc" class="dx-event__desc">{{ stripHtml(event.eventDesc).length > 95 ? stripHtml(event.eventDesc).substring(0, 95) + '...' : stripHtml(event.eventDesc) }}</p>
+                </div>
+              </article>
+            </div>
+          </section>
       </div>
     <div v-if="totalReviewsCount > 0" class="pt-2 container mobile-view-show" style="background-color:wheat">
       <p class="text-start fw-bold mobile-spacer mobile-rating-smaller-text-2 mb-0">Ratings Spread</p>
@@ -1082,42 +1118,7 @@
             </div>
           </div>
 
-          <!--EVENTS NEARBY--> 
-          <section v-if="ownProfile && user && upcomingEvents.length > 0" class="dx-events card">
-            <header class="dx-events__header w-100">
-              <h3 class="dx-events__title">📍 Check Out Events Near You</h3>
-            </header>
 
-            <div class="dx-events__body w-100">
-              <article v-for="event in upcomingEvents" :key="event.eventId" class="dx-event">
-                <a 
-                  class="dx-event__media" 
-                  :href="getVenueProfileUrl(event.venueId, event.venueName)" 
-                  :aria-label="event.eventName"
-                >
-                  <img
-                    class="dx-event__img"
-                    :src="event.venuePhoto || defaultVenueImage"
-                    :alt="event.eventName + ' poster'"
-                    loading="lazy"
-                  />
-                </a>
-
-                <div class="dx-event__content">
-                  <h3 class="dx-event__name">
-                    <a :href="getVenueProfileUrl(event.venueId, event.venueName)">
-                      {{ event.eventName }}
-                    </a>
-                  </h3>
-                  <p class="dx-event__meta">
-                    <em>{{ formatEventDates(event.eventStartDate, event.eventEndDate) }}</em>
-                    <span v-if="event.originLocation"> • {{ event.originLocation }}</span>
-                  </p>
-                  <p v-if="event.eventDesc" class="dx-event__desc">{{ stripHtml(event.eventDesc).length > 95 ? stripHtml(event.eventDesc).substring(0, 95) + '...' : stripHtml(event.eventDesc) }}</p>
-                </div>
-              </article>
-            </div>
-          </section>
 
 
           
