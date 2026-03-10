@@ -2108,8 +2108,8 @@ export default {
 .staging-modal-content {
     background: white;
     border-radius: 12px;
-    width: 95%;
-    max-width: 1600px;
+    width: 99%;
+    /* max-width: 1600px; */
     max-height: 90vh;
     display: flex;
     flex-direction: column;
