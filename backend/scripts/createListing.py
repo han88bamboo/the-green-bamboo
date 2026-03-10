@@ -1190,16 +1190,51 @@ def stageListingsFromCSV():
                 print(f"Fuzzy matched {producer_fuzzy_count} producers and {bottler_fuzzy_count} bottlers")
             
             # Parallelize S3 image uploads while maintaining order
+            DEFAULT_IMAGE_URL = "https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultDrinkImage.png?v=1750084739"
+
+            def convert_google_drive_url(url):
+                """
+                Detects Google Drive share/view URLs and rewrites them to direct
+                lh3.googleusercontent.com image links, which return the actual image
+                bytes (for publicly shared files). Returns the original URL unchanged
+                if it is not a recognised Google Drive pattern.
+                Supported patterns:
+                  - /file/d/FILE_ID/view?usp=sharing
+                  - /file/d/FILE_ID/view?usp=drive_link
+                  - /file/d/FILE_ID/view  (no query params)
+                  - /open?id=FILE_ID
+                  - /uc?id=FILE_ID
+                """
+                if 'drive.google.com' not in url:
+                    return url
+                # Pattern 1: /file/d/FILE_ID/...
+                match = re.search(r'drive\.google\.com/file/d/([a-zA-Z0-9_-]+)', url)
+                if match:
+                    return f'https://lh3.googleusercontent.com/d/{match.group(1)}'
+                # Pattern 2: /open?id=FILE_ID or /uc?id=FILE_ID
+                match = re.search(r'drive\.google\.com/(?:open|uc)\?(?:.*&)?id=([a-zA-Z0-9_-]+)', url)
+                if match:
+                    return f'https://lh3.googleusercontent.com/d/{match.group(1)}'
+                return url
+
             def upload_image_with_index(indexed_data):
                 index, image_url = indexed_data
                 if image_url and image_url.strip():
                     try:
-                        s3_url = s3Images.uploadURLtoS3(image_url)
+                        transformed_url = convert_google_drive_url(image_url)
+                        was_gdrive = (transformed_url != image_url)
+                        s3_url = s3Images.uploadURLtoS3(transformed_url)
+                        # uploadURLtoS3 returns its input URL unchanged on failure.
+                        # If we transformed a GDrive URL and upload still failed
+                        # (e.g. file is private), fall back to default image.
+                        if was_gdrive and s3_url == transformed_url:
+                            print(f"GDrive image not accessible (private?): {image_url}")
+                            return index, DEFAULT_IMAGE_URL
                         return index, s3_url
                     except Exception as e:
                         print(f"Error uploading image from URL {image_url}: {str(e)}")
-                        return index, "https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultDrinkImage.png?v=1750084739"
-                return index, "https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultDrinkImage.png?v=1750084739"
+                        return index, DEFAULT_IMAGE_URL
+                return index, DEFAULT_IMAGE_URL
             
             # Create indexed data to maintain order
             indexed_image_urls = list(enumerate(image_urls))
