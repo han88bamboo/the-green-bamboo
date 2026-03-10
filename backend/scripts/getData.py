@@ -12780,22 +12780,25 @@ def detectPotentialDuplicateListings():
                     l."originCountry",
                     l."abv",
                     l."age",
-                    l."photo"
+                    l."photo",
+                    l."officialDesc",
+                    l."sourceLink",
+                    l."reviewLink"
                 FROM "listings" l
                 LEFT JOIN "producers" p ON l."producerID" = p."id"
                 LEFT JOIN "producers" b ON l."bottlerID" = b."id"
                 WHERE l."drinkType" = %s
                   AND l."originCountry" = %s
             """
-            
+
             # Parameters: drinkType and originCountry for WHERE clause filtering
             search_params = [
                 drink_type, origin_country
             ]
-            
+
             cursor.execute(search_query, search_params)
             potential_matches = cursor.fetchall()
-            
+
             logger.info(f"REQ-{request_id} Found {len(potential_matches)} potential candidates from database (filtered by drinkType='{drink_type}', originCountry='{origin_country}')")
         
         # ====== STEP 4: Calculate fuzzy match scores ======
@@ -13024,13 +13027,16 @@ def detectPotentialDuplicateListings():
                         "abv": float(match['abv']) if match['abv'] else None,
                         "age": match['age'],
                         "photo": match['photo'],
+                        "officialDesc": match.get('officialDesc'),
+                        "sourceLink": match.get('sourceLink'),
+                        "reviewLink": match.get('reviewLink'),
                         "similarity": round(total_score, 1)
                     })
-                    
+
             except Exception as e:
                 logger.warning(f"REQ-{request_id} Error calculating score for match {match.get('id')}: {e}")
                 continue
-        
+
         # ====== STEP 5: Sort and return results ======
         # Sort by similarity (highest first) and take top 10
         matches_with_scores.sort(key=lambda x: x['similarity'], reverse=True)
@@ -13133,7 +13139,10 @@ def detect_duplicates_batch(listings, threshold=CSV_DUPLICATE_DETECTION_THRESHOL
                     l."originCountry",
                     l."abv",
                     l."age",
-                    l."photo"
+                    l."photo",
+                    l."officialDesc",
+                    l."sourceLink",
+                    l."reviewLink"
                 FROM "listings" l
                 LEFT JOIN "producers" p ON l."producerID" = p."id"
                 LEFT JOIN "producers" b ON l."bottlerID" = b."id"
@@ -13457,13 +13466,16 @@ def detect_duplicates_batch(listings, threshold=CSV_DUPLICATE_DETECTION_THRESHOL
                         "abv": float(match['abv']) if match['abv'] else None,
                         "age": match['age'],
                         "photo": match['photo'],
+                        "officialDesc": match.get('officialDesc'),
+                        "sourceLink": match.get('sourceLink'),
+                        "reviewLink": match.get('reviewLink'),
                         "similarity": round(total_score, 1)
                     })
-                    
+
             except Exception as e:
                 logger.warning(f"REQ-{request_id} Error calculating score for match {match.get('id')}: {e}")
                 continue
-        
+
         # Sort by similarity (highest first) - return ALL matches above threshold
         matches_with_scores.sort(key=lambda x: x['similarity'], reverse=True)
         

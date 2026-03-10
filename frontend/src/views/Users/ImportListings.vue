@@ -741,6 +741,61 @@
                                                 </div>
                                             </div>
                                         </div>
+                                        <!-- Per-field update checkboxes for confirmed duplicate (outside collapsible content) -->
+                                        <div v-if="isConfirmedDuplicate(item.id) && getUpdatableFields(item.id).length > 0"
+                                             class="update-fields-section">
+                                            <div class="update-fields-header">
+                                                <small class="text-muted fw-bold">We will not import this item, but do you wish to update (overwrite) the existing listing with data from your CSV file?</small>
+                                            </div>
+                                            <div class="update-fields-list">
+                                                <div v-for="fieldInfo in getUpdatableFields(item.id)"
+                                                     :key="'update-field-' + item.id + '-' + fieldInfo.field"
+                                                     class="update-field-row">
+                                                    <div class="form-check form-check-inline">
+                                                        <input class="form-check-input update-field-checkbox"
+                                                               type="checkbox"
+                                                               :id="'update-' + item.id + '-' + fieldInfo.field"
+                                                               :checked="getConfirmedDuplicate(item.id)?.fieldsToUpdate?.[fieldInfo.field] || false"
+                                                               @change="toggleFieldUpdate(item.id, fieldInfo.field)">
+                                                        <i class="bi bi-info-circle update-field-info-icon"
+                                                               :title="'Check to update the ' + fieldInfo.label.toLowerCase() + ' on the existing listing'"></i>       
+                                                        <label class="form-check-label" :for="'update-' + item.id + '-' + fieldInfo.field">
+                                                            {{ fieldInfo.label }}
+                                                        </label>
+                                                    </div>
+                                                    <div class="update-field-diff small">
+                                                        <!-- Existing value -->
+                                                        <span class="text-start text-muted" :class="{ 'field-value-expanded': expandedFieldValues[item.id + '-' + fieldInfo.field + '-existing'] }">
+                                                            <template v-if="expandedFieldValues[item.id + '-' + fieldInfo.field + '-existing']">
+                                                                {{ fieldInfo.existingValue || '(empty)' }}
+                                                                <a href="#" class="read-more-link ms-1" @click.prevent="toggleFieldValueExpand(item.id, fieldInfo.field, 'existing')">(Read less)</a>
+                                                            </template>
+                                                            <template v-else>
+                                                                {{ truncateFieldValue(fieldInfo.existingValue) || '(empty)' }}
+                                                                <a v-if="fieldInfo.existingValue && fieldInfo.existingValue.length > 40"
+                                                                   href="#" class="read-more-link ms-1"
+                                                                   @click.prevent="toggleFieldValueExpand(item.id, fieldInfo.field, 'existing')">(Read more)</a>
+                                                            </template>
+                                                        </span>
+                                                        <span class="ms-1 text-danger">Change to</span>
+                                                        <i class="bi bi-arrow-right mx-1 flex-shrink-0 text-danger"></i>
+                                                        <!-- CSV value -->
+                                                        <span class="text-primary fw-semibold" :class="{ 'field-value-expanded': expandedFieldValues[item.id + '-' + fieldInfo.field + '-csv'] }">
+                                                            <template v-if="expandedFieldValues[item.id + '-' + fieldInfo.field + '-csv']">
+                                                                {{ fieldInfo.csvValue }}
+                                                                <a href="#" class="read-more-link ms-1" @click.prevent="toggleFieldValueExpand(item.id, fieldInfo.field, 'csv')">(Read less)</a>
+                                                            </template>
+                                                            <template v-else>
+                                                                {{ truncateFieldValue(fieldInfo.csvValue) }}
+                                                                <a v-if="fieldInfo.csvValue && fieldInfo.csvValue.length > 40"
+                                                                   href="#" class="read-more-link ms-1"
+                                                                   @click.prevent="toggleFieldValueExpand(item.id, fieldInfo.field, 'csv')">(Read more)</a>
+                                                            </template>
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
                                 </td>
                             </tr>
@@ -982,6 +1037,7 @@ export default {
             
             // Confirmed duplicates - user explicitly linked to existing listing
             confirmedDuplicates: {}, // Map of stagedItemId -> { linkedListingId, linkedListing: {...} }
+            expandedFieldValues: {}, // key: `${itemId}-${field}-${side}` → true/false
             
             // Expand/collapse state for confirmed duplicate match sections
             duplicateMatchesExpandedState: {},
@@ -1320,18 +1376,33 @@ export default {
 
             try {
                 let commitResponse = null;
-                
-                // Only call API if there are items to actually import
-                if (hasItemsToImport) {
+
+                // Build update payload for confirmed duplicates with per-field selections
+                const updateExistingPayload = Object.entries(this.confirmedDuplicates)
+                    // eslint-disable-next-line no-unused-vars
+                    .filter(([_key, dup]) => dup.fieldsToUpdate && Object.values(dup.fieldsToUpdate).some(v => v))
+                    .map(([stagedId, dup]) => ({
+                        stagedId: parseInt(stagedId),
+                        linkedListingId: dup.linkedListingId,
+                        fieldsToUpdate: Object.keys(dup.fieldsToUpdate).filter(f => dup.fieldsToUpdate[f])
+                    }));
+
+                const hasUpdatesToSend = updateExistingPayload.length > 0;
+
+                // Call API if there are items to import or existing listings to update
+                if (hasItemsToImport || hasUpdatesToSend) {
                     const response = await this.$axios.post(
                         `${process.env.VUE_APP_API_URL}/createListing/commitStagedListings`,
-                        { stagedIds: selectedIds },
+                        {
+                            stagedIds: selectedIds,
+                            updateExistingListings: updateExistingPayload
+                        },
                         { timeout: 120000 } // 2 minute timeout
                     );
                     commitResponse = response;
                 }
 
-                if (!hasItemsToImport || commitResponse.data.code === 201) {
+                if ((!hasItemsToImport && !hasUpdatesToSend) || (commitResponse && commitResponse.data.code === 201)) {
                     this.commitSummary = commitResponse ? commitResponse.data.data : {
                         committedCount: 0,
                         failCount: 0,
@@ -1842,7 +1913,8 @@ export default {
             // Store the confirmed duplicate with all the match info
             this.confirmedDuplicates[itemId] = {
                 linkedListingId: match.id,
-                linkedListing: { ...match } // Copy the match object with all its properties
+                linkedListing: { ...match }, // Copy the match object with all its properties
+                fieldsToUpdate: {} // Per-field update selections (user opts in via checkboxes)
             };
             // Force reactivity
             this.confirmedDuplicates = { ...this.confirmedDuplicates };
@@ -1861,11 +1933,78 @@ export default {
             delete this.confirmedDuplicates[String(itemId)];
             // Force reactivity
             this.confirmedDuplicates = { ...this.confirmedDuplicates };
-            
+
             const toast = useToast();
             toast.info('Selection cleared. You can now select a different match or import as new.');
         },
-        
+
+        // Get updatable fields where the CSV value differs from the existing listing
+        getUpdatableFields(itemId) {
+            const confirmedDup = this.getConfirmedDuplicate(itemId);
+            if (!confirmedDup) return [];
+
+            const stagedItem = this.stagedListings.find(l => l.id === itemId || l.id === String(itemId));
+            if (!stagedItem) return [];
+
+            const existingListing = confirmedDup.linkedListing;
+
+            const fieldDefs = [
+                { field: 'officialDesc', label: 'Description', stagedKey: 'officialDesc' },
+                { field: 'photo', label: 'Photo', stagedKey: 'photo' },
+                { field: 'sourceLink', label: 'Source Link', stagedKey: 'sourceLink' },
+                { field: 'reviewLink', label: 'Review Link', stagedKey: 'reviewLink' },
+                { field: 'drinkType', label: 'Drink Type', stagedKey: 'drinkType' },
+                { field: 'typeCategory', label: 'Category', stagedKey: 'typeCategory' },
+                { field: 'drinkStyle', label: 'Style', stagedKey: 'drinkStyle' },
+                { field: 'originCountry', label: 'Country', stagedKey: 'originCountry' },
+                { field: 'age', label: 'Age', stagedKey: 'age' },
+                { field: 'abv', label: 'ABV', stagedKey: 'abv' },
+            ];
+
+            const result = [];
+            for (const def of fieldDefs) {
+                const csvValue = stagedItem[def.stagedKey];
+                const existingValue = existingListing[def.field];
+
+                // Only show if CSV has a non-empty value AND it differs from existing
+                const csvStr = csvValue != null ? String(csvValue).trim() : '';
+                const existingStr = existingValue != null ? String(existingValue).trim() : '';
+
+                if (csvStr !== '' && csvStr !== existingStr) {
+                    result.push({
+                        field: def.field,
+                        label: def.label,
+                        csvValue: csvStr,
+                        existingValue: existingStr
+                    });
+                }
+            }
+            return result;
+        },
+
+        // Toggle a single field update checkbox for a confirmed duplicate
+        toggleFieldUpdate(itemId, field) {
+            const dup = this.confirmedDuplicates[itemId] || this.confirmedDuplicates[String(itemId)];
+            if (!dup) return;
+            if (!dup.fieldsToUpdate) dup.fieldsToUpdate = {};
+            dup.fieldsToUpdate[field] = !dup.fieldsToUpdate[field];
+            // Force reactivity
+            this.confirmedDuplicates = { ...this.confirmedDuplicates };
+        },
+
+        // Toggle expand/collapse of a single field value in the update-field-diff display
+        toggleFieldValueExpand(itemId, field, side) {
+            const key = `${itemId}-${field}-${side}`;
+            this.expandedFieldValues = { ...this.expandedFieldValues, [key]: !this.expandedFieldValues[key] };
+        },
+
+        // Truncate a field value for display
+        truncateFieldValue(value, maxLen = 40) {
+            if (!value) return '';
+            const str = String(value);
+            return str.length > maxLen ? str.substring(0, maxLen) + '...' : str;
+        },
+
         // Toggle expand/collapse for duplicate matches when confirmed
         toggleDuplicateMatchesExpand(itemId) {
             if (!this.duplicateMatchesExpandedState) {
@@ -2457,6 +2596,65 @@ export default {
     background-color: rgba(25, 135, 84, 0.15);
     border: 2px solid #198754;
     box-shadow: 0 2px 6px rgba(25, 135, 84, 0.2);
+}
+
+.update-fields-section {
+    padding: 8px 12px;
+    margin: 0 8px 8px 8px;
+    background-color: rgba(13, 110, 253, 0.05);
+    border: 1px solid rgba(13, 110, 253, 0.2);
+    border-radius: 6px;
+}
+
+.update-fields-header {
+    margin-bottom: 6px;
+}
+
+.update-fields-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.update-field-row {
+    display: flex;
+    align-items: flex-start;
+    padding: 3px 0;
+}
+
+.update-field-checkbox {
+    cursor: pointer;
+}
+
+.update-field-info-icon {
+    font-size: 0.8rem;
+    margin-right: 4px;
+    color: #0d6efd;
+    cursor: help;
+}
+
+.update-field-diff {
+    display: flex;
+    align-items: flex-start;
+    overflow: hidden;
+    flex-wrap: wrap;
+}
+
+.field-value-expanded {
+    display: inline-block;
+    max-width: 550px;
+    word-wrap: break-word;
+    white-space: normal;
+    vertical-align: top;
+}
+
+.read-more-link {
+    font-size: 0.75rem;
+    font-weight:bold;
+    color:#000;
+    white-space: nowrap;
+    text-decoration: none;
+    flex-shrink: 0;
 }
 
 .duplicate-matches-row.collapsed .duplicate-matches-content {

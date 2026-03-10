@@ -753,6 +753,60 @@
                                     <div class="alert alert-success mb-0 py-2 small">
                                         <strong>Note:</strong> This item is linked to an existing listing. Fields have been pre-filled and locked.
                                     </div>
+                                    <!-- Per-field update checkboxes for main form -->
+                                    <div v-if="getUpdatableFieldsForForm(0).length > 0" class="update-fields-section mt-2">
+                                        <div class="update-fields-header">
+                                            <small class="text-muted fw-bold">We will not import this item, but do you wish to update (overwrite) the existing listing with data from your form?</small>
+                                        </div>
+                                        <div class="update-fields-list">
+                                            <div v-for="fieldInfo in getUpdatableFieldsForForm(0)"
+                                                 :key="'update-main-' + fieldInfo.field"
+                                                 class="update-field-row">
+                                                <div class="form-check form-check-inline">
+                                                    <input class="form-check-input update-field-checkbox"
+                                                           type="checkbox"
+                                                           :id="'update-main-' + fieldInfo.field"
+                                                           :checked="duplicateDetection.fieldsToUpdate?.[fieldInfo.field] || false"
+                                                           @change="toggleFieldUpdateForForm(0, fieldInfo.field)">
+                                                    <i class="bi bi-info-circle update-field-info-icon"
+                                                       :title="'Check to update the ' + fieldInfo.label.toLowerCase() + ' on the existing listing'"></i>
+                                                    <label class="form-check-label" :for="'update-main-' + fieldInfo.field">
+                                                        {{ fieldInfo.label }}
+                                                    </label>
+                                                </div>
+                                                <div class="update-field-diff small">
+                                                    <!-- Existing value -->
+                                                    <span class="text-start text-muted" :class="{ 'field-value-expanded': expandedFieldValues['main-' + fieldInfo.field + '-existing'] }">
+                                                        <template v-if="expandedFieldValues['main-' + fieldInfo.field + '-existing']">
+                                                            {{ fieldInfo.existingValue || '(empty)' }}
+                                                            <a href="#" class="read-more-link ms-1" @click.prevent="toggleFieldValueExpand('main', fieldInfo.field, 'existing')">(Read less)</a>
+                                                        </template>
+                                                        <template v-else>
+                                                            {{ truncateFieldValue(fieldInfo.existingValue) || '(empty)' }}
+                                                            <a v-if="fieldInfo.existingValue && fieldInfo.existingValue.length > 40"
+                                                               href="#" class="read-more-link ms-1"
+                                                               @click.prevent="toggleFieldValueExpand('main', fieldInfo.field, 'existing')">(Read more)</a>
+                                                        </template>
+                                                    </span>
+                                                    <span class="ms-1 text-danger">Change to</span>
+                                                    <i class="bi bi-arrow-right mx-1 flex-shrink-0 text-danger"></i>
+                                                    <!-- Form value -->
+                                                    <span class="text-primary fw-semibold" :class="{ 'field-value-expanded': expandedFieldValues['main-' + fieldInfo.field + '-csv'] }">
+                                                        <template v-if="expandedFieldValues['main-' + fieldInfo.field + '-csv']">
+                                                            {{ fieldInfo.csvValue }}
+                                                            <a href="#" class="read-more-link ms-1" @click.prevent="toggleFieldValueExpand('main', fieldInfo.field, 'csv')">(Read less)</a>
+                                                        </template>
+                                                        <template v-else>
+                                                            {{ truncateFieldValue(fieldInfo.csvValue) }}
+                                                            <a v-if="fieldInfo.csvValue && fieldInfo.csvValue.length > 40"
+                                                               href="#" class="read-more-link ms-1"
+                                                               @click.prevent="toggleFieldValueExpand('main', fieldInfo.field, 'csv')">(Read more)</a>
+                                                        </template>
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
 
                                 <!-- Match suggestions list -->
@@ -1260,6 +1314,60 @@
                                             </div>
                                             <div class="alert alert-success mb-0 py-2 small">
                                                 <strong>Note:</strong> This item is linked to an existing listing. Fields have been pre-filled and locked.
+                                            </div>
+                                            <!-- Per-field update checkboxes for additional item -->
+                                            <div v-if="getUpdatableFieldsForForm(idx + 1).length > 0" class="update-fields-section mt-2">
+                                                <div class="update-fields-header">
+                                                    <small class="text-muted fw-bold">We will not import this item, but do you wish to update (overwrite) the existing listing with data from your form?</small>
+                                                </div>
+                                                <div class="update-fields-list">
+                                                    <div v-for="fieldInfo in getUpdatableFieldsForForm(idx + 1)"
+                                                         :key="'update-item-' + idx + '-' + fieldInfo.field"
+                                                         class="update-field-row">
+                                                        <div class="form-check form-check-inline">
+                                                            <input class="form-check-input update-field-checkbox"
+                                                                   type="checkbox"
+                                                                   :id="'update-item-' + idx + '-' + fieldInfo.field"
+                                                                   :checked="item.duplicateDetection.fieldsToUpdate?.[fieldInfo.field] || false"
+                                                                   @change="toggleFieldUpdateForForm(idx + 1, fieldInfo.field)">
+                                                            <i class="bi bi-info-circle update-field-info-icon"
+                                                               :title="'Check to update the ' + fieldInfo.label.toLowerCase() + ' on the existing listing'"></i>
+                                                            <label class="form-check-label" :for="'update-item-' + idx + '-' + fieldInfo.field">
+                                                                {{ fieldInfo.label }}
+                                                            </label>
+                                                        </div>
+                                                        <div class="update-field-diff small">
+                                                            <!-- Existing value -->
+                                                            <span class="text-start text-muted" :class="{ 'field-value-expanded': expandedFieldValues['item-' + idx + '-' + fieldInfo.field + '-existing'] }">
+                                                                <template v-if="expandedFieldValues['item-' + idx + '-' + fieldInfo.field + '-existing']">
+                                                                    {{ fieldInfo.existingValue || '(empty)' }}
+                                                                    <a href="#" class="read-more-link ms-1" @click.prevent="toggleFieldValueExpand('item-' + idx, fieldInfo.field, 'existing')">(Read less)</a>
+                                                                </template>
+                                                                <template v-else>
+                                                                    {{ truncateFieldValue(fieldInfo.existingValue) || '(empty)' }}
+                                                                    <a v-if="fieldInfo.existingValue && fieldInfo.existingValue.length > 40"
+                                                                       href="#" class="read-more-link ms-1"
+                                                                       @click.prevent="toggleFieldValueExpand('item-' + idx, fieldInfo.field, 'existing')">(Read more)</a>
+                                                                </template>
+                                                            </span>
+                                                            <span class="ms-1 text-danger">Change to</span>
+                                                            <i class="bi bi-arrow-right mx-1 flex-shrink-0 text-danger"></i>
+                                                            <!-- Form value -->
+                                                            <span class="text-primary fw-semibold" :class="{ 'field-value-expanded': expandedFieldValues['item-' + idx + '-' + fieldInfo.field + '-csv'] }">
+                                                                <template v-if="expandedFieldValues['item-' + idx + '-' + fieldInfo.field + '-csv']">
+                                                                    {{ fieldInfo.csvValue }}
+                                                                    <a href="#" class="read-more-link ms-1" @click.prevent="toggleFieldValueExpand('item-' + idx, fieldInfo.field, 'csv')">(Read less)</a>
+                                                                </template>
+                                                                <template v-else>
+                                                                    {{ truncateFieldValue(fieldInfo.csvValue) }}
+                                                                    <a v-if="fieldInfo.csvValue && fieldInfo.csvValue.length > 40"
+                                                                       href="#" class="read-more-link ms-1"
+                                                                       @click.prevent="toggleFieldValueExpand('item-' + idx, fieldInfo.field, 'csv')">(Read more)</a>
+                                                                </template>
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
 
@@ -2740,8 +2848,10 @@
                     matches: [],
                     confirmedDuplicate: null,  // The listing object if user confirmed a duplicate
                     isConfirmed: false,        // Whether user has confirmed this is a duplicate
+                    fieldsToUpdate: {},        // Per-field update selections when confirmed
                 },
                 duplicateDebounceTimer: null,
+                expandedFieldValues: {},  // key: `${identifier}-${field}-${side}` → true/false
 
                 // Bulk submission results tracking
                 bulkSubmissionResults: [],        // Array of results from API
@@ -3052,6 +3162,7 @@
                         matches: [],
                         confirmedDuplicate: null,
                         isConfirmed: false,
+                        fieldsToUpdate: {},
                     },
                     duplicateDebounceTimer: null,
                 };
@@ -4083,46 +4194,68 @@
             buildBulkRequestPayload() {
                 const items = [];
 
-                // Transform Item 1 (main form) - skip if confirmed duplicate OR unchecked
-                if (!this.duplicateDetection.isConfirmed && this.isItemSelected(0)) {
+                // Transform Item 1 (main form)
+                if (this.duplicateDetection.isConfirmed) {
+                    // Confirmed duplicate — include only if user opted to update fields
+                    const checkedFields = Object.keys(this.duplicateDetection.fieldsToUpdate || {})
+                        .filter(f => this.duplicateDetection.fieldsToUpdate[f]);
+                    if (checkedFields.length > 0) {
+                        const item1 = this.transformItemToRequestPayload(
+                            this.form, this.tempDrinkType, this.tempTypeCategory,
+                            this.tempDrinkStyle, this.indOperator, this.varietyTagsList
+                        );
+                        item1.userID = this.form["userID"];
+                        item1.submitterType = this.userType;
+                        item1.originalIndex = 0;
+                        item1.updateExistingListingId = this.form['listingID'];
+                        item1.fieldsToUpdate = checkedFields;
+                        items.push(item1);
+                    }
+                } else if (this.isItemSelected(0)) {
                     const item1 = this.transformItemToRequestPayload(
-                        this.form,
-                        this.tempDrinkType,
-                        this.tempTypeCategory,
-                        this.tempDrinkStyle,
-                        this.indOperator,
-                        this.varietyTagsList
+                        this.form, this.tempDrinkType, this.tempTypeCategory,
+                        this.tempDrinkStyle, this.indOperator, this.varietyTagsList
                     );
-                    // Add userID and submitterType to each item for requestListingBulk
                     item1.userID = this.form["userID"];
                     item1.submitterType = this.userType;
-                    item1.originalIndex = 0; // Track original index for result mapping
+                    item1.originalIndex = 0;
                     items.push(item1);
                 }
 
-                // Transform each additional item - skip confirmed duplicates OR unchecked
+                // Transform each additional item
                 for (let i = 0; i < this.additionalItems.length; i++) {
                     const item = this.additionalItems[i];
-                    // Skip confirmed duplicates
+
                     if (item.duplicateDetection?.isConfirmed) {
+                        // Confirmed duplicate — include only if user opted to update fields
+                        const checkedFields = Object.keys(item.duplicateDetection.fieldsToUpdate || {})
+                            .filter(f => item.duplicateDetection.fieldsToUpdate[f]);
+                        if (checkedFields.length > 0) {
+                            const transformedItem = this.transformItemToRequestPayload(
+                                item, item.tempDrinkType, item.tempTypeCategory,
+                                item.tempDrinkStyle, item.indOperator, item.varietyTagsList
+                            );
+                            transformedItem.userID = this.form["userID"];
+                            transformedItem.submitterType = this.userType;
+                            transformedItem.originalIndex = i + 1;
+                            transformedItem.updateExistingListingId = item.confirmedListingId;
+                            transformedItem.fieldsToUpdate = checkedFields;
+                            items.push(transformedItem);
+                        }
                         continue;
                     }
+
                     // Skip unchecked items
                     if (!this.isItemSelected(i + 1)) {
                         continue;
                     }
                     const transformedItem = this.transformItemToRequestPayload(
-                        item,
-                        item.tempDrinkType,
-                        item.tempTypeCategory,
-                        item.tempDrinkStyle,
-                        item.indOperator,
-                        item.varietyTagsList
+                        item, item.tempDrinkType, item.tempTypeCategory,
+                        item.tempDrinkStyle, item.indOperator, item.varietyTagsList
                     );
-                    // Add userID and submitterType to each item
                     transformedItem.userID = this.form["userID"];
                     transformedItem.submitterType = this.userType;
-                    transformedItem.originalIndex = i + 1; // Track original index for result mapping
+                    transformedItem.originalIndex = i + 1;
                     items.push(transformedItem);
                 }
 
@@ -4139,40 +4272,60 @@
             buildBulkPowerPayload() {
                 const listings = [];
 
-                // Transform Item 1 (main form) - skip if confirmed duplicate OR unchecked
-                if (!this.duplicateDetection.isConfirmed && this.isItemSelected(0)) {
+                // Transform Item 1 (main form)
+                if (this.duplicateDetection.isConfirmed) {
+                    // Confirmed duplicate — include only if user opted to update fields
+                    const checkedFields = Object.keys(this.duplicateDetection.fieldsToUpdate || {})
+                        .filter(f => this.duplicateDetection.fieldsToUpdate[f]);
+                    if (checkedFields.length > 0) {
+                        const item1 = this.transformItemToPowerPayload(
+                            this.form, this.tempDrinkType, this.tempTypeCategory,
+                            this.tempDrinkStyle, this.indOperator, this.varietyTagsList
+                        );
+                        item1.originalIndex = 0;
+                        item1.updateExistingListingId = this.form['listingID'];
+                        item1.fieldsToUpdate = checkedFields;
+                        listings.push(item1);
+                    }
+                } else if (this.isItemSelected(0)) {
                     const item1 = this.transformItemToPowerPayload(
-                        this.form,
-                        this.tempDrinkType,
-                        this.tempTypeCategory,
-                        this.tempDrinkStyle,
-                        this.indOperator,
-                        this.varietyTagsList
+                        this.form, this.tempDrinkType, this.tempTypeCategory,
+                        this.tempDrinkStyle, this.indOperator, this.varietyTagsList
                     );
-                    item1.originalIndex = 0; // Track original index for result mapping
+                    item1.originalIndex = 0;
                     listings.push(item1);
                 }
 
-                // Transform each additional item - skip confirmed duplicates OR unchecked
+                // Transform each additional item
                 for (let i = 0; i < this.additionalItems.length; i++) {
                     const item = this.additionalItems[i];
-                    // Skip confirmed duplicates
+
                     if (item.duplicateDetection?.isConfirmed) {
+                        // Confirmed duplicate — include only if user opted to update fields
+                        const checkedFields = Object.keys(item.duplicateDetection.fieldsToUpdate || {})
+                            .filter(f => item.duplicateDetection.fieldsToUpdate[f]);
+                        if (checkedFields.length > 0) {
+                            const transformedItem = this.transformItemToPowerPayload(
+                                item, item.tempDrinkType, item.tempTypeCategory,
+                                item.tempDrinkStyle, item.indOperator, item.varietyTagsList
+                            );
+                            transformedItem.originalIndex = i + 1;
+                            transformedItem.updateExistingListingId = item.confirmedListingId;
+                            transformedItem.fieldsToUpdate = checkedFields;
+                            listings.push(transformedItem);
+                        }
                         continue;
                     }
+
                     // Skip unchecked items
                     if (!this.isItemSelected(i + 1)) {
                         continue;
                     }
                     const transformedItem = this.transformItemToPowerPayload(
-                        item,
-                        item.tempDrinkType,
-                        item.tempTypeCategory,
-                        item.tempDrinkStyle,
-                        item.indOperator,
-                        item.varietyTagsList
+                        item, item.tempDrinkType, item.tempTypeCategory,
+                        item.tempDrinkStyle, item.indOperator, item.varietyTagsList
                     );
-                    transformedItem.originalIndex = i + 1; // Track original index for result mapping
+                    transformedItem.originalIndex = i + 1;
                     listings.push(transformedItem);
                 }
 
@@ -5301,6 +5454,31 @@
                     return;
                 }
 
+                // ============ SINGLE-ITEM: CONFIRMED DUPLICATE WITH FIELD UPDATES ============
+                // If user confirmed a duplicate and opted to update fields, handle via bulk endpoint
+                if (!isBulkMode && this.formMode === "new" && this.duplicateDetection.isConfirmed) {
+                    const checkedFields = Object.keys(this.duplicateDetection.fieldsToUpdate || {})
+                        .filter(f => this.duplicateDetection.fieldsToUpdate[f]);
+                    if (checkedFields.length > 0) {
+                        let submitAPI = "";
+                        let bulkPayload = {};
+                        if (this.formType === "req") {
+                            submitAPI = `${process.env.VUE_APP_API_URL}/requestListing/requestListingBulk`;
+                            bulkPayload = this.buildBulkRequestPayload();
+                        } else if (this.formType === "power") {
+                            submitAPI = `${process.env.VUE_APP_API_URL}/createListing/createListingBulk`;
+                            bulkPayload = this.buildBulkPowerPayload();
+                        }
+                        if (submitAPI) {
+                            console.log("Single-item duplicate update via bulk endpoint:", submitAPI);
+                            this.writeBulkListings(submitAPI, bulkPayload);
+                            return;
+                        }
+                    }
+                    // No fields checked — nothing to do, show message
+                    return;
+                }
+
                 // ============ SINGLE-ITEM SUBMISSION MODE (original logic below) ============
 
                 // Form Validation for Edit/Duplicate Request
@@ -6013,6 +6191,7 @@
                 // Store the confirmed duplicate
                 this.duplicateDetection.confirmedDuplicate = match;
                 this.duplicateDetection.isConfirmed = true;
+                this.duplicateDetection.fieldsToUpdate = {}; // Per-field update selections
                 
                 // Pre-fill all form fields from the matched listing
                 this.form['listingName'] = match.listingName || '';
@@ -6076,10 +6255,11 @@
             confirmDuplicateForItem(idx, match) {
                 const item = this.additionalItems[idx];
                 if (!item) return;
-                
+
                 // Store the confirmed duplicate
                 item.duplicateDetection.confirmedDuplicate = match;
                 item.duplicateDetection.isConfirmed = true;
+                item.duplicateDetection.fieldsToUpdate = {}; // Per-field update selections
                 
                 // Pre-fill all item fields from the matched listing
                 item.listingName = match.listingName || '';
@@ -6132,6 +6312,117 @@
                 
                 // Store the listing ID reference
                 item.confirmedListingId = match.id;
+            },
+
+            /**
+             * Get updatable fields where form values differ from the confirmed duplicate.
+             * itemIndex: 0 = main form, 1+ = additionalItems[itemIndex - 1]
+             */
+            getUpdatableFieldsForForm(itemIndex) {
+                let formData, confirmedMatch;
+
+                if (itemIndex === 0) {
+                    // Main form
+                    if (!this.duplicateDetection.isConfirmed || !this.duplicateDetection.confirmedDuplicate) return [];
+                    confirmedMatch = this.duplicateDetection.confirmedDuplicate;
+                    formData = {
+                        officialDesc: this.form['officialDesc'],
+                        photo: this.form['photo'],
+                        sourceLink: this.form['sourceLink'],
+                        reviewLink: this.form['reviewLink'],
+                        drinkType: this.tempDrinkType,
+                        typeCategory: this.tempTypeCategory,
+                        drinkStyle: this.tempDrinkStyle,
+                        originCountry: this.form['originCountry'],
+                        age: this.form['age'],
+                        abv: this.form['abv'],
+                        tags: this.form['tags'],
+                    };
+                } else {
+                    const item = this.additionalItems[itemIndex - 1];
+                    if (!item || !item.duplicateDetection?.isConfirmed || !item.duplicateDetection?.confirmedDuplicate) return [];
+                    confirmedMatch = item.duplicateDetection.confirmedDuplicate;
+                    formData = {
+                        officialDesc: item.officialDesc,
+                        photo: item.photo,
+                        sourceLink: item.sourceLink,
+                        reviewLink: item.reviewLink,
+                        drinkType: item.tempDrinkType,
+                        typeCategory: item.tempTypeCategory,
+                        drinkStyle: item.tempDrinkStyle || '',
+                        originCountry: item.originCountry,
+                        age: item.age,
+                        abv: item.abv,
+                        tags: item.tags,
+                    };
+                }
+
+                const fieldDefs = [
+                    { field: 'officialDesc', label: 'Description' },
+                    { field: 'photo', label: 'Photo' },
+                    { field: 'sourceLink', label: 'Source Link' },
+                    { field: 'reviewLink', label: 'Review Link' },
+                    { field: 'drinkType', label: 'Drink Type' },
+                    { field: 'typeCategory', label: 'Category' },
+                    { field: 'drinkStyle', label: 'Style' },
+                    { field: 'originCountry', label: 'Country' },
+                    { field: 'age', label: 'Age' },
+                    { field: 'abv', label: 'ABV' },
+                    { field: 'tags', label: 'Tags' },
+                ];
+
+                const result = [];
+                for (const def of fieldDefs) {
+                    const formValue = formData[def.field];
+                    const existingValue = confirmedMatch[def.field];
+
+                    const formStr = formValue != null ? String(formValue).trim() : '';
+                    const existingStr = existingValue != null ? String(existingValue).trim() : '';
+
+                    if (formStr !== '' && formStr !== existingStr) {
+                        result.push({
+                            field: def.field,
+                            label: def.label,
+                            csvValue: formStr,
+                            existingValue: existingStr
+                        });
+                    }
+                }
+                return result;
+            },
+
+            /**
+             * Toggle a single field update checkbox.
+             * itemIndex: 0 = main form, 1+ = additionalItems[itemIndex - 1]
+             */
+            toggleFieldUpdateForForm(itemIndex, field) {
+                let detection;
+                if (itemIndex === 0) {
+                    detection = this.duplicateDetection;
+                } else {
+                    const item = this.additionalItems[itemIndex - 1];
+                    if (!item) return;
+                    detection = item.duplicateDetection;
+                }
+                if (!detection.fieldsToUpdate) detection.fieldsToUpdate = {};
+                detection.fieldsToUpdate[field] = !detection.fieldsToUpdate[field];
+            },
+
+            /**
+             * Truncate a field value for display in update checkboxes
+             */
+            truncateFieldValue(value, maxLen = 40) {
+                if (!value) return '';
+                const str = String(value);
+                return str.length > maxLen ? str.substring(0, maxLen) + '...' : str;
+            },
+
+            /**
+             * Toggle expand/collapse of a single field value in the update-field-diff display
+             */
+            toggleFieldValueExpand(itemId, field, side) {
+                const key = `${itemId}-${field}-${side}`;
+                this.expandedFieldValues = { ...this.expandedFieldValues, [key]: !this.expandedFieldValues[key] };
             },
 
             /**
@@ -7012,6 +7303,67 @@
 .duplicate-confirmed-field:focus {
     background-color: #e9ecef !important;
 }
+/* Per-field update checkboxes for confirmed duplicates */
+.update-fields-section {
+    padding: 8px 12px;
+    margin-top: 8px;
+    background-color: rgba(13, 110, 253, 0.05);
+    border: 1px solid rgba(13, 110, 253, 0.2);
+    border-radius: 6px;
+}
+
+.update-fields-header {
+    margin-bottom: 6px;
+}
+
+.update-fields-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.update-field-row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    padding: 3px 0;
+}
+
+.update-field-checkbox {
+    cursor: pointer;
+}
+
+.update-field-info-icon {
+    font-size: 0.8rem;
+    margin-left: 4px;
+    color: #0d6efd;
+    cursor: help;
+}
+
+.update-field-diff {
+    display: flex;
+    align-items: flex-start;
+    overflow: hidden;
+    flex-wrap: wrap;
+}
+
+.field-value-expanded {
+    display: inline-block;
+    max-width: 550px;
+    word-wrap: break-word;
+    white-space: normal;
+    vertical-align: top;
+}
+
+.read-more-link {
+    font-size: 0.75rem;
+    font-weight: bold;
+    color: #000;
+    white-space: nowrap;
+    text-decoration: none;
+    flex-shrink: 0;
+}
+
 /* ============ END DUPLICATE DETECTION STYLES ============ */
 
 /* ============ MENU MODAL STYLES ============ */

@@ -43,6 +43,47 @@ def parse_json(data):
 # ======================================================
 
 # -----------------------------------------------------------------------------------------
+# Helper: Update specific fields of an existing listing (used by CSV import and bulk submit
+# when a user confirms a duplicate and opts to update individual fields).
+# -----------------------------------------------------------------------------------------
+LISTING_UPDATABLE_FIELDS = {
+    'officialDesc', 'sourceLink', 'reviewLink', 'photo',
+    'drinkType', 'typeCategory', 'drinkStyle', 'originCountry',
+    'age', 'abv', 'tags', 'varietyTags'
+}
+
+def update_existing_listing(cursor, listing_id, field_values, fields_to_update):
+    """
+    Update specific fields of an existing listing.
+    Only updates fields explicitly listed in fields_to_update and present in LISTING_UPDATABLE_FIELDS.
+
+    Args:
+        cursor: DB cursor
+        listing_id: ID of the existing listing to update
+        field_values: dict with field values (from staged row or form payload)
+        fields_to_update: list of field names the user opted to update
+    Returns:
+        True if any fields were updated, False otherwise
+    """
+    updates = {}
+    for field in fields_to_update:
+        if field not in LISTING_UPDATABLE_FIELDS:
+            continue
+        value = field_values.get(field)
+        if value is not None and str(value).strip() != '':
+            updates[field] = value
+
+    if not updates:
+        return False
+
+    set_clause = ', '.join(f'"{k}" = %s' for k in updates.keys())
+    cursor.execute(
+        f'UPDATE "listings" SET {set_clause} WHERE "id" = %s',
+        list(updates.values()) + [listing_id]
+    )
+    return True
+
+# -----------------------------------------------------------------------------------------
 # [POST] Creates a listing
 # - Insert entry into the "listings" collection. Follows listings dataclass requirements.
 # - Duplicate listing check: If a listing with the same name exists, reject the request
@@ -529,9 +570,37 @@ def createListingsBulk():
         
         # Process each listing individually
         for index, raw_item in enumerate(listings):
+            # Check if this is an update to an existing listing (confirmed duplicate)
+            update_listing_id = raw_item.get('updateExistingListingId')
+            if update_listing_id:
+                try:
+                    fields_to_update = raw_item.get('fieldsToUpdate', [])
+                    with db_manager.get_cursor() as cursor:
+                        updated = update_existing_listing(cursor, int(update_listing_id), raw_item, fields_to_update)
+                    item_result = {
+                        'index': raw_item.get('originalIndex', index),
+                        'success': True,
+                        'updated': True,
+                        'listingId': int(update_listing_id),
+                        'listingName': raw_item.get('listingName', ''),
+                        'fieldsUpdated': fields_to_update if updated else []
+                    }
+                except Exception as e:
+                    item_result = {
+                        'index': raw_item.get('originalIndex', index),
+                        'success': False,
+                        'error': f"Failed to update existing listing: {str(e)}"
+                    }
+                results.append(item_result)
+                if item_result['success']:
+                    success_count += 1
+                else:
+                    fail_count += 1
+                continue
+
             item_result = process_single_bulk_item(index, raw_item, current_time)
             results.append(item_result)
-            
+
             if item_result['success']:
                 success_count += 1
             else:
@@ -1543,158 +1612,186 @@ def commitStagedListings():
     try:
         data = request.get_json()
         staged_ids = data.get('stagedIds', [])
-        
-        if not staged_ids:
+        update_existing = data.get('updateExistingListings', [])
+
+        if not staged_ids and not update_existing:
             return jsonify({
                 "code": 400,
-                "message": "No staged listing IDs provided"
+                "message": "No staged listing IDs or update requests provided"
             }), 400
-        
+
         with db_manager.get_cursor() as cursor:
-            # Fetch the staged listings
-            cursor.execute('''
-                SELECT * FROM "tempListingsForImport"
-                WHERE id = ANY(%s)
-            ''', (staged_ids,))
-            
-            staged_listings = cursor.fetchall()
-            
-            if not staged_listings:
-                return jsonify({
-                    "code": 404,
-                    "message": "No staged listings found with the provided IDs"
-                }), 404
-            
-            # Fetch existing producers
-            cursor.execute('SELECT "producerName", "id", "isIndependentBottler" FROM "producers"')
-            producers = cursor.fetchall()
-            producer_name_id_dict = {row['producerName']: row['id'] for row in producers}
-            
-            # Collect all producer and bottler names that need to be created
+            listings_to_insert = []
+            created_listings_map = []
             new_producers_to_create = set()
             new_bottlers_to_create = set()
-            
-            for listing in staged_listings:
-                producer_name = listing['producerName']
-                if producer_name and producer_name not in producer_name_id_dict:
-                    new_producers_to_create.add(producer_name)
-                
-                bottler_name = listing['bottlerName']
-                if bottler_name and bottler_name not in producer_name_id_dict and bottler_name not in new_producers_to_create:
-                    new_bottlers_to_create.add(bottler_name)
-            
-            # Create new producers
-            if new_producers_to_create:
-                new_producer_data = [
-                    (
-                        name, "", "", [], "", hash_password_for_producer(name, "admin1234"),
-                        False, "", None, "", None, None, False
-                    )
-                    for name in new_producers_to_create
-                ]
-                
-                insert_query = """
-                    INSERT INTO producers (
-                        "producerName", "producerDesc", "originCountry", "mainDrinks", "photo", "hashedPassword",
-                        "claimStatus", "statusOB", "username", "producerLink", "stripeCustomerId", "claimStatusCheckDate",
-                        "isIndependentBottler"
-                    ) VALUES %s RETURNING "producerName", "id"
-                """
-                execute_values(cursor, insert_query, new_producer_data)
-                new_producers_with_ids = cursor.fetchall()
-                producer_name_id_dict.update({row["producerName"]: row["id"] for row in new_producers_with_ids})
-                print(f"Created {len(new_producers_with_ids)} new producers")
-            
-            # Create new bottlers (as independent bottlers)
-            if new_bottlers_to_create:
-                new_bottler_data = [
-                    (
-                        name, "", "", [], "", hash_password_for_producer(name, "admin1234"),
-                        False, "", None, "", None, None, True  # isIndependentBottler = True
-                    )
-                    for name in new_bottlers_to_create
-                ]
-                
-                insert_query = """
-                    INSERT INTO producers (
-                        "producerName", "producerDesc", "originCountry", "mainDrinks", "photo", "hashedPassword",
-                        "claimStatus", "statusOB", "username", "producerLink", "stripeCustomerId", "claimStatusCheckDate",
-                        "isIndependentBottler"
-                    ) VALUES %s RETURNING "producerName", "id"
-                """
-                execute_values(cursor, insert_query, new_bottler_data)
-                new_bottlers_with_ids = cursor.fetchall()
-                producer_name_id_dict.update({row["producerName"]: row["id"] for row in new_bottlers_with_ids})
-                print(f"Created {len(new_bottlers_with_ids)} new bottlers")
-            
-            # Prepare listings for insertion into listings table
-            listings_to_insert = []
-            staged_id_order = []  # Track order of staged IDs for mapping back
-            current_time = datetime.now(pytz.timezone('Etc/GMT-8'))
-            
-            for listing in staged_listings:
-                staged_id_order.append(listing['id'])  # Store the staged ID
-                producer_name = listing['producerName']
-                producer_id = producer_name_id_dict.get(producer_name)
-                
-                bottler_name = listing['bottlerName']
-                if bottler_name:
-                    bottler_id = producer_name_id_dict.get(bottler_name)
-                else:
-                    bottler_id = None
-                
-                listings_to_insert.append({
-                    'listingName': listing['listingName'],
-                    'producerID': producer_id,
-                    'bottler': listing['bottler'],
-                    'bottlerID': bottler_id,
-                    'originCountry': listing['originCountry'],
-                    'drinkType': listing['drinkType'],
-                    'typeCategory': listing['typeCategory'],
-                    'drinkStyle': listing['drinkStyle'],
-                    'age': listing['age'],
-                    'abv': listing['abv'],
-                    'reviewLink': listing['reviewLink'],
-                    'officialDesc': listing['officialDesc'],
-                    'sourceLink': listing['sourceLink'],
-                    'photo': listing['photo'],
-                    'allowMod': True,
-                    'addedDate': current_time
-                })
-            
-            # Bulk insert into listings table
-            created_listings_map = []  # Map staged IDs to new listing IDs
-            if listings_to_insert:
-                listing_columns = listings_to_insert[0].keys()
-                listing_query = """
-                    INSERT INTO listings ({}) VALUES %s RETURNING id, "listingName"
-                """.format(', '.join(f'"{col}"' for col in listing_columns))
-                
-                listing_values = [tuple(listing.values()) for listing in listings_to_insert]
-                execute_values(cursor, listing_query, listing_values)
-                inserted_listings = cursor.fetchall()
-                
-                # Map staged IDs to new listing IDs (order is preserved)
-                for idx, inserted in enumerate(inserted_listings):
-                    created_listings_map.append({
-                        'stagedId': staged_id_order[idx],
-                        'listingId': inserted['id'],
-                        'listingName': inserted['listingName']
-                    })
-                
-                # Update the sequence to ensure future inserts don't conflict
-                cursor.execute("SELECT setval('listings_id_seq', COALESCE((SELECT MAX(id) FROM listings), 1), true)")
-                
-                print(f"Successfully committed {len(inserted_listings)} listings to database")
-            
-            # Delete committed listings from tempListingsForImport
-            cursor.execute('''
-                DELETE FROM "tempListingsForImport"
-                WHERE id = ANY(%s)
-            ''', (staged_ids,))
-            
-            print(f"Deleted {len(staged_ids)} staged listings after commit")
-        
+
+            # ====== PART 1: Create new listings from staged IDs ======
+            if staged_ids:
+                # Fetch the staged listings
+                cursor.execute('''
+                    SELECT * FROM "tempListingsForImport"
+                    WHERE id = ANY(%s)
+                ''', (staged_ids,))
+
+                staged_listings = cursor.fetchall()
+
+                if not staged_listings and not update_existing:
+                    return jsonify({
+                        "code": 404,
+                        "message": "No staged listings found with the provided IDs"
+                    }), 404
+
+                if staged_listings:
+                    # Fetch existing producers
+                    cursor.execute('SELECT "producerName", "id", "isIndependentBottler" FROM "producers"')
+                    producers = cursor.fetchall()
+                    producer_name_id_dict = {row['producerName']: row['id'] for row in producers}
+
+                    # Collect all producer and bottler names that need to be created
+                    for listing in staged_listings:
+                        producer_name = listing['producerName']
+                        if producer_name and producer_name not in producer_name_id_dict:
+                            new_producers_to_create.add(producer_name)
+
+                        bottler_name = listing['bottlerName']
+                        if bottler_name and bottler_name not in producer_name_id_dict and bottler_name not in new_producers_to_create:
+                            new_bottlers_to_create.add(bottler_name)
+
+                    # Create new producers
+                    if new_producers_to_create:
+                        new_producer_data = [
+                            (
+                                name, "", "", [], "", hash_password_for_producer(name, "admin1234"),
+                                False, "", None, "", None, None, False
+                            )
+                            for name in new_producers_to_create
+                        ]
+
+                        insert_query = """
+                            INSERT INTO producers (
+                                "producerName", "producerDesc", "originCountry", "mainDrinks", "photo", "hashedPassword",
+                                "claimStatus", "statusOB", "username", "producerLink", "stripeCustomerId", "claimStatusCheckDate",
+                                "isIndependentBottler"
+                            ) VALUES %s RETURNING "producerName", "id"
+                        """
+                        execute_values(cursor, insert_query, new_producer_data)
+                        new_producers_with_ids = cursor.fetchall()
+                        producer_name_id_dict.update({row["producerName"]: row["id"] for row in new_producers_with_ids})
+                        print(f"Created {len(new_producers_with_ids)} new producers")
+
+                    # Create new bottlers (as independent bottlers)
+                    if new_bottlers_to_create:
+                        new_bottler_data = [
+                            (
+                                name, "", "", [], "", hash_password_for_producer(name, "admin1234"),
+                                False, "", None, "", None, None, True  # isIndependentBottler = True
+                            )
+                            for name in new_bottlers_to_create
+                        ]
+
+                        insert_query = """
+                            INSERT INTO producers (
+                                "producerName", "producerDesc", "originCountry", "mainDrinks", "photo", "hashedPassword",
+                                "claimStatus", "statusOB", "username", "producerLink", "stripeCustomerId", "claimStatusCheckDate",
+                                "isIndependentBottler"
+                            ) VALUES %s RETURNING "producerName", "id"
+                        """
+                        execute_values(cursor, insert_query, new_bottler_data)
+                        new_bottlers_with_ids = cursor.fetchall()
+                        producer_name_id_dict.update({row["producerName"]: row["id"] for row in new_bottlers_with_ids})
+                        print(f"Created {len(new_bottlers_with_ids)} new bottlers")
+
+                    # Prepare listings for insertion into listings table
+                    staged_id_order = []  # Track order of staged IDs for mapping back
+                    current_time = datetime.now(pytz.timezone('Etc/GMT-8'))
+
+                    for listing in staged_listings:
+                        staged_id_order.append(listing['id'])  # Store the staged ID
+                        producer_name = listing['producerName']
+                        producer_id = producer_name_id_dict.get(producer_name)
+
+                        bottler_name = listing['bottlerName']
+                        if bottler_name:
+                            bottler_id = producer_name_id_dict.get(bottler_name)
+                        else:
+                            bottler_id = None
+
+                        listings_to_insert.append({
+                            'listingName': listing['listingName'],
+                            'producerID': producer_id,
+                            'bottler': listing['bottler'],
+                            'bottlerID': bottler_id,
+                            'originCountry': listing['originCountry'],
+                            'drinkType': listing['drinkType'],
+                            'typeCategory': listing['typeCategory'],
+                            'drinkStyle': listing['drinkStyle'],
+                            'age': listing['age'],
+                            'abv': listing['abv'],
+                            'reviewLink': listing['reviewLink'],
+                            'officialDesc': listing['officialDesc'],
+                            'sourceLink': listing['sourceLink'],
+                            'photo': listing['photo'],
+                            'allowMod': True,
+                            'addedDate': current_time
+                        })
+
+                    # Bulk insert into listings table
+                    if listings_to_insert:
+                        listing_columns = listings_to_insert[0].keys()
+                        listing_query = """
+                            INSERT INTO listings ({}) VALUES %s RETURNING id, "listingName"
+                        """.format(', '.join(f'"{col}"' for col in listing_columns))
+
+                        listing_values = [tuple(listing.values()) for listing in listings_to_insert]
+                        execute_values(cursor, listing_query, listing_values)
+                        inserted_listings = cursor.fetchall()
+
+                        # Map staged IDs to new listing IDs (order is preserved)
+                        for idx, inserted in enumerate(inserted_listings):
+                            created_listings_map.append({
+                                'stagedId': staged_id_order[idx],
+                                'listingId': inserted['id'],
+                                'listingName': inserted['listingName']
+                            })
+
+                        # Update the sequence to ensure future inserts don't conflict
+                        cursor.execute("SELECT setval('listings_id_seq', COALESCE((SELECT MAX(id) FROM listings), 1), true)")
+
+                        print(f"Successfully committed {len(inserted_listings)} listings to database")
+
+                    # Delete committed listings from tempListingsForImport
+                    cursor.execute('''
+                        DELETE FROM "tempListingsForImport"
+                        WHERE id = ANY(%s)
+                    ''', (staged_ids,))
+
+                    print(f"Deleted {len(staged_ids)} staged listings after commit")
+
+            # ====== PART 2: Update existing listings for confirmed duplicates ======
+            updated_existing_count = 0
+
+            if update_existing:
+                # Each item: { stagedId, linkedListingId, fieldsToUpdate: [...] }
+                update_staged_ids = [item['stagedId'] for item in update_existing]
+
+                cursor.execute('''
+                    SELECT * FROM "tempListingsForImport"
+                    WHERE id = ANY(%s)
+                ''', (update_staged_ids,))
+                staged_for_update = {row['id']: row for row in cursor.fetchall()}
+
+                for item in update_existing:
+                    staged = staged_for_update.get(item['stagedId'])
+                    if not staged:
+                        continue
+
+                    fields_to_update = item.get('fieldsToUpdate', [])
+                    if update_existing_listing(cursor, item['linkedListingId'], dict(staged), fields_to_update):
+                        updated_existing_count += 1
+
+                print(f"Updated {updated_existing_count} existing listings from confirmed duplicates")
+
         return jsonify({
             "code": 201,
             "message": f"Successfully committed {len(listings_to_insert)} listings",
@@ -1702,7 +1799,8 @@ def commitStagedListings():
                 "committedCount": len(listings_to_insert),
                 "newProducersCreated": len(new_producers_to_create),
                 "newBottlersCreated": len(new_bottlers_to_create),
-                "createdListings": created_listings_map
+                "createdListings": created_listings_map,
+                "updatedExistingCount": updated_existing_count
             }
         }), 201
     

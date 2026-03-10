@@ -10,6 +10,7 @@ import s3Images
 from flask import Blueprint, g, request, jsonify
 from datetime import datetime, timedelta
 from scripts import pointsHelperFunc, badge_helpers, notifications
+from scripts.createListing import update_existing_listing
 import re
 
 # Import the database manager for connection pooling
@@ -374,9 +375,37 @@ def requestListingsBulk():
     
     # Process each item individually
     for index, item in enumerate(items):
+        # Check if this is an update to an existing listing (confirmed duplicate)
+        update_listing_id = item.get('updateExistingListingId')
+        if update_listing_id:
+            try:
+                fields_to_update = item.get('fieldsToUpdate', [])
+                with db_manager.get_cursor() as cursor:
+                    updated = update_existing_listing(cursor, int(update_listing_id), item, fields_to_update)
+                item_result = {
+                    'index': item.get('originalIndex', index),
+                    'success': True,
+                    'updated': True,
+                    'listingId': int(update_listing_id),
+                    'listingName': item.get('listingName', ''),
+                    'fieldsUpdated': fields_to_update if updated else []
+                }
+            except Exception as e:
+                item_result = {
+                    'index': item.get('originalIndex', index),
+                    'success': False,
+                    'error': f"Failed to update existing listing: {str(e)}"
+                }
+            results.append(item_result)
+            if item_result['success']:
+                success_count += 1
+            else:
+                fail_count += 1
+            continue
+
         item_result = process_single_bulk_request_item(index, item, auto_approve)
         results.append(item_result)
-        
+
         if item_result['success']:
             success_count += 1
             # Track first successful user for proof points/badges (only users, not venues)
