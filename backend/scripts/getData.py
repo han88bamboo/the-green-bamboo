@@ -5885,29 +5885,32 @@ def getVenuesByIds():
 @blueprint.route("/getVenueMenuItemsCount/<int:venue_id>", methods=['GET'])
 def getVenueMenuItemsCount(venue_id):
     """
-    Get the total count of menu items for a specific venue
-    Returns the count of all available menu items in the venue's menu
+    Get the count of visible and hidden menu items for a specific venue
+    Returns separate counts for items in visible vs hidden sections
     """
 
-    
+
     try:
         with db_manager.get_cursor() as cursor:
-            # Count all menu items for the venue where items are available
+            # Count menu items split by section visibility
             cursor.execute("""
-                SELECT COUNT(mi."id") as "totalMenuItems"
+                SELECT
+                    COUNT(mi."id") FILTER (WHERE vm."isVisible" = TRUE) as "visibleMenuItems",
+                    COUNT(mi."id") FILTER (WHERE vm."isVisible" = FALSE) as "hiddenMenuItems"
                 FROM "menuItems" mi
                 JOIN "venuesMenu" vm ON mi."sectionId" = vm."id"
                 WHERE vm."venueId" = %s
             """, (venue_id,))
-            
+
             result = cursor.fetchone()
-            
+
             if result:
                 return jsonify({
                     "code": 200,
                     "data": {
                         "venueId": venue_id,
-                        "totalMenuItems": result['totalMenuItems']
+                        "visibleMenuItems": result['visibleMenuItems'],
+                        "hiddenMenuItems": result['hiddenMenuItems']
                     }
                 })
             else:
@@ -5915,11 +5918,12 @@ def getVenueMenuItemsCount(venue_id):
                     "code": 404,
                     "data": {
                         "venueId": venue_id,
-                        "totalMenuItems": 0
+                        "visibleMenuItems": 0,
+                        "hiddenMenuItems": 0
                     },
                     "message": "Venue not found or has no menu items"
                 })
-            
+
     except Exception as e:
         return jsonify({
             "code": 500,
