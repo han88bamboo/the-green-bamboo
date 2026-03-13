@@ -31,6 +31,7 @@
             <div class="dflex">
                 <p class="text-start text-body-secondary fs-4 fw-bold m-0 mobile-fs-5"><span
                         class="fw-bold fst-italic">{{ displayMenuItemsCount }}</span> Drinks On The Menu
+                    <span v-if="selfView && displayHiddenMenuItemsCount > 0" class="text-muted">({{ displayHiddenMenuItemsCount }} Hidden Items)</span>
                 </p>
             </div>
 
@@ -2838,16 +2839,21 @@ export default {
             return checkForHouseNotes(this.searchMenuResults || []);
         },
 
-        // Get the appropriate menu items count to display
+        // Get the visible menu items count to display
         // Prioritizes database count, falls back to loaded count
         displayMenuItemsCount() {
             // If we have a count from the database endpoint, use it
-            if (this.totalMenuItemsCount > 0) {
-                return this.totalMenuItemsCount;
+            if (this.visibleMenuItemsCount > 0) {
+                return this.visibleMenuItemsCount;
             }
-            
+
             // Fall back to loaded listings count if no database count available
             return this.loadedListings.length;
+        },
+
+        // Get the hidden menu items count (items in hidden sections)
+        displayHiddenMenuItemsCount() {
+            return this.hiddenMenuItemsCount;
         },
         
         // Get sections formatted for dropdown selection
@@ -3112,8 +3118,9 @@ export default {
             // Flag to prevent duplicate loading
             isLoading: false,
             
-            // Menu items count from database
-            totalMenuItemsCount: 0,
+            // Menu items counts from database (split by section visibility)
+            visibleMenuItemsCount: 0,
+            hiddenMenuItemsCount: 0,
             
             // Data source mode tracking
             dataSourceMode: '', // 'legacy-flat', 'legacy-hierarchical', 'api-hierarchical', 'empty'
@@ -4751,22 +4758,25 @@ export default {
         // Fetch total menu items count for the venue
         async loadMenuItemsCount(venueId) {
             console.log('🍽️ Loading menu items count for venue:', venueId);
-            
+
             try {
                 const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getVenueMenuItemsCount/${venueId}`);
-                
-                if (response.status === 200 && response.data?.data?.totalMenuItems !== undefined) {
-                    this.totalMenuItemsCount = response.data.data.totalMenuItems;
-                    console.log('🍽️ Menu items count loaded:', this.totalMenuItemsCount);
-                    return this.totalMenuItemsCount;
+
+                if (response.status === 200 && response.data?.data?.visibleMenuItems !== undefined) {
+                    this.visibleMenuItemsCount = response.data.data.visibleMenuItems;
+                    this.hiddenMenuItemsCount = response.data.data.hiddenMenuItems;
+                    console.log('🍽️ Menu items count loaded - visible:', this.visibleMenuItemsCount, 'hidden:', this.hiddenMenuItemsCount);
+                    return this.visibleMenuItemsCount;
                 } else {
                     console.warn('🍽️ No menu items count found for venue:', venueId);
-                    this.totalMenuItemsCount = 0;
+                    this.visibleMenuItemsCount = 0;
+                    this.hiddenMenuItemsCount = 0;
                     return 0;
                 }
             } catch (error) {
                 console.error('🍽️ Error loading menu items count:', error);
-                this.totalMenuItemsCount = 0;
+                this.visibleMenuItemsCount = 0;
+                this.hiddenMenuItemsCount = 0;
                 return 0;
             }
         },
