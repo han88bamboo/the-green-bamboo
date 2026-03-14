@@ -626,7 +626,7 @@ def importListings():
                         "isIndependentBottler"
                     ) VALUES %s RETURNING "producerName", "id"
                 """
-                execute_values(cursor, insert_query, [
+                new_profiles_with_ids = execute_values(cursor, insert_query, [
                     (
                         profile["producerName"], profile["producerDesc"], profile["originCountry"],
                         profile["mainDrinks"], profile["photo"], profile["hashedPassword"],
@@ -635,8 +635,7 @@ def importListings():
                         profile["isIndependentBottler"]
                     )
                     for profile in all_new_profiles
-                ])
-                new_profiles_with_ids = cursor.fetchall()
+                ], fetch=True)
                 producer_name_id_dict.update({row["producerName"]: row["id"] for row in new_profiles_with_ids})
 
             # # Fetch existing listings to avoid duplicates - TZH commented out because this duplicate detection system is faulty
@@ -757,8 +756,7 @@ def importListings():
                     ', '.join(f'"{col}"' for col in listing_columns)
                 )
                 listing_values = [tuple(listing.values()) for listing in listings_to_insert]
-                execute_values(cursor, listing_query, listing_values)
-                inserted_ids = cursor.fetchall()  # Get all returned IDs
+                inserted_ids = execute_values(cursor, listing_query, listing_values, fetch=True)  # Get all returned IDs
                 print(f"Inserted IDs: {inserted_ids}")
                 
                 # Update the sequence to ensure future inserts don't conflict
