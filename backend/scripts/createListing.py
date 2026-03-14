@@ -1057,286 +1057,289 @@ def stageListingsFromCSV():
                 "message": "File must be a CSV file"
             }), 400
         
+        # ====== PHASE 1: Fetch producers from DB (quick query, release connection immediately) ======
         with db_manager.get_cursor() as cursor:
-            # Detect encoding of CSV file
-            file_encoding = detect_csv_encoding(file)
-            
-            # Define column data types (same as importListings)
-            # Column order: listingName, producer, bottler, originCountry, drinkType, 
-            #               typeCategory, drinkStyle, age, abv, reviewLink, officialDesc, sourceLink, photo
-            column_data_types = [str, str, str, str, str, str, str, str, float, str, str, str, str]
-            
-            # Read all rows from CSV
-            with io.TextIOWrapper(file, encoding=file_encoding, errors='replace') as csv_file:
-                csv_data = csv.reader(csv_file)
-                # Skip first 4 header rows (same as importListings)
-                for _ in range(4):
-                    try:
-                        next(csv_data)
-                    except StopIteration:
-                        break
-                rows = list(csv_data)
-            
-            if not rows:
-                return jsonify({
-                    "code": 400,
-                    "message": "CSV file is empty or has no data rows"
-                }), 400
-            
-            # Fetch existing producers to check if they exist
             cursor.execute('SELECT "producerName", "id", "isIndependentBottler" FROM "producers"')
             producers = cursor.fetchall()
             producer_name_id_dict = {row['producerName']: row['id'] for row in producers}
             producer_ib_dict = {row['producerName']: row.get('isIndependentBottler', False) for row in producers}
-            
-            staged_listings = []
-            validation_errors = []
-            image_urls = []
-            row_numbers = []
-            
-            # Collect producer names for fuzzy matching
-            producer_names_for_fuzzy = []
-            bottler_names_for_fuzzy = []
-            
-            for row_index, row in enumerate(rows):
-                row_number = row_index + 5  # Account for 4 skipped header rows + 1-based indexing
-                
-                # Skip empty rows
-                if not row or all(cell.strip() == '' for cell in row):
-                    continue
-                
-                # Validate row has enough columns
-                if len(row) < len(column_data_types):
-                    validation_errors.append({
-                        "rowNumber": row_number,
-                        "error": f"Row has {len(row)} columns, expected {len(column_data_types)}"
-                    })
-                    continue
-                
-                # Convert row data to appropriate types
-                converted_row = []
-                row_validation_error = None
-                
-                for i, (data_type, value) in enumerate(zip(column_data_types, row)):
-                    if data_type is float:
-                        value = value.replace('%', '').strip() if value else ''
-                        try:
-                            if value and value.lower() not in ['n/a', 'na', 'nas', '']:
-                                converted_value = float(value)
-                            else:
-                                converted_value = None
-                        except ValueError:
-                            converted_value = None
-                    else:
-                        converted_value = data_type(value.strip()) if value and value.strip() else None
-                    converted_row.append(converted_value)
-                
-                # Extract fields
-                listing_name = converted_row[0]
-                producer_name = converted_row[1]
-                bottler_name = converted_row[2]
-                origin_country = converted_row[3]
-                drink_type = converted_row[4]
-                type_category = converted_row[5]
-                drink_style = converted_row[6]
-                age = converted_row[7]
-                abv = converted_row[8]
-                review_link = converted_row[9]
-                official_desc = converted_row[10]
-                source_link = converted_row[11]
-                photo_url = converted_row[12]
-                
-                # Validate required fields
-                if not listing_name:
-                    validation_errors.append({
-                        "rowNumber": row_number,
-                        "error": "Missing listing name (column 1)"
-                    })
-                    continue
-                
-                if not producer_name:
-                    validation_errors.append({
-                        "rowNumber": row_number,
-                        "error": "Missing producer name (column 2)"
-                    })
-                    continue
-                
-                # Check if producer exists (exact match first)
-                producer_id = producer_name_id_dict.get(producer_name)
-                
-                # Track producer names that don't have exact match for fuzzy matching later
-                if not producer_id and producer_name:
-                    producer_names_for_fuzzy.append(producer_name)
-                
-                # Handle bottler scenarios
-                if bottler_name in ["OB", "Original Bottling", None, ""]:
-                    bottler_id = None
-                    bottler_name_display = "OB" if bottler_name in ["OB", "Original Bottling"] else None
-                else:
-                    bottler_id = producer_name_id_dict.get(bottler_name)
-                    bottler_name_display = bottler_name
-                    # Track bottler names that don't have exact match for fuzzy matching
-                    if not bottler_id and bottler_name:
-                        bottler_names_for_fuzzy.append(bottler_name)
-                
-                # Store image URL for later S3 upload
-                image_urls.append(photo_url)
-                row_numbers.append(row_number)
-                
-                staged_listings.append({
-                    'listingName': listing_name,
-                    'producerID': producer_id,
-                    'producerName': producer_name,
-                    'producerFuzzyMatched': False,  # Will be updated after fuzzy matching
-                    'producerMatchedName': None,     # Will be updated after fuzzy matching
-                    'producerMatchSimilarity': None, # Will be updated after fuzzy matching
-                    'bottler': bottler_name_display,
-                    'bottlerID': bottler_id,
-                    'bottlerName': bottler_name if bottler_name not in ["OB", "Original Bottling", None, ""] else None,
-                    'bottlerFuzzyMatched': False,    # Will be updated after fuzzy matching
-                    'bottlerMatchedName': None,      # Will be updated after fuzzy matching
-                    'bottlerMatchSimilarity': None,  # Will be updated after fuzzy matching
-                    'originCountry': origin_country,
-                    'drinkType': drink_type,
-                    'typeCategory': type_category,
-                    'drinkStyle': drink_style,
-                    'age': str(age) if age else None,
-                    'abv': abv,
-                    'reviewLink': review_link,
-                    'officialDesc': official_desc,
-                    'sourceLink': source_link,
-                    'photo': None,  # Will be updated after S3 upload
-                    'allowMod': True,
-                    'addedDate': None,  # Will be set when committed to listings
-                    'submitterID': submitter_id,
-                    'submitterType': submitter_type,
-                    'rowNumber': row_number,
-                    'validationErrors': None
+
+        # ====== PHASE 2: CSV parsing, fuzzy matching, S3 uploads (no DB connection held) ======
+        # Detect encoding of CSV file
+        file_encoding = detect_csv_encoding(file)
+
+        # Define column data types (same as importListings)
+        # Column order: listingName, producer, bottler, originCountry, drinkType,
+        #               typeCategory, drinkStyle, age, abv, reviewLink, officialDesc, sourceLink, photo
+        column_data_types = [str, str, str, str, str, str, str, str, float, str, str, str, str]
+
+        # Read all rows from CSV
+        with io.TextIOWrapper(file, encoding=file_encoding, errors='replace') as csv_file:
+            csv_data = csv.reader(csv_file)
+            # Skip first 4 header rows (same as importListings)
+            for _ in range(4):
+                try:
+                    next(csv_data)
+                except StopIteration:
+                    break
+            rows = list(csv_data)
+
+        if not rows:
+            return jsonify({
+                "code": 400,
+                "message": "CSV file is empty or has no data rows"
+            }), 400
+
+        staged_listings = []
+        validation_errors = []
+        image_urls = []
+        row_numbers = []
+
+        # Collect producer names for fuzzy matching
+        producer_names_for_fuzzy = []
+        bottler_names_for_fuzzy = []
+
+        for row_index, row in enumerate(rows):
+            row_number = row_index + 5  # Account for 4 skipped header rows + 1-based indexing
+
+            # Skip empty rows
+            if not row or all(cell.strip() == '' for cell in row):
+                continue
+
+            # Validate row has enough columns
+            if len(row) < len(column_data_types):
+                validation_errors.append({
+                    "rowNumber": row_number,
+                    "error": f"Row has {len(row)} columns, expected {len(column_data_types)}"
                 })
-            
-            if not staged_listings:
-                return jsonify({
-                    "code": 400,
-                    "message": "No valid rows found in CSV",
-                    "validationErrors": validation_errors
-                }), 400
-            
-            # ====== STEP: Fuzzy match producers and bottlers that didn't have exact matches ======
-            # Combine producer and bottler names for batch fuzzy matching
-            all_names_for_fuzzy = list(set(producer_names_for_fuzzy + bottler_names_for_fuzzy))
-            
-            if all_names_for_fuzzy:
-                print(f"Fuzzy matching {len(all_names_for_fuzzy)} producer/bottler names...")
-                fuzzy_results = fuzzy_match_producer_batch(all_names_for_fuzzy, threshold=98, request_id=g.request_id if hasattr(g, 'request_id') else 'csv-staging')
-                
-                # Update staged listings with fuzzy match results
-                for listing in staged_listings:
-                    # Handle producer fuzzy match
-                    producer_name = listing.get('producerName')
-                    if producer_name and not listing.get('producerID'):
-                        fuzzy_match = fuzzy_results.get(producer_name, {})
-                        if fuzzy_match.get('matched'):
-                            listing['producerID'] = fuzzy_match['producerID']
-                            listing['producerFuzzyMatched'] = True
-                            listing['producerMatchedName'] = fuzzy_match['matchedName']
-                            listing['producerMatchSimilarity'] = fuzzy_match['similarity']
-                            print(f"  Producer '{producer_name}' -> '{fuzzy_match['matchedName']}' ({fuzzy_match['similarity']}%)")
-                    
-                    # Handle bottler fuzzy match
-                    bottler_name = listing.get('bottlerName')
-                    if bottler_name and not listing.get('bottlerID'):
-                        fuzzy_match = fuzzy_results.get(bottler_name, {})
-                        if fuzzy_match.get('matched'):
-                            listing['bottlerID'] = fuzzy_match['producerID']
-                            listing['bottlerFuzzyMatched'] = True
-                            listing['bottlerMatchedName'] = fuzzy_match['matchedName']
-                            listing['bottlerMatchSimilarity'] = fuzzy_match['similarity']
-                            print(f"  Bottler '{bottler_name}' -> '{fuzzy_match['matchedName']}' ({fuzzy_match['similarity']}%)")
-                
-                # Count fuzzy matches
-                producer_fuzzy_count = sum(1 for l in staged_listings if l.get('producerFuzzyMatched'))
-                bottler_fuzzy_count = sum(1 for l in staged_listings if l.get('bottlerFuzzyMatched'))
-                print(f"Fuzzy matched {producer_fuzzy_count} producers and {bottler_fuzzy_count} bottlers")
-            
-            # Parallelize S3 image uploads while maintaining order
-            DEFAULT_IMAGE_URL = "https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultDrinkImage.png?v=1750084739"
+                continue
 
-            def convert_google_drive_url(url):
-                """
-                Detects Google Drive share/view URLs and rewrites them to direct
-                lh3.googleusercontent.com image links, which return the actual image
-                bytes (for publicly shared files). Returns the original URL unchanged
-                if it is not a recognised Google Drive pattern.
-                Supported patterns:
-                  - /file/d/FILE_ID/view?usp=sharing
-                  - /file/d/FILE_ID/view?usp=drive_link
-                  - /file/d/FILE_ID/view  (no query params)
-                  - /open?id=FILE_ID
-                  - /uc?id=FILE_ID
-                """
-                if 'drive.google.com' not in url:
-                    return url
-                # Pattern 1: /file/d/FILE_ID/...
-                match = re.search(r'drive\.google\.com/file/d/([a-zA-Z0-9_-]+)', url)
-                if match:
-                    return f'https://lh3.googleusercontent.com/d/{match.group(1)}'
-                # Pattern 2: /open?id=FILE_ID or /uc?id=FILE_ID
-                match = re.search(r'drive\.google\.com/(?:open|uc)\?(?:.*&)?id=([a-zA-Z0-9_-]+)', url)
-                if match:
-                    return f'https://lh3.googleusercontent.com/d/{match.group(1)}'
-                return url
+            # Convert row data to appropriate types
+            converted_row = []
+            row_validation_error = None
 
-            def upload_image_with_index(indexed_data):
-                index, image_url = indexed_data
-                if image_url and image_url.strip():
+            for i, (data_type, value) in enumerate(zip(column_data_types, row)):
+                if data_type is float:
+                    value = value.replace('%', '').strip() if value else ''
                     try:
-                        transformed_url = convert_google_drive_url(image_url)
-                        was_gdrive = (transformed_url != image_url)
-                        s3_url = s3Images.uploadURLtoS3(transformed_url)
-                        # uploadURLtoS3 returns its input URL unchanged on failure.
-                        # If we transformed a GDrive URL and upload still failed
-                        # (e.g. file is private), fall back to default image.
-                        if was_gdrive and s3_url == transformed_url:
-                            print(f"GDrive image not accessible (private?): {image_url}")
-                            return index, DEFAULT_IMAGE_URL
-                        return index, s3_url
-                    except Exception as e:
-                        print(f"Error uploading image from URL {image_url}: {str(e)}")
+                        if value and value.lower() not in ['n/a', 'na', 'nas', '']:
+                            converted_value = float(value)
+                        else:
+                            converted_value = None
+                    except ValueError:
+                        converted_value = None
+                else:
+                    converted_value = data_type(value.strip()) if value and value.strip() else None
+                converted_row.append(converted_value)
+
+            # Extract fields
+            listing_name = converted_row[0]
+            producer_name = converted_row[1]
+            bottler_name = converted_row[2]
+            origin_country = converted_row[3]
+            drink_type = converted_row[4]
+            type_category = converted_row[5]
+            drink_style = converted_row[6]
+            age = converted_row[7]
+            abv = converted_row[8]
+            review_link = converted_row[9]
+            official_desc = converted_row[10]
+            source_link = converted_row[11]
+            photo_url = converted_row[12]
+
+            # Validate required fields
+            if not listing_name:
+                validation_errors.append({
+                    "rowNumber": row_number,
+                    "error": "Missing listing name (column 1)"
+                })
+                continue
+
+            if not producer_name:
+                validation_errors.append({
+                    "rowNumber": row_number,
+                    "error": "Missing producer name (column 2)"
+                })
+                continue
+
+            # Check if producer exists (exact match first)
+            producer_id = producer_name_id_dict.get(producer_name)
+
+            # Track producer names that don't have exact match for fuzzy matching later
+            if not producer_id and producer_name:
+                producer_names_for_fuzzy.append(producer_name)
+
+            # Handle bottler scenarios
+            if bottler_name in ["OB", "Original Bottling", None, ""]:
+                bottler_id = None
+                bottler_name_display = "OB" if bottler_name in ["OB", "Original Bottling"] else None
+            else:
+                bottler_id = producer_name_id_dict.get(bottler_name)
+                bottler_name_display = bottler_name
+                # Track bottler names that don't have exact match for fuzzy matching
+                if not bottler_id and bottler_name:
+                    bottler_names_for_fuzzy.append(bottler_name)
+
+            # Store image URL for later S3 upload
+            image_urls.append(photo_url)
+            row_numbers.append(row_number)
+
+            staged_listings.append({
+                'listingName': listing_name,
+                'producerID': producer_id,
+                'producerName': producer_name,
+                'producerFuzzyMatched': False,  # Will be updated after fuzzy matching
+                'producerMatchedName': None,     # Will be updated after fuzzy matching
+                'producerMatchSimilarity': None, # Will be updated after fuzzy matching
+                'bottler': bottler_name_display,
+                'bottlerID': bottler_id,
+                'bottlerName': bottler_name if bottler_name not in ["OB", "Original Bottling", None, ""] else None,
+                'bottlerFuzzyMatched': False,    # Will be updated after fuzzy matching
+                'bottlerMatchedName': None,      # Will be updated after fuzzy matching
+                'bottlerMatchSimilarity': None,  # Will be updated after fuzzy matching
+                'originCountry': origin_country,
+                'drinkType': drink_type,
+                'typeCategory': type_category,
+                'drinkStyle': drink_style,
+                'age': str(age) if age else None,
+                'abv': abv,
+                'reviewLink': review_link,
+                'officialDesc': official_desc,
+                'sourceLink': source_link,
+                'photo': None,  # Will be updated after S3 upload
+                'allowMod': True,
+                'addedDate': None,  # Will be set when committed to listings
+                'submitterID': submitter_id,
+                'submitterType': submitter_type,
+                'rowNumber': row_number,
+                'validationErrors': None
+            })
+
+        if not staged_listings:
+            return jsonify({
+                "code": 400,
+                "message": "No valid rows found in CSV",
+                "validationErrors": validation_errors
+            }), 400
+
+        # Fuzzy match producers and bottlers that didn't have exact matches
+        # (fuzzy_match_producer_batch opens its own DB cursor internally)
+        all_names_for_fuzzy = list(set(producer_names_for_fuzzy + bottler_names_for_fuzzy))
+
+        if all_names_for_fuzzy:
+            print(f"Fuzzy matching {len(all_names_for_fuzzy)} producer/bottler names...")
+            fuzzy_results = fuzzy_match_producer_batch(all_names_for_fuzzy, threshold=98, request_id=g.request_id if hasattr(g, 'request_id') else 'csv-staging')
+
+            # Update staged listings with fuzzy match results
+            for listing in staged_listings:
+                # Handle producer fuzzy match
+                producer_name = listing.get('producerName')
+                if producer_name and not listing.get('producerID'):
+                    fuzzy_match = fuzzy_results.get(producer_name, {})
+                    if fuzzy_match.get('matched'):
+                        listing['producerID'] = fuzzy_match['producerID']
+                        listing['producerFuzzyMatched'] = True
+                        listing['producerMatchedName'] = fuzzy_match['matchedName']
+                        listing['producerMatchSimilarity'] = fuzzy_match['similarity']
+                        print(f"  Producer '{producer_name}' -> '{fuzzy_match['matchedName']}' ({fuzzy_match['similarity']}%)")
+
+                # Handle bottler fuzzy match
+                bottler_name = listing.get('bottlerName')
+                if bottler_name and not listing.get('bottlerID'):
+                    fuzzy_match = fuzzy_results.get(bottler_name, {})
+                    if fuzzy_match.get('matched'):
+                        listing['bottlerID'] = fuzzy_match['producerID']
+                        listing['bottlerFuzzyMatched'] = True
+                        listing['bottlerMatchedName'] = fuzzy_match['matchedName']
+                        listing['bottlerMatchSimilarity'] = fuzzy_match['similarity']
+                        print(f"  Bottler '{bottler_name}' -> '{fuzzy_match['matchedName']}' ({fuzzy_match['similarity']}%)")
+
+            # Count fuzzy matches
+            producer_fuzzy_count = sum(1 for l in staged_listings if l.get('producerFuzzyMatched'))
+            bottler_fuzzy_count = sum(1 for l in staged_listings if l.get('bottlerFuzzyMatched'))
+            print(f"Fuzzy matched {producer_fuzzy_count} producers and {bottler_fuzzy_count} bottlers")
+
+        # Parallelize S3 image uploads while maintaining order (no DB connection needed)
+        DEFAULT_IMAGE_URL = "https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultDrinkImage.png?v=1750084739"
+
+        def convert_google_drive_url(url):
+            """
+            Detects Google Drive share/view URLs and rewrites them to direct
+            lh3.googleusercontent.com image links, which return the actual image
+            bytes (for publicly shared files). Returns the original URL unchanged
+            if it is not a recognised Google Drive pattern.
+            Supported patterns:
+              - /file/d/FILE_ID/view?usp=sharing
+              - /file/d/FILE_ID/view?usp=drive_link
+              - /file/d/FILE_ID/view  (no query params)
+              - /open?id=FILE_ID
+              - /uc?id=FILE_ID
+            """
+            if 'drive.google.com' not in url:
+                return url
+            # Pattern 1: /file/d/FILE_ID/...
+            match = re.search(r'drive\.google\.com/file/d/([a-zA-Z0-9_-]+)', url)
+            if match:
+                return f'https://lh3.googleusercontent.com/d/{match.group(1)}'
+            # Pattern 2: /open?id=FILE_ID or /uc?id=FILE_ID
+            match = re.search(r'drive\.google\.com/(?:open|uc)\?(?:.*&)?id=([a-zA-Z0-9_-]+)', url)
+            if match:
+                return f'https://lh3.googleusercontent.com/d/{match.group(1)}'
+            return url
+
+        def upload_image_with_index(indexed_data):
+            index, image_url = indexed_data
+            if image_url and image_url.strip():
+                try:
+                    transformed_url = convert_google_drive_url(image_url)
+                    was_gdrive = (transformed_url != image_url)
+                    s3_url = s3Images.uploadURLtoS3(transformed_url)
+                    # uploadURLtoS3 returns its input URL unchanged on failure.
+                    # If we transformed a GDrive URL and upload still failed
+                    # (e.g. file is private), fall back to default image.
+                    if was_gdrive and s3_url == transformed_url:
+                        print(f"GDrive image not accessible (private?): {image_url}")
                         return index, DEFAULT_IMAGE_URL
-                return index, DEFAULT_IMAGE_URL
-            
-            # Create indexed data to maintain order
-            indexed_image_urls = list(enumerate(image_urls))
-            s3_urls = [None] * len(image_urls)
-            
-            with ThreadPoolExecutor() as executor:
-                future_to_index = {
-                    executor.submit(upload_image_with_index, indexed_data): indexed_data[0]
-                    for indexed_data in indexed_image_urls
-                }
-                for future in as_completed(future_to_index):
-                    index, s3_url = future.result()
-                    s3_urls[index] = s3_url
-            
-            print(f"S3 URLs for staging: {s3_urls}")
-            
-            # Update photo URLs in staged listings
-            for listing, s3_url in zip(staged_listings, s3_urls):
-                listing['photo'] = s3_url
-            
+                    return index, s3_url
+                except Exception as e:
+                    print(f"Error uploading image from URL {image_url}: {str(e)}")
+                    return index, DEFAULT_IMAGE_URL
+            return index, DEFAULT_IMAGE_URL
+
+        # Create indexed data to maintain order
+        indexed_image_urls = list(enumerate(image_urls))
+        s3_urls = [None] * len(image_urls)
+
+        with ThreadPoolExecutor() as executor:
+            future_to_index = {
+                executor.submit(upload_image_with_index, indexed_data): indexed_data[0]
+                for indexed_data in indexed_image_urls
+            }
+            for future in as_completed(future_to_index):
+                index, s3_url = future.result()
+                s3_urls[index] = s3_url
+
+        print(f"S3 URLs for staging: {s3_urls}")
+
+        # Update photo URLs in staged listings
+        for listing, s3_url in zip(staged_listings, s3_urls):
+            listing['photo'] = s3_url
+
+        # ====== PHASE 3: DB insert + duplicate detection (fresh connection) ======
+        with db_manager.get_cursor() as cursor:
             # Bulk insert into tempListingsForImport
             if staged_listings:
                 insert_columns = [
-                    "listingName", "producerID", "producerName", "bottler", "bottlerID", 
+                    "listingName", "producerID", "producerName", "bottler", "bottlerID",
                     "bottlerName", "originCountry", "drinkType", "typeCategory", "drinkStyle",
                     "age", "abv", "reviewLink", "officialDesc", "sourceLink", "photo",
                     "allowMod", "addedDate", "submitterID", "submitterType", "rowNumber", "validationErrors"
                 ]
-                
+
                 insert_query = """
                     INSERT INTO "tempListingsForImport" ({}) VALUES %s RETURNING id
                 """.format(', '.join(f'"{col}"' for col in insert_columns))
-                
+
                 insert_values = [
                     (
                         listing['listingName'],
@@ -1364,67 +1367,67 @@ def stageListingsFromCSV():
                     )
                     for listing in staged_listings
                 ]
-                
+
                 inserted_rows = execute_values(cursor, insert_query, insert_values, fetch=True)
                 inserted_ids = [row['id'] for row in inserted_rows]
-                
+
                 # Add IDs to staged listings for response
                 for listing, inserted_id in zip(staged_listings, inserted_ids):
                     listing['id'] = inserted_id
-                
+
                 print(f"Successfully staged {len(staged_listings)} listings")
-            
-            # ====== STEP: Detect duplicates for staged listings ======
-            # Prepare listings in the format expected by detect_duplicates_batch
-            listings_for_duplicate_check = [
-                {
-                    'id': listing['id'],
-                    'listingName': listing['listingName'],
-                    'producerId': listing.get('producerID', ''),
-                    'producerName': listing.get('producerName', ''),
-                    'drinkType': listing.get('drinkType', ''),
-                    'originCountry': listing.get('originCountry', ''),
-                    'bottlerId': listing.get('bottlerID', ''),
-                    'bottlerName': listing.get('bottlerName', ''),
-                    'age': listing.get('age', ''),
-                    'abv': listing.get('abv')
-                }
-                for listing in staged_listings
-            ]
-            
-            # Call duplicate detection (uses default threshold from detect_duplicates_batch)
-            duplicate_results = detect_duplicates_batch(listings_for_duplicate_check)
-            
-            # Build a map of stagedListingId -> duplicate info for easy lookup
-            duplicate_matches = {}
-            for result in duplicate_results.get('results', []):
-                duplicate_matches[result['stagedListingId']] = {
-                    'isDuplicate': result['isDuplicate'],
-                    'matches': result['matches']
-                }
-            
-            # Add isDuplicate flag to each staged listing
-            for listing in staged_listings:
-                dup_info = duplicate_matches.get(listing['id'], {})
-                listing['isDuplicate'] = dup_info.get('isDuplicate', False)
-            
-            print(f"Duplicate check complete: {duplicate_results.get('totalDuplicates', 0)} potential duplicates found")
-            
-            # Prepare response with staged listings, validation errors, and duplicate info
-            response_data = {
-                "staged": staged_listings,
-                "stagedCount": len(staged_listings),
-                "validationErrors": validation_errors,
-                "errorCount": len(validation_errors),
-                "duplicateMatches": duplicate_matches,
-                "totalDuplicates": duplicate_results.get('totalDuplicates', 0)
+
+        # Detect duplicates for staged listings
+        # (detect_duplicates_batch opens its own DB cursor internally)
+        listings_for_duplicate_check = [
+            {
+                'id': listing['id'],
+                'listingName': listing['listingName'],
+                'producerId': listing.get('producerID', ''),
+                'producerName': listing.get('producerName', ''),
+                'drinkType': listing.get('drinkType', ''),
+                'originCountry': listing.get('originCountry', ''),
+                'bottlerId': listing.get('bottlerID', ''),
+                'bottlerName': listing.get('bottlerName', ''),
+                'age': listing.get('age', ''),
+                'abv': listing.get('abv')
             }
-            
-            return jsonify({
-                "code": 201,
-                "message": f"Successfully staged {len(staged_listings)} listings for review",
-                "data": response_data
-            }), 201
+            for listing in staged_listings
+        ]
+
+        # Call duplicate detection (uses default threshold from detect_duplicates_batch)
+        duplicate_results = detect_duplicates_batch(listings_for_duplicate_check)
+
+        # Build a map of stagedListingId -> duplicate info for easy lookup
+        duplicate_matches = {}
+        for result in duplicate_results.get('results', []):
+            duplicate_matches[result['stagedListingId']] = {
+                'isDuplicate': result['isDuplicate'],
+                'matches': result['matches']
+            }
+
+        # Add isDuplicate flag to each staged listing
+        for listing in staged_listings:
+            dup_info = duplicate_matches.get(listing['id'], {})
+            listing['isDuplicate'] = dup_info.get('isDuplicate', False)
+
+        print(f"Duplicate check complete: {duplicate_results.get('totalDuplicates', 0)} potential duplicates found")
+
+        # Prepare response with staged listings, validation errors, and duplicate info
+        response_data = {
+            "staged": staged_listings,
+            "stagedCount": len(staged_listings),
+            "validationErrors": validation_errors,
+            "errorCount": len(validation_errors),
+            "duplicateMatches": duplicate_matches,
+            "totalDuplicates": duplicate_results.get('totalDuplicates', 0)
+        }
+
+        return jsonify({
+            "code": 201,
+            "message": f"Successfully staged {len(staged_listings)} listings for review",
+            "data": response_data
+        }), 201
     
     except Exception as e:
         print(f"Error in stageListingsFromCSV: {str(e)}")
