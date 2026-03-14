@@ -1365,8 +1365,7 @@ def stageListingsFromCSV():
                     for listing in staged_listings
                 ]
                 
-                execute_values(cursor, insert_query, insert_values)
-                inserted_rows = cursor.fetchall()
+                inserted_rows = execute_values(cursor, insert_query, insert_values, fetch=True)
                 inserted_ids = [row['id'] for row in inserted_rows]
                 
                 # Add IDs to staged listings for response
@@ -1675,8 +1674,7 @@ def commitStagedListings():
                                 "isIndependentBottler"
                             ) VALUES %s RETURNING "producerName", "id"
                         """
-                        execute_values(cursor, insert_query, new_producer_data)
-                        new_producers_with_ids = cursor.fetchall()
+                        new_producers_with_ids = execute_values(cursor, insert_query, new_producer_data, fetch=True)
                         producer_name_id_dict.update({row["producerName"]: row["id"] for row in new_producers_with_ids})
                         print(f"Created {len(new_producers_with_ids)} new producers")
 
@@ -1697,8 +1695,7 @@ def commitStagedListings():
                                 "isIndependentBottler"
                             ) VALUES %s RETURNING "producerName", "id"
                         """
-                        execute_values(cursor, insert_query, new_bottler_data)
-                        new_bottlers_with_ids = cursor.fetchall()
+                        new_bottlers_with_ids = execute_values(cursor, insert_query, new_bottler_data, fetch=True)
                         producer_name_id_dict.update({row["producerName"]: row["id"] for row in new_bottlers_with_ids})
                         print(f"Created {len(new_bottlers_with_ids)} new bottlers")
 
@@ -1744,8 +1741,7 @@ def commitStagedListings():
                         """.format(', '.join(f'"{col}"' for col in listing_columns))
 
                         listing_values = [tuple(listing.values()) for listing in listings_to_insert]
-                        execute_values(cursor, listing_query, listing_values)
-                        inserted_listings = cursor.fetchall()
+                        inserted_listings = execute_values(cursor, listing_query, listing_values, fetch=True)
 
                         # Map staged IDs to new listing IDs (order is preserved)
                         for idx, inserted in enumerate(inserted_listings):
