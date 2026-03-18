@@ -1249,6 +1249,27 @@ f. A statement by you, made under penalty of perjury, that the information in th
             
             <h4>Additional Help</h4>
             <p>If you're still having trouble accessing your account, please contact our support team at support@drink-x.com with details about the issue you're experiencing.</p>
+                      <h4>Requesting Account Deletion</h4>
+            <p>If you wish to delete your Drink-X account, you can submit a deletion request directly from the app:</p>
+            <ol>
+              <li>Log in to your Drink-X account</li>
+              <li>Navigate to your profile page</li>
+              <li>Tap the <strong>shield icon</strong> next to your name</li>
+              <li>In the menu that appears, tap the red <strong>"Delete Account"</strong> button</li>
+              <li>Review the confirmation message and tap <strong>"Confirm Deletion"</strong> to submit your request</li>
+            </ol>
+
+            <h5>Deleting Your Personal Data</h5>
+            <p>On the confirmation screen, you will also see an option to <strong>"delete all personal data"</strong> associated with your account. If you check this option, we will delete the following data in addition to your account:</p>
+            <ul>
+              <li>Your username</li>
+              <li>Your email address</li>
+              <li>Any photographs you have submitted of your drinks to Drink-X, should such photographs contain personally identifiable information</li>
+            </ul>
+
+            <h5>30-Day Deletion Period</h5>
+            <p>Once submitted, your deletion request will be processed within <strong>30 days</strong>. During this period, if you change your mind, you can cancel the request simply by logging back in to your account. After the 30-day period has elapsed, your account (and personal data, if requested) will be permanently deleted and cannot be recovered.</p>
+          
           `
         }
       }
