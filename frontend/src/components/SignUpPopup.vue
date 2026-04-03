@@ -97,6 +97,9 @@ export default {
             if (this.venueId === 108) {
                 return 'Welcome to Champagniac! 🍾🥂';
             }
+            if (venueId === 141) {
+            return 'Welcome to Japan Hopfest 2026 🍺🌳!';
+            }
             // Default message for other venues
             return 'Welcome!';
         },
@@ -110,6 +113,9 @@ export default {
             if (this.venueId === 108) {
                 return 'https://cdn.shopify.com/s/files/1/0353/9510/9003/files/imgi_6_champagniac-brimoncourt-2025.webp?v=1762502333';
             }
+            if (venueId === 141) {
+                return 'https://www.japanhopfest.com/cdn/shop/t/2/assets/cheers.png?v=14544948806536746561769172579';
+            }            
             // Default banner for other venues
             return '/img/defaultGroupBanner.61a71c68.png';
         }
